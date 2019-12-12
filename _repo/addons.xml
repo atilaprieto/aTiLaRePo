@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addons>
+    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.1.1" provider-name="aTiLa">
+        <requires>
+            <import addon="xbmc.addon" version="12.0.0"/>
+        </requires>
+        <extension point="xbmc.addon.repository" name="aTiLaRePo">
+            <info compressed="false">https://raw.githubusercontent.com/atilaprieto/aTiLaRePo/master_repo/addons.xml</info>
+            <checksum>https://raw.githubusercontent.com/atilaprieto/aTiLaRePo/master_repo/addons.xml.md5</checksum>
+            <datadir zip="true">https://raw.githubusercontent.com/atilaprieto/aTiLaRePo/master_repo/</datadir>
+            <hashes>false</hashes>
+        </extension>
+        <extension point="xbmc.addon.metadata">
+            <summary>Repositorio de aTiLa</summary>
+            <description>aTiLa Pri</description>
+            <platform>all</platform>
+    </extension>
+</addon>
+</addons>
