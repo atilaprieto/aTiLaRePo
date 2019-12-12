@@ -1,18 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.1.2" provider-name="aTiLa">
+    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.1.3" provider-name="aTiLa">
         <requires>
             <import addon="xbmc.addon" version="12.0.0"/>
         </requires>
         <extension point="xbmc.addon.repository" name="aTiLaRePo">
-            <info compressed="false">https://raw.githubusercontent.com/atilaprieto/aTiLaRePo/master/_repo/addons.xml</info>
-            <checksum>https://raw.githubusercontent.com/atilaprieto/aTiLaRePo/master/_repo/addons.xml.md5</checksum>
-            <datadir zip="true">https://raw.githubusercontent.com/atilaprieto/aTiLaRePo/master/_repo/</datadir>
+            <info compressed="false">https://raw.githubusercontent.com/atilaprieto/aTiLaRePo_repo/addons.xml</info>
+            <checksum>https://raw.githubusercontent.com/atilaprieto/aTiLaRePo_repo/addons.xml.md5</checksum>
+            <datadir zip="true">https://raw.githubusercontent.com/atilaprieto/aTiLaRePo_repo/</datadir>
             <hashes>false</hashes>
         </extension>
         <extension point="xbmc.addon.metadata">
             <summary>Respositorio de aTiLa</summary>
             <description>aTiLa Pri Repository</description>
+            <platform>all</platform>
+    </extension>
+</addon>
+
+    <addon id="plugin.video.atila" name="aTiLa" version="0.0.1" provider-name="Atila">
+        <requires>
+            <import addon="xbmc.addon" version="12.0.0"/>
+        </requires>
+        <extension point="xbmc.addon.repository" name="aTiLa">
+            <info compressed="false">https://raw.githubusercontent.com/atilaprieto/aTiLaRP/_repo/addons.xml</info>
+            <checksum>https://raw.githubusercontent.com/atilaprieto/aTiLaRP/_repo/addons.xml.md5</checksum>
+            <datadir zip="true">https://raw.githubusercontent.com/atilaprieto/aTiLaRP/_repo/</datadir>
+            <hashes>false</hashes>
+        </extension>
+        <extension point="xbmc.addon.metadata">
+            <summary>Addon aTiLa para repositorio</summary>
+            <description>Este addon es el que actualiza el repositorio de aTiLa</description>
             <platform>all</platform>
     </extension>
 </addon>
