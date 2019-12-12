@@ -1,0 +1,18 @@
+{
+  "id": "videomegatv",
+  "name": "VideoMegaTv",
+ 
+  "active": false,
+  "notes": "Servidor desaparecido",
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "videomega.tv/([^ ]+)",
+        "url": "http://videomega.tv/\\1"
+      }
+    ]
+  }
+
+}

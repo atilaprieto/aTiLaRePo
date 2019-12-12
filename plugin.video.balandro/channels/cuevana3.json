@@ -1,0 +1,15 @@
+{
+  "id": "cuevana3",
+  "name": "Cuevana 3",
+  "thumbnail": "cuevana3.png",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow"],
+  "language": ["lat", "cast", "vose"],
+
+  "notes": "Películas por idiomas, por género, estrenos. También series."
+}

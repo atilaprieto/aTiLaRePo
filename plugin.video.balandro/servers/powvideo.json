@@ -1,0 +1,17 @@
+{
+  "id": "powvideo",
+  "name": "Powvideo",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "(?:powvideo|povwideo|povw1deo|powv1deo|powvldeo).(?:net|xyz|cc|com|co)/(?:embed-|iframe-|preview-|)([a-z0-9]+)",
+        "url": "http://powvldeo.co/iframe-\\1-954x562.html"
+      }
+    ]
+  }
+
+}

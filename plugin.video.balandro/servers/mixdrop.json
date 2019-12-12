@@ -1,0 +1,17 @@
+{
+  "id": "mixdrop",
+  "name": "MixDrop",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "http(?:s|)://mixdrop.co/(?:e|f)/([A-z0-9]+)",
+        "url": "https://mixdrop.co/e/\\1"
+      }
+    ]
+  }
+
+}

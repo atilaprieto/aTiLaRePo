@@ -1,0 +1,17 @@
+{
+  "id": "videomega",
+  "name": "VideoMega",
+ 
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "videomega.co/([A-z0-9]+)",
+        "url": "https://www.videomega.co/\\1"
+      }
+    ]
+  }
+
+}

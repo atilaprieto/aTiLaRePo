@@ -1,0 +1,15 @@
+{
+  "id": "cliver",
+  "name": "Cliver",
+  "thumbnail": "cliver.png",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast", "lat", "vose"],
+
+  "notes": "Películas por género, por año, por cadena. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
+}

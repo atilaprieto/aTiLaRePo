@@ -1,0 +1,17 @@
+{
+  "id": "uptostream",
+  "name": "Uptostream",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "uptostream.com/(?:iframe/|)([a-z0-9]+)",
+        "url": "http://uptostream.com/iframe/\\1"
+      }
+    ]
+  }
+
+}

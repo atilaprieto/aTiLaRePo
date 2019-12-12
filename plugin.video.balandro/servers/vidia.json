@@ -1,0 +1,17 @@
+{
+  "id": "vidia",
+  "name": "Vidia",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "http(?:s|)://vidia.tv/(?:embed-|)([A-z0-9]+)",
+        "url": "https://vidia.tv/embed-\\1.html"
+      }
+    ]
+  }
+
+}

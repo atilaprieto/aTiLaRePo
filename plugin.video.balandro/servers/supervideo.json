@@ -1,0 +1,17 @@
+{
+  "id": "supervideo",
+  "name": "SuperVideo",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "http(?:s|)://supervideo.tv/([A-z0-9]+)",
+        "url": "https://supervideo.tv/\\1"
+      }
+    ]
+  }
+
+}

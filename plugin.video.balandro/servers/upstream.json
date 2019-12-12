@@ -1,0 +1,17 @@
+{
+  "id": "upstream",
+  "name": "Upstream",
+ 
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "upstream.to/([A-z0-9]+)",
+        "url": "https://upstream.to/\\1"
+      }
+    ]
+  }
+
+}
