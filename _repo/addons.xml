@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.1.5" provider-name="aTiLa">
+    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.1" provider-name="aTiLa">
         <requires>
             <import addon="xbmc.addon" version="12.0.0"/>
         </requires>
@@ -15,6 +15,36 @@
             <description>aTiLa Pri Repository</description>
             <platform>all</platform>
     </extension>
+</addon>
+
+<addon id="plugin.video.1x2"
+  version="1.0.25"
+  name="1x2"
+  provider-name="Team NS">
+  <requires>
+    <import addon="xbmc.python" version="2.25.0"/>
+    <import addon="script.module.requests" version="2.19.1"/>
+    <import addon="script.module.routing" />
+    <import addon="inputstream.adaptive" />
+    <import addon="plugin.video.youtube" />
+    <import addon="script.video.F4mProxy" version="2.8.8"/>
+    <import addon="plugin.video.f4mTester" version="2.7.2"/>
+    <import addon="script.module.TvTap" />
+    <import addon="program.plexus" />
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="addon.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="es">Los videos son proporcionados por personas ... en línea ... en algún lugar...</summary>
+    <description lang="es">Los videos son proporcionados por personas ... en línea ... en algún lugar...</description>
+    <disclaimer lang="es">El autor no almacena ni distribuye ninguno de los contenidos que se muestran en este addon. El autor no tiene ninguna afiliación con el proveedor de contenidos.</disclaimer>
+    <assets>
+      <icon>icon.gif</icon>
+      <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
 </addon>
 
 <addon id="plugin.video.balandro" name="Balandro" version="1.3.13" provider-name="Balandro">
@@ -157,6 +187,33 @@
   </extension>
   <extension point="xbmc.service" library="service.py" start="login|startup">
   </extension>
+</addon>
+
+  <addon id="repository.arvvoid" name="Kodi ArvVoid Repository" version="1.0.0" provider-name="arvvoid">
+    <extension point="xbmc.addon.repository" name="Kodi ArvVoid Repository">
+    <info compressed="false">https://raw.github.com/arvvoid/repository.arvvoid/master/addons.xml</info>
+    <checksum>https://raw.github.com/arvvoid/repository.arvvoid/master/addons.xml.md5</checksum>
+    <datadir zip="true">https://raw.github.com/arvvoid/repository.arvvoid/master/</datadir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+    <summary lang="en">Kodi ArvVoid Repository</summary>
+        <description lang="en">A repository for my Kodi add-ons and add-on test releases.</description>
+        <disclaimer lang="en">THERE IS NO WARRANTY FOR THE ADD-ONS, THEY CAN BREAK AND STOP WORKING AT ANY TIME.</disclaimer>
+        <platform>all</platform>
+    </extension>
+  </addon>
+
+<addon id="repository.jsergio" name="jsergio repo" version="1.0.4" provider-name="jsergio">
+	<extension point="xbmc.addon.repository" name="jsergio repo">
+        <info compressed="false">https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml</info>
+        <checksum>https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml.md5</checksum>
+        <datadir zip="true">https://raw.githubusercontent.com/jsergio123/zips/master/</datadir>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Repo for jsergio Add-ons</summary>
+		<description>Repo for jsergio Add-ons</description>
+		<platform>all</platform>
+	</extension>
 </addon>
 
 <addon id="repository.Palantir" name="[COLOR gold]Palantir[/COLOR] Repo" version="1.0.1" provider-name="TierraMedia">
