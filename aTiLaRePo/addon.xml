@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.1.1" provider-name="aTiLa">
+    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.1.2" provider-name="aTiLa">
         <requires>
             <import addon="xbmc.addon" version="12.0.0"/>
         </requires>
