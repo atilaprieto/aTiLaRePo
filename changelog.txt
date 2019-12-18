@@ -1,0 +1,29 @@
+aTiLaRePo 0.3.1
+
+Addons de Videos:
+"plugin.video.alfa" 		name="Alfa" 		version="2.9.3"
+"plugin.video.atresplayer"	name="ATRESPLAYER" 	version="1.0.9"
+"plugin.video.balandro" 	name="Balandro" 	version="1.3.13"
+"plugin.video.cristalazul" 	name="CRISTAL AZUL" 	version="0.0.6"
+"plugin.video.mitele" 		name="MITELE" 		version="1.0.7"
+"plugin.video.palantir" 	name="Palantir" 	version="0.0.68"
+"plugin.video.rtve" 		name="RTVE" 		version="1.1.0"
+"plugin.video.tvalacarta"  	name="tvalacarta"  	version="4.1.2"
+"plugin.video.tvchopo"		name="TVCHOPO		version="14"
+"plugin.googledrive" 		name="Google Drive" 	version="1.2.12"
+
+Addons de Repositorios:
+"repository.alfa-addon"		name="Alfa-Addon Repo"		version="1.0.5"
+"repository.arvvoid" 		name="Kodi ArvVoid Repository" 	version="1.0.0"
+"repository.balandro" 		name="Balandro Repo" 		version="1.0.3"
+"repository.hirayasoftware" 	name="Hiraya Software" 		version="1.0.0"
+"repository.jsergio" 		name="jsergio repo" 		version="1.0.4"
+"repository.Maniac" 		name="Maniac repository" 	version="1.0.0"
+"repository.Palantir"		name="Palantir Repo" 		version="1.0.1"
+"repository.tvchopo" 		name="tvchopo Repo" 		version="2.0.0"
+
+Addons de programas:
+"script.limpiarkodi"		name="Limpia Tu Kodi"	       version="2.0.2"
+
+
+
