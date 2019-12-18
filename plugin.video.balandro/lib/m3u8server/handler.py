@@ -18,7 +18,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         try:
             # ~ logger.info(self.path)
             url = base64.b64decode(self.path[1:])
-            logger.info(url)
+            # ~ logger.info(url)
             
             req = urllib2.Request(url, None, default_headers)
             handle = urllib2.urlopen(req)

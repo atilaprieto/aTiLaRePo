@@ -244,6 +244,16 @@ def findvideos(item):
         except:
             pass
 
+    # Enlaces oficiales (beta)
+    if '<div class="optScan">' in data:
+        for numlang in IDIOMAS:
+            url_lang = host + 'AUTOR/' + tid + '/' + numlang
+            if url_lang in data:
+                itemlist.append(Item( channel = item.channel, action = 'play', server = 'directo',
+                                      title = '', url = url_lang,
+                                      language = IDIOMAS.get(numlang, 'VO'), other = 'beta'
+                               ))
+
     # Enlaces de usuarios
     if '<div class="linksUsers">' in data:
         enlaces = scrapertools.find_multiple_matches(data.split('<div class="linksUsers">')[1], '<li(.*?)</li>')
@@ -251,6 +261,7 @@ def findvideos(item):
             url = scrapertools.find_single_match(enlace, ' href="([^"]+)"')
             numlang = scrapertools.find_single_match(enlace, '/img/(\d+)\.png')
             servidor = scrapertools.find_single_match(enlace, '\?domain=([^.]+)')
+            if not servidor and 'powvideo.net' in enlace: servidor = 'powvideo'
             qlty = scrapertools.find_single_match(enlace, '<b>(.*?)</b>')
             user = scrapertools.find_single_match(enlace, 'user/([^"]+)')
             if servidor == 'waaw': servidor = 'netutv'
@@ -263,12 +274,22 @@ def findvideos(item):
 
     return itemlist
 
-
 def play(item):
     logger.info()
     itemlist = []
 
-    if item.url.startswith(host):
+    if item.url.startswith(host) and '/AUTOR/' in item.url:
+        headers = {'Accept': '*/*', 'sec-fetch-mode': 'cors', 'sec-fetch-site': 'same-origin' }
+        data = do_downloadpage(item.url.replace('/AUTOR/', '/AUTOV/'), headers=headers).replace('\\/', '/')
+        # ~ logger.debug(data)
+
+        matches = scrapertools.find_multiple_matches(data, '"file":"([^"]+)","type":"([^"]+)","label":"([^"]+)"')
+        if matches:
+            for url, typ, lbl in sorted(matches, key=lambda x: int(x[2]) if x[2].isdigit() else 0):
+                itemlist.append(['%s [%s]' % (lbl, typ), url])
+
+
+    elif item.url.startswith(host):
         headers = { 'Referer': item.referer }
         resp = httptools.downloadpage(item.url, headers=headers, follow_redirects=False)
 

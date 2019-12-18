@@ -114,7 +114,7 @@ def _buscar_proxies(canal, url):
         if tipo_proxy != '': url_provider += '&anon=' + tipo_proxy
         if pais_proxy != '': url_provider += '&country=' + pais_proxy
 
-        resp = httptools.downloadpage(url_provider)
+        resp = httptools.downloadpage(url_provider, raise_weberror=False)
         proxies = resp.data.split()
 
     # API: https://proxyscrape.com/api-documentation
@@ -126,7 +126,7 @@ def _buscar_proxies(canal, url):
         if tipo_proxy != '': url_provider += '&anonymity=' + tipo_proxy
         if pais_proxy != '': url_provider += '&country=' + pais_proxy
 
-        resp = httptools.downloadpage(url_provider)
+        resp = httptools.downloadpage(url_provider, raise_weberror=False)
         proxies = resp.data.split()
 
     elif provider == 'spys.one': 
@@ -138,7 +138,7 @@ def _buscar_proxies(canal, url):
         else: url_post += '&xf1=0'
         url_post += '&xf2=0&xf4=0&xf5=0'
         
-        resp = httptools.downloadpage(url_provider, post=url_post)
+        resp = httptools.downloadpage(url_provider, post=url_post, raise_weberror=False)
 
         valores = {}
         numeros = scrapertools.find_multiple_matches(resp.data, '([a-z0-9]{6})=(\d{1})\^')
@@ -159,7 +159,7 @@ def _buscar_proxies(canal, url):
         if pais_proxy != '': url_provider += '/country/' + pais_proxy
         url_provider += '/protocol/' + ('https' if url.startswith('https') else 'http')
 
-        resp = httptools.downloadpage(url_provider)
+        resp = httptools.downloadpage(url_provider, raise_weberror=False)
         
         chash = scrapertools.find_single_match(resp.data, "var chash\s*=\s*'([^']+)")
         def decode_puerto(t, e):
@@ -178,9 +178,13 @@ def _buscar_proxies(canal, url):
     # fichero personal de proxies en userdata (separados por comas o saltos de línea)
     elif provider == 'lista_proxies.txt':
         proxies_file = os.path.join(config.get_data_path(), 'lista_proxies.txt')
-        data = filetools.read(proxies_file)
-        data = re.sub(r'(?m)^#.*\n?', '', data) # Quitar líneas que empiezen por #
-        proxies = data.replace(' ', '').replace(';', ',').replace(',', '\n').split()
+        if os.path.exists(proxies_file):
+            data = filetools.read(proxies_file)
+            data = re.sub(r'(?m)^#.*\n?', '', data) # Quitar líneas que empiezen por #
+            proxies = data.replace(' ', '').replace(';', ',').replace(',', '\n').split()
+        else:
+            platformtools.dialog_notification('Buscar proxies', 'No existe el fichero lista_proxies.txt')
+            return False
 
     else:
         proxies = []

@@ -20,9 +20,9 @@ def get_video_url(page_url, url_referer=''):
 
     if not file_name:
         url = scrapertools.find_single_match(data, 'swarmId: "([^"]+)"')
-        if not url: url = scrapertools.find_single_match(data, "vsource = '([^']+)")
-        if not url: url = scrapertools.find_single_match(data, 'src: "([^"]+)')
-        if url:
+        if not url or 'http' not in url: url = scrapertools.find_single_match(data, "vsource = '([^']+)")
+        if not url or 'http' not in url: url = scrapertools.find_single_match(data, 'src: "([^"]+)')
+        if url and 'http' in url:
             if url.endswith('.m3u8'): return 'El fichero no se puede reproducir' # Invalid framerate !?
             video_urls.append(['mp4', url])
             return video_urls

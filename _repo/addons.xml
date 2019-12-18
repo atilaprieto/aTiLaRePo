@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.3.1" provider-name="aTiLa">
+    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.3.5" provider-name="aTiLa">
         <requires>
             <import addon="xbmc.addon" version="12.0.0"/>
         </requires>
@@ -112,6 +112,36 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
+<addon id="plugin.video.1x2"
+  version="1.0.26"
+  name="1x2"
+  provider-name="Team NS">
+  <requires>
+    <import addon="xbmc.python" version="2.25.0"/>
+    <import addon="script.module.requests" version="2.19.1"/>
+    <import addon="script.module.routing"/>
+    <import addon="inputstream.adaptive" optional="true"/>
+    <import addon="plugin.video.youtube"/>
+    <import addon="script.video.F4mProxy" version="2.8.8"/>
+    <import addon="plugin.video.f4mTester" version="2.7.2"/>
+    <import addon="script.module.TvTap"/>
+    <import addon="program.plexus"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="addon.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="es">Los videos son proporcionados por personas ... en línea ... en algún lugar...</summary>
+    <description lang="es">Los videos son proporcionados por personas ... en línea ... en algún lugar...</description>
+    <disclaimer lang="es">El autor no almacena ni distribuye ninguno de los contenidos que se muestran en este addon. El autor no tiene ninguna afiliación con el proveedor de contenidos.</disclaimer>
+    <assets>
+      <icon>icon.gif</icon>
+      <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>
+
 <addon id="plugin.video.alfa" name="Alfa" version="2.9.3" provider-name="Alfa Addon">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
@@ -182,7 +212,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.3.13" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.3.14" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -199,9 +229,9 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Pelisplay, InkaSeries, Cinecalidad, Playview, Grantorrent, Cuevana3.
-    Servidores modificados: Powvideo, Streamplay, JetLoad, Gounlimited, Videomega, Upstream.
-    Corregido pequeño bug en enlaces guardados con ciertos servidores (ej: gamovideo).
+    Canales modificados: Pepecine, Clasicofilm, Retroseriestv, Cliver, Cinecalidad.
+    Servidores modificados: Mixdrop, Vidcloud, Thevid, Netutv, Jetload, Openplay.
+    En Descargas añadida opción para guardar una copia del vídeo a otra carpeta, usb.
     </news>
 
     <assets>

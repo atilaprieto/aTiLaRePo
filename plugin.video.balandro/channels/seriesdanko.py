@@ -266,6 +266,7 @@ def findvideos(item):
     for lang, date, server, url, tipo, quality in matches:
         if tipo == 'Descargar': # descartar descargas directas ?
             continue
+        if server == 'netu': server = 'netutv'
 
         itemlist.append(Item( channel = item.channel, action = 'play', server=server,
                               title = '', url = urlparse.urljoin(HOST, url),

@@ -201,6 +201,7 @@ def findvideos(item):
         if servidor == 'Servidor': continue
         server = scrapertools.find_single_match(servidor, 'domain=([a-z]+)')
         if server == 'flix': server = 'flix555'
+        if server == 'waaw': server = 'netutv'
         url = scrapertools.find_single_match(enlace, " href='([^']+)'")
         if not url.startswith('http'): url = host + url[1:]
 

@@ -51,7 +51,8 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title = 'Las más valoradas', action = 'list_all', url = host + ruta_pelis, orden = 'user_score:desc', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Las más recientes', action = 'list_all', url = host + ruta_pelis, orden = 'created_at:desc', search_type = 'movie' ))
 
-    itemlist.append(item.clone( title = 'Películas por género', action = 'generos', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Por calificación de edad', action = 'edades', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Listas de películas', action = 'listas', search_type = 'movie' ))
 
@@ -70,7 +71,8 @@ def mainlist_series(item):
     itemlist.append(item.clone( title = 'Las más valoradas', action = 'list_all', url = host + ruta_series, orden = 'user_score:desc', search_type = 'tvshow' ))
     itemlist.append(item.clone( title = 'Las más recientes', action = 'list_all', url = host + ruta_series, orden = 'created_at:desc', search_type = 'tvshow' ))
 
-    itemlist.append(item.clone( title = 'Series por género', action = 'generos', search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Por calificación de edad', action = 'edades', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Listas de series', action = 'listas', search_type = 'tvshow' ))
 
@@ -78,7 +80,6 @@ def mainlist_series(item):
 
     # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
-
 
 
 def generos(item):
@@ -92,6 +93,21 @@ def generos(item):
 
     for genero in generos:
         itemlist.append(item.clone( action = 'list_all', title = genero, url = url, genero = genero ))
+
+    return itemlist
+
+def edades(item):
+    logger.info()
+    itemlist=[]
+
+    if item.search_type not in ['movie', 'tvshow']: item.search_type = 'movie'
+    url = host + (ruta_pelis if item.search_type == 'movie' else ruta_series)
+
+    itemlist.append(item.clone( title = 'G (General Audiences)', action = 'list_all', url = url, calificacion = 'g', plot='Admitido para todas las edades.' ))
+    itemlist.append(item.clone( title = 'PG (Parental Guidance Suggested)', action = 'list_all', url = url, calificacion = 'pg', plot='Algunos contenidos pueden no ser apropiados para niños.' ))
+    itemlist.append(item.clone( title = 'PG-13 (Parents Strongly Cautioned)', action = 'list_all', url = url, calificacion = 'pg-13', plot='Algunos materiales pueden ser inapropiados para niños de menos de 13 años.' ))
+    itemlist.append(item.clone( title = 'R (Restricted)', action = 'list_all', url = url, calificacion = 'r', plot='Personas de menos de 17 años requieren acompañamiento de un adulto.' ))
+    itemlist.append(item.clone( title = 'NC-17 (Adults Only)', action = 'list_all', url = url, calificacion = 'nc-17', plot='Solamente adultos. No admitido para menores de 18 años.' ))
 
     return itemlist
 
@@ -167,6 +183,7 @@ def list_all(item):
 
     url = host + '/secure/titles?type=%s&order=%s&onlyStreamable=true&page=%s' % (tipo, item.orden, item.page)
     if item.genero: url += '&genre=' + item.genero
+    if item.calificacion: url += '&certification=' + item.calificacion
 
     data = do_downloadpage(url)
     dict_data = jsontools.load(data)

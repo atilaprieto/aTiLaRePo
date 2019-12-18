@@ -275,10 +275,12 @@ def findvideos(item):
             item.id_pelicula = scrapertools.find_single_match(data, 'Idpelicula\s*=\s*"([^"]+)')
 
         data = do_downloadpage(host + 'frm/obtener-enlaces-pelicula.php', post=urllib.urlencode({'pelicula': item.id_pelicula}))
+        # ~ logger.debug(data)
         enlaces = jsontools.load(data)
         for lang in enlaces:
             for it in enlaces[lang]:
-                servidor = 'directo' if it['reproductor_nombre'] == 'SuperVideo' else it['reproductor_nombre'].lower()
+                # ~ servidor = 'directo' if it['reproductor_nombre'] == 'SuperVideo' else it['reproductor_nombre'].lower()
+                servidor = 'directo' if it['reproductor_nombre'] in ['SuperVideo', 'FastPlayer'] else it['reproductor_nombre'].lower()
                 itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
                                       title = '', url = 'https://directv.clivertv.com/getFile.php?hash='+it['token'],
                                       language = IDIOMAS.get(lang, lang), other = it['reproductor_nombre'] if servidor == 'directo' else ''
@@ -317,6 +319,28 @@ def play(item):
             url = '%s/hls/%s/%s.m3u8' % (dom, vid, vid)
         except:
             url = scrapertools.find_single_match(data, '"url":"([^"]+)').replace(' ', '%20')
+        
+        if 'id=' in url:
+            vid = scrapertools.find_single_match(url, 'id=([^&]+)')
+            if vid:
+                dom = '/'.join(url.split('/')[:3]) # SuperVideo: https://www.zembed.to FastPlayer: https://www.xtream.to
+                url = dom + '/hls/' + vid + '/' + vid + '.playlist.m3u8'
+                
+                data = httptools.downloadpage(url).data
+                # ~ logger.debug(data)
+                matches = scrapertools.find_multiple_matches(data, 'RESOLUTION=\d+x(\d+)\s*(.*?\.m3u8)')
+                if matches:
+                    if 'xtream.to/' in url:
+                        for res, url in sorted(matches, key=lambda x: int(x[0]), reverse=True):
+                            itemlist.append(item.clone(url = dom + url, server = 'm3u8hls'))
+                            break
+                    else:
+                        for res, url in sorted(matches, key=lambda x: int(x[0])):
+                            itemlist.append([res+'p', dom + url])
+                    return itemlist
+
+            else:
+                url = None
         
     else:
         url = item.url

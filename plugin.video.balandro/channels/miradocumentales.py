@@ -72,12 +72,10 @@ def findvideos(item):
     # ~ logger.debug(data)
 
     url = scrapertools.find_single_match(data, '<p><iframe src="([^"]+)')
-    if not url:
-        url = scrapertools.find_single_match(data, '<div class="single_player">\s*<iframe.*? src="([^"]+)')
-    if not url:
-        url = scrapertools.find_single_match(data, '<div class="single_player">\s*<a href="([^"]+)')
-    if not url:
-        url = scrapertools.find_single_match(data, '<p>\[\w+\]([^\[]+)') #Ex: <p>[vimeo]https://vimeo.com/...[/vimeo]</p>
+    if not url: url = scrapertools.find_single_match(data, '<p><iframe.*? src="([^"]+)')
+    if not url: url = scrapertools.find_single_match(data, '<div class="single_player">\s*<iframe.*? src="([^"]+)')
+    if not url: url = scrapertools.find_single_match(data, '<div class="single_player">\s*<a href="([^"]+)')
+    if not url: url = scrapertools.find_single_match(data, '<p>\[\w+\]([^\[]+)') #Ex: <p>[vimeo]https://vimeo.com/...[/vimeo]</p>
     if url:
         url = url.replace('&#038;', '&').replace('&amp;', '&')
         servidor = servertools.get_server_from_url(url)

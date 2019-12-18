@@ -165,6 +165,7 @@ def findvideos(item):
 
         server = scrapertools.find_single_match(url, '/servers/([^.]+)')
         # ~ logger.debug('%s %s %s' % (url, language, server))
+        if server == 'waaw': server = 'netutv'
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = server,
                               title = '', url = url,

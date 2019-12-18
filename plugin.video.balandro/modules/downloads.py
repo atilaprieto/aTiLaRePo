@@ -71,7 +71,7 @@ def acciones_enlace(item):
     item.__dict__['action'] = item.__dict__.pop('from_action')
 
     if item.downloadStatus == STATUS_CODES.completed:
-        acciones = ['Reproducir vídeo', 'Eliminar descarga']
+        acciones = ['Reproducir vídeo', 'Eliminar descarga', 'Guardar una copia']
 
     elif item.downloadStatus == STATUS_CODES.canceled:
         acciones = ['Continuar descarga', 'Eliminar descarga']
@@ -114,6 +114,18 @@ def acciones_enlace(item):
         playlist.clear()
         playlist.add(mediaurl, xlistitem)
         xbmc.Player().play(playlist, xlistitem)
+        return True
+
+    elif acciones[ret] == 'Guardar una copia':
+        import xbmcgui
+        destino_path = xbmcgui.Dialog().browseSingle(3, 'Seleccionar carpeta dónde copiar', 'files', '', False, False, '')
+        if not destino_path: return False
+        origen = filetools.join(download_path, item.downloadFilename)
+        destino = filetools.join(destino_path, item.downloadFilename)
+        if not filetools.copy(origen, destino, silent=False):
+            platformtools.dialog_ok(config.__addon_name, 'Error, no se ha podido copiar el fichero!', origen, destino)
+            return False
+        platformtools.dialog_notification('Fichero copiado', destino_path)
         return True
 
 

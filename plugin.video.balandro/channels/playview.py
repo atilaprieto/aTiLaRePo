@@ -244,6 +244,12 @@ def play(item):
     if not url: url = scrapertools.find_single_match(data, '<iframe src="([^"]+)')
     if not url: url = scrapertools.find_single_match(data, 'data-url="([^"]+)')
 
+    if url.startswith(host):
+        url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
+        if url and 'http' not in url:
+            if item.server == 'jetload': url = 'https://jetload.net/e/' + url
+            else: url = None
+
     if url:
         itemlist.append(item.clone(url = url))
 

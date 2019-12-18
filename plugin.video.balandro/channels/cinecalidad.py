@@ -7,7 +7,7 @@ from core.item import Item
 from core import httptools, scrapertools, tmdb
 
 
-DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.to/']
+DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.to/', 'https://www1.cinecalidad.top/']
 
 def host_by_lang(lang=''):
     if lang == '': # si no se especifica idioma, obtenerlo de las preferencias de idioma del usuario
@@ -62,8 +62,8 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title='Castellano', action='mainlist_pelis_lang', idioma='Esp' ))
     itemlist.append(item.clone( title='Latino', action='mainlist_pelis_lang', idioma='Lat' ))
 
-    # ~ itemlist.append(item_configurar_dominio(item))
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_dominio(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -166,7 +166,6 @@ def dec(item, dec_value):
         real = ''.join(map(chr, link))
     return (real)
 
-
 def findvideos(item):
     logger.info()
     itemlist = []
@@ -191,6 +190,7 @@ def findvideos(item):
                   'Vidoza': 'https://vidoza.net/embed-%s.html',
                   'Clipwatching': 'https://clipwatching.com/embed-%s.html',
                   'Mega': 'https://mega.nz/embed#!%s',
+                  'Openplay': 'https://player.openplay.vip/player.php?id=%s',
                   'Jetload': 'https://jetload.net/e/%s'}
 
     # ~ patron = ' target="_blank" class="link onlinelink" service="Online([^"]+)" data="([^"]+)'

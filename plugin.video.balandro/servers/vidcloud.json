@@ -2,7 +2,8 @@
   "id": "vidcloud",
   "name": "Vidcloud",
 
-  "active": true,
+  "active": false,
+  "notes": "Requiere recaptcha",
 
   "find_videos": {
     "ignore_urls": [],

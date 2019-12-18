@@ -1,6 +1,11 @@
 Balandro changelog
 ==================
 
+1.3.14:
+    Canales modificados: Pepecine, Clasicofilm, Retroseriestv, Cliver, Cinecalidad.
+    Servidores modificados: Mixdrop, Vidcloud, Thevid, Netutv, Jetload, Openplay.
+    En Descargas añadida opción para guardar una copia del vídeo a otra carpeta, usb.
+
 1.3.13:
     Canales modificados: Pelisplay, InkaSeries, Cinecalidad, Playview, Grantorrent, Cuevana3.
     Servidores modificados: Powvideo, Streamplay, JetLoad, Gounlimited, Videomega, Upstream.

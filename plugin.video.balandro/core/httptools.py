@@ -396,6 +396,8 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
                 auth_url = auth_url.split('?jschl_answer=')[0]
             else:
                 post_cf = None
+            if not request_headers: request_headers = {'Referer': url }
+            else: request_headers['Referer'] = url
 
             resp_auth = downloadpage(auth_url, post=post_cf, headers=request_headers, replace_headers=True, count_retries=count_retries, 
                                      use_proxy=use_proxy, raise_weberror=False)
@@ -410,7 +412,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
                 resp = downloadpage(url=response["url"], post=post, headers=headers, timeout=timeout,
                                     follow_redirects=follow_redirects,
                                     cookies=cookies, replace_headers=replace_headers, add_referer=add_referer, 
-                                    use_proxy=use_proxy, use_cache=use_cache, cache_duration=cache_duration)
+                                    use_proxy=use_proxy, use_cache=use_cache, cache_duration=cache_duration, count_retries=9)
                 response["sucess"] = resp.sucess
                 response["code"] = resp.code
                 response["error"] = resp.error

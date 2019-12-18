@@ -56,25 +56,28 @@ class TrackingData:
         self.conn = sqlite3.connect(self.filename)
         self.cur = self.conn.cursor()
 
-        # PRAGMA user_version para identificar versión de las tablas y crear/alterar en consecuencia
-        self.cur.execute('PRAGMA user_version')
-        db_user_version = self.cur.fetchone()[0]
-        
-        if db_user_version == 0:
-            self.create_tables()
-            self.cur.execute('PRAGMA user_version=1')
-            db_user_version = 1
-            logger.info('Base de datos %s actualizada a versión %d' % (self.filename, db_user_version))
+        try:
+            # PRAGMA user_version para identificar versión de las tablas y crear/alterar en consecuencia
+            self.cur.execute('PRAGMA user_version')
+            db_user_version = self.cur.fetchone()[0]
+            
+            if db_user_version == 0:
+                self.create_tables()
+                self.cur.execute('PRAGMA user_version=1')
+                db_user_version = 1
+                logger.info('Base de datos %s actualizada a versión %d' % (self.filename, db_user_version))
 
-        if db_user_version == 1:
-            self.cur.execute('ALTER TABLE seasons ADD reverseorder INTEGER')
-            self.cur.execute('PRAGMA user_version=2')
-            db_user_version = 2
-            logger.info('Base de datos %s actualizada a versión %d' % (self.filename, db_user_version))
+            if db_user_version == 1:
+                self.cur.execute('ALTER TABLE seasons ADD reverseorder INTEGER')
+                self.cur.execute('PRAGMA user_version=2')
+                db_user_version = 2
+                logger.info('Base de datos %s actualizada a versión %d' % (self.filename, db_user_version))
 
-        if db_user_version == 2:
-            logger.debug('Base de datos %s ok con última versión (%d)' % (self.filename, db_user_version))
-
+            if db_user_version == 2:
+                logger.debug('Base de datos %s ok con última versión (%d)' % (self.filename, db_user_version))
+        except:
+            logger.debug('Fallo en PRAGMA... %s' % self.filename)
+            pass
 
     def create_tables(self):
         # - En las tablas movies, shows, seasons, episodes se guardan los infolabels.
@@ -493,7 +496,6 @@ def scrap_and_save_movie(item, op='add'):
     return True, 'Seguimiento película con tmdb_id: %s' % tmdb_id
 
 
-
 def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
     # Al añadir una serie se guardan los infolabels de serie + temporadas + episodios, y los enlaces al canal desde dónde se añade.
     # El item recibido tiene que tener tmdb_id informado y ser 'tvshow', 'season' o 'episode'.
@@ -560,7 +562,10 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
         itemlist = [item]
 
     elif item.contentType == 'tvshow':
-        canal = __import__('channels.' + item.channel, fromlist=[''])
+        try:
+            canal = __import__('channels.' + item.channel, fromlist=[''])
+        except:
+            return False, 'El canal %s ya no existe' % item.channel
 
         # Si el canal tiene tracking_all_episodes usarlo para ir más rápido. 
         # Excepción con newpct1, usar sólo tracking_all al añadir para que recorra todos los episodios, pero para actualizar mirar solamente en la primera página de episodios.
@@ -570,7 +575,10 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
         if buscar_tracking_all and hasattr(canal, 'tracking_all_episodes'):
             itemlist = getattr(canal, 'tracking_all_episodes')(item)
         else:
-            itemlist = getattr(canal, item.action)(item)
+            if hasattr(canal, item.action):
+                itemlist = getattr(canal, item.action)(item)
+            else:
+                return False, 'En el canal %s ya no existe %s' % (item.channel, item.action)
 
     if itemlist is None or len(itemlist) == 0:
         db.close()
@@ -585,7 +593,11 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
 
     # Si el canal devuelve una lista de temporadas
     if itemlist[0].contentType == 'season':
-        canal = __import__('channels.' + item.channel, fromlist=[''])
+        try:
+            canal = __import__('channels.' + item.channel, fromlist=[''])
+        except:
+            return False, 'El canal %s ya no existe' % item.channel
+
         for it in itemlist:
             # ~ logger.debug(it)
             if it.contentType != 'season': continue
@@ -601,7 +613,10 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
                 cambios.append('T%d' % it.contentSeason)
 
             # Llamar al canal para obtener episodios de la temporada
-            itemlist_epi = getattr(canal, it.action)(it)
+            if hasattr(canal, it.action):
+                itemlist_epi = getattr(canal, it.action)(it)
+            else:
+                itemlist_epi = []
 
             for it_epi in itemlist_epi:
                 if it_epi.contentType != 'episode': continue
