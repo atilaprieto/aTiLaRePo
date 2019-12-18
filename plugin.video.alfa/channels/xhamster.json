@@ -1,0 +1,14 @@
+{
+  "id": "xhamster",
+  "name": "xhamster",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "banner": "xhamster.png",
+  "thumbnail": "xhamster.png",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+  ]
+}

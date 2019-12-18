@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.tvchopo"
+       name="[B][LOWERCASE][CAPITALIZE][COLOR white]T[COLOR aquamarine]V[COLOR yellow]C[COLOR orange]H[COLOR red]O[COLOR pink]P[COLOR fuchsia]O[/CAPITALIZE][/LOWERCASE][/B][/COLOR]"
+       version="14"
+       provider-name="equipo-chopo">
+ <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.beautifulsoup" version="3.2.1"/>
+    <import addon="script.module.simple.downloader" version="0.9.4"/>
+    <import addon="script.module.beautifulsoup4" />
+    <import addon="script.module.requests" />
+    <import addon="script.module.httplib2" />
+    <import addon="script.module.liveresolver" version="0.1.24" optional="true"/>
+    <import addon="script.module.youtube.dl" optional="true"/>
+    <import addon="plugin.video.youtube" />
+    <import addon="script.module.urlresolver" />
+	<import addon="script.module.resolveurl" optional="true"/>
+	<import addon="script.module.simplejson" />
+    <import addon="script.module.livestreamer" optional="true"/>
+    <import addon="script.module.pyamf" optional="true"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  
+ <extension point="xbmc.addon.repository" name="tvchoco Jose">
+        <info>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml</info>
+        <checksum>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml.md5</checksum>
+        <datadir zip="true">https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/</datadir>
+    </extension>
+	
+  
+
+
+  <extension point="xbmc.addon.metadata">
+    <summary>tvchopo addon familiar</summary>
+    <description>
+        addon tvchopo no contiene ningun material propio..
+		todo el contenido es enlazado a las webs mas conocidas
+		de internet.....
+		
+	tvchopo ni se vender ni se cobra ni acepta donaciones... si ha sido es el caso  ha sido usted estafado,...para mas informacion entra en nuestro grupo de telegram https://t.me/tvchopo
+        
+    </description>
+    <platform>all</platform>
+	<assets>
+        <icon>icon.gif</icon>
+  <screenshot>resources/screenshots/screenshot1.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot2.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot3.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot4.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot5.jpg</screenshot>
+        <fanart>fanart.png</fanart>
+    </assets>
+  </extension>
+</addon>

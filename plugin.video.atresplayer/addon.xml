@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.0.9" provider-name="Alex303 - Hiraya Software">
+	<requires>
+		<import addon="xbmc.python" version="2.19.0" />
+		<import addon="script.module.requests" version="2.9.1" />
+		<import addon="plugin.video.f4mTester" />
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.repository" name="Hiraya Software Repo">
+		<info>http://hirayasoftware.com/repo/addons.xml</info>
+		<checksum>http://hirayasoftware.com/repo/addons.xml.md5</checksum>
+		<datadir zip="true">http://hirayasoftware.com/repo/</datadir>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en">ATRESPLAYER</summary>
+		<description lang="en">ATRESPLAYER Addon</description>
+		<disclaimer lang="en">Addon con la programación de ATRESPLAYER a la carta.</disclaimer>
+		<summary lang="es">ATRESPLAYER</summary>
+		<description lang="es">ATRESPLAYER Addon</description>
+		<disclaimer lang="es">Addon con la programación de ATRESPLAYER a la carta.</disclaimer>
+		<platform>all</platform>
+        <website></website>
+        <video_guide></video_guide>
+	</extension>
+</addon>

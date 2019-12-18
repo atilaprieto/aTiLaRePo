@@ -1,0 +1,15 @@
+{
+  "id": "letsjerk",
+  "name": "letsjerk",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "http://www.letsjerk.is/wp-content/themes/letsjerk/img/logo_small.png",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+  ]
+}
+

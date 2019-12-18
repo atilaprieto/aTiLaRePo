@@ -1,0 +1,34 @@
+{
+  "id": "eroticage",
+  "name": "eroticage",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "http://eroticage.net/wp-content/themes/oz-movie-v3/img/logo.png",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+    {
+      "id": "include_in_global_search",
+      "type": "bool",
+      "label": "Incluir en busqueda global",
+      "default": false,
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "id": "filter_languages",
+      "type": "list",
+      "label": "Mostrar enlaces en idioma...",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "No filtrar"
+      ]
+    }
+  ]
+}
+

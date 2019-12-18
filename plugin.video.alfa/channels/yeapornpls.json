@@ -1,0 +1,15 @@
+{
+  "id": "yeapornpls",
+  "name": "yeapornpls",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "https://yeapornpls.com/images/logo/logo.png",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+  ]
+}
+

@@ -1,0 +1,25 @@
+{
+  "id": "coomelonitas",
+  "name": "Coomelonitas",
+  "active": false,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "http://www.coomelonitas.com/wp-content/themes/3xTheme/images/logo.png",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+    {
+      "id": "filter_languages",
+      "type": "list",
+      "label": "Mostrar enlaces en idioma...",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "No filtrar"
+      ]
+    }
+  ]
+}

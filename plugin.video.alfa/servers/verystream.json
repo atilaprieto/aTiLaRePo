@@ -1,0 +1,50 @@
+{
+  "active": false,
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "(https://verystream.com/e/[A-z0-9_-]+)",
+        "url": "\\1"
+      },
+      {
+        "pattern": "https://verystream.com/stream/([A-z0-9_-]+)",
+        "url": "https://verystream.com/e/\\1"
+      },
+      {
+        "pattern": "https://woof.tube/e/([A-z0-9_-]+)",
+        "url": "https://verystream.com/e/\\1"
+      }
+    ]
+  },
+  "free": true,
+  "id": "verystream",
+  "name": "verystream",
+  "settings": [
+    {
+      "default": false,
+      "enabled": true,
+      "id": "black_list",
+      "label": "@60654",
+      "type": "bool",
+      "visible": true
+    },
+    {
+      "default": 0,
+      "enabled": true,
+      "id": "favorites_servers_list",
+      "label": "@60655",
+      "lvalues": [
+        "No",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "type": "list",
+      "visible": false
+    }
+  ],
+  "thumbnail": "https://verystream.com/images/logo.png"
+}

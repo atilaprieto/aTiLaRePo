@@ -1,0 +1,46 @@
+{
+  "active": true,
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "clipwatching.com/(e.*?.html)",
+        "url": "http://clipwatching.com/\\1"
+      },
+      {
+        "pattern": "clipwatching.com/(\\w+)",
+        "url": "http://clipwatching.com/embed-\\1.html"
+      }
+    ]
+  },
+  "free": true,
+  "id": "clipwatching",
+  "name": "clipwatching",
+  "settings": [
+    {
+      "default": false,
+      "enabled": true,
+      "id": "black_list",
+      "label": "@60654",
+      "type": "bool",
+      "visible": true
+    },
+    {
+      "default": 0,
+      "enabled": true,
+      "id": "favorites_servers_list",
+      "label": "@60655",
+      "lvalues": [
+        "No",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "type": "list",
+      "visible": false
+    }
+  ],
+  "thumbnail": "https://s17.postimg.cc/e6kcan0vj/clipwatching1.png"
+}
