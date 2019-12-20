@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.program.wizardtila"
+	   name="WIZARDTILA"
+	   version="1.0"
+	   provider-name="aTiLa">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>executable</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>WizarDTiLa</summary>
+    <description>Instalador de WinzarDTiLa para Kodi 18</description>
+    <platform>all</platform>
+  </extension>
+</addon>

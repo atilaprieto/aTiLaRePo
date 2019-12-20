@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.3.5" provider-name="aTiLa">
+    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.3.6" provider-name="aTiLa">
         <requires>
             <import addon="xbmc.addon" version="12.0.0"/>
         </requires>
@@ -110,6 +110,23 @@ The complete source code of the Sign-in Server can be download here: https://git
 You can clone the project and host it in your own server.
 		</disclaimer>
 	</extension>
+</addon>
+
+<addon id="plugin.program.wizardtila"
+	   name="WIZARDTILA"
+	   version="1.0"
+	   provider-name="aTiLa">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>executable</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>WizarDTiLa</summary>
+    <description>Instalador de WinzarDTiLa para Kodi 18</description>
+    <platform>all</platform>
+  </extension>
 </addon>
 
 <addon id="plugin.video.1x2"
