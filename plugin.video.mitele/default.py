@@ -74,6 +74,9 @@ def get_json(html_in):
     b = a[1].split(' </script>')
     return b[0]
 
+def encodeit(string_in):
+    return string_in.replace('/', '%252F').replace('-', '%252D')
+
 mode = args.get('mode', None)
 
 if mode is None:
@@ -146,7 +149,8 @@ elif mode[0] == 'indice':
         'accept-language': 'es-ES,es;q=0.9'
     }
 
-    request = urllib2.Request('https://mab.mediaset.es/1.0.0/get?oid=mtmw&eid=%2FautomaticIndex%2Fmtweb%3Furl%3Dwww%252Emitele%252Ees%252F' + args['href'][0].replace('/','') + '%252F%26page%3D1%26id%3D57eab8ad5559880214f7e004%26size%3D24', headers=hs)
+    request = urllib2.Request('https://mab.mediaset.es/1.0.0/get?oid=bitban&eid=%2FautomaticIndex%2Fmtweb%3Furl%3Dwww%252Emitele%252Ees%252F' + args['href'][0].replace('/','') + '%252F%26page%3D1%26id%3Da-z%26size%3D50', headers=hs)
+    
     indice = json.loads(urllib2.urlopen(request).read())
 
     shows = []
@@ -163,7 +167,7 @@ elif mode[0] == 'indice':
 
     if total_pages > 1:
         for x in range(2, total_pages + 1):
-            request = urllib2.Request('https://mab.mediaset.es/1.0.0/get?oid=mtmw&eid=%2FautomaticIndex%2Fmtweb%3Furl%3Dwww%252Emitele%252Ees%252F' + args['href'][0].replace('/','') + '%252F%26page%3D' + str(x) + '%26id%3D57eab8ad5559880214f7e004%26size%3D24', headers=hs)
+            request = urllib2.Request('https://mab.mediaset.es/1.0.0/get?oid=bitban&eid=%2FautomaticIndex%2Fmtweb%3Furl%3Dwww%252Emitele%252Ees%252F' + args['href'][0].replace('/','') + '%252F%26page%3D' + str(x) + '%26id%3Da-z%26size%3D50', headers=hs)
             indice = json.loads(urllib2.urlopen(request).read())
             for item in indice['editorialObjects']:
                 shows.append({
@@ -174,6 +178,7 @@ elif mode[0] == 'indice':
                 })
 
     shows = sorted(shows, key = lambda i: i['title'],reverse=False)
+
     for item in shows:
         if args['direct'][0] == '0':
             url = build_url({'mode': 'show', 'title': utf8me(item['title']), 'href': item['href']})
@@ -188,7 +193,7 @@ elif mode[0] == 'indice':
 
 elif mode[0] == 'show':
 
-    episodes_list = []
+    tabs = []
 
     hs = {
         'authority': 'www.mitele.es',
@@ -206,38 +211,129 @@ elif mode[0] == 'show':
     request = urllib2.Request('https://www.mitele.es' + args['href'][0], headers=hs)
     html_show = urllib2.urlopen(request).read()
 
-    tabs = []
+    a = html_show.split('window.$REACTBASE_STATE.container_mtweb = ')
 
-    i = html_show.split('<button class="switchTabs__desktopTabs-')
-    for x in range(1, len(i)):
-        j = i[x].split('<!-- -->')
-        tab_name = j[1]
+    b = a[1].split('</script>')
 
-        k = i[x].split('id="')
-        l = k[1].split('"')
-        tab_id = l[0]
+    json_data = json.loads(b[0].strip())
 
-        if tab_name != 'Detalles':
-            tabs.append({'id': tab_id, 'name': tab_name})
+    for x in range(0, len(json_data['container']['tabs'])):
+
+        tabs.append({
+            'id': json_data['container']['tabs'][x]['id'], 
+            'name': json_data['container']['tabs'][x]['title'], 
+            'link': json_data['container']['tabs'][x]['link']['href']
+        })
+
+    episodes_list = []
+
+    hs2 = {
+        'authority': 'mab.mediaset.es',
+        'pragma': 'no-cache',
+        'cache-control': 'no-cache',
+        'upgrade-insecure-requests': '1',
+        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-user': '?1',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'sec-fetch-site': 'none',
+        'accept-language': 'es-ES,es;q=0.9'
+    }
 
     for x in range(0, len(tabs)):
-        request = urllib2.Request('https://mab.mediaset.es/1.0.0/get?oid=mtmw&eid=%2Ftabs%2Fmtweb%3Furl%3Dwww%252Emitele%252Ees' + urllib.quote(args['href'][0]) + '%26id%3D' + tabs[x]['id'], headers=hs)
-        json_data = urllib2.urlopen(request).read()
-        json_show = json.loads(json_data)
 
-        for s in range(0, len(json_show['contents'])):
+        if tabs[x]['name'] != 'Detalles':
 
-            if 'children' in json_show['contents'][s]:
+            request = urllib2.Request('https://mab.mediaset.es/1.0.0/get?oid=bitban&eid=%2Ftabs%2Fmtweb%3Furl%3Dwww%252Emitele%252Ees' + encodeit(tabs[x]['link']) + '%26tabId%3D' + tabs[x]['id'], headers=hs2)
+            json_data = urllib2.urlopen(request).read()
+            json_show = json.loads(json_data)
 
-                for c in range(0, len(json_show['contents'][s]['children'])):
-                    if 'title' in json_show['contents'][s]['children'][c]:
-                        title = json_show['contents'][s]['children'][c]['title']
-                        subtitle = json_show['contents'][s]['children'][c]['subtitle']
-                        image = json_show['contents'][s]['children'][c]['images']['thumbnail']['src']
-                        href = json_show['contents'][s]['children'][c]['link']['href']
-                        duration = json_show['contents'][s]['children'][c]['info']['duration']
-                        season_n = json_show['contents'][s]['children'][c]['info']['season_number']
-                        episode_n = json_show['contents'][s]['children'][c]['info']['episode_number']
+            if json_show['type'] == 'navigation':
+
+                for y in range(0, len(json_show['contents'])):
+
+                    request2 = urllib2.Request('https://mab.mediaset.es/1.0.0/get?oid=bitban&eid=%2Ftabs%2Fmtweb%3Furl%3Dwww%252Emitele%252Ees' + encodeit(json_show['contents'][y]['link']['href']) + '%26tabId%3D' + tabs[x]['id'], headers=hs2)
+                    json_data2 = urllib2.urlopen(request2).read()
+                    json_show2 = json.loads(json_data2)
+
+                    for s in range(0, len(json_show2['contents'])):
+
+                        if 'children' in json_show2['contents'][s]:
+
+                            paginas = json_show2['contents'][s]['pagination']['totalPages']
+
+                            for t in range(1, int(paginas)+1):
+                                if t == 1:
+
+                                    for c in range(0, len(json_show2['contents'][s]['children'])):
+                                        if 'title' in json_show2['contents'][s]['children'][c]:
+                                            title = json_show2['contents'][s]['children'][c]['title']
+                                            if 'subtitle' in json_show2['contents'][s]['children'][c]:
+                                                subtitle = json_show2['contents'][s]['children'][c]['subtitle']
+                                            else:
+                                                subtitle = ''
+                                            image = json_show2['contents'][s]['children'][c]['images']['thumbnail']['src']
+                                            href = json_show2['contents'][s]['children'][c]['link']['href']
+                                            duration = json_show2['contents'][s]['children'][c]['info']['duration']
+                                            season_n = json_show2['contents'][s]['children'][c]['info']['season_number']
+                                            episode_n = json_show2['contents'][s]['children'][c]['info']['episode_number']
+
+                                            episodes_list.append({
+                                                'tab': tabs[x]['name'],
+                                                'title' : title,
+                                                'subtitle' : subtitle,
+                                                'image' : image,
+                                                'href' : href,
+                                                'duration' : duration,
+                                                'season_n' : season_n,
+                                                'episode_n' : episode_n
+                                            })
+
+                                else:
+                                    request2 = urllib2.Request('https://mab.mediaset.es/1.0.0/get?oid=bitban&eid=%2Ftabs%2Fmtweb%3Furl%3Dwww%252Emitele%252Ees' + encodeit(json_show['contents'][y]['link']['href']) + '%26tabId%3D' + tabs[x]['id'] + '%26size%3D50%26page%3D' + str(t), headers=hs2)
+                                    json_data2 = urllib2.urlopen(request2).read()
+                                    json_show2 = json.loads(json_data2)
+
+                                    for s in range(0, len(json_show2['contents'])):
+
+                                        if 'children' in json_show2['contents'][s]:
+                                            for c in range(0, len(json_show2['contents'][s]['children'])):
+                                                if 'title' in json_show2['contents'][s]['children'][c]:
+                                                    title = json_show2['contents'][s]['children'][c]['title']
+                                                    if 'subtitle' in json_show2['contents'][s]['children'][c]:
+                                                        subtitle = json_show2['contents'][s]['children'][c]['subtitle']
+                                                    else:
+                                                        subtitle = ''
+                                                    image = json_show2['contents'][s]['children'][c]['images']['thumbnail']['src']
+                                                    href = json_show2['contents'][s]['children'][c]['link']['href']
+                                                    duration = json_show2['contents'][s]['children'][c]['info']['duration']
+                                                    season_n = json_show2['contents'][s]['children'][c]['info']['season_number']
+                                                    episode_n = json_show2['contents'][s]['children'][c]['info']['episode_number']
+
+                                                    episodes_list.append({
+                                                        'tab': tabs[x]['name'],
+                                                        'title' : title,
+                                                        'subtitle' : subtitle,
+                                                        'image' : image,
+                                                        'href' : href,
+                                                        'duration' : duration,
+                                                        'season_n' : season_n,
+                                                        'episode_n' : episode_n
+                                                    })
+
+
+
+            else:
+
+                for c in range(0, len(json_show['contents'])):
+                    if 'title' in json_show['contents'][c]:
+                        title = json_show['contents'][c]['title']
+                        subtitle = json_show['contents'][c]['subtitle']
+                        image = json_show['contents'][c]['images']['thumbnail']['src']
+                        href = json_show['contents'][c]['link']['href']
+                        duration = json_show['contents'][c]['info']['duration']
+                        season_n = json_show['contents'][c]['info']['season_number']
+                        episode_n = json_show['contents'][c]['info']['episode_number']
 
                         episodes_list.append({
                             'tab': tabs[x]['name'],
@@ -249,27 +345,6 @@ elif mode[0] == 'show':
                             'season_n' : season_n,
                             'episode_n' : episode_n
                         })
-
-
-            else:
-                title = json_show['contents'][s]['title']
-                subtitle = json_show['contents'][s]['subtitle']
-                image = json_show['contents'][s]['image']['src']
-                href = json_show['contents'][s]['image']['href']
-                duration = json_show['contents'][s]['info']['duration']
-                season_n = json_show['contents'][s]['info']['season_number']
-                episode_n = json_show['contents'][s]['info']['episode_number']
-
-                episodes_list.append({
-                    'tab': tabs[x]['name'],
-                    'title' : title,
-                    'subtitle' : subtitle,
-                    'image' : image,
-                    'href' : href,
-                    'duration' : duration,
-                    'season_n' : season_n,
-                    'episode_n' : episode_n
-                })
 
     for item in episodes_list:
 

@@ -16,13 +16,14 @@ def get_video_url(page_url, url_referer=''):
     for pack in packed:
         try:
             data = jsunpack.unpack(pack)
+            # ~ logger.debug(data)
         except:
             data = ''
-        # ~ logger.debug(data)
-        if 'MDCore.vsrc=' in data or 'MDCore.vsr=' in data: break
+        if 'MDCore.vsrc=' in data or 'MDCore.vsr=' in data or 'MDCore.vsrc1=' in data: break
 
     url = scrapertools.find_single_match(data, 'MDCore\.vsrc="([^"]+)')
     if not url: url = scrapertools.find_single_match(data, 'MDCore\.vsr="([^"]+)')
+    if not url: url = scrapertools.find_single_match(data, 'MDCore\.vsrc1="([^"]+)')
     if url:
         if url.startswith('//'): url = 'https:' + url
         video_urls.append(["mp4", url])

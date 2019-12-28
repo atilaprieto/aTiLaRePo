@@ -200,9 +200,9 @@ def episodios(item):
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
-    if txt == 'Hd 1080p': txt = 'Hd1080'
-    if txt == 'Hd 720p': txt = 'Hd720'
-    orden = ['Screener', 'Sd', 'Hd', 'Rip', 'Dvd rip', 'Hd720', 'Hd1080']
+    if txt in ['Hd 1080p', 'Hd1080']: txt = '1080p'
+    if txt in ['Hd 720p', 'Hd720']: txt = '720p'
+    orden = ['Screener', 'Ts-hd', 'Sd', '480p', 'Hd', 'Rip', 'Dvd rip', '720p', '1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

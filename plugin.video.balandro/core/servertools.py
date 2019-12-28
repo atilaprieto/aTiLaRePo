@@ -387,6 +387,11 @@ def filter_and_sort_by_server(itemlist):
     return filter(lambda it: not it.server or is_server_enabled(get_server_id(it.server)), itemlist)
 
 
+def get_lang(lang):
+    if not lang: return '?'
+    if lang in ['Esp','Lat']: return lang
+    return 'VO'
+
 def filter_and_sort_by_language(itemlist):
     # prefs = {'Esp': pref_esp, 'Lat': pref_lat, 'VO': pref_vos} dónde pref_xxx "0:Descartar|1:Primero|2:Segundo|3:Tercero"
 
@@ -394,7 +399,8 @@ def filter_and_sort_by_language(itemlist):
     # -------------------------------------------------------------------------
     prefs = config.get_lang_preferences()
     logger.info('Preferencias de idioma para servidores: %s' % str(prefs))
+    prefs['?'] = 4 # Cuando no hay idioma mostrar al final
 
-    itemlist = filter(lambda it: prefs[it.language if it.language in ['Esp','Lat'] else 'VO'] != 0, itemlist)
+    itemlist = filter(lambda it: prefs[get_lang(it.language)] != 0, itemlist)
 
-    return sorted(itemlist, key=lambda it: prefs[it.language if it.language in ['Esp','Lat'] else 'VO'])
+    return sorted(itemlist, key=lambda it: prefs[get_lang(it.language)])

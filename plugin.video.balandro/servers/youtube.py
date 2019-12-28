@@ -19,10 +19,6 @@ def get_video_url(page_url, url_referer=''):
 
     video_id = scrapertools.find_single_match(page_url, '(?:v=|embed/)([A-z0-9_-]{11})')
     video_urls = extract_videos(video_id)
-    video_urls.reverse()
-
-    # ~ for video_url in video_urls:
-        # ~ logger.info(str(video_url))
 
     return video_urls
 
@@ -33,12 +29,10 @@ def remove_additional_ending_delimiter(data):
         data = data[:pos + 1]
     return data
 
-
 def normalize_url(url):
     if url[0:2] == "//":
         url = "http:" + url
     return url
-
 
 def extract_flashvars(data):
     assets = 0
@@ -70,8 +64,8 @@ def extract_flashvars(data):
     return flashvars
 
 
-def extract_videos(video_id):
-    fmt_value = {
+def label_from_itag(itag):
+    fmt_value = { # Youtube itags
         5: "240p h263 flv",
         6: "240p h263 flv",
         18: "360p h264 mp4",
@@ -97,6 +91,30 @@ def extract_videos(video_id):
         101: "480p vp8 3D",
         102: "720p vp8 3D"
     }
+    if not itag or itag not in fmt_value: return None
+    return fmt_value[itag]
+
+
+def extract_from_player_response(params):
+    video_urls = []
+    try:
+        pr = json.load(params['player_response'])
+        if not 'streamingData' in pr: raise()
+        if not 'formats' in pr['streamingData']: raise()
+        # ~ logger.debug(pr['streamingData']['formats'])
+        for vid in sorted(pr['streamingData']['formats'], key=lambda x: (x['height'], x['mimeType'])):
+            if not 'url' in vid: continue
+            lbl = ''
+            if 'itag' in vid: lbl = label_from_itag(vid['itag'])
+            if not lbl and 'qualityLabel' in vid: lbl = vid['qualityLabel']
+            if not lbl: lbl = '?'
+            video_urls.append([lbl, vid['url']])
+    except:
+        pass
+    return video_urls
+
+
+def extract_videos(video_id):
 
     url = 'https://www.youtube.com/get_video_info?video_id=%s&eurl=https://youtube.googleapis.com/v/%s&ssl_stream=1' % (video_id, video_id)
     data = httptools.downloadpage(url).data
@@ -105,33 +123,44 @@ def extract_videos(video_id):
     video_urls = []
     params = dict(urlparse.parse_qsl(data))
     # ~ logger.debug(params)
+
     if params.get('hlsvp'):
-        video_urls.append(["(LIVE .m3u8) [youtube]", params['hlsvp']])
+        video_urls.append(["LIVE .m3u8", params['hlsvp']])
         return video_urls
+
+    if params.get('player_response'):
+        video_urls = extract_from_player_response(params)
+        if len(video_urls) > 0: return video_urls
 
     import xbmc
     if xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)') and params.get('dashmpd'):
         if params.get('use_cipher_signature', '') != 'True':
-            video_urls.append(['mpd  HD [youtube]', params['dashmpd'], 0, '', True])
+            video_urls.append(['mpd HD', params['dashmpd'], 0, '', True])
 
-    js_signature = ""
+
     youtube_page_data = httptools.downloadpage("http://www.youtube.com/watch?v=%s" % video_id).data
+    # ~ logger.debug(youtube_page_data)
     params = extract_flashvars(youtube_page_data)
+
+    if params.get('player_response'):
+        video_urls = extract_from_player_response(params)
+        if len(video_urls) > 0: return video_urls
+
+
     if not params.get('url_encoded_fmt_stream_map'):
         params = dict(urlparse.parse_qsl(data))
+    # ~ logger.debug(params)
 
     if params.get('url_encoded_fmt_stream_map'):
+        js_signature = ""
         data_flashvars = params["url_encoded_fmt_stream_map"].split(",")
         for url_desc in data_flashvars:
             url_desc_map = dict(urlparse.parse_qsl(url_desc))
             # ~ logger.debug(url_desc_map)
-            if not url_desc_map.get("url") and not url_desc_map.get("stream"):
-                continue
-
+            if not url_desc_map.get("url") and not url_desc_map.get("stream"): continue
             try:
-                key = int(url_desc_map["itag"])
-                if not fmt_value.get(key):
-                    continue
+                lbl = label_from_itag(int(url_desc_map["itag"]))
+                if not lbl: continue
 
                 if url_desc_map.get("url"):
                     url = urllib.unquote(url_desc_map["url"])
@@ -173,9 +202,10 @@ def extract_videos(video_id):
                     # ~ url += "&signature=" + signature
                     url += "&sig=" + urllib.quote(signature, safe='')
                 url = url.replace(",", "%2C")
-                video_urls.append(["(" + fmt_value[key] + ")", url])
+                video_urls.append([lbl, url])
             except:
                 import traceback
                 logger.info(traceback.format_exc())
+        video_urls.reverse()
 
     return video_urls

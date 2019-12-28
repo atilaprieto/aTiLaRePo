@@ -174,8 +174,8 @@ def list_categ_search(item):
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
-    txt = txt.lower()
-    orden = ['3d', 'screener', 'br-screener', 'hdrip', 'bluray-720p', 'microhd-1080p', 'bluray-1080p', 'bdremux-1080p', '4k uhdremux', '4k hdr']
+    txt = txt.lower().replace('-', '')
+    orden = ['3d', 'screener', 'screener720p', 'brscreener', 'hdrip', 'bluray720p', 'microhd1080p', 'bluray1080p', 'bdremux1080p', '4k uhdrip', '4k uhdremux', '4k hdr']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -189,6 +189,7 @@ def findvideos(item):
     patron = '<tr class="lol">\s*<td><img src="([^"]+)"[^>]*></td>\s*<td>([^<]+)</td>\s*<td>([^<]+)</td>\s*<td><a class="link" href="([^"]+)'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for lang, quality, peso, url in matches:
+        logger.debug('%s => %s' % (quality, puntuar_calidad(quality)))
 
         itemlist.append(Item( channel = item.channel, action = 'play',
                               title = '', url = url, server = 'torrent',

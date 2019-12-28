@@ -10,6 +10,11 @@ def get_video_url(page_url, url_referer=''):
     logger.info("url=" + page_url)
     video_urls = []
 
+    if 'embed-' not in page_url: 
+        page_url = page_url.replace('upvid.host/', 'upvid.host/embed-')
+        page_url = page_url.replace('upvid.co/', 'upvid.co/embed-')
+        page_url = page_url.replace('upvid.live/', 'upvid.live/embed-')
+
     headers = {'Referer': page_url}
     for i in range(0, 3):
         resp = httptools.downloadpage(page_url, headers=headers)

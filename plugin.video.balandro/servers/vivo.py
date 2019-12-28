@@ -2,7 +2,7 @@
 
 from core import httptools, scrapertools
 from platformcode import logger
-import base64
+import base64, urllib
 
 
 def get_video_url(page_url, url_referer=''):
@@ -12,14 +12,25 @@ def get_video_url(page_url, url_referer=''):
     data = httptools.downloadpage(page_url).data
     # ~ logger.debug(data)
 
-    if not 'data-stream=' in data:
+    if not 'data-stream=' in data and not "source: '" in data:
         return 'El archivo ha sido eliminado o no existe'
 
     stream = scrapertools.find_single_match(data, 'data-stream="([^"]+)')
-    try:
-        media_url = base64.b64decode(stream)
-        video_urls.append(['mp4', media_url])
-    except:
-        pass
+    if stream:
+        try:
+            url = base64.b64decode(stream)
+            if url: video_urls.append(['mp4', url])
+        except:
+            pass
+
+    if len(video_urls) == 0:
+        stream = scrapertools.find_single_match(data, "source: '([^']+)")
+        url = ''
+        for x in urllib.unquote(stream):
+            b = ord(x) + 47
+            if b > 126: url += chr(b - 94)
+            else: url += chr(b)
+        if url: video_urls.append(['mp4', url])
+
 
     return video_urls

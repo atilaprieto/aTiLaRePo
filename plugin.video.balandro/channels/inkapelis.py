@@ -154,7 +154,7 @@ def list_all(item):
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
-    orden = ['Cam', 'HDCam', 'Ts Screener hq', 'DVDScreener', 'Dvd Rip', 'HDRip', 'HD Real 720', 'HD Real 720p', 'Full HD 1080p']
+    orden = ['Cam', 'HDCam', 'Ts Screener', 'Ts Screener hq', 'DVDScreener', 'Dvd Rip', 'HDRip', 'HD Real 720', 'HD Real 720p', 'Full HD 1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -171,7 +171,6 @@ def findvideos(item):
     patron += '.*?<td>([^<]+)</td>\s*<td>([^<]+)</td>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for url, servidor, language, quality in matches:
-        # ~ logger.info('%s %s %s' % (servidor, url, quality))
 
         # ~ itemlist.append(Item( channel = item.channel, action = 'play', server = servidor.lower(),
         itemlist.append(Item( channel = item.channel, action = 'play', server = '',

@@ -241,6 +241,8 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
 
     url = urllib.quote(url, safe="%/:=&?~#+!$,;'@()*[]")
 
+    if type(post) == dict: post = urllib.urlencode(post)
+
     # Limitar tiempo de descarga si no se ha pasado timeout y hay un valor establecido en la variable global
     if timeout is None and HTTPTOOLS_DEFAULT_DOWNLOAD_TIMEOUT is not None: timeout = HTTPTOOLS_DEFAULT_DOWNLOAD_TIMEOUT
 
@@ -251,7 +253,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
     logger.info("Timeout: %s" % timeout)
     logger.info("URL: " + url)
     logger.info("Dominio: " + urlparse.urlparse(url)[1])
-    if post:
+    if post is not None:
         logger.info("Peticion: POST")
         logger.info(post)
     else:
