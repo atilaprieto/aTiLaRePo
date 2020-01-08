@@ -143,7 +143,7 @@ class Deportes:
         competiciones_soccer=[
             Competition('La Liga',['SPANISH LEAGUE', 'Spain - Primera Division','SPANISH LA LIGA','ESPANISH LA LIGA'],os.path.join(image_path, 'soccer_liga_espana.png')),
             Competition('La Liga 123',['SPANISH LEAGUE 2','Spain - Segunda Division','SPANISH LA LIGA 2'],os.path.join(image_path, 'socccer_liga_123.png')),
-            Competition('Copa del Rey','COPA DEL REY',os.path.join(image_path, 'soccer_copa_del_rey.png')),
+            Competition('Copa del Rey',['COPA DEL REY','SPANISH CUP',''],os.path.join(image_path, 'soccer_copa_del_rey.png')),
             Competition('Liga de Campeones de la UEFA',['UEFA CHAMPIONS LEAGUE','Europe - UEFA Champions League'],os.path.join(image_path, 'soccer_champions_league.png')),
             Competition('Liga Europa de la UEFA',['UEFA EUROPA LEAGUE','Europe - UEFA Europa League'],os.path.join(image_path, 'soccer_europa_league.png')),
             Competition('Copa Iberica','COPA IBERICA',os.path.join(image_path, 'copa_iberica.png')),
@@ -231,6 +231,7 @@ class Deportes:
             Competition('Liga Eliteserien','Norway - Eliteserien',os.path.join(image_path, 'soccer_noruega.png')),
             Competition('Liga Allsvenskan','Sweden - Allsvenskan',os.path.join(image_path, 'soccer_sweden_superettan.png')),
             Competition('Superliga de Serbia','Serbia - Super Liga',os.path.join(image_path, 'Soccer_uperLiga.png')),
+            Competition('Copa de Turquía','Turkey - Turkish Cup',os.path.join(image_path, 'turkey-turkish-cup.png')),
             Competition('Primera Liga de Croacia','Croatia - 1. HNL',os.path.join(image_path, 'soccer_croatia-prva-hnl.png')),
             Competition('Copa Africana de Naciones',['Africa - African Cup of Nations','Africa - U23 African Cup of Nations'],os.path.join(image_path, 'soccer_copa_africa.png')),
             Competition('Eurocopa Sub-21',['Europe - U21 European Championship','European Championship'],os.path.join(image_path, 'soccer_sub_21.png')),

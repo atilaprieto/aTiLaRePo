@@ -245,7 +245,7 @@ def set_infolabels(listitem, item, player=False):
         # ~ if item.contentExtra == 'documentary': item.infoLabels['mediatype'] = 'video'
         # Descartar infoLabels no reconocidos (https://kodi.wiki/view/InfoLabels)
         nflbls = item.infoLabels.copy()
-        descartes = ['tmdb_id', 'tvdb_id', 'imdb_id', 'type', 'filtro', 'quality',
+        descartes = ['tmdb_id', 'tvdb_id', 'imdb_id', 'type', 'filtro', 'quality', 'video', 
                      'popularity', 'homepage', 'budget', 'revenue', 'in_production', 'original_language',
                      'fanart', 'thumbnail', 'poster_path', 'release_date', 'last_air_date',
                      'number_of_episodes', 'number_of_seasons',

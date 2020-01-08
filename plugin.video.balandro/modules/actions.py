@@ -178,7 +178,7 @@ def show_help_settings(item):
     txt += ' Para modificar estas opciones necesitas saber qué servidores te funcionan mejor y peor, en caso de duda no hace falta que las modifiques.'
 
     txt += '[CR][CR]'
-    txt += '*) Una opción puede provocar una demora en los tiempos de respuesta es en "Otros/TMDB" si se activa "[COLOR gold]buscar información extendida[/COLOR]".'
+    txt += '*) Una opción que puede provocar una demora en los tiempos de respuesta es en "Otros/TMDB" si se activa "[COLOR gold]buscar información extendida[/COLOR]".'
     txt += ' Esto provoca que los listados de películas y series de todos los canales tarden más en mostrarse ya que se hace una segunda llamada a TMDB para intentar recuperar más datos.'
 
     txt += '[CR][CR]'

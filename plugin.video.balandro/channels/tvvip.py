@@ -38,8 +38,9 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Películas novedades', action = 'list_all', url = host + 'json/playlist/000-novedades/index.json', 
-                                thumbnail = host + 'json/playlist/000-novedades/background.jpg', search_type = 'movie' ))
+    # Descartado menú Novedades pq no hay películas
+    # ~ itemlist.append(item.clone( title = 'Películas novedades', action = 'list_all', url = host + 'json/playlist/000-novedades/index.json', 
+                                # ~ thumbnail = host + 'json/playlist/000-novedades/background.jpg', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Películas destacadas', action = 'list_all', url = host + 'json/playlist/lo-mas-visto/index.json', 
                                 thumbnail = host + 'json/playlist/lo-mas-visto/background.jpg', search_type = 'movie' ))

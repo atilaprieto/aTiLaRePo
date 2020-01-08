@@ -10,12 +10,12 @@ from core import httptools, scrapertools, servertools, tmdb
 perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (80) para que la subpaginación interna no se descompense
 
 CLONES = [
+    ['pctnew', 'https://pctnew.org/', 'movie, tvshow', 'pctnew.jpg'],
     ['descargas2020', 'https://descargas2020.org/', 'movie, tvshow', 'descargas2020.png'],
     # ~ ['tumejortorrent', 'http://tumejortorrent.site/', 'movie, tvshow', 'tumejortorrent.jpg'],
     # ~ ['tumejortorrent', 'https://tumejortorrent.org/', 'movie, tvshow', 'tumejortorrent.jpg'],
     # ~ ['torrentrapid', 'https://torrentrapid.org/', 'movie, tvshow', 'torrentrapid.png'],
     ['torrentlocura', 'http://torrentlocura.cc/', 'movie, tvshow', 'torrentlocura.png'],
-    ['pctnew', 'https://pctnew.org/', 'movie, tvshow', 'pctnew.jpg'],
     ['planetatorrent', 'http://planetatorrent.com/', 'movie, tvshow', 'planetatorrent.png'],
     ['mispelisyseries', 'http://mispelisyseries.com/', 'movie', 'mispelisyseries.png'],
     ['tvsinpagar', 'http://www.tvsinpagar.com/', 'movie, tvshow', 'tvsinpagar.png']

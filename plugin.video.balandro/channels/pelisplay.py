@@ -233,7 +233,7 @@ def findvideos(item):
         post = {'data': data_player, 'tipo': 'videohost', '_token': token}
         url = 'https://www.pelisplay.tv/entradas/procesar_player?' + urllib.urlencode(post)
 
-        servidor = scrapertools.find_single_match(tds[0], '>([^<]+)</div>').lower()
+        servidor = scrapertools.find_single_match(tds[0], '>([^<]+)</div>').lower().replace(' ', '')
         if servidor in ['tazmania', 'zeus', 'tiburon', 'mega', 'turbo']:
             agregado += ', ' + servidor.capitalize()
             servidor = 'm3u8hls' if servidor == 'turbo' else 'directo'

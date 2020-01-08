@@ -76,7 +76,8 @@ def acciones_enlace(item):
     elif item.downloadStatus == STATUS_CODES.canceled:
         acciones = ['Continuar descarga', 'Eliminar descarga']
 
-    elif item.downloadStatus == STATUS_CODES.error:
+    # ~ elif item.downloadStatus == STATUS_CODES.error:
+    else:
         acciones = ['Eliminar descarga']
 
     ret = platformtools.dialog_select('¿Qué hacer con esta descarga?', acciones)
@@ -88,10 +89,10 @@ def acciones_enlace(item):
             return False
 
         path_video = filetools.join(download_path, item.downloadFilename)
-        if filetools.exists(path_video):
+        if item.downloadFilename and filetools.exists(path_video):
             filetools.remove(path_video)
 
-        if filetools.exists(item.jsonfile):
+        if item.jsonfile and filetools.exists(item.jsonfile):
             filetools.remove(item.jsonfile)
         
         platformtools.itemlist_refresh()

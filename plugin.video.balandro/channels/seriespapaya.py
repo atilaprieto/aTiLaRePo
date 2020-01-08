@@ -8,7 +8,8 @@ from core import httptools, scrapertools, servertools, jsontools, tmdb
 
 
 # ~ HOST = "http://www.seriespapaya.com"
-HOST = "https://www.seriespapaya.net"
+# ~ HOST = "https://www.seriespapaya.net"
+HOST = "https://www.seriespapaya.nu"
 
 IDIOMAS = {'es': 'Esp', 'lat': 'Lat', 'in': 'Eng', 'ca': 'Cat', 'sub': 'VOSE', 
            'Español Latino':'Lat', 'Español Castellano':'Esp', 'Sub Español':'VOSE'}
@@ -24,7 +25,9 @@ def configurar_proxies(item):
     return proxytools.configurar_proxies_canal(item.channel, HOST)
 
 def do_downloadpage(url, post=None, headers=None):
-    url = url.replace('seriespapaya.com', 'seriespapaya.net').replace('http://', 'https://') # por si viene de enlaces guardados
+    url = url.replace('http://', 'https://') # por si viene de enlaces guardados
+    url = url.replace('seriespapaya.com', 'seriespapaya.net') # por si viene de enlaces guardados
+    url = url.replace('seriespapaya.net', 'seriespapaya.nu') # por si viene de enlaces guardados
     # ~ data = httptools.downloadpage(url, post=post).data
     data = httptools.downloadpage_proxy('seriespapaya', url, post=post).data
     return data

@@ -3,7 +3,7 @@
   "name": "InkaSeries",
   "thumbnail": "inkaseries.jpg",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["tvshow"],

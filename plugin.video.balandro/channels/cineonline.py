@@ -249,6 +249,7 @@ def findvideos(item):
         # ~ logger.debug(url) #https://www.cine-online.eu/encrypt?link=...
         
         servidor = servidor.lower().split('.', 1)[0]
+        servidor = servidor.replace('arreglar', '')
         if servidor == 'netu': servidor = 'netutv'
         if servidor == 'dropapk': continue
         

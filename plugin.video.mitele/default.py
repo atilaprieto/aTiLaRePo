@@ -8,6 +8,8 @@ import urlparse
 import json
 import xbmcaddon
 import os
+import unicodedata
+import re
 from lib import youtube_dl
 from types import UnicodeType
  
@@ -17,6 +19,23 @@ args = urlparse.parse_qs(sys.argv[2][1:])
 my_addon = xbmcaddon.Addon()
 PATH = my_addon.getAddonInfo('path')
 sys.path.append(xbmc.translatePath(os.path.join(PATH, 'lib')))
+
+def strip_accents(text):
+    try:
+        text = unicode(text.encode("utf-8"), 'utf-8')
+    except NameError:
+        pass
+    text = unicodedata.normalize('NFD', text)\
+           .encode('ascii', 'ignore')\
+           .decode("utf-8")
+    return str(text)
+
+def only_legal_chars(string_in):
+    string_out = strip_accents(string_in)
+    string_out = re.sub(r'[#\\/:"*?<>|]+', "", string_out)
+    string_out = "".join(i for i in string_out if ord(i)<128)
+    string_out = ' '.join(string_out.split())
+    return string_out
 
 def utf8me(string_in):
     return safe_unicode(string_in).encode('utf-8')
@@ -160,7 +179,8 @@ elif mode[0] == 'indice':
             "id" : item['id'],
             "title" : item['title'],
             "image" : item['image']['src'],
-            "href" : item['image']['href']
+            "href" : item['image']['href'],
+            "legal_title" : only_legal_chars(item['title']).lower()
         })
 
     total_pages = int(indice['pagination']['totalPages'])
@@ -174,10 +194,11 @@ elif mode[0] == 'indice':
                     "id" : item['id'],
                     "title" : item['title'],
                     "image" : item['image']['src'],
-                    "href" : item['image']['href']
+                    "href" : item['image']['href'],
+                    "legal_title" : only_legal_chars(item['title']).lower()
                 })
 
-    shows = sorted(shows, key = lambda i: i['title'],reverse=False)
+    shows = sorted(shows, key = lambda i: i['legal_title'],reverse=False)
 
     for item in shows:
         if args['direct'][0] == '0':
@@ -275,7 +296,6 @@ elif mode[0] == 'show':
                                             image = json_show2['contents'][s]['children'][c]['images']['thumbnail']['src']
                                             href = json_show2['contents'][s]['children'][c]['link']['href']
                                             duration = json_show2['contents'][s]['children'][c]['info']['duration']
-                                            season_n = json_show2['contents'][s]['children'][c]['info']['season_number']
                                             episode_n = json_show2['contents'][s]['children'][c]['info']['episode_number']
 
                                             episodes_list.append({
@@ -285,7 +305,6 @@ elif mode[0] == 'show':
                                                 'image' : image,
                                                 'href' : href,
                                                 'duration' : duration,
-                                                'season_n' : season_n,
                                                 'episode_n' : episode_n
                                             })
 
@@ -307,7 +326,6 @@ elif mode[0] == 'show':
                                                     image = json_show2['contents'][s]['children'][c]['images']['thumbnail']['src']
                                                     href = json_show2['contents'][s]['children'][c]['link']['href']
                                                     duration = json_show2['contents'][s]['children'][c]['info']['duration']
-                                                    season_n = json_show2['contents'][s]['children'][c]['info']['season_number']
                                                     episode_n = json_show2['contents'][s]['children'][c]['info']['episode_number']
 
                                                     episodes_list.append({
@@ -317,7 +335,6 @@ elif mode[0] == 'show':
                                                         'image' : image,
                                                         'href' : href,
                                                         'duration' : duration,
-                                                        'season_n' : season_n,
                                                         'episode_n' : episode_n
                                                     })
 
@@ -332,7 +349,6 @@ elif mode[0] == 'show':
                         image = json_show['contents'][c]['images']['thumbnail']['src']
                         href = json_show['contents'][c]['link']['href']
                         duration = json_show['contents'][c]['info']['duration']
-                        season_n = json_show['contents'][c]['info']['season_number']
                         episode_n = json_show['contents'][c]['info']['episode_number']
 
                         episodes_list.append({
@@ -342,7 +358,6 @@ elif mode[0] == 'show':
                             'image' : image,
                             'href' : href,
                             'duration' : duration,
-                            'season_n' : season_n,
                             'episode_n' : episode_n
                         })
 

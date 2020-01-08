@@ -75,6 +75,7 @@ def get_servers_itemlist(itemlist):
 
                 for item in itemlist:
                     if match.group() in item.url:
+                        # ~ logger.info('Found patern ' + pattern["pattern"])
                         item.server = serverid
                         if '|' in item.url:
                             item.url = url + '|' + item.url.split('|')[1]
@@ -360,7 +361,8 @@ def filter_and_sort_by_server(itemlist):
     if servers_discarded != '':
         servers_discarded_list = servers_discarded.lower().replace(' ', '').split(',')
         logger.info('Servidores descartados por el usuario: %s' % ', '.join(servers_discarded_list))
-        itemlist = filter(lambda it: not it.server or it.server.lower() not in servers_discarded_list, itemlist)
+        # ~ itemlist = filter(lambda it: not it.server or it.server.lower() not in servers_discarded_list, itemlist)
+        itemlist = filter(lambda it: (not it.server and 'indeterminado' not in servers_discarded_list) or (it.server and it.server.lower() not in servers_discarded_list), itemlist)
 
     # Ordenar enlaces de servidores preferidos del usuario
     # ----------------------------------------------------
@@ -373,6 +375,7 @@ def filter_and_sort_by_server(itemlist):
         if servers_unfavored != '': logger.info('Servidores última opción para el usuario: %s' % ', '.join(servers_unfavored_list))
 
         def numera_server(servidor):
+            if not servidor: servidor = 'indeterminado'
             if servidor in servers_preferred_list:
                 return servers_preferred_list.index(servidor)
             elif servidor in servers_unfavored_list:

@@ -7,6 +7,9 @@ from lib import jsunpack
 def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
+    
+    page_url = page_url.replace('mixdrop.to/', 'mixdrop.co/')
+    page_url = page_url.replace('mixdrop.co/f/', 'mixdrop.co/e/')
 
     headers = {'Referer': page_url.replace('mixdrop.co/e/', 'mixdrop.co/f/')}
     data = httptools.downloadpage(page_url, headers=headers).data
@@ -19,13 +22,14 @@ def get_video_url(page_url, url_referer=''):
             # ~ logger.debug(data)
         except:
             data = ''
-        if 'MDCore.vsrc=' in data or 'MDCore.vsr=' in data or 'MDCore.vsrc1=' in data: break
+        if 'MDCore.' in data: break
 
-    url = scrapertools.find_single_match(data, 'MDCore\.vsrc="([^"]+)')
-    if not url: url = scrapertools.find_single_match(data, 'MDCore\.vsr="([^"]+)')
-    if not url: url = scrapertools.find_single_match(data, 'MDCore\.vsrc1="([^"]+)')
-    if url:
-        if url.startswith('//'): url = 'https:' + url
-        video_urls.append(["mp4", url])
+    urls = scrapertools.find_multiple_matches(data, 'MDCore\.\w+="([^"]+)')
+    for url in urls:
+        if '/' not in url: continue
+        if url.endswith('.jpg'): continue
+        if url.startswith('//'):
+            video_urls.append(["mp4", 'https:' + url])
+            break
 
     return video_urls

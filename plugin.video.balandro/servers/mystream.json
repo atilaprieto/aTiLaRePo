@@ -1,0 +1,17 @@
+{
+  "id": "mystream",
+  "name": "Mystream",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "(?:embed.|)mystream.to/(?:watch/|)([A-z0-9]+)",
+        "url": "https://embed.mystream.to/\\1"
+      }
+    ]
+  }
+
+}

@@ -8,10 +8,14 @@ import urlparse
 import json
 import xbmcaddon
 import os
+import re
 import random
+import requests
+import unicodedata
 from lib import youtube_dl
 from sqlite3 import dbapi2 as database
 from types import UnicodeType
+from F4mProxy import f4mProxyHelper
  
 base_url = sys.argv[0]
 addon_handle = int(sys.argv[1])
@@ -23,6 +27,23 @@ sys.path.append(xbmc.translatePath(os.path.join(PATH, 'lib')))
 cache_location = os.path.join(xbmc.translatePath("special://database"), 'atresplayer.db')
 dbcon = database.connect(cache_location)
 dbcur = dbcon.cursor()
+
+def strip_accents(text):
+    try:
+        text = unicode(text.encode("utf-8"), 'utf-8')
+    except NameError:
+        pass
+    text = unicodedata.normalize('NFD', text)\
+           .encode('ascii', 'ignore')\
+           .decode("utf-8")
+    return str(text)
+
+def only_legal_chars(string_in):
+    string_out = strip_accents(string_in)
+    string_out = re.sub(r'[#\\/:"*?<>|]+', "", string_out)
+    string_out = "".join(i for i in string_out if ord(i)<128)
+    string_out = ' '.join(string_out.split())
+    return string_out
 
 def utf8me(string_in):
     return safe_unicode(string_in).encode('utf-8')
@@ -218,7 +239,8 @@ elif mode[0] == 'indice':
             "id" : item['formatId'],
             "title" : utf8me(item['title']),
             "image" : item['image']['pathHorizontal'],
-            "href" : utf8me(item['link']['url'])
+            "href" : utf8me(item['link']['url']),
+            "legal_title" : only_legal_chars(item['title']).lower()
         })
 
     total_pages = int(cat_json['pageInfo']['totalPages'])
@@ -232,10 +254,12 @@ elif mode[0] == 'indice':
                     "id" : item['formatId'],
                     "title" : utf8me(item['title']),
                     "image" : item['image']['pathHorizontal'],
-                    "href" : utf8me(item['link']['url'])
+                    "href" : utf8me(item['link']['url']),
+                    "legal_title" : only_legal_chars(item['title']).lower()
                 })
 
-    shows = sorted(shows, key = lambda i: i['title'],reverse=False)
+    shows = sorted(shows, key = lambda i: i['legal_title'],reverse=False)
+
     for item in shows:
         url = build_url({'mode': 'show', 'title': item['title'], 'href': item['href'], 'id': item['id']})
         li = xbmcgui.ListItem(item['title'], iconImage = item['image'])
@@ -286,7 +310,7 @@ elif mode[0] == 'show':
                     })
 
         for item in episodes:
-            url = build_url({'mode': 'episode', 'title': item['title'], 'href': item['href']})
+            url = build_url({'mode': 'episode', 'title': item['title'], 'href': item['href'], 'image': item['image']})
             li = xbmcgui.ListItem(item['title'], iconImage = item['image'])
             li.setInfo(type="Video", infoLabels={"plot": item['title']})
             li.setArt({'fanart': item['image']})
@@ -302,9 +326,31 @@ elif mode[0] == 'episode':
 
     video = get_video_url('https://www.atresplayer.com' + args['href'][0])
 
+    m3u8_data = requests.get(video).text
+
     if '.m3u8' in video:
         listitem = xbmcgui.ListItem(args['title'][0])
         listitem.setInfo('video', {'Title': args['title'][0]})
         xbmc.Player().play(video, listitem)
     else:
-        xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.f4mTester/?url=' + video + ')')
+        options = []
+        player = f4mProxyHelper()
+        
+        url_to_play, item = player.playF4mLink(video, args['title'][0], None, True, 0, False, '', 'HDS', True, None, '', '', args['image'][0])
+        item.setProperty("IsPlayable", "true")
+        b = m3u8_data.split('bitrate="')
+        titulo = item.getLabel().decode('utf8')
+
+        for i in range(1, len(b)):
+            c = b[i].split('"')
+            options.append({'q': int(c[0])})
+
+        options = sorted(options, key = lambda i: i['q'],reverse=True)
+
+        for option in options:
+            item.setLabel('[B]' + titulo + '[/B] | ' + str(option['q']) + ' kbps')
+            item.setInfo(type="Video", infoLabels={"plot": args['title'][0]})
+            item.setArt({'fanart': args['image'][0]})
+            item.setProperty("IsPlayable","true")
+            xbmcplugin.addDirectoryItem(handle=addon_handle, url=url_to_play.replace('maxbitrate=0', 'maxbitrate=' + str(option['q'])), listitem=item, isFolder=False)
+        xbmcplugin.endOfDirectory(addon_handle)

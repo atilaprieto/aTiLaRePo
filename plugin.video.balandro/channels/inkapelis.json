@@ -3,7 +3,7 @@
   "name": "InkaPelis",
   "thumbnail": "inkapelis.jpg",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["movie"],

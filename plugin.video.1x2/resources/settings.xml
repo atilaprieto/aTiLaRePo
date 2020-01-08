@@ -17,4 +17,11 @@
         <setting id="tap_sort" type="bool" label="Ordenar por paises" default="true"/>
         <setting label="TvTap settings..." type="action" id="ishelper_settings" option="close" action="Addon.OpenSettings(script.module.TvTap)"/>
     </category>
+
+    <category label="Input Stream Adaptative">
+        <setting label="Activar Inputstream adaptive" type="action"  action="RunPlugin(plugin://plugin.video.sport365.live/?mode=enable_adaptive)"
+                 enable="String.StartsWith(System.AddonVersion(xbmc.python),2.25) | String.StartsWith(System.AddonVersion(xbmc.python),2.26)" option="close"/>
+        <setting label="Activar Inputstream RTMP" type="action"  action="RunPlugin(plugin://plugin.video.sport365.live/?mode=enable_rtmp)"
+                 enable="String.StartsWith(System.AddonVersion(xbmc.python),2.25) | String.StartsWith(System.AddonVersion(xbmc.python),2.26)" option="close"/>
+    </category>
 </settings>

@@ -15,7 +15,7 @@ def get_video_url(page_url, url_referer=''):
     if url:
         import time
         from platformcode import platformtools
-        espera = 5
+        espera = 6
         platformtools.dialog_notification('Cargando MegaUp', 'Espera de %s segundos requerida' % espera)
         time.sleep(int(espera))
         

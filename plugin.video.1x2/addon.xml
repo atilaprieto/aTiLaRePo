@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.1x2"
-  version="1.0.26"
+  version="1.0.27"
   name="1x2"
   provider-name="Team NS">
   <requires>
-    <import addon="xbmc.python" version="2.25.0"/>
+    <import addon="xbmc.python" version="2.19.0"/>
     <import addon="script.module.requests" version="2.19.1"/>
     <import addon="script.module.routing"/>
     <import addon="inputstream.adaptive" optional="true"/>

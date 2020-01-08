@@ -8,7 +8,10 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
+    page_url = page_url.replace('/watch/', '/embed/')
+
     data = httptools.downloadpage(page_url).data
+    # ~ logger.debug(data)
 
     if "File was deleted" in data or "File not found" in data:
         return 'El archivo no existe o ha sido borrado'

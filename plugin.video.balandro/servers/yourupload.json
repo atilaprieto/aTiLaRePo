@@ -8,12 +8,12 @@
     "ignore_urls": [ "http://www.yourupload.com/embed/embed" ],
     "patterns": [
       {
-        "pattern": "yourupload.com/embed/([A-z0-9]+)",
-        "url": "http://www.yourupload.com/embed/\\1"
+        "pattern": "yourupload.com/(?:embed|watch)/([A-z0-9]+)",
+        "url": "https://www.yourupload.com/embed/\\1"
       },
       {
         "pattern": "embed[./]yourupload.com(?:/|.php\\?url=)([A-z0-9]+)",
-        "url": "http://www.yourupload.com/embed/\\1"
+        "url": "https://www.yourupload.com/embed/\\1"
       },
       {
         "pattern": "(yourupload.com/download\\?file=[A-z0-9]+)",

@@ -108,7 +108,7 @@ def findvideos(item):
     patron += '</a>.*?<div id="([^"]+)"[^>]*>\s*<a href=([^ ]+)'
 
     matches = scrapertools.find_multiple_matches(data, patron)
-    # ~ logger.debug(matches)
+    logger.debug(matches)
     for div1, lg, qlty, div2, url in matches:
         if div1 != div2: continue
         
@@ -117,8 +117,8 @@ def findvideos(item):
         if not url.startswith('http'): continue
         
         if '/esp.png' in lg: lang = 'Esp'
-        elif '/esp-lat.png' in lg: lang = 'Lat'
-        elif '/vose.png' in lg: lang = 'VOSE'
+        elif '/esp-lat' in lg: lang = 'Lat'
+        elif '/vose.png' in lg or '/dual-sub.png' in lg: lang = 'VOSE'
         else: lang = 'VO'
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = '',

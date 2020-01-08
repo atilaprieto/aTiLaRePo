@@ -10,6 +10,7 @@ def get_video_url(page_url, url_referer=''):
     video_urls = []
 
     data = httptools.downloadpage(page_url).data
+    # ~ logger.debug(data)
 
     if 'File does not exist on this server' in data:
         return 'El archivo no existe'
@@ -19,9 +20,10 @@ def get_video_url(page_url, url_referer=''):
     match = re.search('(.+)/v/(\w+)/file.html', page_url)
     domain = match.group(1)
 
-    patron = 'getElementById\(\'dlbutton\'\).href\s*=\s*(.*?);'
-    media_url = scrapertools.find_single_match(data, patron)
+    media_url = scrapertools.find_single_match(data, 'getElementById\(\'dlbutton\'\).href\s*=\s*(.*?);')
     numbers = scrapertools.find_single_match(media_url, '\((.*?)\)')
+    if not numbers: return video_urls
+
     url = media_url.replace(numbers, "'%s'" % eval(numbers))
     url = eval(url)
 

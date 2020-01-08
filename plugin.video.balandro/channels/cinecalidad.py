@@ -13,7 +13,7 @@ def host_by_lang(lang=''):
     if lang == '': # si no se especifica idioma, obtenerlo de las preferencias de idioma del usuario
         pref_esp = config.get_setting('preferencia_idioma_esp', default='1')
         pref_lat = config.get_setting('preferencia_idioma_lat', default='2')
-        lang = 'Esp' if pref_esp != 0 and pref_esp <= pref_lat else 'Lat'
+        lang = 'Esp' if pref_esp != 0 and (pref_lat == 0 or pref_esp <= pref_lat) else 'Lat'
         
     dominio = config.get_setting('dominio', 'cinecalidad', default=DOMINIOS[0])
     if lang == 'Lat': return dominio
@@ -175,7 +175,7 @@ def findvideos(item):
 
     dec_value = scrapertools.find_single_match(data, 'String\.fromCharCode\(parseInt\(str\[i\]\)-(\d+)\)')
 
-    # Enlaces Online
+    # Enlaces Online https://www.cinecalidad.is/wp-content/themes/gridthemeresponsive/scripts.min.js?v=4.75
     server_url = {'YourUpload': 'http://www.yourupload.com/embed/%s',
                   'Openload': 'https://openload.co/embed/%s',
                   'Streamango': 'https://streamango.com/embed/%s',

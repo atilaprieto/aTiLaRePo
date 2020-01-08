@@ -34,6 +34,9 @@ def get_video_url(page_url, url_referer=''):
         streams.append((quality, url))
 
     else:
+        vid = scrapertools.find_single_match(page_url, "(?s)http(?:s|)://(?:docs|drive).google.com/file/d/([^/]+)/(?:preview|edit|view)")
+        if vid: page_url = 'http://docs.google.com/get_video_info?docid=' + vid
+        
         response = httptools.downloadpage(page_url, cookies=False, headers={"Referer": page_url})
         if response.code == 429:
             return "Demasiadas conexiones al servidor, inténtelo después"

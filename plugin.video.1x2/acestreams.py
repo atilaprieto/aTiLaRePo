@@ -109,7 +109,7 @@ def download_arenavision(tipo='guide'):
                             'Intentelo cambiando el dominio dentro de Ajustes.')
 
     elif tipo == 'guide':
-        url_guide = re.findall('<a href="([^"]+)">.*?Guide.*?</a>', data, re.IGNORECASE)
+        url_guide = re.findall('EVENTS GUIDE</a>.*?<a href="([^"]+)"', data, re.IGNORECASE)
         if url_guide:
             data = httptools.downloadpage(url + url_guide[0]).data
         else:
@@ -125,7 +125,7 @@ def read_guide_arenavision():
     if data:
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
         patron = '<tr><td class="auto-style3">(\d+/\d+/\d+)</td><td class="auto-style3">(\d+:\d+) ([^<]+)</td><td class="auto-style3">(.*?)</td><td class="auto-style3">(.*?)</td><td class="auto-style3">(.*?)</td><td class="auto-style3">(.*?)</td></tr>'
-
+      
         for fecha, hora, huso, tipo, competicion, titulo, canales in re.findall(patron, data):
             channels = list()
             try:

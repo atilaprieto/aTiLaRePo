@@ -395,21 +395,34 @@ def listas(item):
             ['226606', 'Cine Familiar'], 
             ['226608', 'Recomendadas'], 
             ['226605', 'Recomendaciones'], 
+            ['226598', 'Mejor Puntuadas'], #new
             ['226596', 'En Cines'], 
             ['226704', 'Documentales'], 
             ['226607', 'Universo Marvel'], 
             ['226613', 'Animación'], 
             ['226612', 'Terror'], 
+            ['226817', 'Zombies'], #new
+            ['226731', 'En busca del valle encantado'], #new
+            ['227474', 'La princesa cisne'], #new
+            ['227471', 'Princesas de cuento'], #new
+            ['228253', 'Astérix y Obélix'], #new
+            ['234653', 'Cine Mudo'], #new
+            ['234652', 'Clásicos en color'], #new
         ]
     else:
         seleccion = [
+            ['226600', 'Episodios de hoy'], #new 
             ['226601', 'En emisión'], 
             ['226604', 'Nuevas Series y Temporadas'], 
+            ['232318', 'Series actualizadas'], #new
+            ['229375', 'Novelas'], #new
+            ['226610', 'Series SF'], #new
             ['226609', 'Recomendadas'], 
             ['226611', 'Renovadas'], 
             ['226607', 'Universo Marvel'], 
             ['226613', 'Animación'], 
             ['226612', 'Terror'], 
+            ['226817', 'Zombies'], #new
         ]
         
     for numero, nombre in seleccion:
