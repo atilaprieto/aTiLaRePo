@@ -9,6 +9,9 @@ def get_video_url(page_url, url_referer=''):
     logger.info("url=" + page_url)
     video_urls = []
 
+    if 'embed-' not in page_url:
+        page_url = page_url.replace('cloudvideo.tv/', 'cloudvideo.tv/embed-') + '.html'
+
     resp = httptools.downloadpage(page_url)
     if resp.code == 404:
         return 'El archivo no existe o ha sido borrado'

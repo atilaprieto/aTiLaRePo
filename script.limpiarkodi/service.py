@@ -27,8 +27,6 @@ thumbnails    =  xbmc.translatePath('special://home/userdata/Thumbnails')
 dialog = xbmcgui.Dialog()
 setting = xbmcaddon.Addon().getSetting
 iconpath = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi','icon.png'))
-# if setting('autoclean') == 'true':
-    # control.clearCache()
 filesize = int(setting('filesize_alert'))
 filesize_thumb = int(setting('filesizethumb_alert'))
 maxpackage_zips = int(setting('packagenumbers_alert'))
@@ -48,7 +46,14 @@ if count > maxpackage_zips or int(total_sizetext) > filesize:
     choice2 = xbmcgui.Dialog().yesno("[COLOR=red]Autolimpiar[/COLOR]", 'La Carpeta Packages tiene [COLOR red]' + str(total_sizetext) +' MB [/COLOR] - [COLOR red]' + str(count) + '[/COLOR] Zip ', 'La carpeta se puede limpiar sin problemas para ahorrar espacio ...', 'Desea Eliminarlos?', yeslabel='Si',nolabel='No')
     if choice2 == 1:
         control.purgePackages()
-            
+
+if setting('autoclean') == 'true':
+    control.clearCache()
+
+if setting('update') == 'true':
+    control.update()
+
+
 for dirpath2, dirnames2, filenames2 in os.walk(thumbnails):
     for f2 in filenames2:
         fp2 = os.path.join(dirpath2, f2)

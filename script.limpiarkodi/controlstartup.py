@@ -26,7 +26,8 @@ import os
 thumbnailPath = xbmc.translatePath('special://thumbnails');
 cachePath = os.path.join(xbmc.translatePath('special://home'), 'cache')
 cdmPath = os.path.join(xbmc.translatePath('special://home'), 'cdm')
-tempPath = xbmc.translatePath('special://home/temp')
+purgePath = os.path.join(xbmc.translatePath('special://home/addons'), 'packages')
+ltempPath = xbmc.translatePath('special://home/temp')
 torrentsdir = xbmc.translatePath(os.path.join('special://cache'))
 tempPath = xbmc.translatePath('special://home/addons/temp/')
 addonPath = os.path.join(os.path.join(xbmc.translatePath('special://home'), 'addons'),'script.limpiarkodi')
@@ -48,7 +49,7 @@ def setupCacheEntries():
     dialogName = [" YouTube", " UrlResolve", " Simple Cacher", " Simple Downloader", " Metadatautils", " Streamlink", " Tvalacarta", " Resolveurl", " Alfa Downloads", " Metahandler", " Youtube.dl", " Extendedinfo", " TheMovieDB", " Extendedinfo/YouTube", " Autocompletion/Google", " Autocompletion/Bing", " Universalscrapers", " Torrents Alfa", " MediaExplorer Downloads", " Balandro Downloads", " MediaExplorer Torrent"]
     pathName = ["special://profile/addon_data/plugin.video.youtube/kodion", "special://profile/addon_data/script.module.urlresolve/cache",
                     "special://profile/addon_data/script.module.simplecache", "special://profile/addon_data/script.module.simple.downloader",
-                    "special://profile/addon_data/script.module.metadatautils/animatedgifs", "special://profile/addon_data/script.module.streamlink/base","special://profile/addon_data/plugin.video.tvalacarta/downloads", "special://profile/addon_data/script.module.resolveurl/cache", "special://profile/addon_data/plugin.video.alfa/downloads", "special://profile/addon_data/script.module.metahandler/meta_cache", "special://profile/addon_data/script.module.youtube.dl/tmp", "special://profile/addon_data/script.extendedinfo/images", "special://profile/addon_data/script.extendedinfo/TheMovieDB", "special://profile/addon_data/script.extendedinfo/YouTube", "special://profile/addon_data/plugin.program.autocompletion/Google", "special://profile/addon_data/plugin.program.autocompletion/Bing", "special://profile/addon_data/script.module.universalscrapers", "special://profile/addon_data/plugin.video.alfa/videolibrary/temp_torrents_Alfa", "special://profile/addon_data/plugin.video.mediaexplorer/downloads", "special://profile/addon_data/plugin.video.balandro/downloads", "special://profile/addon_data/plugin.video.mediaexplorer/torrent/.cache"]
+                    "special://profile/addon_data/script.module.metadatautils/animatedgifs", "special://profile/addon_data/script.module.streamlink/base","special://profile/addon_data/plugin.video.tvalacarta/downloads", "special://profile/addon_data/script.module.resolveurl/cache", "special://profile/addon_data/plugin.video.alfa/downloads", "special://profile/addon_data/script.module.metahandler/meta_cache", "special://profile/addon_data/script.module.youtube.dl/tmp", "special://profile/addon_data/script.extendedinfo/images", "special://profile/addon_data/script.extendedinfo/TheMovieDB", "special://profile/addon_data/script.extendedinfo/YouTube", "special://profile/addon_data/plugin.program.autocompletion/Google", "special://profile/addon_data/plugin.program.autocompletion/Bing", "special://profile/addon_data/script.module.universalscrapers", "special://profile/addon_data/plugin.video.alfa/videolibrary/temp_torrents_Alfa", "special://profile/addon_data/plugin.video.mediaexplorer/downloads", "special://profile/addon_data/plugin.video.balandro/downloads", "special://profile/addon_data/plugin.video.mediaexplorer/torrent"]
                     
     cacheEntries = []
     
@@ -100,16 +101,55 @@ def clearCache():
                         
             else:
                 pass
+    if os.path.exists(ltempPath)==True:    
+        for root, dirs, files in os.walk(ltempPath):
+            file_count = 0
+            file_count += len(files)
+            if file_count > 0:
+
+                    for f in files:
+                        try:
+                            if (f == "*.*" or f == "*.*.*"): continue
+                            os.unlink(os.path.join(root, f))
+                        except:
+                            pass
+                    for d in dirs:
+                        try:
+                            shutil.rmtree(os.path.join(root, d))
+                        except:
+                            pass
+                        
+            else:
+                pass
     if os.path.exists(cdmPath)==True:    
         for root, dirs, files in os.walk(cdmPath):
             file_count = 0
             file_count += len(files)
             if file_count > 0:
-                dialog = xbmcgui.Dialog()
-                if dialog.yesno("Borrar Archivos en CDM", str(file_count) + " Archivos Encontrados", "Desea Eliminarlos?"):
                     for f in files:
                         try:
                             if (f == "*.dmp" or f == "*.txt"): continue
+                            os.unlink(os.path.join(root, f))
+                        except:
+                            pass
+                    for d in dirs:
+                        try:
+                            shutil.rmtree(os.path.join(root, d))
+                        except:
+                            pass
+                        
+            else:
+                pass
+    if os.path.exists(purgePath)==True:
+        for root, dirs, files in os.walk(purgePath):
+            file_count = 0
+            file_count += len(files)
+            if file_count > 0:
+
+                
+                    for f in files:
+                        try:
+                            if (f == "*.*" or f == "*.*"): continue
                             os.unlink(os.path.join(root, f))
                         except:
                             pass
@@ -175,7 +215,7 @@ def clearCache():
                     pass
 
 
-    xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'Auto Limpieza Completada' , '3000', iconpath))   
+    xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'Auto Limpieza[COLOR blue] Completada[/COLOR]' , '3000', iconpath))   
 
 def Cacherom():
 
@@ -207,7 +247,7 @@ def Cacherom():
 
                     for f in files:
                         try:
-                            if (f == "kodi.log" or f == "kodi.old.log"): continue
+                            if (f == "*.*" or f == "*.*"): continue
                             os.unlink(os.path.join(root, f))
                         except:
                             pass
@@ -274,7 +314,7 @@ def Cacherom():
                 
 
 
-    xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'Auto Limpieza Completada' , '3000', iconpath))    
+    xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'Auto Limpieza[COLOR blue] Completada[/COLOR]' , '3000', iconpath))   
 
 def deleteThumbnails():
 
@@ -318,39 +358,49 @@ def purgePackages():
     for root, dirs, files in os.walk(purgePath):
             file_count = 0
             file_count += len(files)
-    if dialog.yesno("Borrar contenido Package", "%d Packages Encontrados."%file_count, "Desea Eliminarlo?"):  
+    if dialog.yesno("Borrar contenido en Paquetes", "%d Paquetes Encontrados."%file_count, "Desea Eliminarlos?"):
         for root, dirs, files in os.walk(purgePath):
             file_count = 0
             file_count += len(files)
-            if file_count > 0:
+            if file_count > 0:            
                 for f in files:
                     os.unlink(os.path.join(root, f))
                 for d in dirs:
                     shutil.rmtree(os.path.join(root, d))
                 dialog = xbmcgui.Dialog()
-                dialog.ok("Limpia tu Kodi", "Borrar todo el contenido de Packages")
+                dialog.ok("Limpia tu Kodi", "Borrar todo el contenido de Paquetes")
             else:
                 dialog = xbmcgui.Dialog()
-                dialog.ok("Limpia tu Kodi", "Eliminados Packages")
+                dialog.ok("Limpia tu Kodi", "Eliminados Paquetes")
+
+    xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'Auto Limpieza[COLOR blue] Completada[/COLOR]' , '3000', iconpath))   
+
+def update():
+
+        xbmc.executebuiltin('UpdateAddonRepos()')
+        xbmc.executebuiltin('UpdateLocalAddons()')
+        xbmc.executebuiltin('RunAddon(plugin.video.palantir)')
+        xbmc.executebuiltin("ActivateWindow(home)")
+        xbmcgui.Dialog().notification('Limpia Tu Kodi', "Repositorios [COLOR green]Actualizados[/COLOR]")
+
+
 
 def purgeCacheRom():
 
-    tempPath = xbmc.translatePath('special://home/addons/temp/')
-    dialog = xbmcgui.Dialog()
-    for root, dirs, files in os.walk(tempPath):
-            file_count = 0
-            file_count += len(files)
-    if dialog.yesno("Borrar Temp de Kodi", "%d Archivos en Temp Encontrados."%file_count, "Desea Borrar Esto?"):  
-        for root, dirs, files in os.walk(tempPath):
-            file_count = 0
-            file_count += len(files)
-            if file_count > 0:
-                for f in files:
-                    os.unlink(os.path.join(root, f))
-                for d in dirs:
-                    shutil.rmtree(os.path.join(root, d))
-                dialog = xbmcgui.Dialog()
-                dialog.ok("Limpia tu Kodi", "Borrar todos los Archivos en Temp")
-            else:
-                dialog = xbmcgui.Dialog()
-                dialog.ok("Limpia tu Kodi", "Eliminados Archivos en Temp")
+    tempPath = xbmc.translatePath('special://home/addons/temp')
+    paths = []
+    if os.path.isdir(path_temp):
+        paths = os.listdir(path_temp)
+
+    else:
+        e = t = 0
+        for p in paths:
+            p1 = os.path.join(path_temp,p)
+            try:
+                if os.path.isfile(p1):
+                    os.unlink(p1)
+                elif os.path.isdir(p1):
+                    rmtree(p1)
+                t += 1
+            except:
+                pass

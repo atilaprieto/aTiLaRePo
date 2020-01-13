@@ -2,7 +2,7 @@
 
 import re, urllib
 
-from platformcode import config, logger
+from platformcode import config, logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, jsontools, servertools, tmdb
 
@@ -227,6 +227,7 @@ def findvideos(item):
             # ~ logger.debug(data2)
             jdata = jsontools.load(data2)
             data2 = jdata['result'].replace("\'", "'")
+            # ~ logger.debug(data2)
 
             enlaces = scrapertools.find_multiple_matches(data2, '<li class="itemServers"(.*?)</li>')
             for enlace in enlaces:
@@ -254,23 +255,23 @@ def findvideos(item):
                                       language = IDIOMAS.get(numlang, 'VO'), other = 'beta'
                                ))
 
-    # Enlaces de usuarios
-    if '<div class="linksUsers">' in data:
-        enlaces = scrapertools.find_multiple_matches(data.split('<div class="linksUsers">')[1], '<li(.*?)</li>')
-        for enlace in enlaces:
-            url = scrapertools.find_single_match(enlace, ' href="([^"]+)"')
-            numlang = scrapertools.find_single_match(enlace, '/img/(\d+)\.png')
-            servidor = scrapertools.find_single_match(enlace, '\?domain=([^.]+)')
-            if not servidor and 'powvideo.net' in enlace: servidor = 'powvideo'
-            qlty = scrapertools.find_single_match(enlace, '<b>(.*?)</b>')
-            user = scrapertools.find_single_match(enlace, 'user/([^"]+)')
-            if servidor == 'waaw': servidor = 'netutv'
+    # Enlaces de usuarios (desactivado por requerir recaptcha)
+    # ~ if '<div class="linksUsers">' in data:
+        # ~ enlaces = scrapertools.find_multiple_matches(data.split('<div class="linksUsers">')[1], '<li(.*?)</li>')
+        # ~ for enlace in enlaces:
+            # ~ url = scrapertools.find_single_match(enlace, ' href="([^"]+)"')
+            # ~ numlang = scrapertools.find_single_match(enlace, '/img/(\d+)\.png')
+            # ~ servidor = scrapertools.find_single_match(enlace, '\?domain=([^.]+)')
+            # ~ if not servidor and 'powvideo.net' in enlace: servidor = 'powvideo'
+            # ~ qlty = scrapertools.find_single_match(enlace, '<b>(.*?)</b>')
+            # ~ user = scrapertools.find_single_match(enlace, 'user/([^"]+)')
+            # ~ if servidor == 'waaw': servidor = 'netutv'
 
-            itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
-                                  title = '', url = url, referer = item.url,
-                                  language = IDIOMAS.get(numlang, 'VO'), 
-                                  quality = qlty, quality_num = puntuar_calidad(qlty), other = user
-                           ))
+            # ~ itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
+                                  # ~ title = '', url = url, referer = item.url,
+                                  # ~ language = IDIOMAS.get(numlang, 'VO'), 
+                                  # ~ quality = qlty, quality_num = puntuar_calidad(qlty), other = user
+                           # ~ ))
 
     return itemlist
 

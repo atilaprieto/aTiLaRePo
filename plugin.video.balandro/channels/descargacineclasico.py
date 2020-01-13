@@ -108,7 +108,7 @@ def findvideos(item):
     patron += '</a>.*?<div id="([^"]+)"[^>]*>\s*<a href=([^ ]+)'
 
     matches = scrapertools.find_multiple_matches(data, patron)
-    logger.debug(matches)
+    # ~ logger.debug(matches)
     for div1, lg, qlty, div2, url in matches:
         if div1 != div2: continue
         

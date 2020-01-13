@@ -84,7 +84,7 @@ def generos(item):
 
     data = do_downloadpage(host)
 
-    matches = re.compile('/(category/[^"]+)">([^<]+)</a></li>', re.DOTALL).findall(data)
+    matches = re.compile('/(category/[^ >]+)>([^<]+)</a></li>', re.DOTALL).findall(data)
     for url, title in matches:
         itemlist.append(item.clone( title=title, url=host + url, action='list_all', search_type = item.search_type ))
 
@@ -106,21 +106,21 @@ def list_all(item):
     else:
         data = do_downloadpage(item.url)
         if item.filtro: # Para series limitar según últimas, estrenos, ranking, mas vistas
-            data = scrapertools.find_single_match(data, '<div id="%s"(.*?)</nav>\s*</div>' % item.filtro)
+            data = scrapertools.find_single_match(data, '<div\s*id=%s(.*?)</nav>\s*</div>' % item.filtro)
     # ~ logger.debug(data)
 
-    matches = re.compile('<li class="[^"]*TPostMv">(.*?)</li>', re.DOTALL).findall(data)
+    matches = re.compile('<li\s*class="[^"]*TPostMv">(.*?)</li>', re.DOTALL).findall(data)
     for article in matches:
-        tipo = 'tvshow' if 'class="Qlty">SERIE' in article else 'movie'
+        tipo = 'tvshow' if 'class=Qlty>SERIE' in article else 'movie'
         if item.search_type not in ['all', tipo]: continue
         sufijo = '' if item.search_type != 'all' else tipo
         
-        url = scrapertools.find_single_match(article, ' href="([^"]+)"')
+        url = scrapertools.find_single_match(article, '\s*href=([^ >]+)')
         if '/pagina-ejemplo' in url: continue
-        thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
+        thumb = scrapertools.find_single_match(article, 'data-src=([^ >]+)')
         title = scrapertools.find_single_match(article, '<h2 class="Title">([^<]+)</h2>')
-        year = scrapertools.find_single_match(article, '<span class="Year">(\d+)</span>')
-        qlty = scrapertools.find_single_match(article, '<span class="Qlty">([^<]+)</span>')
+        year = scrapertools.find_single_match(article, '<span\s*class=Year>(\d+)</span>')
+        qlty = scrapertools.find_single_match(article, '<span\s*class=Qlty>([^<]+)</span>')
         
         if tipo == 'movie':
             itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, qualities=qlty, fmt_sufijo=sufijo, 
@@ -133,7 +133,7 @@ def list_all(item):
 
     next_page_link = scrapertools.find_single_match(data, ' rel="next" href="([^"]+)"')
     if next_page_link == '':
-        next_page_link = scrapertools.find_single_match(data, ' href="([^"]+)" class="next')
+        next_page_link = scrapertools.find_single_match(data, ' href=([^ >]+) class="next')
     if next_page_link:
         if not item.filtro:
             itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_all' ))
@@ -151,7 +151,7 @@ def temporadas(item):
 
     data = do_downloadpage(item.url)
     
-    patron = '<option value="(\d+)">Temporada \d+</option>'
+    patron = '<option\s*value=(\d+)>Temporada \d+</option>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for numtempo in matches:
         itemlist.append(item.clone( action='episodios', title='Temporada %s' % numtempo,
@@ -172,9 +172,9 @@ def episodios(item):
     data = do_downloadpage(item.url)
 
     if item.contentSeason: # reducir datos a la temporada pedida
-        data = scrapertools.find_single_match(data, '<ul id="season-%d"(.*?)</ul>' % item.contentSeason)
+        data = scrapertools.find_single_match(data, '<ul\s*id=season-%d(.*?)</ul>' % item.contentSeason)
 
-    patron = '<li.*?<a href="([^"]+)">(.*?)</li>'
+    patron = '<li.*?<a\s*href=([^ >]+)>(.*?)</li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for url, datos in matches:
@@ -184,7 +184,7 @@ def episodios(item):
             continue
 
         title = scrapertools.find_single_match(datos, '<h2[^>]*>(.*?)</h2>')
-        thumb = scrapertools.find_single_match(datos, 'src="([^"]+)"')
+        thumb = scrapertools.find_single_match(datos, 'data-src=([^ >]+)"')
 
         itemlist.append(item.clone( action='findvideos', title = title, thumbnail=thumb, url = url,
                                     contentType = 'episode', contentSeason = season, contentEpisodeNumber = episode ))
@@ -207,19 +207,19 @@ def findvideos(item):
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
     
-    patron = 'TPlayerNv="Opt(\w\d+)".*?img src="(.*?)<span>\d+ - (.*?) - ([^<]+)<'
+    patron = 'TPlayerNv=Opt(\w\d+).*?img\s*src=(.*?)<span>\d+ - (.*?) - ([^<]+)<'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for option, url_data, language, quality in matches:
         # ~ logger.debug('%s %s %s %s' % (option, url_data, language, quality))
 
-        url = scrapertools.find_single_match(data, 'id="Opt%s"><iframe.*? data-src="([^"]+)' % option)
+        url = scrapertools.find_single_match(data, 'id=Opt%s><iframe.*? data-src=([^ >]+)' % option)
         if url.startswith('/'): url = 'https:' + url
         # ~ if '/fembed/?' in url:
             # ~ url = scrapertools.find_single_match(url_data, 'domain=([^"]+)"')
 
         if url and 'youtube' not in url:
             # ~ logger.info(url)
-            itemlist.append(Item( channel = item.channel, action = 'play',
+            itemlist.append(Item( channel = item.channel, action = 'play', #other = option,
                                   title = '', url = url,
                                   language = IDIOMAS.get(language, language), quality = quality, quality_num = puntuar_calidad(quality)
                            ))

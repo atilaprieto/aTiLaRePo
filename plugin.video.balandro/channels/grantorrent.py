@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import re, urllib
+import re, urllib, base64
 
 from platformcode import config, logger
 from core.item import Item
@@ -174,8 +174,8 @@ def list_categ_search(item):
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
-    txt = txt.lower().replace('-', '')
-    orden = ['3d', 'screener', 'screener720p', 'hdscreener', 'brscreener', 'hdrip', 'bluray720p', 'microhd1080p', 'bluray1080p', 'bdremux1080p', '4k uhdrip', '4k uhdremux', '4k hdr']
+    txt = txt.lower().replace(' ', '').replace('-', '')
+    orden = ['3d', 'screener', 'screener720p', 'hdscreener', 'brscreener', 'hdrip', 'bluray720p', 'microhd', 'microhd1080p', 'bluray1080p', 'bdremux1080p', '4kuhdrip', '4kuhdremux', '4khdr']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -186,10 +186,17 @@ def findvideos(item):
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
     
-    patron = '<tr class="lol">\s*<td><img src="([^"]+)"[^>]*></td>\s*<td>([^<]+)</td>\s*<td>([^<]+)</td>\s*<td><a class="link" href="([^"]+)'
+    patron = '<tr class="lol">\s*<td><img src="([^"]+)"[^>]*></td>\s*<td>([^<]+)</td>\s*<td>([^<]+)</td>\s*<td><a class="link" onclick="([^"]+)'
     matches = re.compile(patron, re.DOTALL).findall(data)
-    for lang, quality, peso, url in matches:
-        logger.debug('%s => %s' % (quality, puntuar_calidad(quality)))
+    for lang, quality, peso, onclick in matches:
+        # ~ logger.debug('%s => %s' % (quality, puntuar_calidad(quality)))
+
+        post = scrapertools.find_single_match(onclick, "u:\s*'([^']+)")
+        if not post: continue
+        try:
+            url = base64.b64decode(post)
+        except:
+            continue
 
         itemlist.append(Item( channel = item.channel, action = 'play',
                               title = '', url = url, server = 'torrent',
@@ -197,23 +204,6 @@ def findvideos(item):
                        ))
 
     return itemlist
-
-def play(item):
-    logger.info()
-    itemlist = []
-
-    if item.server == 'torrent':
-        resp = httptools.downloadpage(item.url, raise_weberror=False)
-        if type(resp.code) == int and resp.code == 403:
-            itemlist.append(item.clone(url=item.url.replace('grantorrent.la/', 'grantorrent.one/')))
-        else:
-            itemlist.append(item.clone())
-
-    else:
-        itemlist.append(item.clone())
-
-    return itemlist
-
 
 
 def search(item, texto):

@@ -97,6 +97,12 @@ def list_all(item):
         year = scrapertools.find_single_match(article, '<span class="slqual sres">(\d+)</span>')
         quality = 'HD' if '<span class="slqual-HD">HD</span>' in article else ''
         
+        if 'data-cfemail' in title: title = scrapertools.clean_cfemail(title)
+            # ~ cfemail = scrapertools.find_single_match(title, ' data-cfemail="([^"]+)"')
+            # ~ r = int(cfemail[:2],16)
+            # ~ email = ''.join([chr(int(cfemail[i:i+2], 16) ^ r) for i in range(2, len(cfemail), 2)])
+            # ~ title = re.sub('<a href=.*?</a>', email, title)
+        
         if tipo == 'movie':
             itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
                                         qualities=quality, fmt_sufijo=sufijo,
@@ -181,7 +187,7 @@ def episodios(item):
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
-    orden = ['CAM', 'TS', 'TSHQ', 'SD', 'DVDRip', 'HDLine 720p', 'HD 720p', 'HD 1080p']
+    orden = ['CAM', 'TS', 'TSHQ', 'SD', 'DVDRip', 'HDLine', 'HDLine 720p', 'HD 720p', 'HD 1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -216,6 +222,7 @@ def findvideos(item):
             servidor = servidor.replace('https://', '').replace('http://', '').replace('www.', '').lower()
             servidor = servidor.split('.', 1)[0]
             if servidor == 'vev': servidor = 'vevio'
+            elif servidor == 'ok': servidor = 'okru'
             calidad = calidad.replace('(', '').replace(')', '').strip()
             
             itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,

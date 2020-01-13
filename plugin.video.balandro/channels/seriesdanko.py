@@ -177,7 +177,7 @@ def episodios(item):
 
     data = do_downloadpage(item.url)
 
-    matches = re.findall('<tr><td class="sape">(.*?)</tr>', data, re.DOTALL)
+    matches = re.findall('<tr>\s*<td class="sape">(.*?)</tr>', data, re.DOTALL)
     for epi_data in matches:
 
         s_e = scrapertools.find_single_match(epi_data, '(\d+)(?:x|X)(\d+)')
@@ -202,7 +202,6 @@ def episodios(item):
     tmdb.set_infoLabels(itemlist)
 
     return itemlist
-
 
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor

@@ -8,10 +8,13 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
-    resp = httptools.downloadpage(page_url, cookies=False)
-    # ~ logger.debug(data)
+    headers = {}
+    if url_referer: headers['Referer'] = url_referer
 
-    if 'Contenido rechazado' in resp.data or resp.code == 404:
+    resp = httptools.downloadpage(page_url, headers=headers, cookies=False)
+    # ~ logger.debug(resp.data)
+
+    if resp.code == 404:
         return 'El archivo no existe o ha sido borrado'
 
     cookie = {'Cookie': resp.headers["set-cookie"]}
@@ -25,14 +28,17 @@ def get_video_url(page_url, url_referer=''):
         for stream_type, stream_url in matches:
             stream_type = stream_type.replace('x-mpegURL', 'm3u8')
             if stream_type == "mp4":
-                stream_url = httptools.downloadpage(stream_url, headers=cookie, only_headers=True,
-                                                    follow_redirects=False).headers.get("location", stream_url)
+                stream_url = httptools.downloadpage(stream_url, headers=cookie, only_headers=True, follow_redirects=False).headers.get("location", stream_url)
+                if stream_url:
+                    video_urls.append(["%sp .%s" % (calidad, stream_type), stream_url, 0, subtitle])
             else:
-                data_m3u8 = httptools.downloadpage(stream_url).data
-                stream_url_http = scrapertools.find_single_match(data_m3u8, '(http:.*?\.m3u8)')
-                if stream_url_http:
-                    stream_url = stream_url_http
+                data = httptools.downloadpage(stream_url).data
+                # ~ logger.debug(data)
 
-            video_urls.append(["%sp .%s" % (calidad, stream_type), stream_url, 0, subtitle])
+                matches = scrapertools.find_multiple_matches(data, 'RESOLUTION=\d+x(\d+).*?\n(http[^\s]+)')
+                if matches:
+                    for res, url in sorted(matches, key=lambda x: int(x[0])):
+                        if res+'p' in [x[0] for x in video_urls]: continue
+                        video_urls.append([res+'p', url, 0, subtitle])
 
     return video_urls

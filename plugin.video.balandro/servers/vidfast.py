@@ -3,7 +3,7 @@
 from core import httptools, scrapertools
 from platformcode import logger
 
-
+# ~ https://vidfast.co/embed-wlyqwz28cytz.html
 def get_video_url(page_url, url_referer=''):
     logger.info("url=" + page_url)
     video_urls = []
@@ -12,11 +12,15 @@ def get_video_url(page_url, url_referer=''):
     # ~ logger.debug(data)
 
     bloque = scrapertools.find_single_match(data, 'sources:\s*\[(.*?)\]')
-    matches = scrapertools.find_multiple_matches(bloque, '\{file:"([^"]+)"([^}]*)')
-    for url, extra in matches:
-        lbl = scrapertools.find_single_match(extra, 'label:"([^"]+)')
-        if not lbl: lbl = url[-4:]
-        if lbl == '.mpd': continue
-        video_urls.append([lbl, url])
+    url = scrapertools.find_single_match(bloque, '\{file:"([^"]+)"')
+    if url:
+        data = httptools.downloadpage(url, headers={'Referer': 'https://vidfast.co/'}).data
+        # ~ logger.debug(data)
+
+        matches = scrapertools.find_multiple_matches(data, 'RESOLUTION=\d+x(\d+).*?(http.*?\.m3u8)')
+        if matches:
+            for res, url in matches:
+                if '/iframes' in url: continue
+                video_urls.append([res+'p', url+'|Referer=https://vidfast.co/'])
 
     return video_urls

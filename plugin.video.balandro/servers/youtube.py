@@ -141,6 +141,7 @@ def extract_videos(video_id):
     youtube_page_data = httptools.downloadpage("http://www.youtube.com/watch?v=%s" % video_id).data
     # ~ logger.debug(youtube_page_data)
     params = extract_flashvars(youtube_page_data)
+    # ~ logger.debug(params)
 
     if params.get('player_response'):
         video_urls = extract_from_player_response(params)

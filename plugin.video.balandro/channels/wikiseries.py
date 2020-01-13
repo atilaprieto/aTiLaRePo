@@ -39,9 +39,9 @@ def generos(item):
 
     data = httptools.downloadpage(host).data
 
-    matches = re.compile('<li>\s*<a href="(/category/[^"]+)">([^<]+)</a>', re.DOTALL).findall(data)
+    matches = re.compile('<li>\s*<a href="/(category/[^"]+)">([^<]+)</a>', re.DOTALL).findall(data)
     if not matches:
-        matches = re.compile('<li>\s*<a href=(/category/[^>]+)>([^<]+)</a>', re.DOTALL).findall(data)
+        matches = re.compile('<li>\s*<a href=/(category/[^>]+)>([^<]+)</a>', re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle in matches:
         if scrapedtitle != 'Series':
             itemlist.append(item.clone(title=scrapedtitle, url=host + scrapedurl, action='list_all'))

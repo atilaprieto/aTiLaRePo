@@ -208,15 +208,20 @@ def findvideos(item):
                            ))
 
     # Enlaces Torrent
+    idio = scrapertools.find_single_match(data, '<div class=pane_title>DESCARGAR</div><div class=pane_descripcion>([^<]+)').lower()
+    if 'audio castellano' in idio: lang = 'Esp'
+    elif 'audio latino' in idio: lang = 'Lat'
+    else: lang = 'VOSE'
     patron = ' href="([^"]+)" target=_blank class=link rel=nofollow service=BitTorrent'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for url in matches:
         itemlist.append(Item(channel = item.channel, action = 'play', server = 'torrent',
                              title = '', url = host_by_lang('Lat')+url[1:],
-                             language = 'VOSE'
+                             language = lang
                        ))
 
     return itemlist
+
 
 def play(item):
     logger.info()

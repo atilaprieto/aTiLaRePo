@@ -1,6 +1,13 @@
 Balandro changelog
 ==================
 
+1.4.1:
+    Canales nuevos: Dospelis.
+    Canales modificados: Seriesdanko, Playview, Pepecine, Seriespapaya, Grantorrent, 
+    Newpct1, Xdede, Cinecalidad.
+    Servidores modificados: Powvideo, Streamplay, Mixdrop, Vidfast, Vidoza, Dailymotion, 
+    Cloudvideo, Upstream.
+
 1.4.0:
     Canales modificados: Cinecalidad, Seriesdanko, Pelisplay, Cinetux, Cineonline, Hdfull.
     Servidores modificados: Vidoza, Mystream, Jetload, Powvideo, Streamplay, Mixdrop, 

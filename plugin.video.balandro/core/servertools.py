@@ -53,6 +53,30 @@ def find_video_items(item=None, data=None):
     return itemlist
 
 
+
+# Para un servidor y una url, devuelve la url normalizada según patrones del json
+def normalize_url(serverid, url):
+    new_url = url # si no se encuentra patrón devolver url tal cual
+
+    server_parameters = get_server_parameters(serverid)
+    # Recorre los patrones
+    for pattern in server_parameters.get("find_videos", {}).get("patterns", []):
+        # ~ logger.info(pattern["pattern"])
+
+        # Recorre los resultados
+        for match in re.compile(pattern["pattern"], re.DOTALL).finditer(url):
+            new_url = pattern["url"]
+            for x in range(len(match.groups())):
+                new_url = new_url.replace("\\%s" % (x + 1), match.groups()[x])
+            break
+        
+        if new_url != url: break
+
+    # ~ logger.info("Server: %s, Url: %s => %s" % (serverid, url, new_url))
+    return new_url
+
+
+
 def get_servers_itemlist(itemlist):
     """
     Obtiene el servidor para cada uno de los items, en funcion de su url.

@@ -34,6 +34,17 @@ def printMatches(matches):
 
 # Web elements
 
+# Si hay alguna @ en el texto, cloudflare lo considera como un email y lo protege en un link (Ej: Tod@s)
+def clean_cfemail(texto):
+    matches = find_multiple_matches(texto, ' data-cfemail="([^"]+)"')
+    for cfemail in matches:
+        r = int(cfemail[:2],16)
+        email = ''.join([chr(int(cfemail[i:i+2], 16) ^ r) for i in range(2, len(cfemail), 2)])
+        texto = re.sub('<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="%s">.*?</a>' % cfemail, email, texto)
+
+    return texto
+
+
 def entityunescape(cadena):
     return unescape(cadena)
 

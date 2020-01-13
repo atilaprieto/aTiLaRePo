@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.0" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.1" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -16,10 +16,11 @@
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Cinecalidad, Seriesdanko, Pelisplay, Cinetux, Cineonline, Hdfull.
-    Servidores modificados: Vidoza, Mystream, Jetload, Powvideo, Streamplay, Mixdrop, 
-    Yourupload, Thevideobee, Videobin, Gvideo.
-    Contemplado indeterminado en configuración filtrar/ordenar enlaces por servidores.
+    Canales nuevos: Dospelis.
+    Canales modificados: Seriesdanko, Playview, Pepecine, Seriespapaya, Grantorrent, 
+    Newpct1, Xdede, Cinecalidad.
+    Servidores modificados: Powvideo, Streamplay, Mixdrop, Vidfast, Vidoza, Dailymotion, 
+    Cloudvideo, Upstream.
     </news>
 
     <assets>

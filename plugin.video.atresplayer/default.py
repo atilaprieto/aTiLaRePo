@@ -60,135 +60,138 @@ def safe_unicode(value):
 def build_url(query):
     return base_url + '?' + urllib.urlencode(query)
 
-def get_video_url(page_url):
+def get_video_url(page_url, repeat):
 
-    repeat = 0
-    method2 = 0
-
-    page_url = page_url.replace(' ', '%20')
-
-    dbcur.execute("CREATE TABLE IF NOT EXISTS links (page_link TEXT, return_link TEXT, UNIQUE(page_link));")
-    dbcon.commit()
-
-    dbcur.execute("SELECT return_link FROM links WHERE page_link = '" + page_url + "'")
-    match = dbcur.fetchone()
-    if match != None:
-        xbmc.sleep(750)
-        return match[0]
+    if repeat == 3:
+        return ''
     else:
-        if my_addon.getSetting('username') == '' or my_addon.getSetting('password') == '':
-            method2 = 1
+
+        method2 = 0
+
+        page_url = page_url.replace(' ', '%20')
+
+        dbcur.execute("CREATE TABLE IF NOT EXISTS links (page_link TEXT, return_link TEXT, UNIQUE(page_link));")
+        dbcon.commit()
+
+        dbcur.execute("SELECT return_link FROM links WHERE page_link = '" + page_url + "'")
+        match = dbcur.fetchone()
+        if match != None:
+            xbmc.sleep(750)
+            return match[0]
         else:
-            try:
-                ydl = youtube_dl.YoutubeDL({'outtmpl': u'%(id)s%(ext)s', 'username':my_addon.getSetting('username'), 'password':my_addon.getSetting('password')})
-                result = ydl.extract_info(page_url, download=False)
-                if 'entries' in result:
-                    video = result['entries'][0]
-                else:
-                    video = result
-
-                dumped = json.dumps(video)
-
-                a = dumped.split('.m3u8')
-                b = a[len(a)-2].split('"')
-                c = a[len(a)-1].split('"')
-                final_video = b[len(b)-1] + '.m3u8'
-
-                dbcur.execute("INSERT INTO links VALUES ('" + page_url + "', '" + final_video + "');")
-                dbcon.commit()
-
-                return final_video
-
-            except Exception as e:
+            if my_addon.getSetting('username') == '' or my_addon.getSetting('password') == '':
                 method2 = 1
-
-        if method2 == 1:
-
-            hs = {
-                'Sec-Fetch-Mode': 'cors',
-                'Origin': 'https://eljaviero.com',
-                'Accept-Language': 'es-ES,es;q=0.9',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Connection': 'keep-alive',
-                'Pragma': 'no-cache',
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36',
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                'Accept': '*/*',
-                'Cache-Control': 'no-cache',
-                'Referer': 'https://eljaviero.com/descargarvideosdelatele/download/',
-                'Sec-Fetch-Site': 'same-origin'
-            }
-
-            ds = urllib.urlencode({
-                'url_noticia': page_url,
-                'submit_enviar_url': 'ok',
-                'current_url': 'https://eljaviero.com/descargarvideosdelatele/download/'
-            })
-            
-            request = urllib2.Request("https://eljaviero.com/descargarvideosdelatele/index.php", data=ds, headers=hs)
-            data = json.loads(urllib2.urlopen(request, timeout = 60).read())
-
-            if 'prueba de nuevo' in data['mensaje']:
-                repeat = 1
             else:
-                a = data['mensaje'].split('.f4m</div>')
-                b = a[0].split('>')
-
-                final_url = b[-1] + '.f4m'
-
-                if final_url == '.f4m':
-
-                    a = data['mensaje'].split('<a href="')
-                    b = a[3].split('"')
-
-                    hs = {
-                        'Sec-Fetch-Mode': 'cors',
-                        'Origin': 'https://eljaviero.com',
-                        'Accept-Language': 'es-ES,es;q=0.9',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Connection': 'keep-alive',
-                        'Pragma': 'no-cache',
-                        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36',
-                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                        'Accept': '*/*',
-                        'Cache-Control': 'no-cache',
-                        'Referer': b[0],
-                        'Sec-Fetch-Site': 'same-origin'
-                    }
-
-                    ds = urllib.urlencode({
-                        'url_noticia': page_url,
-                        'submit_enviar_url': 'ok',
-                        'current_url': b[0]
-                    })
-                    
-                    request = urllib2.Request("https://eljaviero.com/descargarvideosdelatele/index.php", data=ds, headers=hs)
-                    data = json.loads(urllib2.urlopen(request, timeout = 60).read())
-
-                    if 'prueba de nuevo' in data['mensaje']:
-                        repeat = 1
+                try:
+                    ydl = youtube_dl.YoutubeDL({'outtmpl': u'%(id)s%(ext)s', 'username':my_addon.getSetting('username'), 'password':my_addon.getSetting('password')})
+                    result = ydl.extract_info(page_url, download=False)
+                    if 'entries' in result:
+                        video = result['entries'][0]
                     else:
-                        a = data['mensaje'].split('.m3u8')
-                        b = a[0].split('>')
-                        c = a[1].split('<')
+                        video = result
 
-                        u_f = b[-1] + '.m3u8' + c[0]
-                        u_f2 = u_f.replace('/vcgdrm/', '/vcg/')
+                    dumped = json.dumps(video)
 
-                        dbcur.execute("INSERT INTO links VALUES ('" + page_url + "', '" + u_f2 + "');")
-                        dbcon.commit()
+                    a = dumped.split('.m3u8')
+                    b = a[len(a)-2].split('"')
+                    c = a[len(a)-1].split('"')
+                    final_video = b[len(b)-1] + '.m3u8'
 
-                        return u_f2
-                else:
-
-                    dbcur.execute("INSERT INTO links VALUES ('" + page_url + "', '" + final_url + "');")
+                    dbcur.execute("INSERT INTO links VALUES ('" + page_url + "', '" + final_video + "');")
                     dbcon.commit()
-                    
-                    return final_url
 
-            if repeat == 1:
-                xbmc.sleep(random.randint(100,650))
-                return get_video_url(page_url)
+                    return final_video
+
+                except Exception as e:
+                    method2 = 1
+
+            if method2 == 1:
+
+                hs = {
+                    'Sec-Fetch-Mode': 'cors',
+                    'Origin': 'https://eljaviero.com',
+                    'Accept-Language': 'es-ES,es;q=0.9',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Connection': 'keep-alive',
+                    'Pragma': 'no-cache',
+                    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36',
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'Accept': '*/*',
+                    'Cache-Control': 'no-cache',
+                    'Referer': 'https://eljaviero.com/descargarvideosdelatele/download/',
+                    'Sec-Fetch-Site': 'same-origin'
+                }
+
+                ds = urllib.urlencode({
+                    'url_noticia': page_url,
+                    'submit_enviar_url': 'ok',
+                    'current_url': 'https://eljaviero.com/descargarvideosdelatele/download/'
+                })
+                
+                request = urllib2.Request("https://eljaviero.com/descargarvideosdelatele/index.php", data=ds, headers=hs)
+                data = json.loads(urllib2.urlopen(request, timeout = 60).read())
+
+                if 'prueba de nuevo' in data['mensaje']:
+                    repeat = repeat + 1
+                else:
+                    a = data['mensaje'].split('.f4m</div>')
+                    b = a[0].split('>')
+
+                    final_url = b[-1] + '.f4m'
+
+                    if final_url == '.f4m':
+
+                        a = data['mensaje'].split('<a href="')
+                        b = a[3].split('"')
+
+                        hs = {
+                            'Sec-Fetch-Mode': 'cors',
+                            'Origin': 'https://eljaviero.com',
+                            'Accept-Language': 'es-ES,es;q=0.9',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Connection': 'keep-alive',
+                            'Pragma': 'no-cache',
+                            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36',
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'Accept': '*/*',
+                            'Cache-Control': 'no-cache',
+                            'Referer': b[0],
+                            'Sec-Fetch-Site': 'same-origin'
+                        }
+
+                        ds = urllib.urlencode({
+                            'url_noticia': page_url,
+                            'submit_enviar_url': 'ok',
+                            'current_url': b[0]
+                        })
+                        
+                        request = urllib2.Request("https://eljaviero.com/descargarvideosdelatele/index.php", data=ds, headers=hs)
+                        data = json.loads(urllib2.urlopen(request, timeout = 60).read())
+
+                        if 'prueba de nuevo' in data['mensaje']:
+                            repeat = repeat + 1
+                        else:
+                            a = data['mensaje'].split('.m3u8')
+                            b = a[0].split('>')
+                            c = a[1].split('<')
+
+                            u_f = b[-1] + '.m3u8' + c[0]
+                            u_f2 = u_f.replace('/vcgdrm/', '/vcg/')
+
+                            dbcur.execute("INSERT INTO links VALUES ('" + page_url + "', '" + u_f2 + "');")
+                            dbcon.commit()
+
+                            return u_f2
+                    else:
+
+                        dbcur.execute("INSERT INTO links VALUES ('" + page_url + "', '" + final_url + "');")
+                        dbcon.commit()
+                        
+                        return final_url
+
+                if repeat > 0:
+                    xbmc.sleep(random.randint(100,650))
+                    return get_video_url(page_url, repeat)
 
 mode = args.get('mode', None)
 
@@ -324,33 +327,39 @@ elif mode[0] == 'show':
 
 elif mode[0] == 'episode':
 
-    video = get_video_url('https://www.atresplayer.com' + args['href'][0])
+    video = get_video_url('https://www.atresplayer.com' + args['href'][0], 0)
 
-    m3u8_data = requests.get(video).text
+    if video == '':
 
-    if '.m3u8' in video:
-        listitem = xbmcgui.ListItem(args['title'][0])
-        listitem.setInfo('video', {'Title': args['title'][0]})
-        xbmc.Player().play(video, listitem)
+        xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Video no accesible', "Puede que sea muy nuevo o que aun no se haya emitido. Prueba mas adelante.", 15000, PATH + '/icon.png'))
+
     else:
-        options = []
-        player = f4mProxyHelper()
-        
-        url_to_play, item = player.playF4mLink(video, args['title'][0], None, True, 0, False, '', 'HDS', True, None, '', '', args['image'][0])
-        item.setProperty("IsPlayable", "true")
-        b = m3u8_data.split('bitrate="')
-        titulo = item.getLabel().decode('utf8')
 
-        for i in range(1, len(b)):
-            c = b[i].split('"')
-            options.append({'q': int(c[0])})
+        m3u8_data = requests.get(video).text
 
-        options = sorted(options, key = lambda i: i['q'],reverse=True)
+        if '.m3u8' in video:
+            listitem = xbmcgui.ListItem(args['title'][0])
+            listitem.setInfo('video', {'Title': args['title'][0]})
+            xbmc.Player().play(video, listitem)
+        else:
+            options = []
+            player = f4mProxyHelper()
+            
+            url_to_play, item = player.playF4mLink(video, args['title'][0], None, True, 0, False, '', 'HDS', True, None, '', '', args['image'][0])
+            item.setProperty("IsPlayable", "true")
+            b = m3u8_data.split('bitrate="')
+            titulo = item.getLabel().decode('utf8')
 
-        for option in options:
-            item.setLabel('[B]' + titulo + '[/B] | ' + str(option['q']) + ' kbps')
-            item.setInfo(type="Video", infoLabels={"plot": args['title'][0]})
-            item.setArt({'fanart': args['image'][0]})
-            item.setProperty("IsPlayable","true")
-            xbmcplugin.addDirectoryItem(handle=addon_handle, url=url_to_play.replace('maxbitrate=0', 'maxbitrate=' + str(option['q'])), listitem=item, isFolder=False)
-        xbmcplugin.endOfDirectory(addon_handle)
+            for i in range(1, len(b)):
+                c = b[i].split('"')
+                options.append({'q': int(c[0])})
+
+            options = sorted(options, key = lambda i: i['q'],reverse=True)
+
+            for option in options:
+                item.setLabel('[B]' + titulo + '[/B] | ' + str(option['q']) + ' kbps')
+                item.setInfo(type="Video", infoLabels={"plot": args['title'][0]})
+                item.setArt({'fanart': args['image'][0]})
+                item.setProperty("IsPlayable","true")
+                xbmcplugin.addDirectoryItem(handle=addon_handle, url=url_to_play.replace('maxbitrate=0', 'maxbitrate=' + str(option['q'])), listitem=item, isFolder=False)
+            xbmcplugin.endOfDirectory(addon_handle)
