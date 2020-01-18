@@ -175,7 +175,7 @@ def list_categ_search(item):
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.lower().replace(' ', '').replace('-', '')
-    orden = ['3d', 'screener', 'screener720p', 'hdscreener', 'brscreener', 'hdrip', 'bluray720p', 'microhd', 'microhd1080p', 'bluray1080p', 'bdremux1080p', '4kuhdrip', '4kuhdremux', '4khdr']
+    orden = ['3d', 'screener', 'screener720p', 'hdscreener', 'brscreener', 'hdrip', 'bluray720p', 'microhd', 'microhd1080p', 'bluray1080p', 'bdremux1080p', '4kuhdrip', '4kfulluhd', '4kuhdremux', '4kuhdremux1080p', '4khdr']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -195,6 +195,7 @@ def findvideos(item):
         if not post: continue
         try:
             url = base64.b64decode(post)
+            url = url.replace('grantorrent.la/', 'grantorrent.one/')
         except:
             continue
 

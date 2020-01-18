@@ -24,11 +24,14 @@ import os
 addon_id = 'script.limpiarkodi'
 fanart = xbmc.translatePath(os.path.join('special://home/addons/' + addon_id , 'fanart.jpg'))
 icon = xbmc.translatePath(os.path.join('special://home/addons/' + addon_id, 'icon.png'))
+icon3 = xbmc.translatePath(os.path.join('special://home/addons/' + addon_id, 'luar.png'))
+icon2 = xbmc.translatePath(os.path.join('special://home/addons/' + addon_id, 'indigo.png'))
 thumbnailPath = xbmc.translatePath('special://thumbnails');
 cachePath = os.path.join(xbmc.translatePath('special://home'), 'cache')
 cdmPath = os.path.join(xbmc.translatePath('special://home'), 'cdm')
 purgePath = os.path.join(xbmc.translatePath('special://home/addons'), 'packages')
 tempPath = xbmc.translatePath('special://home/addons/temp/')
+indigoPath = xbmc.translatePath('special://home/addons/plugin.program.indigo')
 ltempPath = xbmc.translatePath('special://home/temp')
 addonPath = os.path.join(os.path.join(xbmc.translatePath('special://home'), 'addons'),'script.limpiarkodi')
 mediaPath = os.path.join(addonPath, 'media')
@@ -52,6 +55,9 @@ def mainMenu():
     addItem('Limpiar Temp', 'url', 3,icon)
     addItem('Purgar Packages', 'url', 4,icon)
     addItem('Actualizar Addons y Repositorios', 'url', 5,icon)
+    addItem('Dependencias', 'url', 8,icon)
+    addItem('Herramientas Luar', 'url', 8,icon3)
+    addItem('Elimina Indigo', 'url', 7,icon2)
 
 
 
@@ -371,7 +377,51 @@ def update():
         xbmc.executebuiltin('UpdateLocalAddons()')
         xbmc.executebuiltin('RunAddon(plugin.video.palantir)')
         xbmc.executebuiltin("ActivateWindow(home)")
+        xbmc.executebuiltin("ReloadSkin()")
         xbmcgui.Dialog().notification('Limpia Tu Kodi', "Repositorios [COLOR green]Actualizados[/COLOR]")
+
+def depen():
+
+        xbmc.executebuiltin('ActivateWindow(10025,addons://dependencies/&quot;)')
+
+
+def deleteindigo():
+
+    indigoPath = xbmc.translatePath('special://home/addons/plugin.program.indigo')
+    dialog = xbmcgui.Dialog()
+    for root, dirs, files in os.walk(indigoPath):
+            file_count = 0
+            file_count += len(files)
+    if os.path.exists(indigoPath)==True:    
+        for root, dirs, files in os.walk(indigoPath):
+            file_count = 0
+            file_count += len(files)
+            if file_count > 0:
+                dialog = xbmcgui.Dialog()
+                if dialog.yesno("Este Proceso Desinstala Indigo", str() + "Para desinstslar completamenete [COLOR red]reinicie Kodi[/COLOR] despues del proceso.", "Esta seguro de que desea eliminar Indigo?"):
+
+                    for f in files:
+                        try:
+                            if (f == "*.*" or f == "*.*"): continue
+                            os.unlink(os.path.join(root, f))
+                        except:
+                            pass
+                    for d in dirs:
+                        try:
+                            shutil.rmtree(os.path.join(root, d))
+                        except:
+                            pass
+                        
+            else:
+                pass
+
+
+def luar():
+
+        xbmc.executebuiltin('RunAddon(script.luar)')
+
+
+
 
 
 
@@ -416,5 +466,13 @@ elif mode==4:
 elif mode==5:
         update()
 
+elif mode==6:
+        luar()
+
+elif mode==7:
+        deleteindigo()
+
+elif mode==8:
+        depen()
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))

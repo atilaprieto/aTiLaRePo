@@ -4,7 +4,7 @@ import re, urllib
 
 from platformcode import config, logger, platformtools
 from core.item import Item
-from core import httptools, scrapertools, tmdb, jsontools
+from core import httptools, scrapertools, tmdb, jsontools, servertools
 
 host = 'https://www.dilo.nu/'
 host_catalogue = host + 'catalogue'
@@ -165,7 +165,7 @@ def findvideos(item):
 
         server = scrapertools.find_single_match(url, '/servers/([^.]+)')
         # ~ logger.debug('%s %s %s' % (url, language, server))
-        if server == 'waaw': server = 'netutv'
+        server = servertools.corregir_servidor(server)
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = server,
                               title = '', url = url,

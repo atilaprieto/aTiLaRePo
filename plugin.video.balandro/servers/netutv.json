@@ -13,11 +13,11 @@
         "url": "http://netu.tv/watch_video.php?v=\\2"
       },
       {
-        "pattern": "(?:hqq|waaw|netu)(?:\\.tv\\/|\\.watch\\/|\\.php\\?).*?(?:v=|vid=)([a-zA-Z0-9]+)",
+        "pattern": "(?:hqq|waaw|netu|waaw1)(?:\\.tv\\/|\\.watch\\/|\\.php\\?).*?(?:v=|vid=)([a-zA-Z0-9]+)",
         "url": "http://netu.tv/watch_video.php?v=\\1"
       },
       {
-        "pattern": "(?:hqq|waaw|netu)(?:\\.tv\\/|\\.watch\\/|\\.php\\?).*hash=([A-z0-9]+)",
+        "pattern": "(?:hqq|waaw|netu|waaw1)(?:\\.tv\\/|\\.watch\\/|\\.php\\?).*hash=([A-z0-9]+)",
         "url": "http://hqq.tv/player/hash.php?hash=\\1"
       }
     ]

@@ -41,7 +41,6 @@ def mainlist_pelis(item):
 
     return itemlist
 
-
 def mainlist_series(item):
     logger.info()
     itemlist = []
@@ -56,10 +55,11 @@ def mainlist_series(item):
     return itemlist
 
 
-
 def generos(item):
     logger.info()
     itemlist = []
+
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
     data = httptools.downloadpage(host).data
     if item.search_type == 'movie':
@@ -70,6 +70,8 @@ def generos(item):
     matches = re.compile('<li class="cat-item[^"]*"><a href="([^"]+)"(?: title="[^"]*"|)>([^<]+)</a>\s*<span>([^<]+)</span></li>', re.DOTALL).findall(data)
     for url, title, cantidad in matches:
         if cantidad == '0': continue
+        if descartar_xxx and scrapertools.es_genero_xxx(title): continue
+
         titulo = '%s (%s)' % (title.strip().capitalize(), cantidad)
         itemlist.append(item.clone( title=titulo, url=url, action='list_all' ))
 

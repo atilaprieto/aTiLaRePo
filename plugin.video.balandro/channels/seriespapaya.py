@@ -263,11 +263,7 @@ def findvideos(item):
         linkTypeNum = 0 if linkType == "descargar" else 1
         if linkTypeNum != 1 and server != 'Clicknupload': continue # descartar descargas directas (menos Clicknupload) ?
 
-        server = server.rstrip().lower()
-        if server ==  "thevideo": server = "thevideome"
-        if server ==  "1fichier": server = "onefichier"
-        if server ==  "uploaded": server = "uploadedto"
-        if server ==  "waaw": server = "netutv"
+        server = servertools.corregir_servidor(server)
         # ~ logger.debug('%s %s' % (server, url))
 
         itemlist.append(Item(channel = item.channel, action = 'play', server=server, 

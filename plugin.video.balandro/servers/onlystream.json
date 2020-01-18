@@ -3,6 +3,7 @@
   "name": "OnlyStream",
 
   "active": true,
+  "notes": "Ya no funcionan los vídeos !?",
 
   "find_videos": {
     "ignore_urls": [],

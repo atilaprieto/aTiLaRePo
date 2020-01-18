@@ -135,11 +135,6 @@ def episodios(item):
     return itemlist
 
 
-def detectar_server(servidor):
-    #TODO? verificar servers
-    srv = servidor.lower()
-    if srv == 'waaw' or srv == 'netu': srv = 'netutv'
-    return srv
 
 def findvideos(item):
     logger.info()
@@ -157,8 +152,9 @@ def findvideos(item):
     
     for dtype, dpost, dnume, titulo, servidor, lang in matches:
         lang = scrapertools.find_single_match(lang, '.*?/flags/(.*?)\.png')
+        servidor = servertools.corregir_servidor(servidor)
 
-        itemlist.append(Item( channel = item.channel, action = 'play', server = detectar_server(servidor),
+        itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
                               title = '', dtype = dtype, dpost = dpost, dnume = dnume, 
                               language = IDIOMAS.get(lang, lang)
                        ))

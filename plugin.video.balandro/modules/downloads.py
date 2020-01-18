@@ -187,6 +187,10 @@ def save_download(item):
                             itemlist[seleccion].video_urls = itemlist_play
                             ok_play = download_video(itemlist[seleccion], item)
 
+                        elif isinstance(itemlist_play, basestring):
+                            ok_play = False
+                            dialog_ok(config.__addon_name, itemlist_play)
+
                         else:
                             ok_play = False
                             platformtools.dialog_ok(config.__addon_name, 'No se puede descargar')

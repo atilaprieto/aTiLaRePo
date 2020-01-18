@@ -226,7 +226,7 @@ def findvideos(item):
         srv = scrapertools.find_single_match(datos, ' data-server="([^"]+)').lower().replace('www.', '')
         if not srv: continue
         if '.' in srv: srv = srv.split('.')[0]
-        if srv in ['waaw','netu']: srv = 'netutv'
+        srv = servertools.corregir_servidor(srv)
 
         url = scrapertools.find_single_match(datos, ' data-enlace="([^"]+)')
         if not url: continue

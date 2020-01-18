@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.1" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.2" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -16,11 +16,9 @@
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales nuevos: Dospelis.
-    Canales modificados: Seriesdanko, Playview, Pepecine, Seriespapaya, Grantorrent, 
-    Newpct1, Xdede, Cinecalidad.
-    Servidores modificados: Powvideo, Streamplay, Mixdrop, Vidfast, Vidoza, Dailymotion, 
-    Cloudvideo, Upstream.
+    Canales modificados: Cuevana3, Xdede, Dospelis, Pelisplay, Hdfull.
+    Servidores modificados: Powvideo, Streamplay, Upstream, Netutv, Youtube, Videomega.
+    Nueva opción en Configuración/Otros para descartar listas eróticas/xxx.
     </news>
 
     <assets>

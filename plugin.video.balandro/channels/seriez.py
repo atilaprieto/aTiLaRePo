@@ -4,7 +4,7 @@ import re, urllib
 
 from platformcode import config, logger
 from core.item import Item
-from core import httptools, scrapertools, tmdb
+from core import httptools, scrapertools, tmdb, servertools
 
 host = 'https://seriez.co/'
 
@@ -200,8 +200,7 @@ def findvideos(item):
     for servidor, calidad, idioma, enlace in datos:
         if servidor == 'Servidor': continue
         server = scrapertools.find_single_match(servidor, 'domain=([a-z]+)')
-        if server == 'flix': server = 'flix555'
-        if server == 'waaw': server = 'netutv'
+        server = servertools.corregir_servidor(server)
         url = scrapertools.find_single_match(enlace, " href='([^']+)'")
         if not url.startswith('http'): url = host + url[1:]
 

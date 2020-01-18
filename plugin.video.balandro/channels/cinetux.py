@@ -62,6 +62,8 @@ def generos(item):
     logger.info()
     itemlist = []
 
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
     data = do_downloadpage(CHANNEL_HOST)
     bloque = scrapertools.find_single_match(data, '(?s)dos_columnas">(.*?)</ul>')
 
@@ -69,6 +71,7 @@ def generos(item):
     matches = scrapertools.find_multiple_matches(bloque, patron)
     for scrapedurl, scrapedtitle in matches:
         if '/estrenos/' in scrapedurl: continue # se muestra en el menú principal
+        if descartar_xxx and scrapertools.es_genero_xxx(scrapedtitle): continue
 
         itemlist.append(item.clone( action='peliculas', title=scrapedtitle.strip(), url=CHANNEL_HOST + scrapedurl ))
 
@@ -141,14 +144,10 @@ def puntuar_calidad(txt):
     else: return orden.index(txt) + 1
 
 def corregir_servidor(servidor):
-    if servidor in ['waaw', 'netu', 'hqq']: return 'netutv'
-    elif servidor in ['povwideo', 'powvldeo', 'povw1deo']: return 'powvideo'
-    elif servidor == 'vev': return 'vevio'
-    elif servidor == 'ok': return 'okru'
-    elif servidor == 'fcom': return 'fembed'
+    servidor = servertools.corregir_servidor(servidor)
+    if servidor == 'fcom': return 'fembed'
     elif servidor in ['mp4', 'api', 'drive']: return 'gvideo'
     else: return servidor
-
 
 def findvideos(item):
     logger.info()

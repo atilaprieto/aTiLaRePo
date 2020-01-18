@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from core import httptools, scrapertools
-from platformcode import logger
+from platformcode import logger, platformtools
 
 
 def get_video_url(page_url, url_referer=''):
@@ -17,8 +17,11 @@ def get_video_url(page_url, url_referer=''):
     for url, extra in matches:
         lbl = scrapertools.find_single_match(extra, 'label:"([^"]+)')
         if not lbl: lbl = url[-4:]
-        if lbl == '.mpd': continue
-        video_urls.append([lbl, url])
+        if lbl == '.mpd':
+            if platformtools.is_mpd_enabled():
+                video_urls.append([lbl, url, 0, '', True])
+        else:
+            video_urls.append([lbl, url])
 
     if len(video_urls) == 0:
         url = scrapertools.find_single_match(bloque, '"(http.*?)"')

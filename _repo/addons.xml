@@ -230,7 +230,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.1" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.2" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -247,11 +247,9 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales nuevos: Dospelis.
-    Canales modificados: Seriesdanko, Playview, Pepecine, Seriespapaya, Grantorrent,
-    Newpct1, Xdede, Cinecalidad.
-    Servidores modificados: Powvideo, Streamplay, Mixdrop, Vidfast, Vidoza, Dailymotion,
-    Cloudvideo, Upstream.
+    Canales modificados: Cuevana3, Xdede, Dospelis, Pelisplay, Hdfull.
+    Servidores modificados: Powvideo, Streamplay, Upstream, Netutv, Youtube, Videomega.
+    Nueva opción en Configuración/Otros para descartar listas eróticas/xxx.
     </news>
 
     <assets>
@@ -535,7 +533,7 @@ v.2.1.5
 
 <addon id="plugin.video.tvchopo"
        name="[B][LOWERCASE][CAPITALIZE][COLOR white]T[COLOR aquamarine]V[COLOR yellow]C[COLOR orange]H[COLOR red]O[COLOR pink]P[COLOR fuchsia]O[/CAPITALIZE][/LOWERCASE][/B][/COLOR]"
-       version="14"
+       version="15"
        provider-name="equipo-chopo">
  <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -812,7 +810,7 @@ v.2.1.5
 
 <addon id="script.limpiarkodi"
        name="Limpia Tu Kodi"
-       version="2.0.3"
+       version="2.0.5"
        provider-name="Catoal - Teco">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -886,7 +884,7 @@ v.2.1.5
     </extension>
 </addon>
 
-<addon id="script.module.urlresolver" name="URLResolver" version="5.0.48" provider-name="tvaddons">
+<addon id="script.module.urlresolver" name="URLResolver" version="5.0.49" provider-name="tvaddons">
     <requires>
         <import addon="xbmc.python" version="2.1.0" />
         <import addon="plugin.video.youtube" optional="true" />

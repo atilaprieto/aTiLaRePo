@@ -29,7 +29,7 @@ def configurar_proxies_canal(canal, url):
     logger.info()
     
     while True:
-        proxies = config.get_setting('proxies', canal, default='')
+        proxies = config.get_setting('proxies', canal, default='').strip()
         provider, tipo_proxy, pais_proxy, max_proxies = get_settings_proxytools(canal)
         if provider == 'lista_proxies.txt':
             tipo_proxy = '-'
@@ -39,17 +39,17 @@ def configurar_proxies_canal(canal, url):
             pais_proxy = opciones_pais[0] if pais_proxy == '' else pais_proxy
 
         acciones = []
-        acciones.append(platformtools.listitem_to_select('Modificar proxies manualmente', proxies, ''))
+        lbl = proxies if proxies else '(sin proxies)'
+        acciones.append(platformtools.listitem_to_select('Modificar proxies manualmente', lbl, ''))
         acciones.append(platformtools.listitem_to_select('Buscar proxies automáticamente', 'Iniciar búsqueda con los parámetros actuales'))
         acciones.append(platformtools.listitem_to_select('Parámetros para buscar proxies', '%s, %s, %s, %d' % (provider, tipo_proxy, pais_proxy, max_proxies), ''))
+        if proxies: acciones.append(platformtools.listitem_to_select('Quitar proxies', 'Eliminar los proxies actuales para probar sin ellos'))
 
         ret = platformtools.dialog_select('Configurar proxies para %s' % canal.capitalize(), acciones, useDetails=True)
         if ret == -1: # pedido cancel
             break
 
         elif ret == 0:
-            proxies = config.get_setting('proxies', canal, default='')
-
             new_proxies = platformtools.dialog_input(default=proxies, heading='Introduce el proxy a utilizar o varios separados por comas')
             if new_proxies is not None and new_proxies != proxies:
                 config.set_setting('proxies', new_proxies, canal)
@@ -60,6 +60,9 @@ def configurar_proxies_canal(canal, url):
 
         elif ret == 2:
             _settings_proxies_canal(canal)
+
+        elif ret == 3:
+            config.set_setting('proxies', '', canal)
 
     return True
 

@@ -18,6 +18,7 @@ def get_video_url(page_url, url_referer=''):
         return 'El archivo ha sido eliminado'
 
     match = re.search('(.+)/v/(\w+)/file.html', page_url)
+    if not match: return video_urls
     domain = match.group(1)
 
     media_url = scrapertools.find_single_match(data, 'getElementById\(\'dlbutton\'\).href\s*=\s*(.*?);')

@@ -1,6 +1,11 @@
 Balandro changelog
 ==================
 
+1.4.2:
+    Canales modificados: Cuevana3, Xdede, Dospelis, Pelisplay, Hdfull.
+    Servidores modificados: Powvideo, Streamplay, Upstream, Netutv, Youtube, Videomega.
+    Nueva opción en Configuración/Otros para descartar listas eróticas/xxx.
+
 1.4.1:
     Canales nuevos: Dospelis.
     Canales modificados: Seriesdanko, Playview, Pepecine, Seriespapaya, Grantorrent, 

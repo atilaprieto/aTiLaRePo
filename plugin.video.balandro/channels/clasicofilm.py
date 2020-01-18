@@ -35,6 +35,8 @@ def generos(item):
     logger.info()
     itemlist = []
 
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
     url = host+'feeds/posts/summary?start-index=1&max-results=1&alt=json-in-script&callback=finddatepost'
     data = httptools.downloadpage(url).data
 
@@ -48,6 +50,7 @@ def generos(item):
             if categ['term'].startswith('Siglo') or categ['term'].startswith('Año'): continue
             url = host+'feeds/posts/summary/-/%s?start-index=1&max-results=%d&alt=json-in-script&callback=finddatepost' % (categ['term'].replace(' ', '%20'), perpage)
             categ['term'] = categ['term'][0].upper() + categ['term'][1:]
+            if descartar_xxx and scrapertools.es_genero_xxx(categ['term']): continue
             itemlist.append(item.clone( title=categ['term'], url=url, action='list_all' ))
 
     # ~ return sorted(itemlist, key=lambda it: it.title)
@@ -186,6 +189,13 @@ def findvideos(item):
                                   language = lang, quality = item.qualities
                            ))
 
+    # Opción NetuTv con hash
+    url = scrapertools.find_single_match(data, '<script src="(http[^"]+/player/hash\.php\?hash=[^"]+)')
+    if url:
+        itemlist.append(Item( channel = item.channel, action = 'play', server = '',
+                              title = '', url = url,
+                              language = lang, quality = item.qualities
+                       ))
 
     itemlist = servertools.get_servers_itemlist(itemlist)
     

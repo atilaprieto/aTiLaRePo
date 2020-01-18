@@ -67,7 +67,9 @@ def generos(item):
         if '/estrenos/' in scrapedurl: continue # ya se muestra en el menú principal
         itemlist.append(item.clone( action = "peliculas", title = scrapedtitle, url = scrapedurl ))
 
-    itemlist.append(item.clone( action = "peliculas", title = 'Eróticas +18', url = host + 'genero/eroticas/' ))
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+    if not descartar_xxx:
+        itemlist.append(item.clone( action = "peliculas", title = 'xxx / adultos', url = host + 'genero/eroticas/' ))
 
     return sorted(itemlist, key=lambda it: it.title)
 

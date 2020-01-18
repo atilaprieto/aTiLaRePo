@@ -2,9 +2,10 @@
 
 from core import httptools, scrapertools
 from core import jsontools as json
-from platformcode import logger
+from platformcode import logger, platformtools
 import re, urllib, urlparse, base64
 
+# ~ https://tyrrrz.me/blog/reverse-engineering-youtube
 
 def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
@@ -95,7 +96,33 @@ def label_from_itag(itag):
     return fmt_value[itag]
 
 
-def extract_from_player_response(params):
+js_signature = None
+js_signature_checked = False
+def obtener_js_signature(youtube_page_data):
+    global js_signature, js_signature_checked
+
+    js_signature_checked = True
+    urljs = scrapertools.find_single_match(youtube_page_data, '"assets":.*?"js":\s*"([^"]+)"').replace("\\", "")
+    if urljs:
+        if not re.search(r'https?://', urljs): urljs = urlparse.urljoin("https://www.youtube.com", urljs)
+        data_js = httptools.downloadpage(urljs).data
+        # ~ logger.debug(data_js)
+        funcname = scrapertools.find_single_match(data_js, '\.sig\|\|([A-z0-9$]+)\(')
+        if not funcname:
+            funcname = scrapertools.find_single_match(data_js, '["\']signature["\']\s*,\s*([A-z0-9$]+)\(')
+        if not funcname:
+            funcname = scrapertools.find_single_match(data_js, '([A-z0-9$]+)\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*""\s*\)')
+        if not funcname:
+            logger.debug('Youtube signature not found!')
+            return #'No se puede decodificar este vídeo'
+
+        # ~ logger.debug(funcname)
+        from lib.jsinterpreter import JSInterpreter
+        jsi = JSInterpreter(data_js)
+        js_signature = jsi.extract_function(funcname)
+
+
+def extract_from_player_response(params, youtube_page_data=''):
     video_urls = []
     try:
         pr = json.load(params['player_response'])
@@ -103,7 +130,17 @@ def extract_from_player_response(params):
         if not 'formats' in pr['streamingData']: raise()
         # ~ logger.debug(pr['streamingData']['formats'])
         for vid in sorted(pr['streamingData']['formats'], key=lambda x: (x['height'], x['mimeType'])):
-            if not 'url' in vid: continue
+            if not 'url' in vid and not 'cipher' in vid: continue
+            if not 'url' in vid:
+                if not youtube_page_data: continue
+                # ~ logger.debug(vid['cipher'])
+                v_url = urllib.unquote(scrapertools.find_single_match(vid['cipher'], 'url=([^&]+)'))
+                v_sig = urllib.unquote(scrapertools.find_single_match(vid['cipher'], 's=([^&]+)'))
+                if not js_signature and not js_signature_checked:
+                    obtener_js_signature(youtube_page_data)
+                if not js_signature: continue
+                vid['url'] = v_url + '&sig=' + urllib.quote(js_signature([v_sig]), safe='')
+                
             lbl = ''
             if 'itag' in vid: lbl = label_from_itag(vid['itag'])
             if not lbl and 'qualityLabel' in vid: lbl = vid['qualityLabel']
@@ -132,8 +169,7 @@ def extract_videos(video_id):
         video_urls = extract_from_player_response(params)
         if len(video_urls) > 0: return video_urls
 
-    import xbmc
-    if xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)') and params.get('dashmpd'):
+    if params.get('dashmpd') and platformtools.is_mpd_enabled():
         if params.get('use_cipher_signature', '') != 'True':
             video_urls.append(['mpd HD', params['dashmpd'], 0, '', True])
 
@@ -144,7 +180,7 @@ def extract_videos(video_id):
     # ~ logger.debug(params)
 
     if params.get('player_response'):
-        video_urls = extract_from_player_response(params)
+        video_urls = extract_from_player_response(params, youtube_page_data)
         if len(video_urls) > 0: return video_urls
 
 
@@ -153,7 +189,6 @@ def extract_videos(video_id):
     # ~ logger.debug(params)
 
     if params.get('url_encoded_fmt_stream_map'):
-        js_signature = ""
         data_flashvars = params["url_encoded_fmt_stream_map"].split(",")
         for url_desc in data_flashvars:
             url_desc_map = dict(urlparse.parse_qsl(url_desc))
@@ -178,30 +213,11 @@ def extract_videos(video_id):
                 elif url_desc_map.get("s"):
                     sig = url_desc_map["s"]
                     # ~ logger.debug(sig)
-                    if not js_signature:
-                        urljs = scrapertools.find_single_match(youtube_page_data, '"assets":.*?"js":\s*"([^"]+)"')
-                        urljs = urljs.replace("\\", "")
-                        if urljs:
-                            if not re.search(r'https?://', urljs):
-                                urljs = urlparse.urljoin("https://www.youtube.com", urljs)
-                            data_js = httptools.downloadpage(urljs).data
-                            # ~ logger.debug(data_js)
-                            funcname = scrapertools.find_single_match(data_js, '\.sig\|\|([A-z0-9$]+)\(')
-                            if not funcname:
-                                funcname = scrapertools.find_single_match(data_js, '["\']signature["\']\s*,\s*([A-z0-9$]+)\(')
-                            if not funcname:
-                                funcname = scrapertools.find_single_match(data_js, '([A-z0-9$]+)\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*""\s*\)')
-                            if not funcname:
-                                return 'No se puede decodificar este vídeo'
+                    if not js_signature and not js_signature_checked:
+                        obtener_js_signature(youtube_page_data)
+                    if not js_signature: continue
+                    url += "&sig=" + urllib.quote(js_signature([sig]), safe='')
 
-                            # ~ logger.debug(funcname)
-                            from lib.jsinterpreter import JSInterpreter
-                            jsi = JSInterpreter(data_js)
-                            js_signature = jsi.extract_function(funcname)
-
-                    signature = js_signature([sig])
-                    # ~ url += "&signature=" + signature
-                    url += "&sig=" + urllib.quote(signature, safe='')
                 url = url.replace(",", "%2C")
                 video_urls.append([lbl, url])
             except:

@@ -356,6 +356,21 @@ def get_servers_list():
     return server_list
 
 
+# Normalizar nombre del servidor (para los canales que no lo obtienen de los patrones)
+def corregir_servidor(servidor):
+    servidor = servidor.strip().lower()
+    if servidor in ['waaw', 'waaw1', 'netu', 'hqq']: return 'netutv'
+    elif servidor in ['povwideo', 'powvldeo', 'powv1deo', 'povw1deo']: return 'powvideo'
+    elif servidor == 'vev': return 'vevio'
+    elif servidor == 'ok': return 'okru'
+    elif servidor == 'youtu': return 'youtube'
+    elif servidor == 'flix': return 'flix555'
+    elif servidor == 'thevideo': return 'thevideome'
+    elif servidor == '1fichier': return 'onefichier'
+    elif servidor == 'uploaded': return 'uploadedto'
+    else: return servidor
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Reordenación/Filtrado de enlaces

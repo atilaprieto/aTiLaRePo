@@ -82,6 +82,9 @@ def generos(item):
         url = url_base + title + ',/,'
         itemlist.append(item.clone( action="list_all", title=title, url=url ))
 
+    if item.search_type == 'tvshow':
+        itemlist.append(item.clone( action="list_all", title='Anime', url=host + 'animes' ))
+        
     return sorted(itemlist, key=lambda it: it.title)
 
 def anyos(item):
@@ -106,7 +109,7 @@ def list_all(item):
     
     es_busqueda = 'search?' in item.url
     es_lista = '/listas/' in item.url
-    tipo_url = 'tvshow' if '/series' in item.url else 'movie'
+    tipo_url = 'tvshow' if '/series' in item.url or '/animes' in item.url else 'movie'
 
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
@@ -125,7 +128,7 @@ def list_all(item):
             infoLabels = {'year': '-'}
 
         if es_busqueda or es_lista:
-            tipo = 'tvshow' if '/series' in url else 'movie'
+            tipo = 'tvshow' if '/series' in url or '/animes' in url else 'movie'
             if item.search_type not in ['all', tipo]: continue
         else:
             tipo = tipo_url
@@ -216,44 +219,36 @@ def findvideos(item):
     # ~ logger.debug(data)
 
     # Enlaces oficiales
-    if '/peliculas' in item.url:
-        tid = scrapertools.find_single_match(item.url, '(p\d+)-')
-    else:
-        tid = scrapertools.find_single_match(data, ' secid="(e\d+)"')
-
-    if tid:
-        try:
-            data2 = do_downloadpage(host + 'json/loadVIDEOS', post=urllib.urlencode({'id': tid}))
-            # ~ logger.debug(data2)
-            jdata = jsontools.load(data2)
-            data2 = jdata['result'].replace("\'", "'")
-            # ~ logger.debug(data2)
-
-            enlaces = scrapertools.find_multiple_matches(data2, '<li class="itemServers"(.*?)</li>')
-            for enlace in enlaces:
-                try:
-                    numlang, url = scrapertools.find_single_match(enlace, "this, (\d+), '([^']+)")
-                    servidor = scrapertools.find_single_match(enlace, 'img/([^.]+)')
-                    if servidor == 'ultra': servidor = 'm3u8hls'
-                except:
-                    continue
+    try:
+        x = scrapertools.find_single_match(data, '\s*secid="([^"]+)"\s*wallp="([^"]*)"\s*vip1080p="([^"]*)"\s*sBay="([^"]*)"\s*BotU="([^"]*)"')
+        if not x or len(x) != 5: raise()
+        post = {'id': x[0], 'wall': x[1], 'v1080': x[2], 'botu': x[4], 'sBay': x[3]}
+        
+        data2 = do_downloadpage(host + 'json/loadVIDEOSV4', post=urllib.urlencode(post))
+        # ~ logger.debug(data2)
+        jdata = jsontools.load(data2)
+        data2 = jdata['result'].replace("\'", "'")
+        # ~ logger.debug(data2)
+        
+        for numlang in IDIOMAS:
+            bloque = scrapertools.find_single_match(data2, '<div class="OD_%s(.*?)</div>' % numlang)
+            if not bloque: continue
+            enlaces = scrapertools.find_multiple_matches(bloque, "<li onclick=\"\w+\('([^']+)'(.*?)</li>")
+            for enlace, resto in enlaces:
+                other = ''
+                servidor = scrapertools.find_single_match(resto, '<span>(.*?)</span>')
+                servidor = servertools.corregir_servidor(servidor)
+                if servidor == 'pro': servidor = 'fembed'
+                elif servidor in ['bot','soap']:
+                    other = servidor.capitalize()
+                    servidor = 'directo'
 
                 itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
-                                      title = '', url = url, referer = item.url,
-                                      language = IDIOMAS.get(numlang, 'VO')
+                                      title = '', url = enlace, referer = item.url,
+                                      language = IDIOMAS.get(numlang, 'VO'), other = other
                                ))
-        except:
-            pass
-
-    # Enlaces oficiales (beta)
-    if '<div class="optScan">' in data:
-        for numlang in IDIOMAS:
-            url_lang = host + 'AUTOR/' + tid + '/' + numlang
-            if url_lang in data:
-                itemlist.append(Item( channel = item.channel, action = 'play', server = 'directo',
-                                      title = '', url = url_lang,
-                                      language = IDIOMAS.get(numlang, 'VO'), other = 'beta'
-                               ))
+    except:
+        pass
 
     # Enlaces de usuarios (desactivado por requerir recaptcha)
     # ~ if '<div class="linksUsers">' in data:
@@ -262,10 +257,10 @@ def findvideos(item):
             # ~ url = scrapertools.find_single_match(enlace, ' href="([^"]+)"')
             # ~ numlang = scrapertools.find_single_match(enlace, '/img/(\d+)\.png')
             # ~ servidor = scrapertools.find_single_match(enlace, '\?domain=([^.]+)')
+            # ~ servidor = servertools.corregir_servidor(servidor)
             # ~ if not servidor and 'powvideo.net' in enlace: servidor = 'powvideo'
             # ~ qlty = scrapertools.find_single_match(enlace, '<b>(.*?)</b>')
             # ~ user = scrapertools.find_single_match(enlace, 'user/([^"]+)')
-            # ~ if servidor == 'waaw': servidor = 'netutv'
 
             # ~ itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
                                   # ~ title = '', url = url, referer = item.url,
@@ -279,19 +274,27 @@ def play(item):
     logger.info()
     itemlist = []
 
-    if item.url.startswith(host) and '/AUTOR/' in item.url:
-        headers = {'Accept': '*/*', 'sec-fetch-mode': 'cors', 'sec-fetch-site': 'same-origin' }
-        data = do_downloadpage(item.url.replace('/AUTOR/', '/AUTOV/'), headers=headers).replace('\\/', '/')
-        # ~ logger.debug(data)
-
-        matches = scrapertools.find_multiple_matches(data, '"file":"([^"]+)","type":"([^"]+)","label":"([^"]+)"')
-        if matches:
-            for url, typ, lbl in sorted(matches, key=lambda x: int(x[2]) if x[2].isdigit() else 0):
-                itemlist.append(['%s [%s]' % (lbl, typ), url])
-
-
-    elif item.url.startswith(host):
+    if item.url.startswith(host):
         headers = { 'Referer': item.referer }
+
+        if not '/encrypt/' in item.url: # acceder al json y extraer link /encrypt/...
+            data = do_downloadpage(item.url, headers=headers)
+            # ~ logger.debug(data)
+            jdata = jsontools.load(data)
+            if 'status' in jdata and str(jdata['status']) != '200': return 'El vídeo no está disponible'
+            if 'mp4' in jdata:
+                item.url = jdata['mp4'].replace('\\/', '/')
+            elif 'data' in jdata:
+                if type(jdata['data']) is dict:
+                    if 'data' not in jdata['data']: return 'No se encuentra el vídeo'
+                    item.url = jdata['data']['data']
+                else:
+                    item.url = jdata['data']
+            else:
+                return 'El vídeo no se encuentra'
+            if not item.url.startswith('http'): item.url = host + 'encrypt/' + item.url
+
+        # extraer de link /encrypt/
         resp = httptools.downloadpage(item.url, headers=headers, follow_redirects=False)
 
         if 'refresh' in resp.headers:
@@ -302,24 +305,32 @@ def play(item):
 
         else:
             # ~ logger.debug(resp.data)
-            url = scrapertools.find_single_match(resp.data, '"file": "([^"]+)')
-            if url and url.startswith('/'): 
-                itemlist.append(item.clone(url = host + url[1:], server = 'm3u8hls'))
-                return itemlist
+            url = None
+            bloque = scrapertools.find_single_match(resp.data, '"sources":\s*\[(.*?)\]')
+            if not bloque: return 'No se encuentran fuentes para este vídeo'
+            for enlace in scrapertools.find_multiple_matches(bloque, "\{(.*?)\}"):
+                v_url = scrapertools.find_single_match(enlace, '"file":\s*"([^"]+)')
+                if not v_url: continue
+                v_lbl = scrapertools.find_single_match(enlace, '"label":\s*"([^"]+)')
+                if not v_lbl: v_lbl = scrapertools.find_single_match(enlace, '"type":\s*"([^"]+)')
+                if not v_lbl: v_lbl = 'mp4'
+                itemlist.append([v_lbl, v_url])
 
-            url = scrapertools.find_single_match(resp.data, '<a href="([^"]+)"[^>]*>Ir al enlace</a>')
+            if len(itemlist) > 1:
+                return sorted(itemlist, key=lambda x: int(x[0]) if x[0].isdigit() else 0)
                 
         if url:
             url = url.replace('https://www.privatecrypt.me/', 'https://www.fembed.com/')
-            
             servidor = servertools.get_server_from_url(url)
-            if servidor and servidor != 'directo': # si no encuentra el server o está desactivado
-                itemlist.append(item.clone(url = url, server = servidor))
+            if servidor and servidor != 'directo':
+                url = servertools.normalize_url(servidor, url)
+                itemlist.append(item.clone( url=url, server=servidor ))
 
     else:
         itemlist.append(item.clone())
 
     return itemlist
+
 
 
 

@@ -182,6 +182,7 @@
 
 
     <category label="Otros">
+        <setting id="descartar_xxx" type="bool" label="Descartar listas y géneros con películas eróticas/xxx" default="false"/>
         <setting id="notification_beep" type="bool" label="Emitir un pitido al mostrar notificaciones" default="true"/>
 
         <setting label="Parámetros para las descargas:" type="lsep"/>

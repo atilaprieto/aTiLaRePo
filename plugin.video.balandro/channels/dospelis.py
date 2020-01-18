@@ -60,12 +60,15 @@ def generos(item):
     
     descartes = ['estrenos', 'destacadas', 'castellano', 'latino']
 
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
     data = httptools.downloadpage(host).data
     data = scrapertools.find_single_match(data, '<nav class="genres">(.*?)</nav>')
 
     matches = re.compile('<li class="cat-item[^"]*"><a href="([^"]+)"(?: title="[^"]*"|)>([^<]+)</a>\s*<i>([^<]+)</i>', re.DOTALL).findall(data)
     for url, title, cantidad in matches:
         if cantidad == '0': continue
+        if descartar_xxx and scrapertools.es_genero_xxx(title): continue
 
         # Descartar los que ya están en el menú principal
         descartar = False
@@ -251,14 +254,11 @@ def episodios(item):
 
 
 def corregir_servidor(servidor):
-    servidor = servidor.strip().lower()
-    if servidor in ['waaw', 'netu', 'hqq']: return 'netutv'
-    elif servidor in ['povwideo', 'powvldeo', 'povw1deo']: return 'powvideo'
-    elif servidor == 'vev': return 'vevio'
-    elif servidor == 'ok': return 'okru'
-    elif servidor == 'fcom': return 'fembed'
+    servidor = servertools.corregir_servidor(servidor)
+    if servidor == 'fcom': return 'fembed'
     elif servidor in ['mp4', 'api', 'drive']: return 'gvideo'
     else: return servidor
+
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
@@ -340,6 +340,9 @@ def play(item):
         url = scrapertools.find_single_match(data, "src='([^']+)")
         if not url: url = scrapertools.find_single_match(data, 'src="([^"]+)')
         if url: 
+            if 'jwplayer' in url and 'source=' in url: # Ej: https://www.dospelis.online/jwplayer-2/?source=https%3A%2F%2Fyoutu.be%2Fzcn89lxhEWk&id=71977&type=mp4
+                url = urllib.unquote(scrapertools.find_single_match(url, "source=([^&']+)"))
+                
             servidor = servertools.get_server_from_url(url)
             if servidor and servidor != 'directo':
                 url = servertools.normalize_url(servidor, url)

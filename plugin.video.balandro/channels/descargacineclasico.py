@@ -34,11 +34,14 @@ def generos(item):
     logger.info()
     itemlist = []
 
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
     data = httptools.downloadpage(host).data
 
     patron = '<li[^>]*><a href="([^"]+)" title="[^"]*">([^<]+)</a></li>'
     matches = scrapertools.find_multiple_matches(data, patron)
     for url, titulo in matches:
+        if descartar_xxx and scrapertools.es_genero_xxx(titulo): continue
         itemlist.append(item.clone( title=titulo, url=url, action='list_all' ))
 
     return itemlist

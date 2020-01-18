@@ -212,14 +212,14 @@ def findvideos(item):
     for option, url_data, language, quality in matches:
         # ~ logger.debug('%s %s %s %s' % (option, url_data, language, quality))
 
-        url = scrapertools.find_single_match(data, 'id=Opt%s><iframe.*? data-src=([^ >]+)' % option)
+        url = scrapertools.find_single_match(data, 'id=Opt%s><iframe.*? data-src=(?:"|)([^ >"]+)' % option)
         if url.startswith('/'): url = 'https:' + url
         # ~ if '/fembed/?' in url:
             # ~ url = scrapertools.find_single_match(url_data, 'domain=([^"]+)"')
 
         if url and 'youtube' not in url:
             # ~ logger.info(url)
-            itemlist.append(Item( channel = item.channel, action = 'play', #other = option,
+            itemlist.append(Item( channel = item.channel, action = 'play', other = option,
                                   title = '', url = url,
                                   language = IDIOMAS.get(language, language), quality = quality, quality_num = puntuar_calidad(quality)
                            ))
@@ -247,7 +247,7 @@ def play(item):
             data = httptools.downloadpage(url, post=urllib.urlencode({'link': fid})).data.replace('\\/', '/')
             # ~ logger.debug(data)
 
-            enlaces = scrapertools.find_multiple_matches(data, '{"link":"([^"]+)"([^}]*)')
+            enlaces = scrapertools.find_multiple_matches(data, '"link":"([^"]+)"([^}]*)')
             for url, resto in enlaces:
                 # ~ if 'player.php?id=' in url: continue # acaba en un m3u8 no reproducible por kodi
                 if 'player.php?id=' in url:
@@ -261,6 +261,11 @@ def play(item):
                             itemlist.append(item.clone(url = url, server = 'm3u8hls'))
                             break
                         return itemlist
+
+                elif 'openloadpremium.com/embed/' in url:
+                    # ~ data = httptools.downloadpage(url).data
+                    # ~ logger.debug(data)
+                    continue # no encontrado ningún ejemplo válido, TODO...
 
                 else:
                     lbl = scrapertools.find_single_match(resto, '"label":"([^"]+)')

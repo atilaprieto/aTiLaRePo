@@ -660,6 +660,10 @@ def play_from_itemlist(itemlist, parent_item):
                         itemlist[seleccion].video_urls = itemlist_play
                         ok_play = play_video(itemlist[seleccion], parent_item)
 
+                    elif isinstance(itemlist_play, basestring):
+                        ok_play = False
+                        dialog_ok(config.__addon_name, itemlist_play)
+
                     else:
                         ok_play = False
                         dialog_ok(config.__addon_name, 'No se puede reproducir')
@@ -725,6 +729,10 @@ def play_video(item, parent_item, autoplay=False):
         mediaurl, view, mpd = get_video_seleccionado(item, seleccion, video_urls)
         if mediaurl == '':
             if not autoplay: dialog_ok(config.__addon_name, 'No se encuentra el vídeo!')
+            return False
+        
+        if mpd and not is_mpd_enabled():
+            if not autoplay: dialog_ok(config.__addon_name, 'Para ver el formato MPD se require el addon inputstream.adaptive')
             return False
         
         if item.server == 'torrent':
@@ -853,6 +861,9 @@ def play_torrent(mediaurl, parent_item):
 
 def is_playing():
     return xbmc.Player().isPlaying()
+
+def is_mpd_enabled():
+    return xbmc.getCondVisibility('System.HasAddon("inputstream.adaptive")')
 
 
 # Diálogos internos

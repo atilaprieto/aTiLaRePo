@@ -6,7 +6,8 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-host = 'https://www.pelisplay.tv/'
+# ~ host = 'https://www.pelisplay.tv/'
+host = 'https://www.pelisplay.co/'
 
 
 def item_configurar_proxies(item):
@@ -19,6 +20,8 @@ def configurar_proxies(item):
     return proxytools.configurar_proxies_canal(item.channel, host)
 
 def do_downloadpage(url, post=None, headers=None, raise_weberror=True):
+    url = url.replace('pelisplay.tv', 'pelisplay.co') # por si viene de enlaces guardados
+    url = url.replace('pelisplay.co/ver-peliculas', 'pelisplay.co/peliculas') # por si viene de enlaces guardados
     # ~ data = httptools.downloadpage(url, post=post, headers=headers, raise_weberror=raise_weberror).data
     data = httptools.downloadpage_proxy('pelisplay', url, post=post, headers=headers, raise_weberror=raise_weberror).data
     return data
@@ -41,10 +44,10 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Lista de películas', action = 'list_pelis', url = host + 'ver-peliculas', search_type = 'movie' ))
-    itemlist.append(item.clone( title = 'Películas de Estreno', action = 'list_pelis', url = host + 'ver-peliculas/estrenos', search_type = 'movie' ))
-    itemlist.append(item.clone( title = 'Películas de Netflix', action = 'list_pelis', url = host + 'ver-peliculas/netflix', search_type = 'movie' ))
-    itemlist.append(item.clone( title = 'Películas más Vistas', action = 'list_pelis', url = host + 'ver-peliculas?filtro=visitas', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Lista de películas', action = 'list_pelis', url = host + 'peliculas', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Películas de Estreno', action = 'list_pelis', url = host + 'peliculas/estrenos', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Películas de Netflix', action = 'list_pelis', url = host + 'peliculas/netflix', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Películas más Vistas', action = 'list_pelis', url = host + 'peliculas?filtro=visitas', search_type = 'movie' ))
     
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
 
@@ -76,7 +79,9 @@ def generos(item):
     logger.info()
     itemlist = []
 
-    if item.search_type == 'movie': url = host + 'ver-peliculas'
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
+    if item.search_type == 'movie': url = host + 'peliculas'
     else: url = host + 'series'
     data = do_downloadpage(url)
     
@@ -85,6 +90,8 @@ def generos(item):
 
     for url, title, cantidad in matches:
         if '/estrenos' in url or '/netflix' in url: continue
+        if descartar_xxx and scrapertools.es_genero_xxx(title): continue
+
         if item.search_type == 'movie':
             itemlist.append(item.clone( action="list_pelis", title='%s (%s)' % (title, cantidad), url=url ))
         else:
@@ -333,7 +340,7 @@ def search(item, texto):
     itemlist = []
     try:
         if item.search_type == 'movie':
-            item.url = host + 'ver-peliculas?buscar=' + texto.replace(" ", "+")
+            item.url = host + 'peliculas?buscar=' + texto.replace(" ", "+")
             return list_pelis(item)
         elif item.search_type == 'tvshow':
             item.url = host + 'series?buscar=' + texto.replace(" ", "+")

@@ -4,7 +4,7 @@ import re
 
 from platformcode import config, logger
 from core.item import Item
-from core import httptools, scrapertools, tmdb
+from core import httptools, scrapertools, tmdb, servertools
 
 
 host = 'https://seriesblanco.org/'
@@ -51,10 +51,13 @@ def generos(item):
     logger.info()
     itemlist = []
 
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
     data = do_downloadpage(host)
 
     matches = re.compile('<li><a href="([^"]+)"><i class="fa fa-bookmark-o"></i> ([^<]+)</a></li>', re.DOTALL).findall(data)
     for url, title in matches:
+        if descartar_xxx and scrapertools.es_genero_xxx(title): continue
         itemlist.append(item.clone( title=title, url=url, action='list_all' ))
 
     return itemlist
@@ -182,8 +185,7 @@ def findvideos(item):
             href = item.url
         servidor = scrapertools.find_single_match(data_link, ' data-server="([^"]+)').replace('www.', '').lower()
         servidor = servidor.split('.', 1)[0]
-        if servidor == 'vev': servidor = 'vevio'
-        elif servidor == 'waaw': servidor = 'netutv'
+        servidor = servertools.corregir_servidor(servidor)
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, url = url, url_referer = href,
                               title = '', 

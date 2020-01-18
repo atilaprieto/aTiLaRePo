@@ -45,11 +45,15 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Últimas películas', action = 'list_latest', url = host + '/last/estrenos-peliculas-online.php', search_type = 'movie' ))
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
+    if not descartar_xxx:
+        itemlist.append(item.clone( title = 'Últimas películas', action = 'list_latest', url = host + '/last/estrenos-peliculas-online.php', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Las más populares', action = 'list_all', url = host + ruta_pelis, orden = 'popularity:desc', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Las más valoradas', action = 'list_all', url = host + ruta_pelis, orden = 'user_score:desc', search_type = 'movie' ))
-    itemlist.append(item.clone( title = 'Las más recientes', action = 'list_all', url = host + ruta_pelis, orden = 'created_at:desc', search_type = 'movie' ))
+    if not descartar_xxx:
+        itemlist.append(item.clone( title = 'Las más recientes', action = 'list_all', url = host + ruta_pelis, orden = 'created_at:desc', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Por calificación de edad', action = 'edades', search_type = 'movie' ))
@@ -94,11 +98,16 @@ def generos(item):
     for genero in generos:
         itemlist.append(item.clone( action = 'list_all', title = genero, url = url, genero = genero ))
 
+    if item.search_type == 'movie' and not config.get_setting('descartar_xxx', default=False):
+        itemlist.append(item.clone( action = 'list_all', title = 'xxx / adultos', url = host + ruta_pelis, calificacion = 'nc-17' ))
+
     return itemlist
 
 def edades(item):
     logger.info()
     itemlist=[]
+
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
     if item.search_type not in ['movie', 'tvshow']: item.search_type = 'movie'
     url = host + (ruta_pelis if item.search_type == 'movie' else ruta_series)
@@ -107,7 +116,8 @@ def edades(item):
     itemlist.append(item.clone( title = 'PG (Parental Guidance Suggested)', action = 'list_all', url = url, calificacion = 'pg', plot='Algunos contenidos pueden no ser apropiados para niños.' ))
     itemlist.append(item.clone( title = 'PG-13 (Parents Strongly Cautioned)', action = 'list_all', url = url, calificacion = 'pg-13', plot='Algunos materiales pueden ser inapropiados para niños de menos de 13 años.' ))
     itemlist.append(item.clone( title = 'R (Restricted)', action = 'list_all', url = url, calificacion = 'r', plot='Personas de menos de 17 años requieren acompañamiento de un adulto.' ))
-    itemlist.append(item.clone( title = 'NC-17 (Adults Only)', action = 'list_all', url = url, calificacion = 'nc-17', plot='Solamente adultos. No admitido para menores de 18 años.' ))
+    if not descartar_xxx:
+        itemlist.append(item.clone( title = 'NC-17 (Adults Only)', action = 'list_all', url = url, calificacion = 'nc-17', plot='Solamente adultos. No admitido para menores de 18 años.' ))
 
     return itemlist
 
@@ -308,7 +318,7 @@ def findvideos(item):
         itemlist.append(Item(channel = item.channel, action = 'play',
                              title = item.title, url = url,
                              language = _extraer_idioma(element['name']), 
-                             quality = element['quality'], quality_num = puntuar_calidad(element['quality'])
+                             quality = element['quality'], quality_num = puntuar_calidad(element['quality']) #, other = url
                        ))
         
     itemlist = servertools.get_servers_itemlist(itemlist)

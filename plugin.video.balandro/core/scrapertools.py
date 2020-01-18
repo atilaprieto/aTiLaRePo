@@ -34,6 +34,15 @@ def printMatches(matches):
 
 # Web elements
 
+# Devuelve True si es algún género erótico / xxx
+def es_genero_xxx(texto):
+    # ~ ['Erótica', 'Erótico', 'Erotico', 'Erotica', 'Xxx, erotico', 'Adultos +18', 'Eróticas +18', 'Eroticas +18', 'Animación para adultos', 'Abusos sexuales']
+    txt = texto.lower().replace('ó', 'o')
+    if 'erotic' in txt or '+18' in txt or 'adulto' in txt or 'sexual' in txt:
+        return True
+    return False
+
+
 # Si hay alguna @ en el texto, cloudflare lo considera como un email y lo protege en un link (Ej: Tod@s)
 def clean_cfemail(texto):
     matches = find_multiple_matches(texto, ' data-cfemail="([^"]+)"')
