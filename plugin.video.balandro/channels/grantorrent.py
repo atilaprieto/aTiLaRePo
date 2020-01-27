@@ -10,7 +10,8 @@ from core import httptools, scrapertools, tmdb
 # ~ host = 'https://grantorrent1.com/'
 # ~ host = 'https://grantorrent.one/'
 # ~ host = 'https://grantorrent.tv/'
-host = 'https://grantorrent.la/'
+#~ host = 'https://grantorrent.la/'
+host = 'https://grantorrent.io/'
 
 
 def item_configurar_proxies(item):
@@ -27,6 +28,7 @@ def do_downloadpage(url, post=None):
     url = url.replace('https://grantorrent1.com/', 'https://grantorrent.one/') # por si viene de enlaces guardados
     url = url.replace('https://grantorrent.one/', 'https://grantorrent.tv/') # por si viene de enlaces guardados
     url = url.replace('https://grantorrent.tv/', 'https://grantorrent.la/') # por si viene de enlaces guardados
+    url = url.replace('https://grantorrent.la/', 'https://grantorrent.io/') # por si viene de enlaces guardados
     # ~ data = httptools.downloadpage(url, post=post).data
     data = httptools.downloadpage_proxy('grantorrent', url, post=post).data
     # ~ logger.debug(data)
@@ -195,7 +197,7 @@ def findvideos(item):
         if not post: continue
         try:
             url = base64.b64decode(post)
-            url = url.replace('grantorrent.la/', 'grantorrent.one/')
+            #~ url = url.replace('grantorrent.io/', 'grantorrent.one/')
         except:
             continue
 

@@ -227,7 +227,11 @@ def play(item):
         else:
             url = scrapertools.find_single_match(data, '<a id="link-redirect".*? href="([^"]+)')
 
-        if url != '': itemlist.append(item.clone(url = url))
+        if url:
+            servidor = servertools.get_server_from_url(url)
+            if servidor and servidor != 'directo':
+                url = servertools.normalize_url(servidor, url)
+                itemlist.append(item.clone( url=url, server=servidor ))
     else:
         itemlist.append(item.clone())
 

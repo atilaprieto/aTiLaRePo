@@ -2,7 +2,7 @@
   "id": "onlystream",
   "name": "OnlyStream",
 
-  "active": true,
+  "active": false,
   "notes": "Ya no funcionan los vídeos !?",
 
   "find_videos": {
