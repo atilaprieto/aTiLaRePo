@@ -353,14 +353,13 @@ You can clone the project and host it in your own server.
     </extension>
 </addon>
 
-<addon id="plugin.video.hbogoeu" name="hGO EU" provider-name="arvvoid" version="2.1.5">
+<addon id="plugin.video.hbogoeu" name="hGO EU" provider-name="arvvoid" version="2.1.6">
   <requires>
     <import addon="xbmc.python" version="2.26.0" />
     <import addon="script.module.kodi-six" version="0.1.0" />
     <import addon="script.module.requests" version="2.12.4" />
     <import addon="script.module.pycryptodome" version="3.4.3" />
     <import addon="script.module.defusedxml" version="0.6.0" />
-    <import addon="inputstream.adaptive" version="2.3.18" />
     <import addon="script.module.inputstreamhelper" version="0.4.2" />
   </requires>
   <extension library="main.py" point="xbmc.python.pluginsource">
@@ -381,12 +380,16 @@ Curently support: Bosnia and Herzegovina, Bulgaria, Croatia, Czech Republic, Hun
 To report bugs or request assistence with the add-on go to: https://github.com/arvvoid/plugin.video.hbogoeu
     </description>
     <disclaimer lang="en_GB">
-This add-on is not officially commissioned/supported by HBO®. The trademark HBO® Go is registered by Home Box Office, Inc. For more information visit the official HBO® Go website for your region.
-I do not own any of the content this add-on lists. The content belongs to Home Box Office, Inc. All this add-on does is make simple HTTP requests to Hbo go servers to retrieve content just like any browser like Chrome, Firefox etc. would do!
-Playback is handled through inputstream.adaptive that use widevine to handle the DRM content like any web browser.
-THERE IS NO WARRANTY FOR THE ADD-ON, IT CAN BREAK AND STOP WORKING AT ANY TIME.
-If an official app is available for your platform, use it instead of this.
+This add-on is not officially commissioned/supported by HBO®. The trademark HBO® Go is registered by Home Box Office, Inc.
+For more information on HBO® Go visit the official HBO® Go website for your region.
+I do not own any of the content this add-on lists. The content belongs to Home Box Office, Inc.
+All this add-on does is make simple HTTP requests to Hbo go servers to retrieve and display content just like any web browser would do!
+
 Important: HBO® Go must be paid for!!! You need a valid HBO® Go account for the add-on to work! Register on the official HBO® Go website for your region
+
+THERE IS NO WARRANTY FOR THE ADD-ON, IT MIGHT NOT WORK AT ALL AND IT CAN BREAK AND STOP WORKING AT ANY TIME.
+
+If an official app is available for your platform, use it instead of this.
     </disclaimer>
     <language>en</language>
     <platform>all</platform>
@@ -587,7 +590,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.youtube" name="YouTube" version="6.5.2" provider-name="anxdpanic, bromix">
+<addon id="plugin.video.youtube" name="YouTube" version="6.6.0" provider-name="anxdpanic, bromix">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
         <import addon="script.module.six" version="1.11.0"/>
@@ -601,15 +604,20 @@ v.2.1.5
     <extension point="xbmc.python.module" library="resources/lib/"/>
     <extension point="xbmc.addon.metadata">
         <news>
-6.5.2
-[fix] playback (No streams found)
-[fix] missing metadata
-[fix] ended live streams not using mpeg-dash when enabled
-[fix] subscriptions not showing latest videos
-[upd] simplify youtube_resolver regex |contrib: Twilight0|
-[lang] de_de strings |contrib: TehTux|
-[lang] pl_pl strings |contrib: drrak|
-[lang] nl_nl strings |contrib: Markman-B|
+[add] 'Play (Ask for quality)' context menu
+[add] search by channel or playlist id
+[add] hide_folders, hide_playlists, hide_search, and hide_live to /channel/&lt;channel_id&gt;/ end-point
+    - ie. plugin://plugin.video.youtube/channel/UC4PooiX37Pld1T8J5SYT-SQ/?hide_folders=true will hide all folders(Playlists, Search, and Live) in the channel listing
+[fix] playback for some videos (ie. music videos)
+[fix] playback of some videos with no adaptive video streams
+[fix] don't update watch history when incognito/screensaver/live |contrib: regseb|
+[fix] search prompting for input after video playback or refresh
+[lang] el_gr strings |contrib: twilight0|
+[lang] es_es strings |contrib: roliverosc|
+[lang] pt_br strings |contrib: MediaBrasil|
+[lang] cs_cz strings |contrib: llzn.cz|
+[lang] it_it strings |contrib: SebastianoPistore|
+[lang] de_de strings |contrib: tweimer|
         </news>
         <assets>
             <icon>icon.png</icon>
@@ -650,10 +658,16 @@ v.2.1.5
         <description lang="nb_NO">YouTube er en av verdens største nettsider for videodeling.</description>
         <summary lang="ko_KR">유튜브 플러그인</summary>
         <description lang="ko_KR">유튜브는 세상에서 가장 큰 동영상 공유 사이트 중의 하나입니다.</description>
+        <summary lang="cs_CZ">Plugin pro YouTube</summary>
+        <description lang="cs_CZ">YouTube je jedna z největších webových stránek světa sdílející video.</description>
+        <disclaimer lang="cs_CZ">Tento plugin není schválen společností Google</disclaimer>
+        <summary lang="tr_TR">YouTube için eklenti</summary>
+        <description lang="tr_TR">YouTube, dünya üzerindeki en büyük video paylaşma platformlarından birisidir</description>
+        <disclaimer lang="tr_TR">Bu eklenti Google tarafından üretilmemiştir</disclaimer>
         <language></language>
         <platform>all</platform>
         <license>GPL-2.0-only</license>
-        <forum>https://forum.kodi.tv/showthread.php?tid=325740</forum>
+        <forum>https://forum.kodi.tv/showthread.php?tid=348464</forum>
         <website>https://www.youtube.com</website>
         <email>ytplugin at datanet dot ws</email>
         <source>https://github.com/jdf76/plugin.video.youtube</source>
