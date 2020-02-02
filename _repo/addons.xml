@@ -336,6 +336,32 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
+<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.0.2" provider-name="Alex303 - Hiraya Software">
+	<requires>
+		<import addon="xbmc.python" version="2.19.0" />
+		<import addon="script.module.requests" version="2.9.1" />
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.repository" name="Hiraya Software Repo">
+		<info>https://hirayasoftware.github.io/addons.xml</info>
+		<checksum>https://hirayasoftware.github.io/addons.xml.md5</checksum>
+		<datadir zip="true">https://hirayasoftware.github.io/</datadir>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en">DPLAY</summary>
+		<description lang="en">DPLAY Addon</description>
+		<disclaimer lang="en">Addon con la programación de DPLAY a la carta.</disclaimer>
+		<summary lang="es">DPLAY</summary>
+		<description lang="es">DPLAY Addon</description>
+		<disclaimer lang="es">Addon con la programación de DPLAY a la carta.</disclaimer>
+		<platform>all</platform>
+        <website></website>
+        <video_guide></video_guide>
+	</extension>
+</addon>
+
 <addon id="plugin.video.f4mTester" version="3.0.0" name="F4mTester" provider-name="Shani">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
@@ -914,16 +940,22 @@ v.2.1.5
 
 <addon id="script.limpiarkodi"
        name="Limpia Tu Kodi"
-       version="2.0.5"
+       version="2.0.6"
        provider-name="Catoal - Teco">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.six" version="1.11.0"/>
   </requires>
      <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>executable</provides>
     </extension>
   <extension point="xbmc.service" library="service.py" start="startup" />
   <extension point="xbmc.addon.metadata">
+  <extension point="xbmc.addon.repository" name="Maniac">
+      <info compressed="false">http://raw.github.com/Maniac2017/repository.Maniac/master/addons.xml</info>
+      <checksum>http://raw.github.com/Maniac2017/repository.Maniac/master/addons.xml.md5</checksum>
+      <datadir zip="true">http://raw.github.com/Maniac2017/repository.Maniac/master/repor/</datadir>
+  </extension>
     <platform>all</platform>
     <summary>Limpiar</summary>
     <description>La herramienta para limpiar de una pasada su dispositivo.</description>

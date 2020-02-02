@@ -1,5 +1,5 @@
 #   script.limpiarkodi
-#   Copyright (C) 2016  Teco
+#   Copyright (C) 2020  Teco
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -18,11 +18,24 @@
 
 import xbmc, xbmcaddon, xbmcgui, xbmcplugin, os, sys, xbmcvfs, glob
 import shutil
-import urllib2,urllib
 import re
 import os
 
-
+if sys.version_info.major==3:
+    from urllib.request import urlopen, Request, HTTPError
+    from six.moves import urllib
+    from six.moves.urllib.parse import parse_qs, urlparse, quote_plus, unquote_plus
+    from urllib.parse import urlparse
+    try:
+        from urllib.parse import parse_qs
+    except ImportError:
+        from cgi import parse_qs
+if sys.version_info.major==2:
+    from six.moves import urllib
+    from six.moves.urllib.parse import parse_qs, urlparse, quote_plus, unquote_plus
+    from urllib2 import urlopen, Request, HTTPError
+    from urlparse import urlparse
+    from urlparse import parse_qs
 thumbnailPath = xbmc.translatePath('special://thumbnails');
 cachePath = os.path.join(xbmc.translatePath('special://home'), 'cache')
 cdmPath = os.path.join(xbmc.translatePath('special://home'), 'cdm')
@@ -31,7 +44,7 @@ ltempPath = xbmc.translatePath('special://home/temp')
 torrentsdir = xbmc.translatePath(os.path.join('special://cache'))
 tempPath = xbmc.translatePath('special://home/addons/temp/')
 addonPath = os.path.join(os.path.join(xbmc.translatePath('special://home'), 'addons'),'script.limpiarkodi')
-
+unoxdosPath = xbmc.translatePath('special://home/addons/plugin.video.1x2')
 mediaPath = os.path.join(addonPath, 'media')
 databasePath = xbmc.translatePath('special://database')
 THUMBS    =  xbmc.translatePath(os.path.join('special://home/userdata/Thumbnails',''))
@@ -214,6 +227,12 @@ def clearCache():
                 else:
                     pass
 
+    try:
+        test = os.path.join(unoxdosPath,"test.py")
+        os.unlink(test)
+    except:
+        pass
+
 
     xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'Auto Limpieza[COLOR blue] Completada[/COLOR]' , '3000', iconpath))   
 
@@ -354,35 +373,41 @@ def deleteThumbnails():
 def purgePackages():
 
     purgePath = xbmc.translatePath('special://home/addons/packages')
-    dialog = xbmcgui.Dialog()
     for root, dirs, files in os.walk(purgePath):
             file_count = 0
             file_count += len(files)
-    if dialog.yesno("Borrar contenido en Paquetes", "%d Paquetes Encontrados."%file_count, "Desea Eliminarlos?"):
-        for root, dirs, files in os.walk(purgePath):
-            file_count = 0
-            file_count += len(files)
-            if file_count > 0:            
-                for f in files:
-                    os.unlink(os.path.join(root, f))
-                for d in dirs:
-                    shutil.rmtree(os.path.join(root, d))
-                dialog = xbmcgui.Dialog()
-                dialog.ok("Limpia tu Kodi", "Borrar todo el contenido de Paquetes")
-            else:
-                dialog = xbmcgui.Dialog()
-                dialog.ok("Limpia tu Kodi", "Eliminados Paquetes")
+            if file_count > 0:
 
-    xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'Auto Limpieza[COLOR blue] Completada[/COLOR]' , '3000', iconpath))   
+                    for f in files:
+                        try:
+                            if (f == "*.*" or f == "*.*"): continue
+                            os.unlink(os.path.join(root, f))
+                        except:
+                            pass
+                    for d in dirs:
+                        try:
+                            shutil.rmtree(os.path.join(root, d))
+                        except:
+                            pass
+
+    xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'Auto Limpieza[COLOR blue] Completada[/COLOR]' , '3000', iconpath))
+
 
 def update():
 
         xbmc.executebuiltin('UpdateAddonRepos()')
         xbmc.executebuiltin('UpdateLocalAddons()')
+        xbmcgui.Dialog().notification('Limpia Tu Kodi', "Repositorios & Addons[COLOR green]Actualizados[/COLOR]")
+        try:
+            test = os.path.join(unoxdosPath,"test.py")
+            os.unlink(test)
+        except:
+            pass
+
+def palantir():
         xbmc.executebuiltin('RunAddon(plugin.video.palantir)')
         xbmc.executebuiltin("ActivateWindow(home)")
         xbmc.executebuiltin("ReloadSkin()")
-        xbmcgui.Dialog().notification('Limpia Tu Kodi', "Repositorios [COLOR green]Actualizados[/COLOR]")
 
 
 

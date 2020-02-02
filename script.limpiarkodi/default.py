@@ -1,5 +1,5 @@
 #   script.limpiarkodi
-#   Copyright (C) 2016  Teco
+#   Copyright (C) 2020  Teco
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -18,14 +18,45 @@
 
 import xbmc, xbmcaddon, xbmcgui, xbmcplugin, os, sys, xbmcvfs, glob
 import shutil
-import urllib2,urllib
 import re
 import os
+import sqlite3
+import json
+
+if sys.version_info.major==3:
+    from urllib.request import urlopen, Request, HTTPError
+    from six.moves import urllib
+    from six.moves.urllib.parse import parse_qs, urlparse, quote_plus, unquote_plus
+    from urllib.parse import urlparse
+    try:
+        from urllib.parse import parse_qs
+    except ImportError:
+        from cgi import parse_qs
+if sys.version_info.major==2:
+    from six.moves import urllib
+    from six.moves.urllib.parse import parse_qs, urlparse, quote_plus, unquote_plus
+    from urllib2 import urlopen, Request, HTTPError
+    from urlparse import urlparse
+    from urlparse import parse_qs
 addon_id = 'script.limpiarkodi'
 fanart = xbmc.translatePath(os.path.join('special://home/addons/' + addon_id , 'fanart.jpg'))
 icon = xbmc.translatePath(os.path.join('special://home/addons/' + addon_id, 'icon.png'))
-icon3 = xbmc.translatePath(os.path.join('special://home/addons/' + addon_id, 'luar.png'))
-icon2 = xbmc.translatePath(os.path.join('special://home/addons/' + addon_id, 'indigo.png'))
+icon3 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'luar.png'))
+icon4 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'icon2.png'))
+icon2 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'indigo.png'))
+icon5 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'bibloteca.png'))
+icon6 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'ltemp.png'))
+icon7 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'paque.png'))
+icon8 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'update.png'))
+icon9 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'image.png'))
+icon10 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'depen.png'))
+icon11 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'Ajustes.png'))
+icon12 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'respaldo.png'))
+icon13 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'herra.png'))
+icon14 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'depenico.png'))
+icon15 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'Mante.png'))
+icon16 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'Mante.png'))
+icon17 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'lupa.png'))
 thumbnailPath = xbmc.translatePath('special://thumbnails');
 cachePath = os.path.join(xbmc.translatePath('special://home'), 'cache')
 cdmPath = os.path.join(xbmc.translatePath('special://home'), 'cdm')
@@ -36,9 +67,12 @@ ltempPath = xbmc.translatePath('special://home/temp')
 addonPath = os.path.join(os.path.join(xbmc.translatePath('special://home'), 'addons'),'script.limpiarkodi')
 mediaPath = os.path.join(addonPath, 'media')
 databasePath = xbmc.translatePath('special://database')
+unoxdosPath = xbmc.translatePath('special://home/addons/script.limpiarkodi')
 THUMBS = xbmc.translatePath(os.path.join('special://home/userdata/Thumbnails',''))
+addonName = xbmcaddon.Addon().getAddonInfo('name')
+
 #######################################################################
-#                          CLASSES
+#                       Menu                                          #
 #######################################################################
 
 class cacheEntry:
@@ -49,21 +83,22 @@ class cacheEntry:
 
 
 def mainMenu():
+    addItem('  Limpiar Cache y Rom','url', 1,icon15)
+    addItem('  Borrar Imagenes', 'url', 2,icon9)
+    addItem('  Eliminar Temp', 'url', 3,icon6)
+    addItem('  Eliminar Paquetes', 'url', 4,icon7)
+def depe():
+    addfolder('Dependencias','url', 17,icon14)
 
-    addItem('Limpiar Cache y Rom','url', 1,icon)
-    addItem('Borrar Imagenes', 'url', 2,icon)
-    addItem('Limpiar Temp', 'url', 3,icon)
-    addItem('Purgar Packages', 'url', 4,icon)
-    addItem('Actualizar Addons y Repositorios', 'url', 5,icon)
-    addItem('Dependencias', 'url', 8,icon)
-    addItem('Herramientas Luar', 'url', 8,icon3)
-    addItem('Elimina Indigo', 'url', 7,icon2)
+def herra():
+    addfolder('Herramientas','url', 18,icon13)
+
+    addItem('Buscador de Addons y Scripts','url', 16,icon17)
+    addItem('Ajustes','url', 15,icon11)
 
 
-
-    
 #######################################################################
-#                        Add to menus
+#                        Add Menu                               #
 #######################################################################
 
 def addLink(name,url,iconimage):
@@ -75,7 +110,7 @@ def addLink(name,url,iconimage):
 
 
 def addDir(name,url,mode,iconimage):
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)
+    u=sys.argv[0]+"?url="+urllib.parse.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.parse.quote_plus(name)
     ok=True
     liz=xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
     liz.setInfo( type="Video", infoLabels={ "Title": name } )
@@ -84,13 +119,24 @@ def addDir(name,url,mode,iconimage):
     return ok
 
 def addItem(name,url,mode,iconimage):
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)
+    u=sys.argv[0]+"?url="+urllib.parse.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.parse.quote_plus(name)
     ok=True
-    liz=xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
+    liz=xbmcgui.ListItem(name)#, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
     liz.setInfo( type="Video", infoLabels={ "Title": name } )
-    liz.setProperty('fanart_image', fanart)
+    #liz.setProperty('fanart_image', fanart)
+    liz.setArt({'icon': 'DefaultFolder.png', 'thumb': iconimage, 'fanart': fanart})
     ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=False)
+
+def addfolder(name,url,mode,iconimage):
+    u=sys.argv[0]+"?url="+urllib.parse.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.parse.quote_plus(name)
+    ok=True
+    liz=xbmcgui.ListItem(name)#, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
+    liz.setInfo( type="Video", infoLabels={ "Title": name } )
+    #liz.setProperty('fanart_image', fanart)
+    liz.setArt({'icon': 'DefaultFolder.png', 'thumb': iconimage, 'fanart': fanart})
+    ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
     return ok
+
 
 #######################################################################
 #                        Parses Choice
@@ -114,7 +160,7 @@ def get_params():
     return param
 
 #######################################################################
-#                        Work Functions
+#                       Funciones                                     #
 #######################################################################
 def setupCacheEntries():
     entries = 21 #make sure this refelcts the amount of entries you have
@@ -286,55 +332,50 @@ def clearCache():
 
 def deleteThumbnails():
 
-    if os.path.exists(thumbnailPath)==True:  
+    if os.path.exists(thumbnailPath)==True:
+
             dialog = xbmcgui.Dialog()
-            if dialog.yesno("Borrar Imagenes", "Esta opcion eliminara todas las Imagenes", "Desea continuar?"):
+            choice1 =dialog.yesno("Borrar Imagenes", "Desea eliminar todas las Imagenes?")
+            if choice1 == 1:
                 for root, dirs, files in os.walk(thumbnailPath):
                     file_count = 0
                     file_count += len(files)
                     if file_count > 0:
                         for f in files:
                             try:
-                                os.unlink(os.path.join(root, f))
+                               os.unlink(os.path.join(root, f))
                             except:
                                 pass
-
-
-    if os.path.exists(THUMBS):
-        try:
-            for root, dirs, files in os.walk(THUMBS):
-                file_count = 0
-                file_count += len(files)
-                # Count files and give option to delete
-                if file_count > 0:
-                        for f in files:    os.unlink(os.path.join(root, f))
-                        for d in dirs: shutil.rmtree(os.path.join(root, d))
-        except:
-            pass
+            
+                choice2 =dialog.yesno("Limpia Tu Kodi", "Desea reiniciar Kodi ahora para terminar el proceso")
+                if choice2 == 1:
+                   xbmc.executebuiltin("RestartApp")()
 
     try:
         text13 = os.path.join(databasePath,"Textures13.db")
         os.unlink(text13)
+
     except:
         pass
-    dialog.ok("[COLOR=red]Atencion[/COLOR]", "Debe Reiniciar Kodi Para Aplicar los Cambios")
-        
+
+
+
 def purgeCacheRom():
 
     tempPath = xbmc.translatePath('special://home/addons/temp')
     dialog = xbmcgui.Dialog()
-    for root, dirs, files in os.walk(tempPath):
+    for root, dirs, folders in os.walk(tempPath):
             file_count = 0
-            file_count += len(files)
-    if os.path.exists(tempPath)==True:    
-        for root, dirs, files in os.walk(tempPath):
+            file_count += len(folders)
+    if os.path.exists(tempPath)==True:
+        for root, dirs, folders in os.walk(tempPath):
             file_count = 0
-            file_count += len(files)
+            file_count += len(folders)
             if file_count > 0:
                 dialog = xbmcgui.Dialog()
                 if dialog.yesno("Borrar Archivos en Temp", str(file_count) + " Archivos Encontrados", "Desea Eliminarlos?"):
 
-                    for f in files:
+                    for f in folders:
                         try:
                             if (f == "*.*" or f == "*.*"): continue
                             os.unlink(os.path.join(root, f))
@@ -345,9 +386,8 @@ def purgeCacheRom():
                             shutil.rmtree(os.path.join(root, d))
                         except:
                             pass
-                        
-            else:
-                pass
+        xbmcgui.Dialog().notification('Limpia Tu Kodi', "Archivos Temp Eliminados")
+
 
 def purgePackages():
 
@@ -371,6 +411,7 @@ def purgePackages():
                 dialog = xbmcgui.Dialog()
                 dialog.ok("Limpia tu Kodi", "Eliminados Paquetes")
 
+
 def update():
 
         xbmc.executebuiltin('UpdateAddonRepos()')
@@ -378,11 +419,20 @@ def update():
         xbmc.executebuiltin('RunAddon(plugin.video.palantir)')
         xbmc.executebuiltin("ActivateWindow(home)")
         xbmc.executebuiltin("ReloadSkin()")
-        xbmcgui.Dialog().notification('Limpia Tu Kodi', "Repositorios [COLOR green]Actualizados[/COLOR]")
+        xbmcgui.Dialog().notification('Limpia Tu Kodi', "Repositorios & Addons[COLOR green]Actualizados[/COLOR]")
+        try:
+            test = os.path.join(unoxdosPath,"test.py")
+            os.unlink(test)
+        except:
+            pass
 
 def depen():
 
         xbmc.executebuiltin('ActivateWindow(10025,addons://dependencies/&quot;)')
+
+def bibloteca():
+
+        xbmc.executebuiltin('CleanLibrary(video,true)')
 
 
 def deleteindigo():
@@ -398,12 +448,13 @@ def deleteindigo():
             file_count += len(files)
             if file_count > 0:
                 dialog = xbmcgui.Dialog()
-                if dialog.yesno("Este Proceso Desinstala Indigo", str() + "Para desinstslar completamenete [COLOR red]reinicie Kodi[/COLOR] despues del proceso.", "Esta seguro de que desea eliminar Indigo?"):
+                if dialog.yesno("Este Proceso Desinstala Indigo", str() + "Despues de desinstalar Indigo Kodi se  [COLOR red]reiniciara[/COLOR] ", "Esta seguro de que desea eliminar Indigo?"):
 
                     for f in files:
                         try:
                             if (f == "*.*" or f == "*.*"): continue
                             os.unlink(os.path.join(root, f))
+                            xbmc.executebuiltin("RestartApp")()
                         except:
                             pass
                     for d in dirs:
@@ -413,20 +464,210 @@ def deleteindigo():
                             pass
                         
             else:
+                xbmcgui.Dialog().notification('Limpia Tu Kodi', "Indigo [COLOR green] Desinstalado[/COLOR]")
                 pass
 
 
 def luar():
 
+        xbmc.executebuiltin('InstallAddon(script.luar)')
         xbmc.executebuiltin('RunAddon(script.luar)')
 
 
+def enableadaptive():
+
+        xbmc.executebuiltin('InstallAddon(inputstream.adaptive)')
+        xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'Input Stream Adaptative[COLOR green] Instalado[/COLOR]' , '3000', icon))
 
 
+
+
+def enablertmp():
+
+        xbmc.executebuiltin('InstallAddon(inputstream.rtmp)')
+        xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % ('Limpia tu Kodi' , 'InputStream RTMP[COLOR green] Instalado[/COLOR]' , '3000', icon))
+
+
+
+def compactDB():
+    conn = sqlite3.connect(xbmc.translatePath("special://home/userdata/Database/Addons27.db"))
+    size1 = size2 = 0
+    databasePath = xbmc.translatePath('special://database')
+    if os.path.exists(databasePath):
+        files = ([f for f in os.listdir(databasePath) if f.endswith('.db') and os.path.isfile(os.path.join(databasePath, f))])
+        d = xbmcgui.DialogProgress()
+        d.create('Limpia Tu Kodi', "Iniciando... ")
+        total = len(files)
+
+        for n, f in enumerate(files):
+            size1 += os.path.getsize(os.path.join(databasePath, f))
+            d.update(int(n * 100 / total), 'Compactando ' + f)
+            try:
+                conn = sqlite3.connect(os.path.join(databasePath, f))
+                conn.execute("VACUUM")
+            except:
+                logger("Error al compactar %s" % f)
+            finally:
+                conn.close()
+                size2 += os.path.getsize(os.path.join(databasePath, f))
+
+        d.close()
+
+        size = size1 - size2
+        if size > 1048576:
+            msg = "Bases de datos compactadas: %0.2fMB" % (size / 1048576.0)
+        elif size > 1024:
+            msg = "Bases de datos compactadas: %0.2fKB" % (size / 1024.0)
+        elif size == 0:
+            msg = "Las bases de datos ya estaban compactadas"
+        else:
+            msg = "Bases de datos compactadas: %s bytes" % size
+
+    else:
+        msg = "Se ha producido un error al compactar las  bases de datos.\n" \
+              "Reinicie Kodi y vuelva a probar"
+        logger(msg)
+
+    xbmcgui.Dialog().ok('Limpia Tu Kodi', msg)
+    return
+
+def exec_sql(command, database='Addons27.db'):
+    res = None
+    conn = sqlite3.connect(xbmc.translatePath("special://home/userdata/Database/" + database))
+    try:
+        cur = conn.cursor()
+        cur.execute(command)
+        if 'SELECT' in command.upper():
+            res = cur.fetchall()
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        logger('SQL EXCEPTION: %s' % str(e), 'error')
+        xbmc.executebuiltin('Notification(%s, %s)' % ('ERROR:', str(e)))
+    finally:
+        conn.close()
+
+    return res
+
+def del_addon(id, repo=False):
+    command = {
+        "jsonrpc": "2.0",
+        "method": "Addons.GetAddonDetails",
+        "params": {"addonid": id, "properties": ['path']},
+        "id": 1}
+    res = json.loads(xbmc.executeJSONRPC(json.dumps(command)))
+    path = res.get('result', {}).get('addon', {}).get('path')
+
+    if path:
+        # Eliminar carpeta local
+        shutil.rmtree(path)
+        # Eliminar de la BBDD
+        exec_sql("DELETE FROM installed WHERE addonID = " + chr(34) + id + chr(34))
+        if repo:
+            exec_sql("DELETE FROM repo WHERE addonID = " + chr(34) + id + chr(34))
+
+def analizar_repositorios(l_repos=None):
+    ret = {}
+    if not l_repos:
+        l_repos = [a[0] for a in exec_sql("SELECT addonID FROM repo")]
+    elif not isinstance(l_repos, list):
+        l_repos = [l_repos]
+
+    for repo in l_repos:
+        addons_in_repo = [a[0] for a in exec_sql("SELECT addons.addonID FROM addonlinkrepo "
+                                                 "JOIN addons ON addonlinkrepo.idAddon = addons.id "
+                                                 "JOIN repo ON addonlinkrepo.idRepo = repo.id "
+                                                 "WHERE  addons.addonID != repo.addonID AND "
+                                                 "repo.addonID = " + chr(34) + repo + chr(34))]
+
+        addons_installed_in_repo = [a[0] for a in exec_sql("SELECT addonID FROM installed") if a[0] in addons_in_repo]
+        ret[repo] = {'alls': addons_in_repo, "installs": addons_installed_in_repo}
+
+    return ret
+
+def huerfa():
+    c = 0
+    r = analizar_repositorios()
+    for k, v in r.items():
+        if v['alls'] and not v['installs']:
+            del_addon(k, True)
+            c += 1
+
+    if c == 0:
+        xbmcgui.Dialog().ok(addonName, "No existen repositorios huerfanos.")
+    elif c == 1:
+        xbmcgui.Dialog().ok(addonName, "Se ha eliminado un repositorio huerfano correctamente.")
+    else:
+        xbmcgui.Dialog().ok(addonName, "Se han eliminado %s repositorios huerfanos correctamente.",
+                            '' % c)
+
+def dependencias_huerfanas():
+    excluidos = ['script.module.beautifulsoup4', 'script.module.pil', 'script.module.pycryptodome', 'script.module.six']
+    l_addons = [a[0] for a in exec_sql(
+        "SELECT addonID FROM installed WHERE addonID LIKE " + chr(34) + "script.module.%" + chr(
+            34) + " OR addonID LIKE " + chr(34) + "metadata.common.%" + chr(34))]
+
+    l_inc = []
+    for addon in [a for a in
+                  exec_sql("SELECT metadata FROM addons INNER JOIN installed ON addons.addonID = installed.addonID")]:
+        depen_by_addon = re.findall('"dependencies"\s*:\s*(\[[^\]]+\])', addon[0])
+        if depen_by_addon:
+            l_inc.extend(re.findall('"addonId"\s*:\s*"([^"]+)"', depen_by_addon[0]))
+
+    return list((set(l_addons) - set(l_inc)) - set(excluidos))
+
+def del_huerfanas():
+    c = 0
+    while True:
+        huerfanas = dependencias_huerfanas()
+        if huerfanas:
+            for b in huerfanas:
+                del_addon(b)
+                c += 1
+        else:
+            break
+    if del_huerfanas:
+        if c == 0:
+            xbmcgui.Dialog().ok(addonName, "No existen dependencias huerfanas.")
+        elif c == 1:
+            xbmcgui.Dialog().ok(addonName, "Se ha eliminado una dependencia huerfana correctamente.")
+        else:
+            xbmcgui.Dialog().ok(addonName, "Se han eliminado %s dependencias huerfanas correctamente."
+                                '' % c)
+
+
+def ajustes():
+
+        xbmcaddon.Addon(id=sys.argv[0][9:-1]).openSettings()
+
+def buscar():
+        xbmc.executebuiltin('ActivateWindow(10040,addons://search)')
+
+#######################################################################
+#                       subs                                       #
+#######################################################################
+
+def depenm():
+
+    addItem('  Mostrar Dependencias', 'url', 19,icon10)
+    addItem('  Eliminar Repositorios Huerfanos', 'url', 9,icon10)
+    addItem('  Eliminar Depenpencias Huerfanas', 'url', 14,icon10)
+
+
+
+def herram():
+
+    addItem('  Luar', 'url', 6,icon3)
+    addItem('  Actualizar Addons y Repositorios', 'url', 5,icon8)
+    addItem('  Compactar Base de Datos', 'url', 13,icon12)
+    addItem('  Eliminar Indigo', 'url', 7,icon2)
+    addItem('  Activar InputStream Adaptive', 'url', 10,icon4)
+    addItem('  Activar RTMP Input', 'url', 11,icon4)
+    addItem('  Limpiar Bibloteca Kodi', 'url', 12,icon5)
 
 
 #######################################################################
-#                       Support
+#                       Soporte                                       #
 #######################################################################
 
 
@@ -436,11 +677,11 @@ name=None
 mode=None
 
 try:
-        url=urllib.unquote_plus(params["url"])
+        url=urllib.parse.unquote_plus(params["url"])
 except:
         pass
 try:
-        name=urllib.unquote_plus(params["name"])
+        name=urllib.parse.unquote_plus(params["name"])
 except:
         pass
 try:
@@ -450,7 +691,13 @@ except:
 
 if mode==None or url==None or len(url)<1:
         mainMenu()
-       
+
+if mode==None or url==None or len(url)<1:
+        depe()
+
+if mode==None or url==None or len(url)<1:
+        herra()
+
 elif mode==1:
         clearCache()
         
@@ -473,6 +720,38 @@ elif mode==7:
         deleteindigo()
 
 elif mode==8:
+        depenm()
+
+elif mode==9:
+        huerfa()
+
+elif mode==10:
+        enableadaptive()
+
+elif mode==11:
+        enablertmp()
+
+elif mode==12:
+        bibloteca()
+
+elif mode==13:
+        compactDB()
+
+elif mode==14:
+        del_huerfanas()
+
+elif mode==15:
+        ajustes()
+
+elif mode==16:
+        buscar()
+
+elif mode==17:
+        depenm()
+
+elif mode==19:
         depen()
 
+elif mode==18:
+        herram()
 xbmcplugin.endOfDirectory(int(sys.argv[1]))

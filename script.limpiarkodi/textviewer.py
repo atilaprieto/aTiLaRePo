@@ -1,18 +1,25 @@
 import os
 import json
-
 import xbmc
 import xbmcaddon
 import xbmcgui
-
 from libs import kodi
 
-# try:
-#     from urllib.request import urlopen, Request  # python 3.x
-# except ImportError:
-#     from urllib2 import urlopen, Request  # python 2.x
-
-
+if sys.version_info.major==3:
+    from urllib.request import urlopen, Request, HTTPError
+    from six.moves import urllib
+    from six.moves.urllib.parse import parse_qs, urlparse, quote_plus, unquote_plus
+    from urllib.parse import urlparse
+    try:
+        from urllib.parse import parse_qs
+    except ImportError:
+        from cgi import parse_qs
+if sys.version_info.major==2:
+    from six.moves import urllib
+    from six.moves.urllib.parse import parse_qs, urlparse, quote_plus, unquote_plus
+    from urllib2 import urlopen, Request, HTTPError
+    from urlparse import urlparse
+    from urlparse import parse_qs
 Addon = xbmcaddon.Addon()
 addon = Addon.getAddonInfo('id')
 addonName = Addon.getAddonInfo('name')

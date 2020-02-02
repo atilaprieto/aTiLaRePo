@@ -1,5 +1,5 @@
 #   script.limpiarkodi
-#   Copyright (C) 2019  Teco
+#   Copyright (C) 2020  Teco
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -17,9 +17,24 @@
 
 import xbmc, xbmcaddon, xbmcgui, xbmcplugin, os, sys, xbmcvfs, glob
 import shutil
-import urllib2,urllib
 import re
 import controlstartup as control
+
+if sys.version_info.major==3:
+    from urllib.request import urlopen, Request, HTTPError
+    from six.moves import urllib
+    from six.moves.urllib.parse import parse_qs, urlparse, quote_plus, unquote_plus
+    from urllib.parse import urlparse
+    try:
+        from urllib.parse import parse_qs
+    except ImportError:
+        from cgi import parse_qs
+if sys.version_info.major==2:
+    from six.moves import urllib
+    from six.moves.urllib.parse import parse_qs, urlparse, quote_plus, unquote_plus
+    from urllib2 import urlopen, Request, HTTPError
+    from urlparse import urlparse
+    from urlparse import parse_qs
 tempPath = xbmc.translatePath('special://home/addons/temp/')
 CacheRomdir   =  xbmc.translatePath(os.path.join('special://home/addons/temp',''))
 packagesdir   =  xbmc.translatePath(os.path.join('special://home/addons/packages',''))
@@ -43,8 +58,6 @@ for dirpath, dirnames, filenames in os.walk(packagesdir):
 total_sizetext = "%.0f" % (total_size/1024000.0)
     
 if count > maxpackage_zips or int(total_sizetext) > filesize: 
-    choice2 = xbmcgui.Dialog().yesno("[COLOR=red]Autolimpiar[/COLOR]", 'La Carpeta Packages tiene [COLOR red]' + str(total_sizetext) +' MB [/COLOR] - [COLOR red]' + str(count) + '[/COLOR] Zip ', 'La carpeta se puede limpiar sin problemas para ahorrar espacio ...', 'Desea Eliminarlos?', yeslabel='Si',nolabel='No')
-    if choice2 == 1:
         control.purgePackages()
 
 if setting('autoclean') == 'true':
@@ -53,6 +66,8 @@ if setting('autoclean') == 'true':
 if setting('update') == 'true':
     control.update()
 
+if setting('palantir') == 'true':
+    control.palantir()
 
 for dirpath2, dirnames2, filenames2 in os.walk(thumbnails):
     for f2 in filenames2:
