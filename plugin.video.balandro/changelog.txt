@@ -1,6 +1,10 @@
 Balandro changelog
 ==================
 
+1.4.3:
+    Canales modificados: Grantorrent, Seriez, Cinefox, Hdfull, Playview.
+    Servidores modificados: Fembed, Powvideo, Streamplay, Sendvid, Netutv.
+
 1.4.2:
     Canales modificados: Cuevana3, Xdede, Dospelis, Pelisplay, Hdfull.
     Servidores modificados: Powvideo, Streamplay, Upstream, Netutv, Youtube, Videomega.

@@ -139,7 +139,7 @@ def peliculas(item):
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
-    orden = ['CAM', 'WEB-SCR', 'BLURAY-SCR', 'HD', 'HD-RIP', 'DVD-RIP', 'BLURAY-RIP', 'HD 720p', 'HD 1080p']
+    orden = ['CAM', 'WEB-SCR', 'TS-SCR', 'BLURAY-SCR', 'HD', 'HD-RIP', 'DVD-RIP', 'BLURAY-RIP', 'HD 720p', 'HD 1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

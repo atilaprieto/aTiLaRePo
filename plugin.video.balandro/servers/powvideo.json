@@ -9,7 +9,7 @@
     "patterns": [
       {
         "pattern": "(?:powvideo|povwideo|povw1deo|powv1deo|powvldeo).(?:net|xyz|cc|com|co)/(?:embed-|iframe-|preview-|)([a-z0-9]+)",
-        "url": "http://powvldeo.co/iframe-\\1-954x562.html"
+        "url": "http://powvldeo.cc/iframe-\\1-954x562.html"
       }
     ]
   }

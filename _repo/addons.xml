@@ -230,7 +230,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.2" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.3" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -247,9 +247,8 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Cuevana3, Xdede, Dospelis, Pelisplay, Hdfull.
-    Servidores modificados: Powvideo, Streamplay, Upstream, Netutv, Youtube, Videomega.
-    Nueva opción en Configuración/Otros para descartar listas eróticas/xxx.
+    Canales modificados: Grantorrent, Seriez, Cinefox, Hdfull, Playview.
+    Servidores modificados: Fembed, Powvideo, Streamplay, Sendvid, Netutv.
     </news>
 
     <assets>
@@ -1020,7 +1019,7 @@ v.2.1.5
     </extension>
 </addon>
 
-<addon id="script.module.urlresolver" name="URLResolver" version="5.0.51" provider-name="tvaddons">
+<addon id="script.module.urlresolver" name="URLResolver" version="5.0.52" provider-name="tvaddons">
     <requires>
         <import addon="xbmc.python" version="2.1.0" />
         <import addon="plugin.video.youtube" optional="true" />

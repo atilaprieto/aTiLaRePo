@@ -81,7 +81,8 @@ def list_all(item):
     # ~ logger.debug(data)
 
     matches = re.compile('<div class="spotlight_image lazy"(.*?)<div class="playRing">', re.DOTALL).findall(data)
-    if '/search/' in item.url and item.search_type != 'all': # para búsquedas eliminar pelis/series según corresponda
+    # ~ if '/search/' in item.url and item.search_type != 'all': # para búsquedas eliminar pelis/series según corresponda
+    if item.search_type != 'all': # eliminar pelis/series según corresponda
         matches = filter(lambda x: (' class="info-series"' not in x and item.search_type == 'movie') or \
                                    (' class="info-series"' in x and item.search_type == 'tvshow'), matches)
     num_matches = len(matches)

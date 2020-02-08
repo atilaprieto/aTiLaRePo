@@ -10,7 +10,7 @@ from core import httptools, scrapertools, tmdb
 # ~ host = 'https://grantorrent1.com/'
 # ~ host = 'https://grantorrent.one/'
 # ~ host = 'https://grantorrent.tv/'
-#~ host = 'https://grantorrent.la/'
+# ~ host = 'https://grantorrent.la/'
 host = 'https://grantorrent.io/'
 
 
@@ -42,7 +42,8 @@ def do_downloadpage(url, post=None):
                 # ~ httptools.save_cookie(ck_name, ck_value, 'grantorrent1.com')
                 # ~ httptools.save_cookie(ck_name, ck_value, 'grantorrent.one')
                 # ~ httptools.save_cookie(ck_name, ck_value, 'grantorrent.tv')
-                httptools.save_cookie(ck_name, ck_value, 'grantorrent.la')
+                # ~ httptools.save_cookie(ck_name, ck_value, 'grantorrent.la')
+                httptools.save_cookie(ck_name, ck_value, 'grantorrent.io')
                 # ~ data = httptools.downloadpage(url, post=post).data
                 data = httptools.downloadpage_proxy('grantorrent', url, post=post).data
                 # ~ logger.debug(data)
@@ -197,7 +198,7 @@ def findvideos(item):
         if not post: continue
         try:
             url = base64.b64decode(post)
-            #~ url = url.replace('grantorrent.io/', 'grantorrent.one/')
+            # ~ url = url.replace('grantorrent.la/', 'grantorrent.one/')
         except:
             continue
 
