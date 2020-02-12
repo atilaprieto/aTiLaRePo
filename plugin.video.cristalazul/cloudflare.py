@@ -32,10 +32,10 @@ def createCookie(url,cj=None,agent='Mozilla/5.0 (Windows NT 6.1; rv:14.0) Gecko/
         result=urlData = response.read()
         response.close()
         
-        jschl = re.compile('name="jschl_vc" value="(.+?)"/>').findall(result)[0]
-
-        init = re.compile('setTimeout\(function\(\){\s*.*?.*:(.*?)};').findall(result)[0]
-        builder = re.compile(r"challenge-form\'\);\s*(.*)a.v").findall(result)[0]
+        jschl = re.compile('name="jschl_vc"\s*value="([^"]+)').findall(result)[0]
+        sval = re.compile('name="s"\s*value="([^"]+)').findall(result)[0]
+        init = re.compile(r'setTimeout\(function\(\){\s*.*?.*:(.*?)};').findall(result)[0]
+        builder = re.compile(r"challenge-form\'\);\s*;*([^^]+);a\.value").findall(result)[0]
         if '/' in init:
             init = init.split('/')
             decryptVal = parseJSString(init[0]) / float(parseJSString(init[1]))
@@ -59,11 +59,11 @@ def createCookie(url,cj=None,agent='Mozilla/5.0 (Windows NT 6.1; rv:14.0) Gecko/
         u='/'.join(url.split('/')[:-1])  
         if '<form id="challenge-form" action="/cdn' in urlData:
             u='/'.join(url.split('/')[:3])
-        query = urlparse.urljoin(url,'/cdn-cgi/l/chk_jschl?jschl_vc=%s&jschl_answer=%s' % ( jschl, answer))
+        query = urlparse.urljoin(url,'/cdn-cgi/l/chk_jschl?s=%s&jschl_vc=%s&jschl_answer=%s' % (urllib.quote_plus(sval), jschl, answer))
         passval=None
         if 'type="hidden" name="pass"' in result:
             passval=re.compile('name="pass" value="(.*?)"').findall(result)[0]
-            query = '%s/cdn-cgi/l/chk_jschl?pass=%s&jschl_vc=%s&jschl_answer=%s' % (u,urllib.quote_plus(passval), jschl, answer)
+            query = '%s/cdn-cgi/l/chk_jschl?s=%s&pass=%s&jschl_vc=%s&jschl_answer=%s' % (u,urllib.quote_plus(sval),urllib.quote_plus(passval), jschl, answer)
             xbmc.sleep(4*1000) ##sleep so that the call work
             
  #       print query

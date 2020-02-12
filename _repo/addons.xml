@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.3.9" provider-name="aTiLa">
+    <addon id="aTiLaRePo" name="aTiLaRePo" version="0.4.0" provider-name="aTiLa">
         <requires>
             <import addon="xbmc.addon" version="12.0.0"/>
         </requires>
@@ -296,7 +296,7 @@ You can clone the project and host it in your own server.
 
 <addon id="plugin.video.cristalazul"
        name="[COLOR aqua]CRISTAL AZUL[/COLOR]"
-       version="0.0.6"
+       version="0.0.7"
        provider-name="PICAPAU, LOURDES, SUPERTOPO, LUISMA">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -309,6 +309,10 @@ You can clone the project and host it in your own server.
     <import addon="script.module.youtube.dl" optional="true"/>
     <import addon="plugin.video.youtube" />
     <import addon="script.module.urlresolver" />
+	<import addon="script.module.resolveurl" />
+    <import addon="script.module.inputstreamhelper" optional="true"/>
+    <import addon="script.module.livestreamer" optional="true"/>
+    <import addon="script.module.slproxy" optional="true"/>
 	<import addon="script.module.simplejson" />
     <import addon="script.module.livestreamer" optional="true"/>
     <import addon="script.module.pyamf" optional="true"/>
@@ -335,7 +339,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.0.2" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.0.3" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />

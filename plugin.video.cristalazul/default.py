@@ -31,7 +31,7 @@ class NoRedirection(urllib2.HTTPErrorProcessor):
        return response
    https_response = http_response
 
-REMOTE_DBG=False;
+REMOTE_DBG=False
 if REMOTE_DBG:
     # Make pydev debugger works for auto reload.
     # Note pydevd module need to be copied in XBMC\system\python\Lib\pysrc
@@ -52,7 +52,7 @@ home = xbmc.translatePath(addon.getAddonInfo('path').decode('utf-8'))
 favorites = os.path.join(profile, 'favorites')
 history = os.path.join(profile, 'history')
 REV = os.path.join(profile, 'list_revision')
-icon = os.path.join(home, 'icon.png')
+icon = os.path.join(home, 'icon.gif')
 FANART = os.path.join(home, 'fanart.jpg')
 source_file = os.path.join(home, 'source_file')
 functions_dir = profile
@@ -71,7 +71,6 @@ else: SOURCES = []
 def addon_log(string):
     if debug == 'true':
         xbmc.log("[addon.cristalazul-%s]: %s" %(addon_version, string))
-
 
 def makeRequest(url, headers=None):
         try:
@@ -102,11 +101,11 @@ def makeRequest(url, headers=None):
             addon_log('URL: '+url)
             if hasattr(e, 'code'):
                 addon_log('We failed with error code - %s.' % e.code)
-                xbmc.executebuiltin("XBMC.Notification(cristalazul ha fallado. Código de error - "+str(e.code)+",10000,"+icon+")")
+                xbmc.executebuiltin("XBMC.Notification(cristalazul,We failed with error code - "+str(e.code)+",10000,"+icon+")")
             elif hasattr(e, 'reason'):
                 addon_log('We failed to reach a server.')
                 addon_log('Reason: %s' %e.reason)
-                xbmc.executebuiltin("XBMC.Notification(cristalazul, fallo del servidor. - "+str(e.reason)+",10000,"+icon+")")
+                xbmc.executebuiltin("XBMC.Notification(cristalazul,We failed to reach a server. - "+str(e.reason)+",10000,"+icon+")")
 
 def getSources():
         try:
@@ -201,7 +200,7 @@ def addSource(url=None):
                 nameStr = source_url.split('\\')[-1].split('.')[0]
             if '%' in nameStr:
                 nameStr = urllib.unquote_plus(nameStr)
-            keyboard = xbmc.Keyboard(nameStr,'Displayed Name, Rename?')
+            keyboard = xbmc.Keyboard(nameStr,'Escribe Nombre, Addon o pasta?')
             keyboard.doModal()
             if (keyboard.isConfirmed() == False):
                 return
@@ -227,7 +226,7 @@ def addSource(url=None):
             b.close()
         addon.setSetting('new_url_source', "")
         addon.setSetting('new_file_source', "")
-        xbmc.executebuiltin("XBMC.Notification(cristalazul,New source added.,5000,"+icon+")")
+        xbmc.executebuiltin("XBMC.Notification(cristalazul,Nuevo Addon Añadido.,5000,"+icon+")")
         if not url is None:
             if 'xbmcplus.xb.funpic.de' in url:
                 xbmc.executebuiltin("XBMC.Container.Update(%s?mode=14,replace)" %sys.argv[0])
@@ -2270,7 +2269,7 @@ def urlsolver(url):
         else:
             resolver = resolved
     else:
-        xbmc.executebuiltin("XBMC.Notification(cristalazul,resolveurl no soporta este dominio. - ,5000)")
+        xbmc.executebuiltin("XBMC.Notification(cristalazul,resolveurl donot support this domain. - ,5000)")
         resolver=url
     return resolver
 
@@ -2346,7 +2345,7 @@ def play_playlist(name, mu_playlist,queueVideo=None):
                 if "&mode=19" in mu_playlist[index]:
                         #playsetresolved (urlsolver(mu_playlist[index].replace('&mode=19','')),name,iconimage,True)
                     liz = xbmcgui.ListItem(playname, iconImage=iconimage, thumbnailImage=iconimage)
-                    liz.setInfo(type='Video', infoLabels={'Title':playname})
+                    liz.setInfo(type='Video', infoLabels={'Title':playname,'mediatype':'video'})
                     liz.setProperty("IsPlayable","true")
                     urltoplay=urlsolver(mu_playlist[index].replace('&mode=19','').replace(';',''))
                     liz.setPath(urltoplay)
@@ -2359,7 +2358,7 @@ def play_playlist(name, mu_playlist,queueVideo=None):
                     url,setresolved = getRegexParsed(sepate[1], sepate[0])
                     url2 = url.replace(';','')
                     liz = xbmcgui.ListItem(playname, iconImage=iconimage, thumbnailImage=iconimage)
-                    liz.setInfo(type='Video', infoLabels={'Title':playname})
+                    liz.setInfo(type='Video', infoLabels={'Title':playname,'mediatype':'video'})
                     liz.setProperty("IsPlayable","true")
                     liz.setPath(url2)
                     #xbmc.Player().play(url2,liz)
@@ -2369,7 +2368,7 @@ def play_playlist(name, mu_playlist,queueVideo=None):
                     url = mu_playlist[index]
                     url=url.split('&regexs=')[0]
                     liz = xbmcgui.ListItem(playname, iconImage=iconimage, thumbnailImage=iconimage)
-                    liz.setInfo(type='Video', infoLabels={'Title':playname})
+                    liz.setInfo(type='Video', infoLabels={'Title':playname,'mediatype':'video'})
                     liz.setProperty("IsPlayable","true")
                     liz.setPath(url)
                     #xbmc.Player().play(url,liz)
@@ -2403,7 +2402,7 @@ def play_playlist(name, mu_playlist,queueVideo=None):
                 if "&mode=19" in mu_playlist[index]:
                         #playsetresolved (urlsolver(mu_playlist[index].replace('&mode=19','')),name,iconimage,True)
                     liz = xbmcgui.ListItem(playname, iconImage=iconimage, thumbnailImage=iconimage)
-                    liz.setInfo(type='Video', infoLabels={'Title':playname})
+                    liz.setInfo(type='Video', infoLabels={'Title':playname,'mediatype':'video'})
                     liz.setProperty("IsPlayable","true")
                     urltoplay=urlsolver(mu_playlist[index].replace('&mode=19','').replace(';',''))
                     liz.setPath(urltoplay)
@@ -2415,7 +2414,7 @@ def play_playlist(name, mu_playlist,queueVideo=None):
                     url,setresolved = getRegexParsed(sepate[1], sepate[0])
                     url2 = url.replace(';','')
                     liz = xbmcgui.ListItem(playname, iconImage=iconimage, thumbnailImage=iconimage)
-                    liz.setInfo(type='Video', infoLabels={'Title':playname})
+                    liz.setInfo(type='Video', infoLabels={'Title':playname,'mediatype':'video'})
                     liz.setProperty("IsPlayable","true")
                     liz.setPath(url2)
                     xbmc.Player().play(url2,liz)
@@ -2424,7 +2423,7 @@ def play_playlist(name, mu_playlist,queueVideo=None):
                     url = mu_playlist[index]
                     url=url.split('&regexs=')[0]
                     liz = xbmcgui.ListItem(playname, iconImage=iconimage, thumbnailImage=iconimage)
-                    liz.setInfo(type='Video', infoLabels={'Title':playname})
+                    liz.setInfo(type='Video', infoLabels={'Title':playname,'mediatype':'video'})
                     liz.setProperty("IsPlayable","true")
                     liz.setPath(url)
                     xbmc.Player().play(url,liz)
@@ -2510,8 +2509,9 @@ def addDir(name,url,mode,iconimage,fanart,description,genre,date,credits,showcon
             description += '\n\nDate: %s' %date
         liz=xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
         if len(allinfo) <1 :
-            liz.setInfo(type="Video", infoLabels={ "Title": name, "Plot": description, "Genre": genre, "dateadded": date, "credits": credits })
+            liz.setInfo(type="Video", infoLabels={ "Title": name, 'mediatype':'video', "Plot": description, "Genre": genre, "dateadded": date, "credits": credits })
         else:
+            allinfo.update({'mediatype':'video'})
             liz.setInfo(type="Video", infoLabels= allinfo)
         liz.setProperty("Fanart_Image", fanart)
         if showcontext:
@@ -2679,7 +2679,7 @@ def addLink(url,name,iconimage,fanart,description,genre,date,showcontext,playlis
             mode = '20'
         elif url.endswith('&mode=22'):
             url=url.replace('&mode=22','')
-            mode = '22'      
+            mode = '22'
         elif url.startswith('magnet:?xt='):
             if '&' in url and not '&amp;' in url :
                 url = url.replace('&','&amp;')
@@ -2722,10 +2722,14 @@ def addLink(url,name,iconimage,fanart,description,genre,date,showcontext,playlis
 
         #if isFolder:
         if allinfo==None or len(allinfo) <1:
-            liz.setInfo(type="Video", infoLabels={ "Title": name, "Plot": description, "Genre": genre, "dateadded": date })
+            liz.setInfo(type="Video", infoLabels={ "Title": name, 'mediatype':'video', "Plot": description, "Genre": genre, "dateadded": date })
         else:
+            allinfo.update({'mediatype':'video'})
             liz.setInfo(type="Video", infoLabels=allinfo)
         liz.setProperty("Fanart_Image", fanart)
+
+        if '$$RESOLVEONLY$$' in url:
+            liz.setProperty('IsPlayable', 'true')
  
         if (not play_list) and not any(x in url for x in g_ignoreSetResolved) and not '$PLAYERPROXY$=' in url and not (mode=='22' or (mode=='17' and url.endswith('&mode=22'))):#  (not url.startswith('plugin://plugin.video.f4mTester')):
             if regexs:
@@ -2774,7 +2778,7 @@ def addLink(url,name,iconimage,fanart,description,genre,date,showcontext,playlis
                     liz.addContextMenuItems(contextMenu_)
         except: pass
         #print 'adding',name
-    
+        
         ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,totalItems=total,isFolder=isFolder)
 
         #print 'added',name
@@ -2803,7 +2807,7 @@ def playsetresolved(url,name,iconimage,setresolved=True,reg=None):
             setres=False
 
         liz = xbmcgui.ListItem(name, iconImage=iconimage, thumbnailImage=iconimage)
-        liz.setInfo(type='Video', infoLabels={'Title':name})
+        liz.setInfo(type='Video', infoLabels={'Title':name,'mediatype':'video'})
         liz.setProperty("IsPlayable","true")
         if '&mode=19' in url:
             url=urlsolver(url.replace('&mode=19','').replace(';',''))
@@ -3003,6 +3007,7 @@ if mode==None:
     getSources()
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
+
 elif mode==1:
     addon_log("getData")
     data=None
@@ -3085,7 +3090,23 @@ elif mode==12:
         if '$$LSDirect$$' in url:
             url=url.replace('$$LSDirect$$','')
             setres=False
-        item = xbmcgui.ListItem(path=url)
+        if '$PLAYERPROXY$=' in url:
+            url,proxy=url.split('$PLAYERPROXY$=')
+            print 'proxy',proxy
+            #Jairox mod for proxy auth
+            proxyuser = None
+            proxypass = None
+            if len(proxy) > 0 and '@' in proxy:
+                proxy = proxy.split(':')
+                proxyuser = proxy[0]
+                proxypass = proxy[1].split('@')[0]
+                proxyip = proxy[1].split('@')[1]
+                port = proxy[2]
+            else:
+                proxyip,port=proxy.split(':')
+            playmediawithproxy(url,name,iconimage,proxyip,port, proxyuser,proxypass) #jairox
+            
+        item = xbmcgui.ListItem(path=url)        
         if not setres:
             xbmc.Player().play(url)
         else: 
@@ -3311,18 +3332,40 @@ elif mode==22:
     print "slproxy"
     try:
         from dsp import streamlink_proxy
-        slProxy = streamlink_proxy.SLProxy_Helper()
         try:
             q =  re.findall(r'\$\$QUALITY=([^\$\$]+)\$\$', url)[0]
         except:
-            q = 'best'
+            q = '' if re.search(r'\$\$RESOLVEONLY\$\$', url) else 'best'
         url = re.sub(r'\$\$QUALITY=.*?\$\$', '', url)
-        url = urllib.quote(url)+'&amp;q=%s'%q
-        listitem = xbmcgui.ListItem(str(name))
-        listitem.setInfo('video', {'Title': str(name)})
-        listitem.setPath(url)                          
-        slProxy.playSLink(url, listitem)
+        
+        try:
+            prxy =  re.findall(r'\$\$HTTPPROXY=([^\$\$]+)\$\$', url)[0]
+        except:
+            prxy = ''
+        url = re.sub(r'\$\$HTTPPROXY=.*?\$\$', '', url)
+        prxy = '' if prxy == '' else '&amp;p=%s'%prxy
+
+        if re.search(r'\$\$RESOLVEONLY\$\$', url):
+            url = re.sub(r'\$\$RESOLVEONLY\$\$', '', url)
+            slProxy = streamlink_proxy.SLProxy_Helper()
+            q = '' if q == '' else '&amp;q=%s'%q
+            url = slProxy.resolve_url(urllib.quote(url)+q+prxy)
+            addon_log("setResolvedUrl")
+            listitem = xbmcgui.ListItem(str(name))
+            listitem.setInfo('video', {'Title': str(name)})
+            listitem.setPath(url)
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem)
+
+        else:
+            slProxy = streamlink_proxy.SLProxy_Helper()            
+            url = urllib.quote(url)+'&amp;q=%s'%q + prxy
+            listitem = xbmcgui.ListItem(str(name))
+            listitem.setInfo('video', {'Title': str(name)})
+            listitem.setPath(url)         
+            slProxy.playSLink(url, listitem)
     except:
+        import sys
+        traceback.print_exc(file=sys.stdout)
         pass
 
 elif mode==23:
@@ -3370,4 +3413,3 @@ elif mode==53:
 if not viewmode==None:
    print 'setting view mode'
    xbmc.executebuiltin("Container.SetViewMode(%s)"%viewmode)
-    
