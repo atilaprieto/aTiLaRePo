@@ -1,11 +1,25 @@
 # -*- coding: utf-8 -*-
 
-import re
+from __future__ import division
+#from builtins import str
+from builtins import range
+from past.utils import old_div
 import sys
-import urllib
-import urlparse
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urlparse                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                               # Usamos el nativo de PY2 que es más rápido
+
+import re
 import time
 import traceback
+import js2py
+import base64
 
 from channelselector import get_thumb
 from core import httptools
@@ -21,14 +35,24 @@ from channels import autoplay
 
 #IDIOMAS = {'CAST': 'Castellano', 'LAT': 'Latino', 'VO': 'Version Original'}
 IDIOMAS = {'Castellano': 'CAST', 'Latino': 'LAT', 'Version Original': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['torrent']
 
-host = "https://grantorrent.la/"
+#host = 'http://grantorrent.net/'
+#host = 'https://grantorrent1.com/'
+#host = 'https://grantorrent.one/'
+#host = 'https://grantorrent.tv/'
+#host = 'https://grantorrent.io/'
+#host = 'https://grantorrent.la/'
+host = 'https://grantorrent.li/'
 channel = "grantorrent"
-domain = 'grantorrent.la'
-domain_files = 'files.grantorrent.one'
+domain = 'grantorrent.li'
+sufix = '.li'
+#domain_files = 'files.grantorrent.one'
+domain_files = domain
+sufix_alt = '.li'
+series_sufix = 'series/'
 
 dict_url_seasons = dict()
 __modo_grafico__ = config.get_setting('modo_grafico', channel)
@@ -53,15 +77,15 @@ def mainlist(item):
     
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append(Item(channel=item.channel, action="submenu", title="Películas", url=host + "principal/", extra="peliculas", thumbnail=thumb_pelis))
+    itemlist.append(Item(channel=item.channel, action="submenu", title="Películas", url=host, extra="peliculas", thumbnail=thumb_pelis))
 
     #Buscar películas
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar en Películas >>", url=host, extra="peliculas", thumbnail=thumb_buscar))
     
-    itemlist.append(Item(channel=item.channel, action="submenu", title="Series", url=host + "principal/", extra="series", thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, action="submenu", title="Series", url=host, extra="series", thumbnail=thumb_series))
 
     #Buscar series
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar en Series >>", url=host + "series-2/", extra="series", thumbnail=thumb_buscar))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar en Series >>", url=host + series_sufix, extra="series", thumbnail=thumb_buscar))
         
     itemlist.append(Item(channel=item.channel, url=host, title="[COLOR yellow]Configuración:[/COLOR]", folder=False, thumbnail=thumb_separador))
     
@@ -87,7 +111,8 @@ def submenu(item):
     try:
         data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)", "", httptools.downloadpage(item.url, timeout=timeout).data)
         data = js2py_conversion(data, item.url)
-        data = data.decode('utf8').encode('utf8')
+        if not PY3:
+            data = data.decode('utf8').encode('utf8')
     except:
         pass
         
@@ -132,10 +157,11 @@ def submenu(item):
 
         for scrapedurl, scrapedtitle in matches:
             title = scrapedtitle.strip()
+            url = scrapedurl.replace('series-2/', series_sufix)
 
-            itemlist.append(item.clone(action="listado", title=title, url=scrapedurl))              #Menú series
+            itemlist.append(item.clone(action="listado", title=title, url=url))                     #Menú series
             
-            itemlist.append(item.clone(action="generos", title="Series **Géneros**", url=host + "series-2/"))   #Lista de Géneros
+            itemlist.append(item.clone(action="generos", title="Series **Géneros**", url=host + series_sufix))   #Lista de Géneros
 
     return itemlist
     
@@ -172,7 +198,10 @@ def generos(item):
             return itemlist                                             #Salimos
 
     for scrapedurl, scrapedtitle in matches:
-        title = re.sub('\r\n', '', scrapedtitle).decode('utf8').encode('utf8').strip().capitalize()
+        if not PY3:
+            title = re.sub('\r\n', '', scrapedtitle).decode('utf8').encode('utf8').strip().capitalize()
+        else:
+            title = re.sub('\r\n', '', scrapedtitle).strip().capitalize()
 
         itemlist.append(item.clone(action="listado", title=title, url=scrapedurl))          #Listado de géneros
 
@@ -218,7 +247,7 @@ def listado(item):
             if not item.post:
                 item.post = item.url
             video_section = ''
-            data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)", "", httptools.downloadpage(item.post, timeout=timeout_search).data)
+            data = re.sub(r"\n|\r|\t|(<!--.*?-->)", "", httptools.downloadpage(item.post, timeout=timeout_search).data)
             data = js2py_conversion(data, item.post, timeout=timeout_search)
             video_section = scrapertools.find_single_match(data, '<div class="contenedor-home">(?:\s*<div class="titulo-inicial">\s*Últi.*?Añadi...\s*<\/div>)?\s*<div class="contenedor-imagen">\s*(<div class="imagen-post">.*?<\/div><\/div>)<\/div>')
         except:
@@ -373,7 +402,10 @@ def listado(item):
             del item_local.category
         item_local.context = "['buscar_trailer']"
         
-        title = re.sub('\r\n', '', scrapedtitle).decode('utf8').encode('utf8').strip()      #Decode-encode utf8
+        if not PY3:
+            title = re.sub('\r\n', '', scrapedtitle).decode('utf8').encode('utf8').strip()      #Decode-encode utf8
+        else:
+            title = re.sub('\r\n', '', scrapedtitle).strip()
         title = re.sub(r"\s{2}", " ", title)
         title = title.replace("&#8217;", "'").replace("\xc3\x97", "x")
         item_local.url = urlparse.urljoin(host, scrapedurl)
@@ -486,14 +518,14 @@ def findvideos(item):
     if item.videolibray_emergency_urls:                 #Si se están cacheando enlaces aumentamos el timeout
         timeout_find = timeout * 2
     elif item.emergency_urls:                           #Si se llama desde la Videoteca con enlaces cacheados... 
-        timeout_find = timeout / 2                      #reducimos el timeout antes de saltar a los enlaces cacheados
+        timeout_find = old_div(timeout, 2)                      #reducimos el timeout antes de saltar a los enlaces cacheados
         #follow_redirects=False
     rar_search = True
         
     #Bajamos los datos de la página
     data = ''
     try:
-        data = re.sub(r"\n|\r|\t|\s{2,}", "", httptools.downloadpage(item.url, timeout=timeout_find, follow_redirects=follow_redirects).data)
+        data = re.sub(r"\n|\r|\t", "", httptools.downloadpage(item.url, timeout=timeout_find, follow_redirects=follow_redirects).data)
         data = js2py_conversion(data, item.url, timeout=timeout_find, follow_redirects=follow_redirects)
     except:
         pass
@@ -510,12 +542,15 @@ def findvideos(item):
             else:
                 return itemlist                                                 #salimos
     
-    data = unicode(data, "utf-8", errors="replace").encode("utf-8")
+    if not PY3:
+        data = unicode(data, "utf-8", errors="replace").encode("utf-8")
     data = scrapertools.find_single_match(data, 'div id="Tokyo" [^>]+>(.*?)</div>')     #Seleccionamos la zona de links
     
     patron = '\/icono_.*?png"\s*(?:title|alt)="(?P<lang>[^"]+)?"[^>]+><\/td><td>'
     patron += '(?P<temp_epi>.*?)?<?\/td>.*?<td>(?P<quality>.*?)?<\/td><td><a\s*'
-    patron += 'class="link"\s*href="(?P<url>[^"]+)?"'
+    #patron += 'class="link"\s*href="(?P<url>[^"]+)?"'
+    patron += 'class="link"\s*onclick="'
+    patron += "post\('(?P<url>[^']+)',\s*{u:\s*'(?P<key>[^']+)'}\);"
     if not item.armagedon:                                                      #Si es un proceso normal, seguimos
         matches = re.compile(patron, re.DOTALL).findall(data)
     if not matches:                                                             #error
@@ -546,10 +581,11 @@ def findvideos(item):
         emergency_torrents = []
         emergency_urls = []
     i = -1
-    for lang, quality, size, scrapedurl_la in matches:
+    for lang, quality, size, scrapedurl_la, scrapedkey in matches:
         i += 1
         temp_epi = ''
-        scrapedurl = scrapedurl_la.replace('.la', '.one')
+        scrapedurl = '%s?u=%s' % (urlparse.urljoin(host, scrapedurl_la).replace(sufix, sufix_alt)\
+                    .replace('download/torrent.php', 'download_tt.php'), scrapedkey)
         if scrapertools.find_single_match(quality, '\([C|c]ontrase[^>]+>(.*?)<\/[^>]+>.'):
             password = scrapertools.find_single_match(quality, '\([C|c]ontrase[^>]+>(.*?)<\/[^>]+>.')
             quality = re.sub(r'\([C|c]ontrase[^>]+>(.*?)<\/[^>]+>.', '', quality)
@@ -577,8 +613,8 @@ def findvideos(item):
                     contentSeason = int(contentSeason)
                     contentEpisodeNumber = 1
                 else:
-                    if scrapertools.find_single_match(temp_epi, r'(\d+)&#.*?;(\d+)'):
-                        contentSeason, contentEpisodeNumber = scrapertools.find_single_match(temp_epi, r'(\d+)&#.*?;(\d+)')
+                    if scrapertools.find_single_match(temp_epi, r'(\d+)(?:&#.*?;|x|X)(\d+)'):
+                        contentSeason, contentEpisodeNumber = scrapertools.find_single_match(temp_epi, r'(\d+)(?:&#.*?;|x|X)(\d+)')
                     if not contentEpisodeNumber:
                         contentSeason = scrapertools.find_single_match(item.url, r'temporadas?-(\d+)')  #num de temporada
                         if not contentEpisodeNumber:
@@ -631,8 +667,10 @@ def findvideos(item):
         if config.get_setting("cookie_ren", channel=channel, default=True):
             data_tor = ''
             try:
-                data_tor = re.sub(r"\n|\r|\t|\s{2,}", "", httptools.downloadpage(scrapedurl, timeout=timeout).data)
-                data_tor = js2py_conversion(data_tor, scrapedurl, domain_name=domain_files, timeout=timeout)
+                data_tor = httptools.downloadpage(scrapedurl, timeout=timeout).data
+                if not PY3 or (PY3 and not isinstance(data_tor, bytes)):
+                    data_tor = re.sub(r"\n|\r|\t", "", data_tor)
+                    data_tor = js2py_conversion(data_tor, scrapedurl, domain_name=domain_files, timeout=timeout)
                 config.set_setting("cookie_ren", False, channel=channel)            #Cookie renovada
             except:
                 logger.error(traceback.format_exc())
@@ -643,7 +681,7 @@ def findvideos(item):
         if size:
             size = size.replace('GB', 'G·B').replace('Gb', 'G·b').replace('MB', 'M·B')\
                         .replace('Mb', 'M·b').replace('.', ',')
-            item_local.torrent_info += '%s' % size                                       #Agregamos size
+            item_local.torrent_info += '%s' % size                                  #Agregamos size
             if not item.unify:
                 item_local.torrent_info = '[%s]' % item_local.torrent_info.strip().strip(',')
                 
@@ -658,8 +696,8 @@ def findvideos(item):
                         item.password = scrapertools.find_single_match(temp_epi, '\[Contrase.*?=(.*?)\]')
                 if item.password:
                     item_local.password = item.password
-            if not item.password:
-                item_local = generictools.find_rar_password(item_local)
+            #if not item.password:
+            #    item_local = generictools.find_rar_password(item_local)
             if item_local.password:
                 item.password = item_local.password
                 itemlist.append(item.clone(action="", title="[COLOR magenta][B] Contraseña: [/B][/COLOR]'" 
@@ -747,7 +785,9 @@ def episodios(item):
 
     data = ''
     try:
-        data = re.sub(r"\n|\r|\t|\s{2,}", "", httptools.downloadpage(item.url, timeout=timeout).data)    #Cargamos los datos de la página
+        temp_advance = ''
+        
+        data = re.sub(r"\n|\r|\t", "", httptools.downloadpage(item.url, timeout=timeout).data)    #Cargamos los datos de la página
         data = js2py_conversion(data, item.url, timeout=timeout)
 
         patron_actual = '<link rel="canonical" href="(.*?)"'                            #Patrón de url temporada actual
@@ -799,7 +839,7 @@ def episodios(item):
             if temp_actual_num > 1:                             #Temp. actual > 1, parece Temporada
                 s = 1
                 while s <= item.infoLabels["number_of_seasons"]:                #Buscamos la primera Temporada de Videoteca
-                    if item.library_playcounts.has_key('season %d' % s):        #Buscamos si la Temporada 1 existe
+                    if 'season %d' % s in item.library_playcounts:        #Buscamos si la Temporada 1 existe
                         if item.library_playcounts["season %d" % s] < temp_actual_num:    #Si menor que actual, es Temp.
                             item.contentType = "season"
                         else:
@@ -834,7 +874,7 @@ def episodios(item):
     while temp_actual != '':                            #revisamos las temporadas hasta el final
         if not data:                                    #si no hay datos, descargamos. Si los hay de loop anterior, los usamos
             try:
-                data = re.sub(r"\n|\r|\t|\s{2,}", "", httptools.downloadpage(temp_actual, timeout=timeout).data)
+                data = re.sub(r"\n|\r|\t", "", httptools.downloadpage(temp_actual, timeout=timeout).data)
                 data = js2py_conversion(data, temp_actual, timeout=timeout)
                 
                 #Controla que no haya un bucle en la cadena de links entre temporadas
@@ -935,12 +975,15 @@ def episodios(item):
         else:
             temp_advance = ''                           #lo limpiamos, por control
         
-        data = unicode(data, "utf-8", errors="replace").encode("utf-8")
+        if not PY3:
+            data = unicode(data, "utf-8", errors="replace").encode("utf-8")
         data = scrapertools.find_single_match(data, 'div id="Tokyo" [^>]+>(.*?)</div>')     #Seleccionamos la zona de links
         
         patron = '\/icono_.*?png"\s*(?:title|alt)="(?P<lang>[^"]+)?"[^>]+><\/td><td>'
         patron += '(?P<temp_epi>.*?)?<?\/td>.*?<td>(?P<quality>.*?)?<\/td><td><a\s*'
-        patron += 'class="link"\s*href="(?P<url>[^"]+)?"'
+        #patron += 'class="link"\s*href="(?P<url>[^"]+)?"'
+        patron += 'class="link"\s*onclick="'
+        patron += "post\('(?P<url>[^']+)',\s*{u:\s*'(?P<key>[^']+)'}\);"
         matches = re.compile(patron, re.DOTALL).findall(data)
         if not matches:                             #error
             item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
@@ -957,18 +1000,20 @@ def episodios(item):
         #logger.debug(data)
         
         #Ahora recorremos todos los links por calidades
-        for lang, temp_epi, quality, scrapedurl in matches:     #la URL apunta ya al .torrent. nos quedamos con la URL de temporada
+        for lang, temp_epi, quality, scrapedurl_la, scrapedkey in matches:  #la URL apunta ya al .torrent. nos quedamos con la URL de temporada
             #Generamos una copia de Item para trabajar sobre ella y la rellenamos.  Borramos etiquetas innecesarias
             item_local = item.clone()
+            scrapedurl = '%s?u=%s' % (urlparse.urljoin(host, scrapedurl_la).replace(sufix, sufix_alt)\
+                    .replace('download/torrent.php', 'download_tt.php'), scrapedkey)
             if item_local.category:
                 del item_local.category
             if item_local.infoLabels['title']:
                 del item_local.infoLabels['title']
             item_local.context = "['buscar_trailer']"
-            item_local.url = temp_actual                        #salvamos la URL de la temporada
+            item_local.url = temp_actual                            #salvamos la URL de la temporada
             item_local.action = "findvideos"
             item_local.contentType = "episode"
-            #item_local.contentSeason = temp_actual_num          #salvamos num de temporada
+            #item_local.contentSeason = temp_actual_num             #salvamos num de temporada
             item_local.title = re.sub(r'\[COLOR limegreen\]\[.*?\]\[\/COLOR\]', '', item_local.title)
             if item_local.library_playcounts:
                 del item_local.library_playcounts
@@ -1003,12 +1048,13 @@ def episodios(item):
                     item_local.contentSeason = int(item_local.contentSeason)
                     item_local.contentEpisodeNumber = 1
                 else:                                           #si es un episodio lo guardamos
-                    if scrapertools.find_single_match(temp_epi, r'(\d+)&#.*?;(\d+)'):
-                        item_local.contentSeason, item_local.contentEpisodeNumber = scrapertools.find_single_match(temp_epi, r'(\d+)&#.*?;(\d+)')
+                    if scrapertools.find_single_match(temp_epi, r'(\d+)(?:&#.*?;|x|X)(\d+)'):
+                        item_local.contentSeason, item_local.contentEpisodeNumber = \
+                                scrapertools.find_single_match(temp_epi, r'(\d+)(?:&#.*?;|x|X)(\d+)')
                     if not item_local.contentSeason:
                         item_local.contentSeason = temp_actual_num
                     item_local.contentSeason = int(item_local.contentSeason)
-                    #item_local.contentEpisodeNumber = scrapertools.find_single_match(temp_epi, r'\d+&#.*?;(\d+)')
+                    #item_local.contentEpisodeNumber = scrapertools.find_single_match(temp_epi, r'\\d+(?:&#.*?;|x|X)(\d+)')
                     if not item_local.contentEpisodeNumber:
                         item_local.contentEpisodeNumber = scrapertools.find_single_match(temp_epi, r'(\d+)-')
                         if not item_local.contentEpisodeNumber:
@@ -1076,12 +1122,31 @@ def find_torrent_alt(item):
     if not item.emergency_urls:
         return item
         
-    i = 0    
-    for lang, quality, size, scrapedurl in item.emergency_urls[1]:      #buscamos la url actual en la lista de matches cacheada
-        if item.url == scrapedurl:                                      #si está ...
-            item.torrent_alt = item.emergency_urls[0][i]                #... copiamos la url o la dirección de .torrent local
-            break                                                       #... y nos vamos
-        i += 1
+    i = 0
+    try:
+        for lang, quality, size, scrapedurl, scrapedkey in item.emergency_urls[1]:  #buscamos la url actual en la lista de matches cacheada
+            size_f = size.replace('GB', 'G·B').replace('Gb', 'G·b').replace('MB', 'M·B')\
+                        .replace('Mb', 'M·b').replace('.', ',').strip().strip(',')
+            if scrapedkey in item.url or size_f in str(item.torrent_info):      #si está ...
+                item.torrent_alt = item.emergency_urls[0][i]                    #... copiamos la url o la dirección de .torrent local
+                break                                                           #... y nos vamos
+            i += 1
+        else:
+            item.torrent_alt = item.emergency_urls[0][0]                        #... copiamos la primera url o dirección de .torrent local
+    except:
+        try:
+            for lang, quality, size, scrapedurl in item.emergency_urls[1]:      #buscamos la url actual en la lista de matches cacheada
+                size_f = size.replace('GB', 'G·B').replace('Gb', 'G·b').replace('MB', 'M·B')\
+                            .replace('Mb', 'M·b').replace('.', ',').strip().strip(',')
+                if item.url == scrapedurl or size_f in str(item.torrent_info):  #si está ...
+                    item.torrent_alt = item.emergency_urls[0][i]                #... copiamos la url o la dirección de .torrent local
+                    break                                                       #... y nos vamos
+                i += 1
+            else:
+                item.torrent_alt = item.emergency_urls[0][0]                    #... copiamos la primera url o dirección de .torrent local
+        except:
+            logger.error('ERROR en URLs de Emergencia: ' + str(item.emergency_urls))
+            item.torrent_alt = item.emergency_urls[0][0]                        #... copiamos la primera url o dirección de .torrent local
     
     return item
     
@@ -1125,8 +1190,6 @@ def actualizar_titulos(item):
     
 def js2py_conversion(data, url, post=None, domain_name=domain, headers={}, timeout=timeout, follow_redirects=True):
     logger.info()
-    import js2py
-    import base64
     
     if not 'Javascript is required' in data:
         return data
@@ -1173,7 +1236,7 @@ def js2py_conversion(data, url, post=None, domain_name=domain, headers={}, timeo
     config.set_setting("cookie_ren", True, channel=channel)
 
     data_new = ''
-    data_new = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)", "", httptools.downloadpage(url, \
+    data_new = re.sub(r"\n|\r|\t|(<!--.*?-->)", "", httptools.downloadpage(url, \
                 timeout=timeout, headers=headers, post=post, follow_redirects=follow_redirects).data)
     #data_new = re.sub('\r\n', '', data_new).decode('utf8').encode('utf8')
     if data_new:

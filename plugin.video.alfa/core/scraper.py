@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+#from builtins import str
 from core.item import InfoLabels
 from platformcode import config, logger
 from platformcode import platformtools
@@ -46,7 +51,7 @@ def find_and_set_infoLabels(item):
     try:
         scraper = __import__('core.%s' % scraper_actual, fromlist=["core.%s" % scraper_actual])
     except ImportError:
-        exec "import core." + scraper_actual + " as scraper"
+        exec("import core." + scraper_actual + " as scraper")
     except:
         import traceback
         logger.error(traceback.format_exc())
@@ -99,9 +104,9 @@ def find_and_set_infoLabels(item):
                 return True
                 # raise
 
-        elif list_opciones_cuadro[index] in scrapers_disponibles.values():
+        elif list_opciones_cuadro[index] in list(scrapers_disponibles.values()):
             # Obtener el nombre del modulo del scraper
-            for k, v in scrapers_disponibles.items():
+            for k, v in list(scrapers_disponibles.items()):
                 if list_opciones_cuadro[index] == v:
                     if scrapers_disponibles[scraper_actual] not in list_opciones_cuadro:
                         list_opciones_cuadro.append(scrapers_disponibles[scraper_actual])
@@ -111,7 +116,7 @@ def find_and_set_infoLabels(item):
                         scraper = None
                         scraper = __import__('core.%s' % scraper_actual, fromlist=["core.%s" % scraper_actual])
                     except ImportError:
-                        exec "import core." + scraper_actual + " as scraper_module"
+                        exec("import core." + scraper_actual + " as scraper_module")
                     break
 
     logger.error("Error al importar el modulo scraper %s" % scraper_actual)
@@ -175,7 +180,7 @@ def cuadro_completar(item):
 
         if not dict_default[c[0]] or dict_default[c[0]] == 'None' or dict_default[c[0]] == 0:
             dict_default[c[0]] = ''
-        elif isinstance(dict_default[c[0]], (int, float, long)):
+        elif isinstance(dict_default[c[0]], (int, float)) or (not PY3 and isinstance(dict_default[c[0]], (int, float, long))):
             # Si es numerico lo convertimos en str
             dict_default[c[0]] = str(dict_default[c[0]])
 
@@ -204,7 +209,7 @@ def callback_cuadro_completar(item, dict_values):
     if dict_values.get("title", None):
         # Adaptar dict_values a infoLabels validos
         dict_values['mediatype'] = ['movie', 'tvshow'][dict_values['mediatype']]
-        for k, v in dict_values.items():
+        for k, v in list(dict_values.items()):
             if k in dict_default and dict_default[k] == dict_values[k]:
                 del dict_values[k]
 

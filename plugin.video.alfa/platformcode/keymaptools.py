@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from builtins import map
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 from threading import Timer
 
 import xbmc
@@ -101,7 +106,7 @@ class Main(xbmcgui.WindowXMLDialog):
         if config.get_platform(True)['num_version'] < 18:
             self.setCoordinateResolution(2)
 
-        for menuentry in MAIN_MENU.keys():
+        for menuentry in list(MAIN_MENU.keys()):
             item = xbmcgui.ListItem(MAIN_MENU[menuentry]["label"])
             item.setProperty("thumb", str(MAIN_MENU[menuentry]["icon"]))
             item.setProperty("identifier", str(menuentry))

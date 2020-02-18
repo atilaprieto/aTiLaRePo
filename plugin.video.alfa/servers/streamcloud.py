@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 from core import httptools
 from core import scrapertools
 from platformcode import logger
@@ -56,7 +58,7 @@ if __name__ == "__main__":
     password = ""
     logger.info("%s %s" % (str(options), str(arguments)))
     for option, argument in options:
-        print option, argument
+        print(option, argument)
         if option == "--video_url":
             video_url = argument
         elif option == "--login":
@@ -66,11 +68,11 @@ if __name__ == "__main__":
         else:
             assert False, "Opcion desconocida"
     if video_url == "":
-        print "ejemplo de invocacion"
-        print "streamcloud --video_url http://xxx --login usuario --password secreto"
+        print("ejemplo de invocacion")
+        print("streamcloud --video_url http://xxx --login usuario --password secreto")
     else:
         if login != "":
             premium = True
         else:
             premium = False
-        print get_video_url(video_url, premium, login, password)
+        print(get_video_url(video_url, premium, login, password))

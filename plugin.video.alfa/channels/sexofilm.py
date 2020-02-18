@@ -10,14 +10,14 @@ from core import httptools
 
 host = 'http://sexofilm.com'
 
+# SOLOS LOS LINKS DE 2020, todo lo anterior sin videos
 def mainlist(item):
     logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Peliculas" , action="lista", url=host + "/xtreme-adult-wing/adult-dvds/"))
-    itemlist.append( Item(channel=item.channel, title="Parody" , action="lista", url=host + "/xtreme-adult-wing/porn-parodies/"))
-    itemlist.append( Item(channel=item.channel, title="Videos" , action="lista", url=host + "/xtreme-adult-wing/porn-clips-movie-scene/"))
-    itemlist.append( Item(channel=item.channel, title="SexMUSIC" , action="lista", url=host + "/topics/sexo-music-videos/"))
-    itemlist.append( Item(channel=item.channel, title="Xshows" , action="lista", url=host + "/xshows/"))
+    itemlist.append( Item(channel=item.channel, title="Parody" , action="lista", url=host + "/keywords/parodies/"))
+    # itemlist.append( Item(channel=item.channel, title="Videos" , action="lista", url=host + "/xtreme-adult-wing/porn-clips-movie-scene/"))
+    # itemlist.append( Item(channel=item.channel, title="SexMUSIC" , action="lista", url=host + "/topics/sexo-music-videos/"))
     itemlist.append( Item(channel=item.channel, title="Canal" , action="categorias", url=host))
     # itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
@@ -91,12 +91,13 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    url = scrapertools.find_single_match(data,'<div class="entry-inner">.*?<source src="([^"]+)"')
+    data = scrapertools.find_single_match(data,'<div class="entry-inner">(.*?)<h4>')
+    url = scrapertools.find_single_match(data,'<source src="([^"]+)"')
     if not url:
-        url = scrapertools.find_single_match(data,'<div class="entry-inner">.*?<source src=\'([^\']+)\'')
+        url = scrapertools.find_single_match(data,'<source src=\'([^\']+)\'')
     itemlist = servertools.find_video_items(item.clone(url = item.url))
     if url:
-        itemlist.append(item.clone(action="play", title=url, url=url))
+        itemlist.append(item.clone(action="play", title= url, url=url, contentTitle = item.title))
     return itemlist
 
 

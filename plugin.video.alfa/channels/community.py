@@ -3,14 +3,17 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
-import os
 
 from core import httptools
 from core import scrapertools
 from core import servertools
 from core import jsontools
+from core import filetools
 from channelselector import get_thumb
 from core import tmdb
 from core.item import Item
@@ -28,11 +31,9 @@ list_quality = ['SD', '720', '1080', '4k']
 def mainlist(item):
     logger.info()
 
-    path = os.path.join(config.get_data_path(), 'community_channels.json')
-    if not os.path.exists(path):
-        with open(path, "w") as file:
-            file.write('{"channels":{}}')
-            file.close()
+    path = filetools.join(config.get_data_path(), 'community_channels.json')
+    if not filetools.exists(path):
+        res = filetools.write(path, '{"channels":{}}', silent=True)
     autoplay.init(item.channel, list_servers, list_quality)
 
     return show_channels(item)
@@ -46,13 +47,12 @@ def show_channels(item):
                  "action": "remove_channel",
                  "channel": "community"}]
 
-    path = os.path.join(config.get_data_path(), 'community_channels.json')
-    file = open(path, "r")
-    json = jsontools.load(file.read())
+    path = filetools.join(config.get_data_path(), 'community_channels.json')
+    json = jsontools.load(filetools.read(path))
 
     itemlist.append(Item(channel=item.channel, title='Agregar un canal', action='add_channel', thumbnail=get_thumb('add.png')))
 
-    for key, channel in json['channels'].items():
+    for key, channel in list(json['channels'].items()):
 
         if 'poster' in channel:
             poster = channel['poster']
@@ -70,7 +70,7 @@ def load_json(item):
     if item.url.startswith('http'):
         json_file = httptools.downloadpage(item.url).data
     else:
-        json_file = open(item.url, "r").read()
+        json_file = filetools.read(item.url)
 
     json_data = jsontools.load(json_file)
 
@@ -244,7 +244,7 @@ def add_channel(item):
         file_path = xbmcgui.Dialog().browseSingle(1, 'Alfa - (Comunidad)', 'files')
         try:
             channel_to_add['path'] = file_path
-            json_file = jsontools.load(open(file_path, "r").read())
+            json_file = jsontools.load(filetools.read(file_path))
             channel_to_add['channel_name'] = json_file['channel_name']
             if "poster" in json_file:
                 channel_to_add['poster'] = json_file['poster']
@@ -265,16 +265,13 @@ def add_channel(item):
         platformtools.dialog_ok('Alfa', 'No es posible agregar este tipo de canal')
         return
     channel_to_add['channel_name'] = json_file['channel_name']
-    path = os.path.join(config.get_data_path(), 'community_channels.json')
+    path = filetools.join(config.get_data_path(), 'community_channels.json')
 
-    community_json = open(path, "r")
-    community_json = jsontools.load(community_json.read())
+    community_json = jsontools.load(filetools.read(path))
     id = len(community_json['channels']) + 1
     community_json['channels'][id]=(channel_to_add)
 
-    with open(path, "w") as file:
-         file.write(jsontools.dump(community_json))
-    file.close()
+    res = filetools.write(path, jsontools.dump(community_json), silent=True)
 
     platformtools.dialog_notification('Alfa', '%s se ha agregado' % json_file['channel_name'])
     platformtools.itemlist_refresh()
@@ -285,7 +282,7 @@ def remove_channel(item):
     logger.info()
     import xbmc
     import xbmcgui
-    path = os.path.join(config.get_data_path(), 'community_channels.json')
+    path = filetools.join(config.get_data_path(), 'community_channels.json')
 
     community_json = open(path, "r")
     community_json = jsontools.load(community_json.read())
@@ -293,9 +290,7 @@ def remove_channel(item):
     id = item.channel_id
     to_delete = community_json['channels'][id]['channel_name']
     del community_json['channels'][id]
-    with open(path, "w") as file:
-         file.write(jsontools.dump(community_json))
-    file.close()
+    res = filetools.write(path, jsontools.dump(community_json), silent=True)
 
     platformtools.dialog_notification('Alfa', '%s ha sido eliminado' % to_delete)
     platformtools.itemlist_refresh()

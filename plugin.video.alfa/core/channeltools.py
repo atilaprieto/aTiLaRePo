@@ -3,9 +3,9 @@
 # channeltools - Herramientas para trabajar con canales
 # ------------------------------------------------------------
 
-import os
+from __future__ import absolute_import
 
-import jsontools
+from . import jsontools
 from platformcode import config, logger
 
 DEFAULT_UPDATE_URL = "/channels/"
@@ -25,6 +25,7 @@ def is_enabled(channel_name):
 
 
 def get_channel_parameters(channel_name):
+    from . import filetools
     global dict_channels_parameters
 
     if channel_name not in dict_channels_parameters:
@@ -51,13 +52,13 @@ def get_channel_parameters(channel_name):
 
                 # Imagenes: se admiten url y archivos locales dentro de "resources/images"
                 if channel_parameters.get("thumbnail") and "://" not in channel_parameters["thumbnail"]:
-                    channel_parameters["thumbnail"] = os.path.join(config.get_runtime_path(), "resources", "media",
+                    channel_parameters["thumbnail"] = filetools.join(config.get_runtime_path(), "resources", "media",
                                                                    "channels", "thumb", channel_parameters["thumbnail"])
                 if channel_parameters.get("banner") and "://" not in channel_parameters["banner"]:
-                    channel_parameters["banner"] = os.path.join(config.get_runtime_path(), "resources", "media",
+                    channel_parameters["banner"] = filetools.join(config.get_runtime_path(), "resources", "media",
                                                                 "channels", "banner", channel_parameters["banner"])
                 if channel_parameters.get("fanart") and "://" not in channel_parameters["fanart"]:
-                    channel_parameters["fanart"] = os.path.join(config.get_runtime_path(), "resources", "media",
+                    channel_parameters["fanart"] = filetools.join(config.get_runtime_path(), "resources", "media",
                                                                 "channels", "fanart", channel_parameters["fanart"])
 
                 # Obtenemos si el canal tiene opciones de configuración
@@ -82,7 +83,7 @@ def get_channel_parameters(channel_name):
                 # lanzamos la excepcion y asi tenemos los valores básicos
                 raise Exception
 
-        except Exception, ex:
+        except Exception as ex:
             logger.error(channel_name + ".json error \n%s" % ex)
             channel_parameters = dict()
             channel_parameters["channel"] = ""
@@ -97,7 +98,7 @@ def get_channel_parameters(channel_name):
 
 def get_channel_json(channel_name):
     # logger.info("channel_name=" + channel_name)
-    import filetools
+    from . import filetools
     channel_json = None
     try:
         channel_path = filetools.join(config.get_runtime_path(), "channels", channel_name + ".json")
@@ -106,7 +107,7 @@ def get_channel_json(channel_name):
             channel_json = jsontools.load(filetools.read(channel_path))
             # logger.info("channel_json= %s" % channel_json)
 
-    except Exception, ex:
+    except Exception as ex:
         template = "An exception of type %s occured. Arguments:\n%r"
         message = template % (type(ex).__name__, ex.args)
         logger.error(" %s" % message)
@@ -132,6 +133,7 @@ def get_channel_controls_settings(channel_name):
 
 
 def get_channel_setting(name, channel, default=None):
+    from . import filetools
     """
     Retorna el valor de configuracion del parametro solicitado.
 
@@ -154,13 +156,14 @@ def get_channel_setting(name, channel, default=None):
     @rtype: any
 
     """
-    file_settings = os.path.join(config.get_data_path(), "settings_channels", channel + "_data.json")
+    file_settings = filetools.join(config.get_data_path(), "settings_channels", channel + "_data.json")
     dict_settings = {}
     dict_file = {}
-    if os.path.exists(file_settings):
+    
+    if filetools.exists(file_settings):
         # Obtenemos configuracion guardada de ../settings/channel_data.json
         try:
-            dict_file = jsontools.load(open(file_settings, "rb").read())
+            dict_file = jsontools.load(filetools.read(file_settings))
             if isinstance(dict_file, dict) and 'settings' in dict_file:
                 dict_settings = dict_file['settings']
         except EnvironmentError:
@@ -179,9 +182,7 @@ def get_channel_setting(name, channel, default=None):
             dict_file['settings'] = dict_settings
             # Creamos el archivo ../settings/channel_data.json
             json_data = jsontools.dump(dict_file)
-            try:
-                open(file_settings, "wb").write(json_data)
-            except EnvironmentError:
+            if not filetools.write(file_settings, json_data, silent=True):
                 logger.error("ERROR al salvar el archivo: %s" % file_settings)
 
     # Devolvemos el valor del parametro local 'name' si existe, si no se devuelve default
@@ -189,6 +190,7 @@ def get_channel_setting(name, channel, default=None):
 
 
 def set_channel_setting(name, value, channel):
+    from . import filetools
     """
     Fija el valor de configuracion del parametro indicado.
 
@@ -211,18 +213,18 @@ def set_channel_setting(name, value, channel):
 
     """
     # Creamos la carpeta si no existe
-    if not os.path.exists(os.path.join(config.get_data_path(), "settings_channels")):
-        os.mkdir(os.path.join(config.get_data_path(), "settings_channels"))
+    if not filetools.exists(filetools.join(config.get_data_path(), "settings_channels")):
+        filetools.mkdir(filetools.join(config.get_data_path(), "settings_channels"))
 
-    file_settings = os.path.join(config.get_data_path(), "settings_channels", channel + "_data.json")
+    file_settings = filetools.join(config.get_data_path(), "settings_channels", channel + "_data.json")
     dict_settings = {}
 
     dict_file = None
 
-    if os.path.exists(file_settings):
+    if filetools.exists(file_settings):
         # Obtenemos configuracion guardada de ../settings/channel_data.json
         try:
-            dict_file = jsontools.load(open(file_settings, "r").read())
+            dict_file = jsontools.load(filetools.read(file_settings))
             dict_settings = dict_file.get('settings', {})
         except EnvironmentError:
             logger.error("ERROR al leer el archivo: %s" % file_settings)
@@ -236,10 +238,8 @@ def set_channel_setting(name, value, channel):
     dict_file['settings'] = dict_settings
 
     # Creamos el archivo ../settings/channel_data.json
-    try:
-        json_data = jsontools.dump(dict_file)
-        open(file_settings, "w").write(json_data)
-    except EnvironmentError:
+    json_data = jsontools.dump(dict_file)
+    if not filetools.write(file_settings, json_data, silent=True):
         logger.error("ERROR al salvar el archivo: %s" % file_settings)
         return None
 

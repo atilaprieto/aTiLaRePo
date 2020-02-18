@@ -66,7 +66,7 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron  = '<li class="masonry-item item ".*?'
+    patron  = '<li\s+class="masonry-item item.*?'
     patron += '<a href="([^"]+)" class="kt_imgrc popfire" title="([^"]+)" >.*?'
     patron += '<img src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)

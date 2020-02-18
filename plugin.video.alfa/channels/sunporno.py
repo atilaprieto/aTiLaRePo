@@ -82,9 +82,9 @@ def lista(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     data = scrapertools.find_single_match(data,'class="thumbs-container">(.*?)<div class="clearfix">')
-    patron  = '<p class="btime">([^"]+)</p>.*?'
-    patron += '>(.*?)<img width=.*?'
-    patron += '="([^"]+)" class="thumb.*?'
+    patron  = '<p class="btime">([^<]+)<(.*?)'
+    patron += '<img width=.*?'
+    patron += 'src="([^"]+)" class="thumb.*?'
     patron += 'title="([^"]+)".*?'
     patron += 'href="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -96,7 +96,7 @@ def lista(item):
         thumbnail = scrapedthumbnail
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,
-                              fanart=scrapedthumbnail, plot=plot, contentTitle = scrapedtitle))
+                              fanart=scrapedthumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data,'<li><a class="pag-next" href="(.*?)">Next &gt;</a>')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)

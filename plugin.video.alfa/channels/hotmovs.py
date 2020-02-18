@@ -74,6 +74,8 @@ def categorias(item):
         cantidad = cantidad.replace("        ", "")
         scrapedtitle = scrapedtitle + " (" + cantidad +")"
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
+        if "categories" in scrapedurl:
+            scrapedurl += "/?sort_by=post_date"
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=scrapedthumbnail, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<li class="next"><a href="([^"]+)"')
@@ -102,6 +104,8 @@ def lista(item):
     next_page = scrapertools.find_single_match(data,'<li class="next"><a href="([^"]+)"')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
+        if "categories" in next_page:
+            next_page += "/?sort_by=post_date"
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
     return itemlist
 

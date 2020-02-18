@@ -78,12 +78,7 @@ def lista(item):
 
 
 def play(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron  = '<source src="([^"]+)" type=\'video/mp4\' title="HQ" />'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    for scrapedurl  in matches:
-        itemlist.append(Item(channel=item.channel, action="play", title=item.title, url=scrapedurl))
+    logger.info(item)
+    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     return itemlist
 

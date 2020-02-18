@@ -3,14 +3,19 @@
 # Zip Tools
 # --------------------------------------------------------------------------------
 
-import os
+from builtins import object
+import sys
+PY3 = False
+VFS = True
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int; VFS = False
+
 import zipfile
 
 from platformcode import config, logger
 from core import filetools
 
 
-class ziptools:
+class ziptools(object):
     def extract(self, file, dir, folder_to_extract="", overwrite_question=False, backup=False):
         logger.info("file=%s" % file)
         logger.info("dir=%s" % dir)
@@ -62,12 +67,17 @@ class ziptools:
                                 filetools.mkdir(backup)
                             filetools.copy(outfilename, filetools.join(backup, filetools.basename(outfilename)))
 
-                    outfile = filetools.file_open(outfilename, 'wb')
-                    outfile.write(zf.read(nameo))
+                    if not filetools.write(outfilename, zf.read(nameo), silent=True, vfs=VFS):  #TRUNCA en FINAL en Kodi 19 con VFS
+                        logger.error("Error en fichero " + nameo)
                 except:
                     import traceback
                     logger.error(traceback.format_exc())
                     logger.error("Error en fichero " + nameo)
+        
+        try:
+            zf.close()
+        except:
+            logger.info("Error cerrando .zip " + file)
 
     def _createstructure(self, file, dir):
         self._makedirs(self._listdirs(file), dir)

@@ -1,9 +1,19 @@
 # -*- coding: utf-8 -*-
 
-import re
+from __future__ import division
+from past.utils import old_div
 import sys
-import urllib
-import urlparse
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urlparse                                 # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                 # Usamos el nativo de PY2 que es más rápido
+
+import re
 import time
 
 from channelselector import get_thumb
@@ -20,7 +30,7 @@ from channels import autoplay
 
 #IDIOMAS = {'CAST': 'Castellano', 'LAT': 'Latino', 'VO': 'Version Original'}
 IDIOMAS = {'Castellano': 'CAST', 'Latino': 'LAT', 'Version Original': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['torrent']
 
@@ -73,7 +83,8 @@ def categorias(item):
     data = ''
     try:
         data = re.sub(r"\n|\r|\t|&nbsp;|<br>|\s{2}|(<!--.*?-->)", "", httptools.downloadpage(item.url, timeout=timeout).data)
-        data = unicode(data, "utf-8", errors="replace").encode("utf-8")
+        if not PY3:
+            data = unicode(data, "utf-8", errors="replace").encode("utf-8")
     except:
         pass
         
@@ -145,7 +156,8 @@ def listado(item):
         data = ''
         try:
             data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)|&nbsp;", "", httptools.downloadpage(next_page_url, timeout=timeout_search).data)
-            data = unicode(data, "utf-8", errors="replace").encode("utf-8")
+            if not PY3:
+                data = unicode(data, "utf-8", errors="replace").encode("utf-8")
         except:
             pass
         
@@ -183,7 +195,7 @@ def listado(item):
             patron = '<a href="([^"]+=(\d+))" title="Siguiente">Siguiente<\/a>'
         try:
             next_page_url, curr_page = scrapertools.find_single_match(data, patron)
-            curr_page = int(curr_page) / len(matches)
+            curr_page = old_div(int(curr_page), len(matches))
         except:                                                         #Si no lo encuentra, lo ponemos a 1
             #logger.error('ERROR 03: LISTADO: Al obtener la paginación: ' + patron + ' / ' + data)
             fin = 0                                                     #Forzamos a salir  del WHILE al final del FOR
@@ -208,7 +220,10 @@ def listado(item):
             quality = scrapertools.find_single_match(title, '\[(.*?)\]')    #capturamos quality
             title = re.sub(r'\[.*?\]', '', title)                           #y lo borramos de title
 
-            title = title.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ü", "u").replace("ï¿½", "ñ").replace("Ã±", "ñ").replace("&atilde;", "a").replace("&etilde;", "e").replace("&itilde;", "i").replace("&otilde;", "o").replace("&utilde;", "u").replace("&ntilde;", "ñ").replace("&#8217;", "'")
+            title = title.replace("á", "a").replace("é", "e").replace("í", "i")\
+                    .replace("ó", "o").replace("ú", "u").replace("ü", "u")\
+                    .replace("ï¿½", "ñ").replace("Ã±", "ñ").replace("&#8217;", "'")\
+                    .replace("&amp;", "&")
 
             item_local = item.clone()                                       #Creamos copia de Item para trabajar
             if item_local.tipo:                                             #... y limpiamos
@@ -346,7 +361,8 @@ def findvideos(item):
     patron = '<p><a href="([^"]+)" rel'
     try:
         data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)|&nbsp;", "", httptools.downloadpage(item.url, timeout=timeout).data)
-        data = unicode(data, "utf-8", errors="replace").encode("utf-8")
+        if not PY3:
+            data = unicode(data, "utf-8", errors="replace").encode("utf-8")
     except:
         pass
         
@@ -406,7 +422,8 @@ def findvideos(item):
             #Leemos la siguiente página, que es de verdad donde está el magnet/torrent
             try:
                 data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)|&nbsp;", "", httptools.downloadpage(url, timeout=timeout).data)
-                data = unicode(data, "utf-8", errors="replace").encode("utf-8")
+                if not PY3:
+                    data = unicode(data, "utf-8", errors="replace").encode("utf-8")
             except:
                 pass
             

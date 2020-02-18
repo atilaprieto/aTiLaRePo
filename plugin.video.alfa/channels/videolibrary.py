@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import os, traceback
 
 from channelselector import get_thumb
@@ -313,7 +318,7 @@ def get_seasons(item):
     itemlist = []
     dict_temp = {}
 
-    raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
+    raiz, carpetas_series, ficheros = next(filetools.walk(item.path))
 
     # Menu contextual: Releer tvshow.nfo
     head_nfo, item_nfo = videolibrarytools.read_nfo(item.nfo)
@@ -339,7 +344,7 @@ def get_seasons(item):
         # if config.get_setting("no_pile_on_seasons", "videolibrary") == 1 and len(dict_temp_Visible) == 1:  # Sólo si hay una temporada
 
         # Creamos un item por cada temporada
-        for season, title in dict_temp.items():
+        for season, title in list(dict_temp.items()):
             new_item = item.clone(action="get_episodes", title=title, contentSeason=season,
                                   filtrar_season=True)
 
@@ -377,7 +382,7 @@ def get_episodes(item):
     itemlist = []
 
     # Obtenemos los archivos de los episodios
-    raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
+    raiz, carpetas_series, ficheros = next(filetools.walk(item.path))
 
     # Menu contextual: Releer tvshow.nfo
     head_nfo, item_nfo = videolibrarytools.read_nfo(item.nfo)
@@ -448,7 +453,8 @@ def findvideos(item):
         logger.debug("No se pueden buscar videos por falta de parametros")
         return []
 
-    content_title = filter(lambda c: c not in ":*?<>|\/", item.contentTitle.strip().lower())
+    #content_title = [c for c in item.contentTitle.strip().lower() if c not in ":*?<>|\/"]
+    content_title = "".join(c for c in item.contentTitle.strip().lower() if c not in ":*?<>|\/")
 
     if item.contentType == 'movie':
         item.strm_path = filetools.join(videolibrarytools.MOVIES_PATH, item.strm_path)
@@ -463,7 +469,7 @@ def findvideos(item):
         if fd.endswith('.json'):
             contenido, nom_canal = fd[:-6].split('[')
             if (contenido.startswith(content_title) or item.contentType == 'movie') and nom_canal not in \
-                    list_canales.keys():
+                    list(list_canales.keys()):
                 list_canales[nom_canal] = filetools.join(path_dir, fd)
 
     num_canales = len(list_canales)
@@ -493,7 +499,7 @@ def findvideos(item):
 
     filtro_canal = ''
     if num_canales > 1 and config.get_setting("ask_channel", "videolibrary"):
-        opciones = [config.get_localized_string(70089) % k.capitalize() for k in list_canales.keys()]
+        opciones = [config.get_localized_string(70089) % k.capitalize() for k in list(list_canales.keys())]
         opciones.insert(0, config.get_localized_string(70083))
         if item_local:
             opciones.append(item_local.title)
@@ -511,7 +517,7 @@ def findvideos(item):
             filtro_canal = opciones[index].replace(config.get_localized_string(70078), "").strip()
             itemlist = []
 
-    for nom_canal, json_path in list_canales.items():
+    for nom_canal, json_path in list(list_canales.items()):
         if filtro_canal and filtro_canal != nom_canal.capitalize():
             continue
         
@@ -528,7 +534,7 @@ def findvideos(item):
         try:
             channel = __import__('channels.%s' % nom_canal, fromlist=["channels.%s" % nom_canal])
         except ImportError:
-            exec "import channels." + nom_canal + " as channel"
+            exec("import channels." + nom_canal + " as channel")
 
         item_json = Item().fromjson(filetools.read(json_path))
         ###### Redirección al canal NewPct1.py si es un clone, o a otro canal y url si ha intervención judicial
@@ -565,7 +571,7 @@ def findvideos(item):
             else:
                 from core import servertools
                 list_servers = servertools.find_video_items(item_json)
-        except Exception, ex:
+        except Exception as ex:
             logger.error("Ha fallado la funcion findvideos para el canal %s" % nom_canal)
             template = "An exception of type %s occured. Arguments:\n%r"
             message = template % (type(ex).__name__, ex.args)
@@ -599,7 +605,10 @@ def findvideos(item):
 
     # return sorted(itemlist, key=lambda it: it.title.lower())
     autoplay.play_multi_channel(item, itemlist)
-
+    from inspect import stack
+    from channels import nextep
+    if nextep.check(item) and stack()[1][3] == 'run':
+        nextep.videolibrary(item)
     return itemlist
 
 
@@ -705,7 +714,7 @@ def verify_playcount_series(item, path):
             it.library_playcounts = {}
         
         # Obtenemos los archivos de los episodios
-        raiz, carpetas_series, ficheros = filetools.walk(path).next()
+        raiz, carpetas_series, ficheros = next(filetools.walk(path))
         # Crear un item en la lista para cada strm encontrado
         estado_update = False
         for i in ficheros:
@@ -731,7 +740,7 @@ def verify_playcount_series(item, path):
             logger.error('** Estado de actualización: ' + str(estado) + ' / PlayCount: ' + str(it.library_playcounts))
             estado = estado_update
         # se comprueba que si todos los episodios de una temporada están marcados, se marque tb la temporada
-        for key, value in it.library_playcounts.iteritems():
+        for key, value in it.library_playcounts.items():
             if key.startswith("season"):
                 season = scrapertools.find_single_match(key, 'season (\d+)')        #Obtenemos en núm. de Temporada
                 it = check_season_playcount(it, season)
@@ -843,7 +852,7 @@ def mark_season_as_watched(item):
         it.library_playcounts = {}
 
     # Obtenemos los archivos de los episodios
-    raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
+    raiz, carpetas_series, ficheros = next(filetools.walk(item.path))
 
     # Marcamos cada uno de los episodios encontrados de esta temporada
     episodios_marcados = 0
@@ -863,7 +872,7 @@ def mark_season_as_watched(item):
     if episodios_marcados:
         if int(item.contentSeason) == -1:
             # Añadimos todas las temporadas al diccionario item.library_playcounts
-            for k in it.library_playcounts.keys():
+            for k in list(it.library_playcounts.keys()):
                 if k.startswith("season"):
                     it.library_playcounts[k] = item.playcount
         else:
@@ -899,7 +908,7 @@ def delete(item):
         for file in filetools.listdir(_item.path):
             if file.endswith(".strm") or file.endswith(".nfo") or file.endswith(".json")or file.endswith(".torrent"):
                 filetools.remove(filetools.join(_item.path, file))
-        raiz, carpeta_serie, ficheros = filetools.walk(_item.path).next()
+        raiz, carpeta_serie, ficheros = next(filetools.walk(_item.path))
         if ficheros == []:
             filetools.rmdir(_item.path)
 
@@ -925,7 +934,7 @@ def delete(item):
     if item.multicanal:
         # Obtener listado de canales
         if item.dead == '':
-            opciones = [config.get_localized_string(70086) % k.capitalize() for k in item.library_urls.keys() if
+            opciones = [config.get_localized_string(70086) % k.capitalize() for k in list(item.library_urls.keys()) if
                         k != "downloads"]
             opciones.insert(0, heading)
 
@@ -974,7 +983,7 @@ def check_season_playcount(item, season):
     if season:
         episodios_temporada = 0
         episodios_vistos_temporada = 0
-        for key, value in item.library_playcounts.iteritems():
+        for key, value in item.library_playcounts.items():
             if key.startswith("%sx" % season):
                 episodios_temporada += 1
                 if value > 0:
@@ -995,7 +1004,7 @@ def check_tvshow_playcount(item, season):
     if season:
         temporadas_serie = 0
         temporadas_vistas_serie = 0
-        for key, value in item.library_playcounts.iteritems():
+        for key, value in item.library_playcounts.items():
             #if key.startswith("season %s" % season):
             if key.startswith("season" ):
                 temporadas_serie += 1

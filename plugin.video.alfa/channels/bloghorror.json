@@ -1,6 +1,7 @@
 {
   "id": "bloghorror",
   "name": "BlogHorror",
+  "force_unify": true,
   "active": true,
   "adult": false,
   "language": [],

@@ -3,6 +3,11 @@
 # Updater (kodi)
 # --------------------------------------------------------------------------------
 
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import traceback
 import xbmc
 import xbmcaddon
@@ -22,10 +27,9 @@ def init():
     logger.info()
 
     """
-    Todo el código añadido al add-on se borra con cada actualización.  Esta función permite restaurarlo automáticamente con cada actualización.
-    Esto permite al usuario tener su propio código, bajo su responsabilidad, y restaurarlo al add-on cada vez que se actualiza.
+    Todo el código añadido al add-on se borra con cada actualización.  Esta función permite restaurarlo automáticamente con cada actualización.  Esto permite al usuario tener su propio código, bajo su responsabilidad, y restaurarlo al add-on cada vez que se actualiza.
     
-    El mecanismo funciona copiando el contenido de la carpeta-arbol ".\userdata\addon_data\plugin.video.alfa\custom_code\..." sobre
+    El mecanismo funciona copiando el contenido de la carpeta-arbol "./userdata/addon_data/plugin.video.alfa/custom_code/..." sobre
     las carpetas de código del add-on.  No verifica el contenido, solo vuelca(reemplaza) el contenido de "custom_code".
     
     El usuario almacenará en las subcarpetas de "custom_code" su código actualizado y listo para ser copiado en cualquier momento.
@@ -38,7 +42,7 @@ def init():
             from platformcode import custom_code
             custom_code.init()
             
-    2.- En el inicio de Kodi, comprueba si existe la carpeta "custom_code" en ".\userdata\addon_data\plugin.video.alfa\".  
+    2.- En el inicio de Kodi, comprueba si existe la carpeta "custom_code" en "./userdata/addon_data/plugin.video.alfa/".  
         Si no existe, la crea y sale sin más, dando al ususario la posibilidad de copiar sobre esa estructura su código, 
         y que la función la vuelque sobre el add-on en el próximo inicio de Kodi.
         
@@ -58,6 +62,10 @@ def init():
     """
 
     try:
+        #Borra el .zip de instalación de Alfa de la carpeta Packages, por si está corrupto, y que así se pueda descargar de nuevo
+        version = 'plugin.video.alfa-%s.zip' % config.get_addon_version(with_fix=False)
+        filetools.remove(filetools.join(xbmc.translatePath('special://home'), 'addons', 'packages', version), True)
+        
         #Verifica si Kodi tiene algún achivo de Base de Datos de Vídeo de versiones anteriores, entonces los borra
         verify_Kodi_video_DB()
         
@@ -75,8 +83,8 @@ def init():
         
         #QUASAR: Hacemos las modificaciones a Quasar, si está permitido, y si está instalado
         if config.get_setting('addon_quasar_update', default=False) or \
-                        (filetools.exists(filetools.join(config.get_data_path(), \
-                        "quasar.json")) and not xbmc.getCondVisibility('System.HasAddon("plugin.video.quasar")')):
+                    (filetools.exists(filetools.join(config.get_data_path(), \
+                    "quasar.json")) and not xbmc.getCondVisibility('System.HasAddon("plugin.video.quasar")')):
             if not update_external_addon("quasar"):
                 platformtools.dialog_notification("Actualización Quasar", "Ha fallado. Consulte el log")
         
@@ -182,37 +190,57 @@ def question_update_external_addon(addon_name):
 def update_external_addon(addon_name):
     logger.info(addon_name)
     
-    #Verificamos que el addon está instalado
-    if xbmc.getCondVisibility('System.HasAddon("plugin.video.%s")' % addon_name):
-        #Path de actuali<aciones de Alfa
-        alfa_addon_updates = filetools.join(config.get_runtime_path(), filetools.join("lib", addon_name))
-        
-        #Path de destino en addon externo
-        __settings__ = xbmcaddon.Addon(id="plugin.video." + addon_name)
-        if addon_name.lower() in ['quasar', 'elementum']:
-            addon_path = filetools.join(xbmc.translatePath(__settings__.getAddonInfo('Path')), \
-                    filetools.join("resources", filetools.join("site-packages", addon_name)))
+    try:
+        #Verificamos que el addon está instalado
+        if xbmc.getCondVisibility('System.HasAddon("plugin.video.%s")' % addon_name):
+            #Path de actualizaciones de Alfa
+            alfa_addon_updates_mig = filetools.join(config.get_runtime_path(), "lib")
+            alfa_addon_updates = filetools.join(alfa_addon_updates_mig, addon_name)
+            
+            #Path de destino en addon externo
+            __settings__ = xbmcaddon.Addon(id="plugin.video." + addon_name)
+            if addon_name.lower() in ['quasar', 'elementum']:
+                addon_path_mig = filetools.join(xbmc.translatePath(__settings__.getAddonInfo('Path')), \
+                        filetools.join("resources", "site-packages"))
+                addon_path = filetools.join(addon_path_mig, addon_name)
+            else:
+                addon_path_mig = ''
+                addon_path = ''
+            
+            #Hay modificaciones en Alfa? Las copiamos al addon, incuidas las carpetas de migración a PY3
+            if filetools.exists(alfa_addon_updates) and filetools.exists(addon_path):
+                for root, folders, files in filetools.walk(alfa_addon_updates_mig):
+                    if ('future' in root or 'past' in root) and not 'concurrent' in root:
+                        for file in files:
+                            alfa_addon_updates_mig_folder = root.replace(alfa_addon_updates_mig, addon_path_mig)
+                            if not filetools.exists(alfa_addon_updates_mig_folder):
+                                filetools.mkdir(alfa_addon_updates_mig_folder)
+                            if file.endswith('.pyo') or file.endswith('.pyd'):
+                                continue
+                            input_file = filetools.join(root, file)
+                            output_file = input_file.replace(alfa_addon_updates_mig, addon_path_mig)
+                            if not filetools.copy(input_file, output_file, silent=True):
+                                logger.error('Error en la copia de MIGRACIÓN: Input: %s o Output: %s' % (input_file, output_file))
+                                return False
+                
+                for root, folders, files in filetools.walk(alfa_addon_updates):
+                    for file in files:
+                        input_file = filetools.join(root, file)
+                        output_file = input_file.replace(alfa_addon_updates, addon_path)
+                        if not filetools.copy(input_file, output_file, silent=True):
+                            logger.error('Error en la copia: Input: %s o Output: %s' % (input_file, output_file))
+                            return False
+                return True
+            else:
+                logger.error('Alguna carpeta no existe: Alfa: %s o %s: %s' % (alfa_addon_updates, addon_name, addon_path))
+        # Se ha desinstalado Quasar, reseteamos la opción
         else:
-            addon_path = ''
-        
-        #Hay modificaciones en Alfa? Las copiamos al addon
-        if filetools.exists(alfa_addon_updates) and filetools.exists(addon_path):
-            for root, folders, files in filetools.walk(alfa_addon_updates):
-                for file in files:
-                    input_file = filetools.join(root, file)
-                    output_file = input_file.replace(alfa_addon_updates, addon_path)
-                    if not filetools.copy(input_file, output_file, silent=True):
-                        logger.error('Error en la copia: Input: %s o Output: %s' % (input_file, output_file))
-                        return False
+            config.set_setting('addon_quasar_update', False)
+            if filetools.exists(filetools.join(config.get_data_path(), "%s.json" % addon_name)):
+                filetools.remove(filetools.join(config.get_data_path(), "%s.json" % addon_name))
             return True
-        else:
-            logger.error('Alguna carpeta no existe: Alfa: %s o %s: %s' % (alfa_addon_updates, addon_name, addon_path))
-    # Se ha desinstalado Quasar, reseteamos la opción
-    else:
-        config.set_setting('addon_quasar_update', False)
-        if filetools.exists(filetools.join(config.get_data_path(), "%s.json" % addon_name)):
-            filetools.remove(filetools.join(config.get_data_path(), "%s.json" % addon_name))
-        return True
+    except:
+        logger.error(traceback.format_exc())
     
     return False
     
@@ -224,11 +252,13 @@ def update_libtorrent():
         default = config.get_setting("torrent_client", server="torrent", default=0)
         config.set_setting("torrent_client", default, server="torrent")
         config.set_setting("mct_buffer", "50", server="torrent")
-        config.set_setting("mct_download_path", config.get_setting("downloadpath"), server="torrent")
+        if config.get_setting("mct_download_path", server="torrent", default=config.get_setting("downloadpath")):
+            config.set_setting("mct_download_path", config.get_setting("downloadpath"), server="torrent")
         config.set_setting("mct_background_download", True, server="torrent")
         config.set_setting("mct_rar_unpack", True, server="torrent")
         config.set_setting("bt_buffer", "50", server="torrent")
-        config.set_setting("bt_download_path", config.get_setting("downloadpath"), server="torrent")
+        if config.get_setting("bt_download_path", server="torrent", default=config.get_setting("downloadpath")):
+            config.set_setting("bt_download_path", config.get_setting("downloadpath"), server="torrent")
         config.set_setting("mct_download_limit", "", server="torrent")
         config.set_setting("magnet2torrent", False, server="torrent")
         
@@ -301,9 +331,10 @@ def update_libtorrent():
 
     try:
         from lib.python_libtorrent.python_libtorrent import get_libtorrent
-    except Exception, e:
+    except Exception as e:
         logger.error(traceback.format_exc(1))
-        e = unicode(str(e), "utf8", errors="replace").encode("utf8")
+        if not PY3:
+            e = unicode(str(e), "utf8", errors="replace").encode("utf8")
         config.set_setting("libtorrent_path", "", server="torrent")
         if not config.get_setting("libtorrent_error", server="torrent", default=''):
             config.set_setting("libtorrent_error", str(e), server="torrent")
@@ -323,7 +354,7 @@ def verify_Kodi_video_DB():
         path = filetools.join(xbmc.translatePath("special://masterprofile/"), "Database")
         if filetools.exists(path):
             platform = config.get_platform(full_version=True)
-            if platform and platform['num_version'] < 19:
+            if platform and platform['num_version'] <= 19:
                 db_files = filetools.walk(path)
                 if filetools.exists(filetools.join(path, platform['video_db'])):
                     for root, folders, files in db_files:

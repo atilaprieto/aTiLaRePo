@@ -3,6 +3,14 @@
 # Scraper tools for reading and processing web elements
 # --------------------------------------------------------------------------------
 
+#from future import standard_library
+#standard_library.install_aliases()
+#from builtins import str
+#from builtins import chr
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 import time
 
@@ -70,7 +78,10 @@ def unescape(text):
         else:
             # named entity
             try:
-                import htmlentitydefs
+                if PY3:
+                    import html.entities as htmlentitydefs
+                else:
+                    import htmlentitydefs
                 text = unichr(htmlentitydefs.name2codepoint[text[1:-1]]).encode("utf-8")
             except KeyError:
                 logger.error("keyerror")
@@ -79,7 +90,7 @@ def unescape(text):
                 pass
         return text  # leave as is
 
-    return re.sub("&#?\w+;", fixup, text)
+    return re.sub("&#?\w+;", str(fixup), str(text))
 
     # Convierte los codigos html "&ntilde;" y lo reemplaza por "ñ" caracter unicode utf-8
 
@@ -89,7 +100,10 @@ def decodeHtmlentities(string):
     entity_re = re.compile("&(#?)(\d{1,5}|\w{1,8});")
 
     def substitute_entity(match):
-        from htmlentitydefs import name2codepoint as n2cp
+        if PY3:
+            from html.entities import name2codepoint as n2cp
+        else:
+            from htmlentitydefs import name2codepoint as n2cp
         ent = match.group(2)
         if match.group(1) == "#":
             return unichr(int(ent)).encode('utf-8')
@@ -315,7 +329,11 @@ def remove_show_from_title(title, show):
 
 
 def get_filename_from_url(url):
-    import urlparse
+    if PY3:
+        import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+    else:
+        import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+    
     parsed_url = urlparse.urlparse(url)
     try:
         filename = parsed_url.path
@@ -333,7 +351,11 @@ def get_filename_from_url(url):
 
 
 # def get_domain_from_url(url):
-#     import urlparse
+#    if PY3:
+#        import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+#    else:
+#        import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+#
 #     parsed_url = urlparse.urlparse(url)
 #     try:
 #         filename = parsed_url.netloc

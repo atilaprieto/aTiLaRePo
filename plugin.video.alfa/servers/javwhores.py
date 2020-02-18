@@ -2,7 +2,7 @@
 # --------------------------------------------------------
 # Conector javwhores By Alfa development Group
 # --------------------------------------------------------
-
+import re
 from core import httptools
 from core import scrapertools
 from platformcode import logger
@@ -19,12 +19,26 @@ def test_video_exists(page_url):
        or "is no longer available" in response.data:
         return False, "[javwhores] El fichero no existe o ha sido borrado"
 
-    global video_url, license_code
-    video_url = scrapertools.find_single_match(response.data, "video_url: '([^']+)'")
-    license_code = scrapertools.find_single_match(response.data, "license_code: '([^']+)'")
-
+    # global video_url, license_code
+    # video_url = scrapertools.find_single_match(response.data, "video_url: '([^']+)'")
+    # license_code = scrapertools.find_single_match(response.data, "license_code: '([^']+)'")
     return True, ""
+
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info()
-    return [["[javwhores]", decode(video_url, license_code)]]
+    itemlist = []
+    data = httptools.downloadpage(page_url).data
+    if "video_url_text" in data:
+        patron = '(?:video_url|video_alt_url|video_alt_url[0-9]*):\s*\'([^\']+)\'.*?'
+        patron += '(?:video_url_text|video_alt_url_text|video_alt_url[0-9]*_text):\s*\'([^\']+)\''
+    else:
+        patron = 'video_url:\s*\'([^\']+)\'.*?'
+        patron += 'postfix:\s*\'([^\']+)\''
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    for url,quality in matches:
+        itemlist.append(['%s' %quality, url])
+    logger.debug(quality + " : " + url)
+    
+    return itemlist
+    # return [["[javwhores]", decode(video_url, license_code)]]

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import urllib
-
 from core import httptools
 from core import scrapertools
 from platformcode import logger
@@ -26,12 +24,12 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     data = response.data
     packed_data = scrapertools.find_single_match(data, "javascript'>(eval.*?)</script>")
     unpacked = jsunpack.unpack(packed_data)
-    matches = scrapertools.find_multiple_matches(unpacked, 'src:"([^"]+)".*?,label:"([^"]+)"')
-    for media_url, quality in matches:
+    matches = scrapertools.find_multiple_matches(unpacked, 'src:"([^"]+)",type:"video/(.*?)",res:(.*?),')
+    for media_url, type, res in matches:
         if media_url.endswith(".mp4"):
-            video_urls.append([quality + " [%s]" % id_server, media_url])
+            video_urls.append(["[%s][%s]" % (type, res), media_url])
         if media_url.endswith(".m3u8"):
-            video_urls.append(["M3U8 [%s]" % id_server, media_url])
+            video_urls.append(["M3U8 [%s][%s]" % (type, res), media_url])
         if media_url.endswith(".smil"):
             smil_data = httptools.downloadpage(media_url).data
             rtmp = scrapertools.find_single_match(smil_data, 'base="([^"]+)"')

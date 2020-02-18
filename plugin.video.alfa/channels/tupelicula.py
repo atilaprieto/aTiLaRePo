@@ -136,7 +136,7 @@ def findvideos(item):
 
     for scraped_id, lang_data, quality in matches:
         hidden_url = get_source('%splayer/rep/%s' % (host, scraped_id), player)
-        url = scrapertools.find_single_match(hidden_url, 'iframe src=.?"([^"]+)"').replace('\\','')
+        url = scrapertools.find_single_match(hidden_url.lower(), 'iframe src=.?"([^"]+)"').replace('\\','')
         lang = get_language(lang_data)
 
         if not config.get_setting('unify'):

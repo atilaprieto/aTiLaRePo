@@ -318,7 +318,7 @@ def season_episodes(item):
     logger.info()
     itemlist = []
 
-    full_data = httptools.downloadpage(item.url+'/').data
+    full_data = httptools.downloadpage(item.url).data
     full_data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", full_data)
 
     season = str(item.infoLabels['season'])

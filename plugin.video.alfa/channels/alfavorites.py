@@ -15,12 +15,17 @@
 # - Modificar platformtools.py para controlar el menú contextual y añadir "Guardar enlace" en set_context_commands
 # ------------------------------------------------------------
 
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+from builtins import object
+
 import os, re
 from datetime import datetime
 
 from core.item import Item
 from platformcode import config, logger, platformtools
-
 from core import filetools, jsontools
 
 
@@ -67,7 +72,7 @@ def text_clean(txt, disallowed_chars = '[^a-zA-Z0-9\-_()\[\]. ]+', blank_char = 
 
 # Clase para cargar y guardar en el fichero de Alfavoritos
 # --------------------------------------------------------
-class AlfavoritesData:
+class AlfavoritesData(object):
 
     def __init__(self, filename = None):
 
@@ -759,9 +764,11 @@ def compartir_lista(item):
         progreso.update(10, 'Subiendo fichero', 'Espera unos segundos a que acabe de subirse tu fichero de lista a tinyupload')
 
         # Envío del fichero a tinyupload mediante multipart/form-data 
+        from future import standard_library
+        standard_library.install_aliases()
         from lib import MultipartPostHandler
-        import urllib2
-        opener = urllib2.build_opener(MultipartPostHandler.MultipartPostHandler)
+        import urllib.request, urllib.error
+        opener = urllib.request.build_opener(MultipartPostHandler.MultipartPostHandler)
         params = { 'MAX_FILE_SIZE' : '52428800', 'file_description' : '', 'sessionid' : sessionid, 'uploaded_file' : open(fullfilename, 'rb') }
         handle = opener.open(upload_url, params)
         data = handle.read()
@@ -861,7 +868,7 @@ def descargar_lista(item, url):
     
     if 'tinyupload.com/' in url:
         try:
-            from urlparse import urlparse
+            from urllib.parse import urlparse
             data = httptools.downloadpage(url).data
             logger.debug(data)
             down_url, url_name = scrapertools.find_single_match(data, ' href="(download\.php[^"]*)"><b>([^<]*)')

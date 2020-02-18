@@ -3,7 +3,14 @@
 # Gestor de descargas
 # ------------------------------------------------------------
 
-import os
+from __future__ import division
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+from builtins import filter
+from past.utils import old_div
+
 import re
 import time
 import unicodedata
@@ -24,7 +31,7 @@ STATUS_COLORS = {0: "orange", 1: "orange", 2: "green", 3: "red"}
 STATUS_CODES = type("StatusCode", (), {"stoped": 0, "canceled": 1, "completed": 2, "error": 3})
 DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
 DOWNLOAD_PATH = config.get_setting("downloadpath")
-STATS_FILE = os.path.join(config.get_data_path(), "servers.json")
+STATS_FILE = filetools.join(config.get_data_path(), "servers.json")
 
 TITLE_FILE = "[COLOR %s][%i%%][/COLOR] %s"
 TITLE_TVSHOW = "[COLOR %s][%i%%][/COLOR] %s [%s]"
@@ -40,7 +47,7 @@ def mainlist(item):
         if not file.endswith(".json"): continue
 
         # cargamos el item
-        file = os.path.join(DOWNLOAD_LIST_PATH, file)
+        file = filetools.join(DOWNLOAD_LIST_PATH, file)
         i = Item(path=file).fromjson(filetools.read(file))
         i.thumbnail = i.contentThumbnail
 
@@ -49,9 +56,7 @@ def mainlist(item):
             # Series
             if i.contentType == "episode":
                 # Comprobamos que la serie no este ya en el itemlist
-                if not filter(
-                        lambda x: x.contentSerieName == i.contentSerieName and x.contentChannel == i.contentChannel,
-                        itemlist):
+                if not [x for x in itemlist if x.contentSerieName == i.contentSerieName and x.contentChannel == i.contentChannel]:
 
                     title = TITLE_TVSHOW % (
                         STATUS_COLORS[i.downloadStatus], i.downloadProgress, i.contentSerieName, i.contentChannel)
@@ -62,12 +67,9 @@ def mainlist(item):
                                          fanart=i.fanart, thumbnail=i.thumbnail))
 
                 else:
-                    s = \
-                        filter(
-                            lambda x: x.contentSerieName == i.contentSerieName and x.contentChannel == i.contentChannel,
-                            itemlist)[0]
+                    s = [x for x in itemlist if x.contentSerieName == i.contentSerieName and x.contentChannel == i.contentChannel][0]
                     s.downloadProgress.append(i.downloadProgress)
-                    downloadProgress = sum(s.downloadProgress) / len(s.downloadProgress)
+                    downloadProgress = old_div(sum(s.downloadProgress), len(s.downloadProgress))
 
                     if not s.downloadStatus in [STATUS_CODES.error, STATUS_CODES.canceled] and not i.downloadStatus in [
                         STATUS_CODES.completed, STATUS_CODES.stoped]:
@@ -150,10 +152,10 @@ def clean_all(item):
 
     for fichero in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
         if fichero.endswith(".json"):
-            download_item = Item().fromjson(filetools.read(os.path.join(DOWNLOAD_LIST_PATH, fichero)))
+            download_item = Item().fromjson(filetools.read(filetools.join(DOWNLOAD_LIST_PATH, fichero)))
             if not item.contentType == "tvshow" or (
                             item.contentSerieName == download_item.contentSerieName and item.contentChannel == download_item.contentChannel):
-                filetools.remove(os.path.join(DOWNLOAD_LIST_PATH, fichero))
+                filetools.remove(filetools.join(DOWNLOAD_LIST_PATH, fichero))
 
     platformtools.itemlist_refresh()
 
@@ -162,11 +164,11 @@ def clean_ready(item):
     logger.info()
     for fichero in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
         if fichero.endswith(".json"):
-            download_item = Item().fromjson(filetools.read(os.path.join(DOWNLOAD_LIST_PATH, fichero)))
+            download_item = Item().fromjson(filetools.read(filetools.join(DOWNLOAD_LIST_PATH, fichero)))
             if not item.contentType == "tvshow" or (
                             item.contentSerieName == download_item.contentSerieName and item.contentChannel == download_item.contentChannel):
                 if download_item.downloadStatus == STATUS_CODES.completed:
-                    filetools.remove(os.path.join(DOWNLOAD_LIST_PATH, fichero))
+                    filetools.remove(filetools.join(DOWNLOAD_LIST_PATH, fichero))
 
     platformtools.itemlist_refresh()
 
@@ -175,15 +177,15 @@ def restart_error(item):
     logger.info()
     for fichero in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
         if fichero.endswith(".json"):
-            download_item = Item().fromjson(filetools.read(os.path.join(DOWNLOAD_LIST_PATH, fichero)))
+            download_item = Item().fromjson(filetools.read(filetools.join(DOWNLOAD_LIST_PATH, fichero)))
 
             if not item.contentType == "tvshow" or (
                             item.contentSerieName == download_item.contentSerieName and item.contentChannel == download_item.contentChannel):
                 if download_item.downloadStatus == STATUS_CODES.error:
                     if filetools.isfile(
-                            os.path.join(config.get_setting("downloadpath"), download_item.downloadFilename)):
+                            filetools.join(config.get_setting("downloadpath"), download_item.downloadFilename)):
                         filetools.remove(
-                            os.path.join(config.get_setting("downloadpath"), download_item.downloadFilename))
+                            filetools.join(config.get_setting("downloadpath"), download_item.downloadFilename))
 
                     update_json(item.path,
                                 {"downloadStatus": STATUS_CODES.stoped, "downloadComplete": 0, "downloadProgress": 0})
@@ -195,8 +197,8 @@ def download_all(item):
     time.sleep(0.5)
     for fichero in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
         if fichero.endswith(".json"):
-            download_item = Item(path=os.path.join(DOWNLOAD_LIST_PATH, fichero)).fromjson(
-                filetools.read(os.path.join(DOWNLOAD_LIST_PATH, fichero)))
+            download_item = Item(path=filetools.join(DOWNLOAD_LIST_PATH, fichero)).fromjson(
+                filetools.read(filetools.join(DOWNLOAD_LIST_PATH, fichero)))
 
             if not item.contentType == "tvshow" or (
                             item.contentSerieName == download_item.contentSerieName and item.contentChannel == download_item.contentChannel):
@@ -260,8 +262,8 @@ def menu(item):
 
     # Reiniciar descarga
     if opciones[seleccion] == op[2]:
-        if filetools.isfile(os.path.join(config.get_setting("downloadpath"), item.downloadFilename)):
-            filetools.remove(os.path.join(config.get_setting("downloadpath"), item.downloadFilename))
+        if filetools.isfile(filetools.join(config.get_setting("downloadpath"), item.downloadFilename)):
+            filetools.remove(filetools.join(config.get_setting("downloadpath"), item.downloadFilename))
 
         update_json(item.path, {"downloadStatus": STATUS_CODES.stoped, "downloadComplete": 0, "downloadProgress": 0,
                                 "downloadServer": {}})
@@ -311,8 +313,8 @@ def update_json(path, params):
 
 
 def save_server_statistics(server, speed, success):
-    if os.path.isfile(STATS_FILE):
-        servers = jsontools.load(open(STATS_FILE, "rb").read())
+    if filetools.isfile(STATS_FILE):
+        servers = jsontools.load(filetools.read(STATS_FILE))
     else:
         servers = {}
 
@@ -327,18 +329,18 @@ def save_server_statistics(server, speed, success):
         servers[server]["speeds"].append(speed)
         servers[server]["speeds"] = servers[server]["speeds"][-5:]
 
-    open(STATS_FILE, "wb").write(jsontools.dump(servers))
+    filetools.write(STATS_FILE, jsontools.dump(servers))
     return
 
 
 def get_server_position(server):
-    if os.path.isfile(STATS_FILE):
-        servers = jsontools.load(open(STATS_FILE, "rb").read())
+    if filetools.isfile(STATS_FILE):
+        servers = jsontools.load(filetools.read(STATS_FILE))
     else:
         servers = {}
 
     if server in servers:
-        pos = [s for s in sorted(servers, key=lambda x: (sum(servers[x]["speeds"]) / (len(servers[x]["speeds"]) or 1),
+        pos = [s for s in sorted(servers, key=lambda x: (old_div(sum(servers[x]["speeds"]), (len(servers[x]["speeds"]) or 1)),
                                                          float(sum(servers[x]["success"])) / (
                                                              len(servers[x]["success"]) or 1)), reverse=True)]
         return pos.index(server) + 1
@@ -365,7 +367,8 @@ def get_match_list(data, match_list, order_list=None, only_ascii=False, ignoreca
     matches = []
 
     # Pasamos la cadena a unicode
-    data = unicode(data, "utf8")
+    if not PY3:
+        data = unicode(data, "utf8")
 
     # Pasamos el diccionario a {"Cadena 1": "ID1", "Cadena 2", "ID1", "Cadena 4", "ID2"} y los pasamos a unicode
     for key in match_list:
@@ -374,7 +377,10 @@ def get_match_list(data, match_list, order_list=None, only_ascii=False, ignoreca
         for value in match_list[key]:
             if value in match_dict:
                 raise Exception("Duplicate word in list: '%s'" % value)
-            match_dict[unicode(value, "utf8")] = key
+            if not PY3:
+                match_dict[unicode(value, "utf8")] = key
+            else:
+                match_dict[value] = key
 
     # Si ignorecase = True, lo pasamos todo a mayusculas
     if ignorecase:
@@ -497,7 +503,7 @@ def download_from_url(url, item):
 
     save_server_statistics(item.server, d.speed[0], d.state != d.states.error)
 
-    dir = os.path.dirname(item.downloadFilename)
+    dir = filetools.dirname(item.downloadFilename)
     file = filetools.join(dir, d.filename)
 
     if status == STATUS_CODES.completed:
@@ -589,7 +595,7 @@ def download_from_best_server(item):
     else:
         play_items = servertools.find_video_items(item.clone(action=item.contentAction, channel=item.contentChannel))
 
-    play_items = filter(lambda x: x.action == "play" and not "trailer" in x.title.lower(), play_items)
+    play_items = [x for x in play_items if x.action == "play" and not "trailer" in x.title.lower()]
 
     progreso.update(100, config.get_localized_string(70183), config.get_localized_string(70181) % len(play_items),
                     config.get_localized_string(70182))
@@ -635,7 +641,7 @@ def select_server(item):
     else:
         play_items = servertools.find_video_items(item.clone(action=item.contentAction, channel=item.contentChannel))
 
-    play_items = filter(lambda x: x.action == "play" and not "trailer" in x.title.lower(), play_items)
+    play_items = [x for x in play_items if x.action == "play" and not "trailer" in x.title.lower()]
 
     progreso.update(100, config.get_localized_string(70183), config.get_localized_string(70181) % len(play_items),
                     config.get_localized_string(70182))
@@ -728,7 +734,7 @@ def get_episodes(item):
             if not episode.contentTitle:
                 episode.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)|\d*x\d*\s*-", "", episode.title).strip()
 
-            episode.downloadFilename = filetools.validate_path(os.path.join(item.downloadFilename, "%dx%0.2d - %s" % (
+            episode.downloadFilename = filetools.validate_path(filetools.join(item.downloadFilename, "%dx%0.2d - %s" % (
                 episode.contentSeason, episode.contentEpisodeNumber, episode.contentTitle.strip())))
 
             itemlist.append(episode)
@@ -753,10 +759,10 @@ def write_json(item):
 
     for name in ["text_bold", "text_color", "text_italic", "context", "totalItems", "viewmode", "title", "contentTitle",
                  "thumbnail"]:
-        if item.__dict__.has_key(name):
+        if name in item.__dict__:
             item.__dict__.pop(name)
 
-    path = os.path.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json")
+    path = filetools.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json")
     filetools.write(path, item.tojson())
     item.path = path
     time.sleep(0.1)
@@ -847,7 +853,7 @@ def save_download_tvshow(item):
     progreso.update(0, config.get_localized_string(70190), " ")
 
     for x, i in enumerate(episodes):
-        progreso.update(x * 100 / len(episodes),
+        progreso.update(old_div(x * 100, len(episodes)),
                         "%dx%0.2d: %s" % (i.contentSeason, i.contentEpisodeNumber, i.contentTitle))
         write_json(i)
     progreso.close()

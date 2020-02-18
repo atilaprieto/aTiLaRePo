@@ -89,9 +89,11 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron  = '<div class="entry-featuredImg">.*?<a href="([^"]+)">.*?<img src="([^"]+)" alt="([^"]+)">'
+    patron  = '<article id="post-\d+".*?'
+    patron += '<a href="([^"]+)" rel="bookmark">([^<]+)<.*?'
+    patron += '<img src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedthumbnail,scrapedtitle  in matches:
+    for scrapedurl,scrapedtitle,scrapedthumbnail  in matches:
         url = scrapedurl
         title = scrapedtitle
         if 'HD' in scrapedtitle :
@@ -102,9 +104,10 @@ def lista(item):
         contentTitle = title
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, 
+        if not "manyvids" in title:
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, 
                               fanart=scrapedthumbnail, plot=plot, contentTitle = contentTitle) )
-    next_page_url = scrapertools.find_single_match(data,'<div class="loadMoreInfinite"><a href="(.*?)" >Load More')
+    next_page_url = scrapertools.find_single_match(data,'<a class="next page-numbers" href="([^"]+)">Next page')
     if next_page_url!="":
         next_page_url = urlparse.urljoin(item.url,next_page_url)
         itemlist.append( Item(channel=item.channel , action="lista" , title="Página Siguiente >>" , 
@@ -116,6 +119,7 @@ def findvideos(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
+    data= scrapertools.find_single_match(data, '<div class="entry-content">(.*?)</div>')
     patron = '<a href="([^"]+)" [^<]+>Streaming'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl in matches:

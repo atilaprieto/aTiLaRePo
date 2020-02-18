@@ -3,6 +3,8 @@
 # filtertools - se encarga de filtrar resultados
 # ------------------------------------------------------------
 
+from builtins import object
+
 from core import jsontools
 from core.item import Item
 from platformcode import config, logger
@@ -28,7 +30,7 @@ __channel__ = "filtertools"
 # TODO echar un ojo a https://pyformat.info/, se puede formatear el estilo y hacer referencias directamente a elementos
 
 
-class ResultFilter:
+class ResultFilter(object):
     def __init__(self, dict_filter):
         self.active = dict_filter[TAG_ACTIVE]
         self.language = dict_filter[TAG_LANGUAGE]
@@ -39,7 +41,7 @@ class ResultFilter:
                (self.active, self.language, self.quality_allowed)
 
 
-class Filter:
+class Filter(object):
     def __init__(self, item, global_filter_lang_id):
         self.result = None
         self.__get_data(item, global_filter_lang_id)
@@ -51,7 +53,7 @@ class Filter:
 
         global_filter_language = config.get_setting(global_filter_lang_id, item.channel)
 
-        if tvshow in dict_filtered_shows.keys():
+        if tvshow in list(dict_filtered_shows.keys()):
 
             self.result = ResultFilter({TAG_ACTIVE: dict_filtered_shows[tvshow][TAG_ACTIVE],
                                         TAG_LANGUAGE: dict_filtered_shows[tvshow][TAG_LANGUAGE],
@@ -112,9 +114,9 @@ def context(item, list_language=None, list_quality=None, exist=False):
     """
 
     # Dependiendo de como sea el contexto lo guardamos y añadimos las opciones de filtertools.
-    if type(item.context) == str:
+    if isinstance(item.context, str):
         _context = item.context.split("|")
-    elif type(item.context) == list:
+    elif isinstance(item.context, list):
         _context = item.context
     else:
         _context = []
@@ -127,9 +129,9 @@ def context(item, list_language=None, list_quality=None, exist=False):
             dict_data["list_quality"] = list_quality
 
         added = False
-        if type(_context) == list:
+        if isinstance(_context, list):
             for x in _context:
-                if x and type(x) == dict:
+                if x and isinstance(x, dict):
                     if x["channel"] == "filtertools":
                         added = True
                         break
@@ -586,7 +588,7 @@ def save(item, dict_data_saved):
         logger.info("Se actualiza los datos")
 
         list_quality = []
-        for _id, value in dict_data_saved.items():
+        for _id, value in list(dict_data_saved.items()):
             if _id in item.list_quality and value:
                 list_quality.append(_id.lower())
 

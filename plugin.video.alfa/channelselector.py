@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from builtins import range
+
 import glob
 import os
 
@@ -170,7 +172,7 @@ def filterchannels(category, view="thumb_"):
 
             # Se salta el canal para adultos si el modo adultos está desactivado
             if channel_parameters["adult"] and config.get_setting("adult_mode") == 0:
-                if category <> "all_channels":
+                if category != "all_channels":
                     continue
 
             # Se salta el canal si está en un idioma filtrado
@@ -179,12 +181,12 @@ def filterchannels(category, view="thumb_"):
             # Los canales de adultos se mostrarán siempre que estén activos
             if channel_language != "all" and channel_language not in channel_parameters["language"] \
                     and "*" not in channel_parameters["language"]:
-                if category <> "all_channels":
+                if category != "all_channels":
                     continue
 
             # Se salta el canal si está en una categoria filtrado
             if category != "all" and category not in channel_parameters["categories"]:
-                if category <> "all_channels":
+                if category != "all_channels":
                     continue
 
             # Si tiene configuración añadimos un item en el contexto

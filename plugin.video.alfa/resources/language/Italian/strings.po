@@ -283,11 +283,11 @@ msgstr "Informazioni Persona"
 
 msgctxt "#30980"
 msgid "Search by Title"
-msgstr "Cerca per Titolo ..."
+msgstr "Cerca per Titolo"
 
 msgctxt "#30981"
 msgid "Search by Person"
-msgstr "Cerca per Persona ..."
+msgstr "Cerca per Persona"
 
 msgctxt "#30982"
 msgid "Search by Company"
@@ -307,7 +307,7 @@ msgstr "Migliori"
 
 msgctxt "#30986"
 msgid "Search by Collection"
-msgstr "Ricerca per Collezione ..."
+msgstr "Ricerca per Collezione"
 
 msgctxt "#30987"
 msgid "Genre"
@@ -315,15 +315,15 @@ msgstr "Genere"
 
 msgctxt "#30988"
 msgid "Search by Year"
-msgstr "Ricerca per Anno ..."
+msgstr "Ricerca per Anno"
 
 msgctxt "#30989"
 msgid "Search Similar Movies"
-msgstr "Cerca Film Simili ..."
+msgstr "Cerca Film Simili"
 
 msgctxt "#30990"
 msgid "Search TV show"
-msgstr "Cerca Serie TV ..."
+msgstr "Cerca Serie TV"
 
 msgctxt "#30991"
 msgid "Library"
@@ -335,11 +335,11 @@ msgstr "Successivo"
 
 msgctxt "#30993"
 msgid "Looking for %s..."
-msgstr "Ricerca di %s ..."
+msgstr "Ricerca di %s..."
 
 msgctxt "#30994"
 msgid "Searching in %s..."
-msgstr "Sto cercando in %s ..."
+msgstr "Sto cercando in %s..."
 
 msgctxt "#30995"
 msgid "%d found so far: %s"
@@ -1682,7 +1682,7 @@ msgid "Delete saved searches"
 msgstr "Cancella ricerche salvate"
 
 msgctxt "#60420"
-msgid "More Options"
+msgid "More search options"
 msgstr "Altre opzioni"
 
 msgctxt "#60421"
@@ -2658,8 +2658,8 @@ msgid "Global Search"
 msgstr "Ricerca globale"
 
 msgctxt "#60673"
-msgid "MultiThread Search"
-msgstr "Ricerca MultiThread"
+msgid "Number of Search Threads"
+msgstr "Numero di Threads di Ricerca"
 
 msgctxt "#60674"
 msgid "Show Results:"
@@ -3782,8 +3782,8 @@ msgid "Add Torrent channels in search"
 msgstr "Includere i canali Torrent nella ricerca"
 
 msgctxt "#70276"
-msgid "Search by title"
-msgstr "Cerca per titolo"
+msgid "Search by Title"
+msgstr "Cerca per Titolo"
 
 msgctxt "#70277"
 msgid "MediaServer Language (Restart Required)"
@@ -4919,7 +4919,58 @@ msgctxt "#70561"
 msgid "Search Similar
 msgstr "Cerca Simili"
 
-
 msgctxt "#70562"
 msgid "Autoplay (Enable autoplay in all channels)"
 msgstr "Autoplay (Abilita autoplay in tutti i canali)"
+
+msgctxt "#70570"
+msgid "Search with current selection"
+msgstr "Cerca con la selezione corrente"
+
+msgctxt "#70571"
+msgid "Modify current selection"
+msgstr "Modifica la selezione corrente"
+
+msgctxt "#70572"
+msgid "Modify from All"
+msgstr "Modifica partendo da Tutto"
+
+msgctxt "#70573"
+msgid "Modify starting from None"
+msgstr "Modifica partendo da Nessuno"
+
+msgctxt "#70574"
+msgid "Modify starting from Castellano"
+msgstr "Modifica partendo da Castellano"
+
+msgctxt "#70575"
+msgid "Modify starting from Latino"
+msgstr "Modifica partendo da Latino"
+
+msgctxt "#70576"
+msgid "Modify starting from Italian"
+msgstr "Modifica partendo da Italiano"
+
+msgctxt "#70577"
+msgid "Modify starting from "
+msgstr "Modifica partendo da "
+
+msgctxt "#70741"
+msgid "Search %s"
+msgstr "Cerca %s"
+
+msgctxt "#70742"
+msgid "Movies by Year"
+msgstr "Film per Anno"
+
+msgctxt "#70743"
+msgid "Series by Year"
+msgstr "Serie per Anno"
+
+msgctxt "#70744"
+msgid "%s channels remaining"
+msgstr "%s canali restanti"
+
+msgctxt "#70745"
+msgid "Enter another year..."
+msgstr "Inserisci un altro anno..."

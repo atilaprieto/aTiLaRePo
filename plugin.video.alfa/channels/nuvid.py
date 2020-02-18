@@ -5,6 +5,7 @@ import hashlib
 import urlparse
 
 from core import httptools
+from core import servertools
 from core import scrapertools
 from platformcode import logger
 
@@ -82,19 +83,25 @@ def categorias(item):
 
 
 def play(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url, cookies=False).data
-    h = scrapertools.find_single_match(data, "params\s*\+=\s*'h=([^']+)'")
-    t = scrapertools.find_single_match(data, "params\s*\+=\s*'%26t=([^']+)'")
-    vkey = scrapertools.find_single_match(data, "params\s*\+=\s*'%26vkey='.*?'([^']+)'")
-    pkey = hashlib.md5(vkey + base64.b64decode("aHlyMTRUaTFBYVB0OHhS")).hexdigest()
-    url = 'https://www.nuvid.com/player_config/?h=%s&check_speed=1&t=%s&vkey=%s&pkey=%s&aid=&domain_id=' % (h,t,vkey,pkey)
-    data = httptools.downloadpage(url, cookies=False).data
-    videourl = scrapertools.find_single_match(data, '<video_file>.*?(http.*?)\]\]>')
-    if videourl:
-        itemlist.append(['.mp4 [directo]', videourl])
-    videourl = scrapertools.find_single_match(data, '<hq_video_file>.*?(http.*?)\]\]>')
-    if videourl:
-        itemlist.append(['.mp4 HD [directo]', videourl])
+    logger.info(item)
+    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     return itemlist
+
+
+# def play(item):
+    # logger.info()
+    # itemlist = []
+    # data = httptools.downloadpage(item.url, cookies=False).data
+    # h = scrapertools.find_single_match(data, "params\s*\+=\s*'h=([^']+)'")
+    # t = scrapertools.find_single_match(data, "params\s*\+=\s*'%26t=([^']+)'")
+    # vkey = scrapertools.find_single_match(data, "params\s*\+=\s*'%26vkey='.*?'([^']+)'")
+    # pkey = hashlib.md5(vkey + base64.b64decode("aHlyMTRUaTFBYVB0OHhS")).hexdigest()
+    # url = 'https://www.nuvid.com/player_config/?h=%s&check_speed=1&t=%s&vkey=%s&pkey=%s&aid=&domain_id=' % (h,t,vkey,pkey)
+    # data = httptools.downloadpage(url, cookies=False).data
+    # videourl = scrapertools.find_single_match(data, '<video_file>.*?(http.*?)\]\]>')
+    # if videourl:
+        # itemlist.append(['.mp4 [directo]', videourl])
+    # videourl = scrapertools.find_single_match(data, '<hq_video_file>.*?(http.*?)\]\]>')
+    # if videourl:
+        # itemlist.append(['.mp4 HD [directo]', videourl])
+    # return itemlist

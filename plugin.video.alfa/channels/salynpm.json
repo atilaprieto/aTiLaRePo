@@ -1,6 +1,7 @@
 {
   "id": "salynpm",
   "name": "SalynPM",
+  "force_unify": true,
   "active": true,
   "adult": false,
   "language": ["VOSE","LAT"],

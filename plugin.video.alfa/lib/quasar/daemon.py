@@ -1,10 +1,20 @@
+from future import standard_library
+standard_library.install_aliases()
+from future.builtins import map
+#from future.builtins import str
+from future.builtins import range
+
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import os
 import stat
 import time
 import xbmc
 import shutil
 import socket
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import xbmcgui
 import threading
 import subprocess
@@ -70,7 +80,12 @@ def get_quasar_binary():
             xbmc_data_path = xbmc.translatePath("special://masterprofile/")
         dest_binary_dir = os.path.join(xbmc_data_path, "files", ADDON_ID, "bin", "%(os)s_%(arch)s" % PLATFORM)
     else:
-        dest_binary_dir = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")).decode('utf-8'), "bin", "%(os)s_%(arch)s" % PLATFORM)
+        if not PY3:
+            dest_binary_dir = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")).decode('utf-8'), "bin", "%(os)s_%(arch)s" % PLATFORM)
+        else:
+            dest_binary_dir = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")), "bin", "%(os)s_%(arch)s" % PLATFORM)
+            if isinstance(dest_binary_dir, bytes):
+                dest_binary_dir = dest_binary_dir.decode("utf8")
 
     log.info("Using destination binary folder: %s" % dest_binary_dir)
     binary_path = os.path.join(binary_dir, binary)
@@ -131,9 +146,14 @@ def get_quasar_binary():
 def clear_fd_inherit_flags():
     # Ensure the spawned quasar binary doesn't inherit open files from Kodi
     # which can break things like addon updates. [WINDOWS ONLY]
-    from ctypes import windll
+    
+    try:
+        from ctypes import windll
+    except:
+        log.error("Error clearing inherit flag, disk file handle. NO CTYPES")
+        return
 
-    HANDLE_RANGE = xrange(0, 65536)
+    HANDLE_RANGE = list(range(0, 65536))
     HANDLE_FLAG_INHERIT = 1
     FILE_TYPE_DISK = 1
 
@@ -191,7 +211,12 @@ def start_quasard(**kwargs):
         if PLATFORM["os"] == "windows":
             log.warning("Removing library.db.lock file...")
             try:
-                library_lockfile = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")).decode('utf-8'), "library.db.lock")
+                if not PY3:
+                    library_lockfile = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")).decode('utf-8'), "library.db.lock")
+                else:
+                    library_lockfile = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")), "library.db.lock")
+                    if isinstance(library_lockfile, bytes):
+                        library_lockfile = library_lockfile.decode("utf8")
                 os.remove(library_lockfile)
             except Exception as e:
                 log.error(repr(e))
@@ -229,7 +254,7 @@ def start_quasard(**kwargs):
 
 def shutdown():
     try:
-        urllib2.urlopen(QUASARD_HOST + "/shutdown")
+        urllib.request.urlopen(QUASARD_HOST + "/shutdown")
     except:
         pass
 
@@ -290,6 +315,9 @@ def quasard_thread(monitor):
 
     except Exception as e:
         import traceback
-        map(log.error, traceback.format_exc().split("\n"))
-        notify("%s: %s" % (getLocalizedString(30226), repr(e).encode('utf-8')))
+        list(map(log.error, traceback.format_exc().split("\n")))
+        if not PY3:
+            notify("%s: %s" % (getLocalizedString(30226), repr(e).encode('utf-8')))
+        else:
+            notify("%s: %s" % (getLocalizedString(30226), repr(e)))
         raise

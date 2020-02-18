@@ -100,10 +100,10 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data, '<video id="pdvideo"(.*?)</video>')
-    patron = 'src="([^"]+)".*?label="([^"]+)"'
+    data = scrapertools.find_single_match(data, 'videos":(.*?)"preview":')
+    patron = '"(\d+)":.*?"(https://.*?.mp4)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for url,quality in matches:
+    for quality,url in matches:
         itemlist.append(['.mp4 %s' %quality, url])
     return itemlist
 

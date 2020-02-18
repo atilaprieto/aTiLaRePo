@@ -1,0 +1,27 @@
+{
+  "id": "futurama-latino",
+  "name": "Futurama-Latino",
+  "thumbnail":"https://futurama-latino.net/wp-content/themes/vizer/assets/img/logo.png",
+  "banner":"",
+  "active": true,
+  "adult": false,
+  "language": ["lat"],
+  "categories": [
+    "tvshow"
+  ],
+  "settings": [
+    {
+      "id": "filter_languages",
+      "type": "list",
+      "label": "Mostrar enlaces en idioma...",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "No filtrar",
+        "LAT"
+      ]
+    }
+  ]
+
+}

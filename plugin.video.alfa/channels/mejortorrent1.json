@@ -1,7 +1,7 @@
 {
   "id": "mejortorrent1",
   "name": "MejorTorrent 1",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["cast", "lat"],
   "thumbnail": "mejortorrent.png",
@@ -34,6 +34,14 @@
       "id": "modo_grafico",
       "type": "bool",
       "label": "Buscar información extra (TMDB)",
+      "default": true,
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "id": "pseudo_titulos",
+      "type": "bool",
+      "label": "Desea ver Pseudo títulos de ayuda?",
       "default": true,
       "enabled": true,
       "visible": true

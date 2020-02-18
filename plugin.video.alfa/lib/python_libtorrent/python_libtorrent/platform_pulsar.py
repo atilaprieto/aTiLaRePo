@@ -22,8 +22,11 @@
     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
-
+from __future__ import print_function
 import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import os
 try:
     import xbmc, xbmcaddon
@@ -46,7 +49,7 @@ def log(msg):
         try:
             xbmc.log("### [%s]: %s" % (__plugin__,'ERROR LOG',), level=xbmc.LOGNOTICE )
         except:
-            print msg
+            print(msg)
 
 def get_libname(platform):
     libname=[]
@@ -140,7 +143,7 @@ def get_platform():
                 else:
                     ret["arch"] = 'mipsel_ucs2'
             elif "aarch64" in uname:
-                if sys.maxint > 2147483647: #is_64bit_system
+                if sys.maxsize > 2147483647: #is_64bit_system
                     if sys.maxunicode > 65536:
                         ret["arch"] = 'aarch64_ucs4'
                     else:

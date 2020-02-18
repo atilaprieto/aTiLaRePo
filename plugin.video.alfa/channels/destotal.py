@@ -149,7 +149,11 @@ def list_all(item):
         thumb = info_1.img["src"]
         title = info_1.img["alt"]
         url = info_1.a["href"]
-        year = info_2.find("span", text=re.compile(r"\d{4}")).text.strip()
+        try:
+            year = info_2.find("span", text=re.compile(r"\d{4}")).text.strip()
+        except:
+            year = '-'
+
         lang = languages_from_flags(info_1.find("div", class_="bandera"), "png")
 
         itemlist.append(Item(channel=item.channel, title=title, url=url, action='findvideos',

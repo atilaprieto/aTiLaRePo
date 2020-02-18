@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import re
 import sys
-import urllib
-import urlparse
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+import re
 import time
 
 from channelselector import get_thumb
@@ -20,7 +21,7 @@ from channels import autoplay
 
 #IDIOMAS = {'CAST': 'Castellano', 'LAT': 'Latino', 'VO': 'Version Original'}
 IDIOMAS = {'Castellano': 'CAST', 'Latino': 'LAT', 'Version Original': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['torrent']
 
@@ -214,7 +215,10 @@ def listado(item):
         for scrapedlanguage, scrapedurl, scrapedtitle, year, scrapedcategory, scrapedquality in matches:
             title = scrapedtitle
             url = scrapedurl.replace('&#038;', '&')
-            title = title.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ü", "u").replace("ï¿½", "ñ").replace("Ã±", "ñ").replace("&atilde;", "a").replace("&etilde;", "e").replace("&itilde;", "i").replace("&otilde;", "o").replace("&utilde;", "u").replace("&ntilde;", "ñ").replace("&#8217;", "'").replace('&#038;', '&')
+            title = title.replace("á", "a").replace("é", "e").replace("í", "i")\
+                    .replace("ó", "o").replace("ú", "u").replace("ü", "u")\
+                    .replace("ï¿½", "ñ").replace("Ã±", "ñ").replace("&#8217;", "'")\
+                    .replace("&amp;", "&")
             
             #cnt_title += 1
             item_local = item.clone()                                                   #Creamos copia de Item para trabajar
@@ -409,7 +413,7 @@ def findvideos(item):
                 item.thumbnail = scrapertools.find_single_match(data, patron)           #guardamos thumb si no existe
             
             #Extraemos quality, audio, year, country, size, scrapedlanguage
-            patron = '<\/script><\/div><ul>(?:<li><label>Fecha de estreno <\/label>[^<]+<\/li>)?(?:<li><label>Genero <\/label>[^<]+<\/li>)?(?:<li><label>Calidad <\/label>([^<]+)<\/li>)?(?:<li><label>Audio <\/label>([^<]+)<\/li>)?(?:<li><label>Fecha <\/label>.*?(\d+)<\/li>)?(?:<li><label>Pais de Origen <\/label>([^<]+)<\/li>)?(?:<li><label>Tama&ntilde;o <\/label>([^<]+)<\/li>)?(<li> Idioma[^<]+<img src=.*?<br \/><\/li>)?'
+            patron = '<\/script><\/div><ul>(?:<li><label>Fecha de estreno <\/label>[^<]+<\/li>)?(?:<li><label>Genero <\/label>[^<]+<\/li>)?(?:<li><label>Calidad <\/label>([^<]+)<\/li>)?(?:<li><label>Audio <\/label>([^<]+)<\/li>)?(?:<li><label>Fecha <\/label>.*?(\d+)<\/li>)?(?:<li><label>Pais de Origen <\/label>([^<]+)<\/li>)?(?:<li><label>Tamaño <\/label>([^<]+)<\/li>)?(<li> Idioma[^<]+<img src=.*?<br \/><\/li>)?'
             try:
                 quality = ''
                 audio = ''

@@ -3,6 +3,14 @@
 # XBMC Config Menu
 # ------------------------------------------------------------
 
+from __future__ import division
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+from builtins import range
+from past.utils import old_div
+
 import inspect
 import os
 
@@ -160,7 +168,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.callback = callback
         self.item = item
 
-        if type(custom_button) == dict:
+        if isinstance(custom_button, dict):
             self.custom_button = {}
             self.custom_button["label"] = custom_button.get("label", "")
             self.custom_button["function"] = custom_button.get("function", "")
@@ -247,7 +255,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         ok = False
 
         # Si la condicion es True o False, no hay mas que evaluar, ese es el valor
-        if type(cond) == bool:
+        if isinstance(cond, bool):
             return cond
 
         # Obtenemos las condiciones
@@ -516,7 +524,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 continue
             if c["type"] == "list" and "lvalues" not in c:
                 continue
-            if c["type"] == "list" and not type(c["lvalues"]) == list:
+            if c["type"] == "list" and not isinstance(c["lvalues"], list):
                 continue
             if c["type"] == "list" and not len(c["lvalues"]) > 0:
                 continue
@@ -591,7 +599,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.check_ok(self.values)
 
     def dispose_controls(self, index, focus=False, force=False):
-        show_controls = self.controls_height / self.height_control - 1
+        show_controls = old_div(self.controls_height, self.height_control) - 1
 
         visible_count = 0
 
@@ -610,7 +618,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if index < 0: index = 0
             new_index = index
 
-        if self.index <> new_index or force:
+        if self.index != new_index or force:
             for x, c in enumerate(self.visible_controls):
                 if x < new_index or visible_count > show_controls or not c["show"]:
                     self.set_visible(c, False)
@@ -694,7 +702,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 else:
                     self.return_value = getattr(cb_channel, self.custom_button['function'])(self.item, self.values)
                     if not self.custom_button["close"]:
-                        if isinstance(self.return_value, dict) and self.return_value.has_key("label"):
+                        if isinstance(self.return_value, dict) and "label" in self.return_value:
                             self.getControl(10006).setLabel(self.return_value['label'])
 
                         for c in self.list_controls:
@@ -937,11 +945,11 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         elif action == 504:
 
             if self.xx > raw_action.getAmount2():
-                if (self.xx - int(raw_action.getAmount2())) / self.height_control:
+                if old_div((self.xx - int(raw_action.getAmount2())), self.height_control):
                     self.xx -= self.height_control
                     self.dispose_controls(self.index + 1)
             else:
-                if (int(raw_action.getAmount2()) - self.xx) / self.height_control:
+                if old_div((int(raw_action.getAmount2()) - self.xx), self.height_control):
                     self.xx += self.height_control
                 self.dispose_controls(self.index - 1)
             return
@@ -982,7 +990,7 @@ class ControlEdit(xbmcgui.ControlButton):
 
     def setWidth(self, w):
         xbmcgui.ControlButton.setWidth(self, w)
-        self.textControl.setWidth(w / 2)
+        self.textControl.setWidth(old_div(w, 2))
 
     def setHeight(self, w):
         xbmcgui.ControlButton.setHeight(self, w)
@@ -993,7 +1001,7 @@ class ControlEdit(xbmcgui.ControlButton):
         if xbmcgui.__version__ == "1.2":
             self.textControl.setPosition(x + self.getWidth(), y)
         else:
-            self.textControl.setPosition(x + self.getWidth() / 2, y)
+            self.textControl.setPosition(x + old_div(self.getWidth(), 2), y)
 
     def setText(self, text):
         self.text = text

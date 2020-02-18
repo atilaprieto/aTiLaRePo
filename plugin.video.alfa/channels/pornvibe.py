@@ -54,16 +54,17 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
+    data= scrapertools.find_single_match(data, '<head>(.*?)>Next &raquo')
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
     patron = '<div class="item large-\d+.*?'
     patron += 'src="([^"]+)".*?'
-    patron += '<div class="video-stats clearfix">(.*?)<div class="thumb-stats pull-right"><span>([^>]+)<.*?'
+    patron += '<div class="video-stats clearfix">(.*?)<span class="sl-wrapper">(.*?)<div class="post-des">.*?'
     patron += '<a href="([^"]+)">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedthumbnail,quality,time,scrapedurl,scrapedtitle in matches:
-        if "/?s=" in item.url:
-            scrapedtitle= scrapedurl.replace("https://pornvibe.org/", "").replace("-", " ")
-        title = "[COLOR yellow]%s[/COLOR] %s" % (time, scrapedtitle)
+        quality = scrapertools.find_single_match(quality, '<h6>([^<]+)</h6>')
+        time = scrapertools.find_single_match(time, '<span>([^<]+)</span>')
+        title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (time,quality, scrapedtitle)
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""

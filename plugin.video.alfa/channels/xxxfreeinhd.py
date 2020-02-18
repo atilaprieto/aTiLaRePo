@@ -16,7 +16,7 @@ list_language = IDIOMAS.values()
 list_quality = []
 list_servers = ['vidlox']
 
-host = 'https://watchxxxfreeinhd.com'
+host = 'https://watchxxxfree.org/'
 
 
 def mainlist(item):
@@ -105,7 +105,7 @@ def findvideos(item):
             url = decode_url(scrapedurl)
         else:
             url = scrapedurl
-        if not "videoxseries" in scrapedurl: #netu
+        if not "vid=" in url: #netu
             itemlist.append( Item(channel=item.channel, action="play", title = "%s", contentTitle= item.title, url=url ))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     # Requerido para FilterTools

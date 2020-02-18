@@ -1,9 +1,23 @@
 # -*- coding: utf-8 -*-
 
+#from builtins import str
+from builtins import chr
+from builtins import range
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urlparse
+else:
+    import urllib                                               # Usamos el nativo de PY2 que es más rápido
+    import urlparse
+
 import base64
 import re
-import urllib
-import urlparse
 
 from core import httptools
 from core import jsontools
@@ -25,14 +39,14 @@ __modo_grafico__ = config.get_setting('modo_grafico', channel='hdfull')
 account = config.get_setting("logged", channel="hdfull")
 
 IDIOMAS = {'lat': 'LAT', 'spa': 'CAST', 'esp': 'CAST', 'sub': 'VOSE', 'espsub': 'VOSE', 'engsub': 'VOS', 'eng': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = ['HD1080', 'HD720', 'HDTV', 'DVDRIP', 'RHDTV', 'DVDSCR']
 list_servers = ['flix555', 'clipwatching', 'verystream', 'gamovideo', 'powvideo', 'streamplay', 'vidoza', 'vidtodo', 'openload', 'uptobox']
 
 
 def login():
     logger.info()
-    data = httptools.downloadpage(host).data
+    data = httptools.downloadpage(host, headers={'referer': host}).data
     _logged = '<a href="%s/logout"' % host
     if _logged in data:
         config.set_setting("logged", True, channel="hdfull")
@@ -51,7 +65,7 @@ def login():
             config.set_setting("logged", False, channel="hdfull")
             return False
         post = '__csrf_magic=%s&username=%s&password=%s&action=login' % (sid, user_, pass_)
-        new_data = httptools.downloadpage(host, post=post).data
+        new_data = httptools.downloadpage(host, post=post, headers={'referer': host}).data
         if _logged in new_data:
             config.set_setting("logged", True, channel="hdfull")
             return True
@@ -302,7 +316,7 @@ def items_usuario(item):
     post = post.replace("start=" + old_start, "start=" + start)
     next_page = url + "?" + post
     ## Carga las fichas de usuario
-    fichas_usuario = httptools.downloadpage(url, post=post).json
+    fichas_usuario = httptools.downloadpage(url, post=post, headers={'referer': host}).json
     for ficha in fichas_usuario:
         try:
             title = ficha['title']['es'].strip()
@@ -574,7 +588,8 @@ def episodesxseason(item):
     status = check_status()
     
     post = "action=season&start=0&limit=0&show=%s&season=%s" % (sid, ssid)
-    episodes = httptools.downloadpage(url, post=post).json
+    #episodes = httptools.downloadpage(url, post=post).json
+    episodes = httptools.downloadpage(url, post=post, headers={"Referer": item.url+"/temporada-"+ssid}).json
     
     for episode in episodes:
 
@@ -641,7 +656,8 @@ def novedades_episodios(item):
     start = "%s" % (int(old_start) + 24)
     post = post.replace("start=" + old_start, "start=" + start)
     next_page = url + "?" + post
-    episodes = httptools.downloadpage(url, post=post).json
+    #episodes = httptools.downloadpage(url, post=post).json
+    episodes = httptools.downloadpage(url, post=post, headers={"Referer": item.url}).json
     for episode in episodes:
         #Fix para thumbs
         thumb = episode['show'].get('thumbnail', '')
@@ -761,10 +777,10 @@ def findvideos(item):
         it1.append(Item(channel=item.channel, action="set_status", title=title, url=url_targets,
                         thumbnail=item.thumbnail, contentTitle=item.contentTitle, language=item.language, folder=True))
 
-    data_js = httptools.downloadpage("%s/templates/hdfull/js/jquery.hdfull.view.min.js" % host).data
+    data_js = httptools.downloadpage("%s/templates/hdfull/js/jquery.hdfull.view.min.js" % host, headers={'referer': host}).data
     key = scrapertools.find_single_match(data_js, 'JSON.parse\(atob.*?substrings\((.*?)\)')
 
-    data_js = httptools.downloadpage("%s/js/providers.js" % host).data
+    data_js = httptools.downloadpage("%s/js/providers.js" % host, headers={'referer': host}).data
     decoded = jhexdecode(data_js).replace("'", '"')
     providers_pattern = 'p\[(\d+)\]= {"t":"([^"]+)","d":".*?","e":.function.*?,"l":.function.*?return "([^"]+)".*?};'
     providers = scrapertools.find_multiple_matches (decoded, providers_pattern)
@@ -777,7 +793,7 @@ def findvideos(item):
 
     data_decrypt = jsontools.load(obfs(base64.b64decode(data_obf), 126 - int(key)))
     infolabels = item.infoLabels
-    year = scrapertools.find_single_match(data, '<span>A&ntilde;o:\s*</span>.*?(\d{4})')
+    year = scrapertools.find_single_match(data, '<span>Año:\s*</span>.*?(\d{4})')
     infolabels["year"] = year
     matches = []
     for match in data_decrypt:
@@ -798,7 +814,8 @@ def findvideos(item):
             option1 = 1
 
         idioma = IDIOMAS.get(idioma.lower(), idioma)
-        calidad = unicode(calidad, "utf8").upper().encode("utf8")
+        if not PY3:
+            calidad = unicode(calidad, "utf8").upper().encode("utf8")
         title = option + ": %s [COLOR greenyellow](" + calidad + ")[/COLOR] [COLOR darkgrey](" + idioma + ")[/COLOR]"
         plot = item.plot
         if not item.plot:
@@ -847,7 +864,7 @@ def play(item):
         type = item.url.split("###")[1].split(";")[1]
         item.url = item.url.split("###")[0]
         post = "target_id=%s&target_type=%s&target_status=1" % (id, type)
-        data = httptools.downloadpage(host + "/a/status", post=post).data
+        data = httptools.downloadpage(host + "/a/status", post=post, headers={'referer': host}).data
     devuelve = servertools.findvideosbyserver(item.url, item.server)
     if devuelve:
         item.url = devuelve[0][1]
@@ -863,7 +880,7 @@ def play(item):
 
 def agrupa_datos(url, post=None):
     
-    data = httptools.downloadpage(url, post=post).data
+    data = httptools.downloadpage(url, post=post, headers={'referer': host}).data
     ## Agrupa los datos
     data = re.sub(r'\n|\r|\t|&nbsp;|<br>|<!--.*?-->', '', data)
     data = re.sub(r'\s+', ' ', data)
@@ -918,7 +935,7 @@ def set_status(item):
         title = "[COLOR darkgrey][B]%s eliminada de Favoritos[/B][/COLOR]"
         path = "/a/favorite"
         post = "like_id=" + id + "&like_type=" + type + "&like_comment=&vote=-1"
-    data = httptools.downloadpage(host + path, post=post).data
+    data = httptools.downloadpage(host + path, post=post, headers={'referer': host}).data
     title = title % item.contentTitle
     platformtools.dialog_ok(item.contentTitle, title)
     
@@ -928,7 +945,7 @@ def check_status():
     status = ""
     if account:
         try:
-            status = httptools.downloadpage(host + '/a/status/all').json
+            status = httptools.downloadpage(host + '/a/status/all', headers={'referer': host}).json
         except:
             pass
             
@@ -987,6 +1004,7 @@ def jhexdecode(t):
 
 
 def obfs(data, key, n=126):
+    if PY3: data = "".join(chr(x) for x in bytes(data))
     chars = list(data)
     for i in range(0, len(chars)):
         c = ord(chars[i])

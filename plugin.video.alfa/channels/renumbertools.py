@@ -3,6 +3,13 @@
 # renumeratetools - se encarga de renumerar episodios
 # --------------------------------------------------------------------------------
 
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+from builtins import range
+from builtins import object
+
 import os
 
 try:
@@ -44,9 +51,9 @@ def context(item):
     """
 
     # Dependiendo de como sea el contexto lo guardamos y añadimos las opciones de filtertools.
-    if type(item.context) == str:
+    if isinstance(item.context, str):
         _context = item.context.split("|")
-    elif type(item.context) == list:
+    elif isinstance(item.context, list):
         _context = item.context
     else:
         _context = []
@@ -156,7 +163,7 @@ def numbered_for_tratk(channel, show, season, episode):
         dict_series = jsontools.get_node_from_file(channel, TAG_TVSHOW_RENUMERATE)
 
         # ponemos en minusculas el key, ya que previamente hemos hecho lo mismo con show.
-        for key in dict_series.keys():
+        for key in list(dict_series.keys()):
             new_key = key.lower()
             if new_key != key:
                 dict_series[new_key] = dict_series[key]
@@ -550,7 +557,7 @@ if xbmcgui:
                 if len(self.data) > 5:
                     self.move_scroll()
 
-            except Exception, Ex:
+            except Exception as Ex:
                 logger.error("HA HABIDO UNA HOSTIA %s" % Ex)
 
         # def onClick(self, control_id):
@@ -852,7 +859,7 @@ if xbmcgui:
 
                 self.move_scroll()
 
-            except Exception, Ex:
+            except Exception as Ex:
                 logger.error("HA HABIDO UNA HOSTIA %s" % Ex)
 
         def move_scroll(self):
@@ -888,7 +895,7 @@ if xbmcgui:
             return TextBox("DialogTextViewer.xml", os.getcwd(), "Default", title=title, text=text)
 
 
-    class ControlGroup:
+    class ControlGroup(object):
         """
         conjunto de controles, son los elementos que se muestra por línea de una lista.
         """

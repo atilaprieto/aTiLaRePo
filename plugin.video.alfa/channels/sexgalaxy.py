@@ -84,30 +84,32 @@ def categorias(item):
 def lista(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron = '<div class="post-img small-post-img">.*?<a href="([^"]+)" title="([^"]+)">.*?<img src="([^"]+)"'
+    data = httptools.downloadpage(item.url, timeout=3).data
+    patron = '<article id="post-.*?'
+    patron += '<a href="([^"]+)" rel="bookmark">([^<]+)<.*?'
+    patron += '<img src="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
+        logger.debug(scrapedurl)
         scrapedplot = ""
-        calidad = scrapertools.find_single_match(scrapedtitle, '\(.*?/(\w+)\)')
-        if calidad:
-            scrapedtitle = "[COLOR red]" + calidad + "[/COLOR] " + scrapedtitle
         if not "manyvids" in scrapedtitle:
             itemlist.append(Item(channel=item.channel, action="findvideos", title=scrapedtitle, contentTitle=scrapedtitle,
                              fanart=scrapedthumbnail, url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
-    next_page = scrapertools.find_single_match(data, '<a class="next page-numbers" href="([^"]+)"')
+    next_page = scrapertools.find_single_match(data, '<div class="nav-previous"><a href="([^"]+)"')
     if next_page != "":
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
     return itemlist
 
+# https://jetload.net/p/1RyPRu5MQx5y/20v9e2rpnlne.mp4
 
 def findvideos(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    links_data = scrapertools.find_single_match(data, '>severeporn.com<(.*?)</div>')
-    patron = '<a href="([^"]+)"[^<]+>Streaming'
+    links_data = scrapertools.find_single_match(data, '<span id="more-(.*?)</p>')
+    logger.debug(links_data)
+    patron = '<a href="([^"]+)"[^<]+>(?:<strong> |)Streaming'
     matches = re.compile(patron, re.DOTALL).findall(links_data)
     for url in matches:
         itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', language='VO',contentTitle = item.contentTitle))

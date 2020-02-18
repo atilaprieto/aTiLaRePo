@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="70168">
-        <setting id="player_mode" type="enum" values="Direct|SetResolvedUrl|Built-In|Download and Play" label="30044" default="0"/>
+        <setting id="player_mode" type="enum" values="Direct|SetResolvedUrl|Built-In|Download and Play" label="30044"
+                 default="0"/>
         <setting id="default_action" type="enum" lvalues="30006|30007|30008" label="30005" default="0"/>
         <setting id="autoplay" type="bool" label="70562" default="false" visible="true"/>
-        <setting id="second_language" type="labelenum" values="No|CAST|LAT|VOSE|VOS|VO" label="Idioma secundario para Autoplay/Filtro" default="No"/>
+        <setting id="second_language" type="labelenum" values="No|CAST|LAT|VOSE|VOS|VO"
+                 label="Idioma secundario para Autoplay/Filtro" default="No"/>
         <setting id="thumbnail_type" type="enum" lvalues="30011|30012|30200" label="30010" default="2"/>
         <setting id="channel_language" type="labelenum" values="all|cast|lat" label="30019" default="all"/>
         <setting id="trakt_sync" type="bool" label="70109" default="false"/>
@@ -17,9 +19,9 @@
         <setting id="hidepremium" type="bool" label="70112" default="false"/>
         <setting type="sep"/>
         <setting label="60305" type="lsep"/>
-        <setting id="adult_aux_intro_password" type="text" label="70113" option="hidden"  default=""/>
+        <setting id="adult_aux_intro_password" type="text" label="70113" option="hidden" default=""/>
         <setting id="adult_mode" type="enum" lvalues="60602|60616|70114" label="30002" enable="!eq(-1,)" default="0"/>
-        <setting id="adult_request_password" type="bool" label="70115"  enable="!eq(-1,0)+!eq(-2,)" default="true"/>
+        <setting id="adult_request_password" type="bool" label="70115" enable="!eq(-1,0)+!eq(-2,)" default="true"/>
         <setting id="adult_aux_new_password1" type="text" label="70116" option="hidden" enable="!eq(-3,)" default=""/>
         <setting id="adult_aux_new_password2" type="text" label="70117" option="hidden" enable="!eq(-1,)" default=""/>
     </category>
@@ -29,24 +31,29 @@
         <setting id="downloadpath" type="folder" label="30017" default=""/>
         <setting id="downloadlistpath" type="folder" label="30018" default=""/>
         <setting id="videolibrarypath" type="folder" label="30067" default=""/>
-
-        <setting type="sep"/>
+    </category>
+    <category label="Videoteca">
         <setting label="30131" type="lsep"/>
         <setting id="folder_tvshows" type="text" label="70118" default="SERIES"/>
         <setting id="folder_movies" type="text" label="70119" default="CINE"/>
         <setting id="videolibrary_kodi_flag" type="number" label="" default="0" visible="false"/>
         <setting id="videolibrary_kodi" type="bool" label="70120" enable="lt(-1,2)+eq(0,false)" default="false"/>
+        <setting id="next_ep" type="enum" label="70746" lvalues="70752|70748" default="1"/>
+        <setting id="next_ep_type" type="bool" label="70754" default="false" visible="eq(-1, 1)"/>
+        <setting id="next_ep_seconds" type="labelenum" values="20|30|40|50|60|70|80|100|120" label="70749" default="2"
+                 visible="!eq(-2,0)"/>
     </category>
-     <category label="70121">
+    <category label="70121">
         <setting id="start_page" type="bool" label="70121" default="false"/>
         <setting id="custom_start" type="bool" label="70122" default="false"
                  visible="eq(-1,True)"/>
         <setting id="news_start" type="bool" label="70123" default="false" visible="eq(-2,True)"
                  enable="eq(-1,False)+eq(-2,True"/>
-         <setting id="category" type="labelenum" label="70124"
+        <setting id="category" type="labelenum" label="70124"
                  lvalues="70137|30123|30124|70018|60513|70013|70014|59976|70171"
-                 default="70137" visible="eq(-3,True)+eq(-1,True)+eq(-2,False)" enable="eq(-3,True)+eq(-1,True)+(-2,false)"/>
-   </category>
+                 default="70137" visible="eq(-3,True)+eq(-1,True)+eq(-2,False)"
+                 enable="eq(-3,True)+eq(-1,True)+(-2,false)"/>
+    </category>
     <category label="70126">
         <setting label="Opciones para canales frecuentes" type="lsep"/>
         <setting id="frequents" type="bool" label="Habilitar los canales frecuentes" default="false"/>
@@ -61,8 +68,10 @@
         <setting id="video_thumbnail_type" type="enum" label="70131" lvalues="70132|70133" default="0"/>
         <setting label="70167" type="lsep"/>
         <setting id="unify" type="bool" label="70134" default="false"/>
-        <setting id="preset_style_switch" type="bool" label="Colores predefinidos" default="true" visible="eq(-1,true)"/>
-        <setting id="preset_style" type="labelenum" label="Estilo Predefinido" values="Estilo 1|Estilo 2|Estilo 3" default="Estilo 1" visible="eq(-1,true)+eq(-2,true)"/>
+        <setting id="preset_style_switch" type="bool" label="Colores predefinidos" default="true"
+                 visible="eq(-1,true)"/>
+        <setting id="preset_style" type="labelenum" label="Estilo Predefinido" values="Estilo 1|Estilo 2|Estilo 3"
+                 default="Estilo 1" visible="eq(-1,true)+eq(-2,true)"/>
         <setting id="title_color" type="bool" label="70135" default="false" visible="eq(-3,true)+eq(-2,false)"/>
         <setting id="movie_color" type="labelenum" label="70137"
                  values="[COLOR white]white[/COLOR]|[COLOR cyan]cyan[/COLOR]|[COLOR deepskyblue]deepskyblue[/COLOR]|[COLOR firebrick]firebrick[/COLOR]|[COLOR gold]gold[/COLOR]|[COLOR goldenrod]goldenrod[/COLOR]|[COLOR hotpink]hotpink[/COLOR]|[COLOR limegreen]limegreen[/COLOR]|[COLOR orange]orange[/COLOR]|[COLOR orchid]orchid[/COLOR]|[COLOR red]red[/COLOR]|[COLOR salmon]salmon[/COLOR]|[COLOR yellow]yellow[/COLOR]"
@@ -112,14 +121,15 @@
         <setting id="no_update_color" type="labelenum" label="70148"
                  values="[COLOR white]white[/COLOR]|[COLOR cyan]cyan[/COLOR]|[COLOR deepskyblue]deepskyblue[/COLOR]|[COLOR firebrick]firebrick[/COLOR]|[COLOR gold]gold[/COLOR]|[COLOR goldenrod]goldenrod[/COLOR]|[COLOR hotpink]hotpink[/COLOR]|[COLOR limegreen]limegreen[/COLOR]|[COLOR orange]orange[/COLOR]|[COLOR orchid]orchid[/COLOR]|[COLOR red]red[/COLOR]|[COLOR salmon]salmon[/COLOR]|[COLOR yellow]yellow[/COLOR]"
                  default="white" visible="eq(-16,true)+eq(-19,true)+eq(-18,false)"/>
-   </category>
+    </category>
     <category label="70149">
         <setting label="70150" type="lsep"/>
         <setting id="infoplus" type="bool" label="70151" default="true"/>
         <setting id="extended_info" type="bool" label="70152" default="false"/>
 
-		<setting label="70153" type="lsep"/>
-		<setting id="shortcut_key" type="action" label="30999" action="RunPlugin(plugin://plugin.video.alfa/?ew0KICAgICJhY3Rpb24iOiAia2V5bWFwIg0KfQ==)" />
+        <setting label="70153" type="lsep"/>
+        <setting id="shortcut_key" type="action" label="30999"
+                 action="RunPlugin(plugin://plugin.video.alfa/?ew0KICAgICJhY3Rpb24iOiAia2V5bWFwIg0KfQ==)"/>
 
         <setting type="sep"/>
         <setting label="70154" type="lsep"/>
@@ -127,27 +137,34 @@
         <setting id="tmdb_threads" type="labelenum" values="5|10|15|20|25|30" label="70155" default="20"/>
         <setting id="tmdb_plus_info" type="bool" label="70156" default="false"/>
         <setting id="tmdb_cache" type="bool" label="70157" default="true"/>
-        <setting id="tmdb_cache_expire" type="enum" lvalues="70158|70159|70160|70161|70170" label="70162" enable="eq(-1,true)" default="4"/>
-        <setting id="tmdb_clean_db_cache" type="action" label="70163" action="RunPlugin(plugin://plugin.video.alfa/?ew0KICAgICJhY3Rpb24iOiAic2NyaXB0Ig0KfQ==)" />
+        <setting id="tmdb_cache_expire" type="enum" lvalues="70158|70159|70160|70161|70170" label="70162"
+                 enable="eq(-1,true)" default="4"/>
+        <setting id="tmdb_clean_db_cache" type="action" label="70163"
+                 action="RunPlugin(plugin://plugin.video.alfa/?ew0KICAgICJhY3Rpb24iOiAic2NyaXB0Ig0KfQ==)"/>
 
         <setting type="sep"/>
         <setting label="Para evitar esperar demasiado cuando un servidor no responde:" type="lsep"/>
-        <setting id="httptools_timeout" type="labelenum" values="0|5|10|15|20|25|30" label="Timeout (tiempo de espera máximo)" default="15"/>
-        
+        <setting id="httptools_timeout" type="labelenum" values="0|5|10|15|20|25|30"
+                 label="Timeout (tiempo de espera máximo)" default="15"/>
+
         <setting type="sep"/>
         <setting label="Gestión de actualizaciones urgentes de módulos de Alfa (Quick Fixes):" type="lsep"/>
-        <setting id="addon_update_timer" type="labelenum" values="0|6|12|24" label="Intervalo entre actualizaciones automáticas (horas)" default="12"/>
-        <setting id="addon_update_message" type="bool" label="¿Quiere ver mensajes de las actualizaciones?" default="false"/>
+        <setting id="addon_update_timer" type="labelenum" values="0|6|12|24"
+                 label="Intervalo entre actualizaciones automáticas (horas)" default="12"/>
+        <setting id="addon_update_message" type="bool" label="¿Quiere ver mensajes de las actualizaciones?"
+                 default="false"/>
 
         <setting label="Lista activa" type="text" id="lista_activa" default="alfavorites-default.json" visible="false"/>
-        
+
         <setting type="sep"/>
         <setting label="Gestión de actualizaciones de otros addon relacionados con Alfa:" type="lsep"/>
-        <setting id="addon_quasar_update" type="bool" label="¿Quiere actualizar Quasar para evitar errores?" default="false"/>
-        
+        <setting id="addon_quasar_update" type="bool" label="¿Quiere actualizar Quasar para evitar errores?"
+                 default="false"/>
+
         <setting type="sep"/>
         <setting label="Método alternativo de acceso a webs:" type="lsep"/>
-        <setting id="alternative_web_access" type="bool" label="¿Modo -en Demanda-: NO? ¿Modo -Forzado-: SÍ?" default="false"/>
+        <setting id="alternative_web_access" type="bool" label="¿Modo -en Demanda-: NO? ¿Modo -Forzado-: SÍ?"
+                 default="false"/>
     </category>
 
 </settings>

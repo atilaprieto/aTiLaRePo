@@ -96,12 +96,7 @@ def lista(item):
 
 
 def play(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron = '(?:video_url|video_alt_url[0-9]*):\s*\'([^\']+)\'.*?'
-    patron += '(?:video_url_text|video_alt_url[0-9]*_text):\s*\'([^\']+)\''
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for url,quality in matches:
-        itemlist.append(['.mp4 %s' %quality, url])
+    logger.info(item)
+    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     return itemlist
+ 

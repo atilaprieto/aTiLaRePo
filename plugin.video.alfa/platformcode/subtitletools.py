@@ -1,9 +1,22 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                               # Usamos el nativo de PY2 que es más rápido
+
 import os
 import re
 import string
-import urllib
+
 from unicodedata import normalize
 from core import filetools
 from core import httptools
@@ -14,7 +27,8 @@ import xbmc
 import xbmcgui
 from platformcode import config, logger
 
-allchars = string.maketrans('', '')
+if PY3: allchars = str.maketrans('', '')
+if not PY3: allchars = string.maketrans('', '')
 deletechars = ',\\/:*"<>|?'
 
 
@@ -41,14 +55,14 @@ def regex_tvshow(compare, file, sub=""):
     for regex in regex_expressions:
         response_file = re.findall(regex, file)
         if len(response_file) > 0:
-            print "Regex File Se: %s, Ep: %s," % (str(response_file[0][0]), str(response_file[0][1]),)
+            print("Regex File Se: %s, Ep: %s," % (str(response_file[0][0]), str(response_file[0][1]),))
             tvshow = 1
             if not compare:
                 title = re.split(regex, file)[0]
                 for char in ['[', ']', '_', '(', ')', '.', '-']:
                     title = title.replace(char, ' ')
                 if title.endswith(" "): title = title.strip()
-                print "title: %s" % title
+                print("title: %s" % title)
                 return title, response_file[0][0], response_file[0][1]
             else:
                 break
@@ -93,9 +107,9 @@ def set_Subtitle():
                 config.set_setting("subtitlepath_folder", subtitle_path)
         else:
             subtitle_path = config.get_setting("subtitlepath_keyboard")
-            long = len(subtitle_path)
-            if long > 0:
-                if subtitle_path.startswith("http") or subtitle_path[long - 4, long] in exts:
+            long_v = len(subtitle_path)
+            if long_v > 0:
+                if subtitle_path.startswith("http") or subtitle_path[long_v - 4, long] in exts:
                     logger.info("Con subtitulo : " + subtitle_path)
                     xbmc.Player().setSubtitles(subtitle_path)
                     return

@@ -48,7 +48,7 @@ def get_video_url(page_url, premium = False, user = "", password = "", video_pas
 def resuelve(r, o):
     a = '';
     n = 0
-    e = range(256)
+    e = list(range(256))
     for f in range(256):
         n = (n + e[f] + ord(r[(f % len(r))])) % 256
         t = e[f];

@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+from builtins import range
+
 import os
 
 from core import channeltools
@@ -189,7 +195,7 @@ def start(itemlist, item):
             # Agrega la opcion configurar AutoPlay al menu contextual
             if 'context' not in item:
                 item.context = list()
-            if not filter(lambda x: x['action'] == 'autoplay_config', context):
+            if not [x for x in context if x['action'] == 'autoplay_config']:
                 item.context.append({"title": config.get_localized_string(60071),
                                      "action": "autoplay_config",
                                      "channel": "autoplay",
@@ -727,7 +733,7 @@ def play_multi_channel(item, itemlist):
             channel_videos.append(video_item)
             video_dict[actual_channel] = channel_videos
 
-    for channel, videos in video_dict.items():
+    for channel, videos in list(video_dict.items()):
         item.contentChannel = channel
         if not PLAYED:
             start(videos, item)

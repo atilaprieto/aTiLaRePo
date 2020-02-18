@@ -22,10 +22,17 @@
     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
+from __future__ import absolute_import
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+from builtins import object
 
-import os, sys
+import os
 import xbmc, xbmcgui, xbmcaddon
-from net import HTTP
+
+from .net import HTTP
 from core import filetools                                                                                          ### Alfa
 
 __libbaseurl__ = "https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"
@@ -56,7 +63,7 @@ def getSettingAsBool(setting):
     __settings__ = xbmcaddon.Addon(id='plugin.video.alfa')                      ### Alfa
     return __settings__.getSetting(setting).lower() == "true"
 
-class LibraryManager():
+class LibraryManager(object):
     def __init__(self, dest_path, platform):
         self.dest_path = dest_path
         self.platform = platform

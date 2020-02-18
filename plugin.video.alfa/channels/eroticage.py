@@ -22,15 +22,10 @@ host = 'http://www.eroticage.net'
 def mainlist(item):
     logger.info()
     itemlist = []
-
-    autoplay.init(item.channel, list_servers, list_quality)
-
     itemlist.append( Item(channel=item.channel, title="Novedades" , action="lista", url=host))
+    itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=host + "/?filter=popular"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
-
-    autoplay.show_option(item.channel, itemlist)
-
     return itemlist
 
 
@@ -51,8 +46,8 @@ def categorias(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data,'<h2>TAGS</h2>(.*?)<div class="sideitem"')
-    patron  = '<a href="(.*?)".*?>(.*?)</a>'
+    data = scrapertools.find_single_match(data,'>TAGS</h2>(.*?)</section>')
+    patron  = '<a href="([^"]+)".*?>([^<]+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle in matches:
         scrapedplot = ""
@@ -66,39 +61,56 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron  = '<div class="titleFilm"><a href="([^"]+)">([^"]+)</a>.*?src="([^"]+)"'
+    patron  = '<article id="post-\d+".*?'
+    patron  += '<a href="([^"]+)" title="([^"]+)".*?'
+    patron  += '<img data-src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
         contentTitle = scrapedtitle
         title = scrapedtitle
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl, thumbnail=thumbnail,
+        itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl, thumbnail=thumbnail,
                                plot=plot, fanart=scrapedthumbnail, contentTitle=contentTitle ))
-    next_page = scrapertools.find_single_match(data,'<a class="nextpostslink" rel="next" href="([^"]+)">')
+    next_page = scrapertools.find_single_match(data,'<li><a href="([^"]+)">Next')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
     return itemlist
 
+# http://www.eroticage.net/three-aka-survival-island-2005-stewart-raffill/
+# https://video.meta.ua/iframe/8118651/
 
-def findvideos(item):
+
+def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = '<iframe src="([^"]+)"'
+    data = scrapertools.find_single_match(data,'<div class="responsive-player">(.*?)</div>')
+    patron = 'data-src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl in matches:
         if "cine-matik.com" in scrapedurl:
+            n = "yandex"
             m = scrapedurl.replace("https://cine-matik.com/player/play.php?", "")
-            post = "%s&alternative=yandex" %m
-            data1 = httptools.downloadpage("https://cine-matik.com/player/ajax_sources.php", post=post).data
+            post = "%s&alternative=%s" %(m,n)
+            headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+            data1 = httptools.downloadpage("https://cine-matik.com/player/ajax_sources.php", post=post, headers=headers).data
+            if data1=="":
+                n = "blogger"
+                m = scrapedurl.replace("https://cine-matik.com/player/play.php?", "")
+                post = "%s&alternative=%s" %(m,n)
+                headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+                data1 = httptools.downloadpage("https://cine-matik.com/player/ajax_sources.php", post=post, headers=headers).data
             scrapedurl = scrapertools.find_single_match(data1,'"file":"([^"]+)"')
+            if not scrapedurl:
+                n = scrapertools.find_single_match(data1,'"alternative":"([^"]+)"')
+                post = "%s&alternative=%s" %(m,n)
+                headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+                data1 = httptools.downloadpage("https://cine-matik.com/player/ajax_sources.php", post=post, headers=headers).data
+                scrapedurl = scrapertools.find_single_match(data1,'"file":"([^"]+)"')
             scrapedurl = scrapedurl.replace("\/", "/")
-        itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=scrapedurl))
+        if not "meta" in scrapedurl:
+            itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=scrapedurl))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
-    # Requerido para FilterTools
-    itemlist = filtertools.get_links(itemlist, item, list_language)
-    # Requerido para AutoPlay
-    autoplay.start(itemlist, item)
     return itemlist

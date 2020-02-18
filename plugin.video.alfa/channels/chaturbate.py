@@ -44,7 +44,7 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    patron = '<li class="room_list_room">.*?'
+    patron = '<li class="room_list_room".*?'
     patron += '<img src="([^"]+)".*?'
     patron += '<div class="title"><a href="([^"]+)">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)

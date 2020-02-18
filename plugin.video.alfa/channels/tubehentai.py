@@ -60,6 +60,6 @@ def play(item):
     data = httptools.downloadpage(item.url).data
     url = scrapertools.find_single_match(data, '<source src="([^"]+\.mp4)"')
     server = "Directo"
-    itemlist.append(Item(channel=item.channel, title="", url=url, server=server, folder=False))
+    itemlist.append(Item(channel=item.channel, url=url, server=server, contentTitle=item.title))
     return itemlist
 

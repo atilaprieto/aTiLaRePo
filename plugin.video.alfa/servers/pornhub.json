@@ -8,10 +8,13 @@
         "url": "https://www.pornhub.com/view_video.php?viewkey=\\1"
       },
       {
+        "pattern": "(https://www.pornhub.com/view_video.php?viewkey=[A-z0-9]+)",
+        "url": "\\1"
+      },
+      {
         "pattern": "(pornhub.com/view_video.php\\?viewkey=[A-z0-9]+)",
         "url": "https://www.\\1"
       }
-      
     ]
   },
   "free": true,

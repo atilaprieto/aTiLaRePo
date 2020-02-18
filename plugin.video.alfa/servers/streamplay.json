@@ -5,7 +5,7 @@
     "patterns": [
       {
         "pattern": "(?:streamplay|streamp1ay).(?:to|me)/(?:embed-|player-|)([a-z0-9]+)(?:.html|)",
-        "url": "https://streamp1ay.me/player-\\1.html"
+        "url": "https://steamplay.me/player-\\1.html"
       }
     ]
   },

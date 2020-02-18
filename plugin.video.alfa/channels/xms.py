@@ -13,7 +13,7 @@ from platformcode import config, logger
 
 __channel__ = "xms"
 
-# Xtheatre practicamente muerta
+#xtheatre mucho contenido NETU
 
 host = 'https://xtheatre.org/'
 host1 = 'https://www.cam4.com/'
@@ -93,7 +93,10 @@ def peliculas(item):
 
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|#038;", "", data)
-    patron = 'src="([^"]+)" class="attachment-thumb_site.*?'  # img
+    if "category" in item.url:
+            patron = 'title="[^"]+" data-lazy-src="([^"]+)".*?'  # img
+    else:
+        patron = '<img width="\d+" height="\d+" src="([^"]+)".*?'
     patron += '<a href="([^"]+)" title="([^"]+)".*?'          # url, title
     patron += '<div class="right"><p>([^<]+)</p>'             # plot
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -226,7 +229,7 @@ def findvideos(item):
                 url = decode_url(url)
                 if "strdef" in url:
                     url = httptools.downloadpage(url).url
-            if not "hotvideoz" in url: #netu
+            if not "/player/embed_player.php?vid=" in url: #netu
                 itemlist.append(item.clone(action="play", title= "%s", url=url))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist

@@ -1,7 +1,7 @@
 {
   "id": "inkaseries",
   "name": "InkaSeries",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["lat", "cast"],
   "thumbnail": "https://www.inkaseries.net/wp-content/uploads/2016/08/logo-inkaseries-chico.png",

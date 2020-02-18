@@ -18,7 +18,7 @@ IDIOMAS = {'VOSE': 'VOSE',
            'Iberian spanish': 'Cast',
            'VO': 'VO'
         }
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = ['720p', '480p']
 list_servers = ['mega', 'archiveorg', 'wetube', 'peertube']
 

@@ -5,13 +5,22 @@
 # Based on code from the Mega add-on (xbmchub.com)
 # ---------------------------------------------------------------------------
 
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+#from builtins import str
+from past.utils import old_div
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+import urllib.request, urllib.parse, urllib.error
+
 import os
 import re
 import socket
 import threading
 import time
-import urllib
-import urllib2
 
 import xbmc
 import xbmcgui
@@ -42,7 +51,7 @@ def download_and_play(url, file_name, download_path):
 
         while not cancelled and download_thread.isAlive():
             dialog.update(download_thread.get_progress(), config.get_localized_string(60313),
-                          "Velocidad: " + str(int(download_thread.get_speed() / 1024)) + " KB/s " + str(
+                          "Velocidad: " + str(int(old_div(download_thread.get_speed(), 1024))) + " KB/s " + str(
                               download_thread.get_actual_size()) + "MB de " + str(
                               download_thread.get_total_size()) + "MB",
                           "Tiempo restante: " + str(downloadtools.sec_to_hms(download_thread.get_remaining_time())))
@@ -231,7 +240,7 @@ class DownloadThread(threading.Thread):
             for additional_header in additional_headers:
                 logger.info("additional_header: " + additional_header)
                 name = re.findall("(.*?)=.*?", additional_header)[0]
-                value = urllib.unquote_plus(re.findall(".*?=(.*?)$", additional_header)[0])
+                value = urllib.parse.unquote_plus(re.findall(".*?=(.*?)$", additional_header)[0])
                 headers.append([name, value])
 
             self.url = self.url.split("|")[0]
@@ -241,18 +250,18 @@ class DownloadThread(threading.Thread):
         socket.setdefaulttimeout(60)
 
         # Crea la petición y añade las cabeceras
-        h = urllib2.HTTPHandler(debuglevel=0)
-        request = urllib2.Request(self.url)
+        h = urllib.request.HTTPHandler(debuglevel=0)
+        request = urllib.request.Request(self.url)
         for header in headers:
             logger.info("Header=" + header[0] + ": " + header[1])
             request.add_header(header[0], header[1])
 
         # Lanza la petición
-        opener = urllib2.build_opener(h)
-        urllib2.install_opener(opener)
+        opener = urllib.request.build_opener(h)
+        urllib.request.install_opener(opener)
         try:
             connexion = opener.open(request)
-        except urllib2.HTTPError, e:
+        except urllib.error.HTTPError as e:
             logger.error("error %d (%s) al abrir la url %s" % (e.code, e.msg, self.url))
             # print e.code
             # print e.msg
@@ -314,10 +323,10 @@ class DownloadThread(threading.Thread):
                         bloqueleido = connexion.read(blocksize)
                         after = time.time()
                         if (after - before) > 0:
-                            self.velocidad = len(bloqueleido) / ((after - before))
+                            self.velocidad = old_div(len(bloqueleido), ((after - before)))
                             falta = totalfichero - grabado
                             if self.velocidad > 0:
-                                self.tiempofalta = falta / self.velocidad
+                                self.tiempofalta = old_div(falta, self.velocidad)
                             else:
                                 self.tiempofalta = 0
                         break

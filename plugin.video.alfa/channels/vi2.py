@@ -4,7 +4,6 @@
 # -*- By the Alfa Develop Group -*-
 
 import re
-import urllib
 import base64
 
 from channelselector import get_thumb
@@ -21,7 +20,7 @@ from platformcode import config, logger
 
 
 IDIOMAS = {'Latino': 'LAT', 'Español':'CAST', 'Subtitulado': 'VOSE', 'VO': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 
 list_quality = ['Full HD 1080p',
                 'HDRip',
@@ -264,7 +263,7 @@ def findvideos(item):
         title = ''
         link_type = ''
         server = ''
-        url = base64.b64decode(url)
+        url = base64.b64decode(url).decode('utf-8')
 
         if 'torrent' in url:
             if item.link_type == 'torrent' or item.type == 'all':

@@ -8,6 +8,10 @@
         "url": "http://netu.tv/watch_video.php?v=\\2"
       },
       {
+        "pattern": "https://waaws.tk/player/embed_player.php?vid=([A-z0-9]+)&autoplay=yes",
+        "url": "http://netu.tv/watch_video.php?v=\\2"
+      },
+      {
         "pattern": "(?:hqq|waaw|netu)(?:\\.tv\\/|\\.watch\\/|\\.php\\?).*?(?:v=|vid=)([A-z0-9]+)",
         "url": "http://netu.tv/watch_video.php?v=\\1"
       },

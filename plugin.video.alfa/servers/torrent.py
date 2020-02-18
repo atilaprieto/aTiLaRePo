@@ -1,12 +1,24 @@
 # -*- coding: utf-8 -*-
 
+#from builtins import str
+from builtins import range
+import sys
+PY3 = False
+VFS = True
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int; VFS = False
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib
+
 import time
 import threading
 import os
 import traceback
 import re
-import urllib
-import sys
 
 try:
     import xbmc
@@ -65,7 +77,8 @@ class XBMCPlayer(xbmc.Player):
 xbmc_player = XBMCPlayer()
 
 
-def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=10, lookup=False, data_torrent=False, headers={}):
+def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=10, \
+                    lookup=False, data_torrent=False, headers={}, proxy_retries=1):
     if torrents_path != None:
         logger.info("path = " + torrents_path)
     else:
@@ -106,7 +119,12 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
     try:
         #Descargamos el .torrent
         if url.startswith("magnet:"):
-            torrent_file = magnet2torrent(url, headers=headers)         #Convierte el Magnet en un archivo Torrent
+            if config.get_setting("magnet2torrent", server="torrent", default=False):
+                torrent_file = magnet2torrent(url, headers=headers)     #Convierte el Magnet en un archivo Torrent
+            else:
+                if data_torrent:
+                    return (url, torrent_file)
+                return url
             if not torrent_file:
                 logger.error('No es un archivo Magnet: ' + url)
                 torrents_path = ''
@@ -114,10 +132,14 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
                     return (torrents_path, torrent_file)
                 return torrents_path                                    #Si hay un error, devolvemos el "path" vacío
         else:
+            if lookup:
+                proxy_retries = 0
             if post:                                                    #Descarga con POST
-                response = httptools.downloadpage(url, headers=headers, post=post, follow_redirects=False, timeout=timeout)
+                response = httptools.downloadpage(url, headers=headers, post=post, \
+                            follow_redirects=False, timeout=timeout, proxy_retries=proxy_retries)
             else:                                                       #Descarga sin post
-                response = httptools.downloadpage(url, headers=headers, timeout=timeout)
+                response = httptools.downloadpage(url, headers=headers, timeout=timeout, \
+                            proxy_retries=proxy_retries)
             if not response.sucess:
                 logger.error('Archivo .torrent no encontrado: ' + url)
                 torrents_path = ''
@@ -125,6 +147,9 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
                     return (torrents_path, torrent_file)
                 return torrents_path                                    #Si hay un error, devolvemos el "path" vacío
             torrent_file = response.data
+            torrent_file_uncoded = response.data
+            if PY3 and isinstance(torrent_file, bytes):
+                torrent_file = "".join(chr(x) for x in bytes(torrent_file_uncoded))
 
         #Si es un archivo .ZIP tratamos de extraer el contenido
         if torrent_file.startswith("PK"):
@@ -139,7 +164,7 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
             time.sleep(1)                                               #Hay que esperar, porque si no da error
             filetools.mkdir(torrents_path_zip)                          #La creamos de nuevo
             
-            if filetools.write(torrents_path_zip_file, torrent_file):   #Salvamos el .zip
+            if filetools.write(torrents_path_zip_file, torrent_file_uncoded, vfs=VFS):  #Salvamos el .zip
                 torrent_file = ''                                       #Borramos el contenido en memoria
                 try:                                                    #Extraemos el .zip
                     from core import ziptools
@@ -154,7 +179,10 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
                     for file in files:
                         if file.endswith(".torrent"):
                             input_file = filetools.join(root, file)                 #nombre del .torrent
-                            torrent_file = filetools.read(input_file)               #leemos el .torrent
+                            torrent_file = filetools.read(input_file, vfs=VFS)      #leemos el .torrent
+                    torrent_file_uncoded = torrent_file
+                    if PY3 and isinstance(torrent_file, bytes):
+                        torrent_file = "".join(chr(x) for x in bytes(torrent_file_uncoded))
 
             filetools.rmdirtree(torrents_path_zip)                                  #Borramos la carpeta temporal
 
@@ -168,7 +196,7 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
         
         #Salvamos el .torrent
         if not lookup:
-            if not filetools.write(torrents_path_encode, torrent_file):
+            if not filetools.write(torrents_path_encode, torrent_file_uncoded, vfs=VFS):
                 logger.error('ERROR: Archivo .torrent no escrito: ' + torrents_path_encode)
                 torrents_path = ''                                          #Si hay un error, devolvemos el "path" vacío
                 torrent_file = ''                                           #... y el buffer del .torrent
@@ -260,10 +288,10 @@ def verify_url_torrent(url, timeout=5):
     Salida:     True o False dependiendo del resultado de la operación
     """
 
-    if not url or url == 'javascript:;':                                            #Si la url viene vacía...
-        return False                                                                #... volvemos con error
-    torrents_path = caching_torrents(url, timeout=timeout, lookup=True)             #Descargamos el .torrent
-    if torrents_path:                                                               #Si ha tenido éxito...
+    if not url or url == 'javascript:;':                                        #Si la url viene vacía...
+        return False                                                            #... volvemos con error
+    torrents_path = caching_torrents(url, timeout=timeout, lookup=True)         #Descargamos el .torrent
+    if torrents_path:                                                           #Si ha tenido éxito...
         return True
     else:
         return False
@@ -279,10 +307,17 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
     played = False
     debug = False
 
-    save_path_videos = filetools.join(config.get_setting("bt_download_path", server="torrent", 
+    try:
+        save_path_videos = ''
+        save_path_videos = filetools.join(config.get_setting("bt_download_path", server="torrent", \
                default=config.get_setting("downloadpath")), 'BT-torrents')
+    except:
+        pass
+    if not config.get_setting("bt_download_path", server="torrent") and save_path_videos:
+        config.set_setting("bt_download_path", filetools.join(config.get_data_path(), 'downloads'), server="torrent")
     if not save_path_videos:
-        save_path_videos = filetools.join(config.get_data_path(), 'BT-torrents')
+        save_path_videos = filetools.join(config.get_data_path(), 'downloads', 'BT-torrents')
+        config.set_setting("bt_download_path", filetools.join(config.get_data_path(), 'downloads'), server="torrent")
         
     UNRAR = config.get_setting("unrar_path", server="torrent", default="")
     BACKGROUND = config.get_setting("mct_background_download", server="torrent", default=True)
@@ -317,7 +352,7 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
                        '.mpe', '.mp4', '.ogg', '.rar', '.wmv', '.zip']
     
     for entry in rar_files:
-        for file, path in entry.items():
+        for file, path in list(entry.items()):
             if file == 'path' and '.rar' in str(path):
                 for file_r in path:
                     rar_names += [file_r]
@@ -606,7 +641,7 @@ def wait_for_download(rar_files, torr_client):
     rar_names_abs = []
     folder = ''
     for entry in rar_files:
-        for file, path in entry.items():
+        for file, path in list(entry.items()):
             if file == 'path' and '.rar' in str(path):
                 for file_r in path:
                     rar_names += [file_r]
@@ -766,7 +801,7 @@ def wait_for_download(rar_files, torr_client):
     
     
 def get_tclient_data(folder, torr_client):
-    import json
+    from core import jsontools
     
     # Monitoriza el estado de descarga del torrent en Quasar y Elementum
     local_host = {"quasar": "http://localhost:65251/torrents/", "elementum": "http://localhost:65220/torrents/"}
@@ -780,7 +815,7 @@ def get_tclient_data(folder, torr_client):
         if not data:
             return '', local_host[torr_client], 0
 
-        data = json.loads(data)
+        data = jsontools.load(data)
         data = data['items']
         for x, torr in enumerate(data):
             if not folder in torr['label']:
@@ -862,7 +897,10 @@ def extract_files(rar_file, save_path_videos, password, dp, item=None, torr_clie
     platformtools.dialog_notification("Empezando extracción...", rar_file, time=5000)
     for x in range(5):
         try:
-            archive = rarfile.RarFile(file_path.decode("utf8"))
+            if not PY3:
+                archive = rarfile.RarFile(file_path.decode("utf8"))
+            else:
+                archive = rarfile.RarFile(file_path)
         except:
             log("##### ERROR en Archivo rar: %s" % rar_file)
             log("##### ERROR en Carpeta del rar: %s" % file_path)
@@ -983,9 +1021,14 @@ def rename_rar_dir(rar_file, save_path_videos, video_path, torr_client):
     rename_status = False
     folders = rar_file.split("/")
     if filetools.exists(filetools.join(save_path_videos, folders[0])):
-        src = filetools.join(save_path_videos, folders[0]).decode("utf8")
-        dst = filetools.join(save_path_videos, video_path).decode("utf8")
-        dst_file = video_path.decode("utf8")
+        if not PY3:
+            src = filetools.join(save_path_videos, folders[0]).decode("utf8")
+            dst = filetools.join(save_path_videos, video_path).decode("utf8")
+            dst_file = video_path.decode("utf8")
+        else:
+            src = filetools.join(save_path_videos, folders[0])
+            dst = filetools.join(save_path_videos, video_path)
+            dst_file = video_path
         
         # Se para la actividad para que libere los archivos descargados
         if torr_client in ['quasar', 'elementum']:
@@ -1046,15 +1089,16 @@ def last_password_search(pass_path):
 def import_libtorrent(LIBTORRENT_PATH):
     logger.info(LIBTORRENT_PATH)
 
+    e = ''
+    e1 = ''
+    e2 = ''
+    fp = ''
+    pathname = ''
+    description = ''
+    lt = ''
+
     try:
         sys.path.insert(0, LIBTORRENT_PATH)
-        e = ''
-        e1 = ''
-        e2 = ''
-        fp = ''
-        pathname = ''
-        description = ''
-        lt = ''
         if LIBTORRENT_PATH:
             try:
                 if not xbmc.getCondVisibility("system.platform.android"):
@@ -1080,7 +1124,7 @@ def import_libtorrent(LIBTORRENT_PATH):
                     finally:
                         if fp: fp.close()
                 
-            except Exception, e1:
+            except Exception as e1:
                 logger.error(traceback.format_exc(1))
                 log('fp = ' + str(fp))
                 log('pathname = ' + str(pathname))
@@ -1089,16 +1133,29 @@ def import_libtorrent(LIBTORRENT_PATH):
                 from lib.python_libtorrent.python_libtorrent import get_libtorrent
                 lt = get_libtorrent()
 
-    except Exception, e2:
+    except Exception as e2:
         try:
             logger.error(traceback.format_exc())
             if fp: fp.close()
             e = e1 or e2
-            ok = platformtools.dialog_ok('ERROR en el cliente MCT Libtorrent', \
+            ok = platformtools.dialog_ok('ERROR en el cliente Interno Libtorrent', \
                         'Módulo no encontrado o imcompatible con el dispositivo.', \
-                        'Reporte el fallo adjuntando un "log".', str(e))
+                        'Reporte el fallo adjuntando un "log" %s' % str(e2))
         except:
             pass
+    
+    try:
+        if not e1 and e2: e1 = e2
+    except:
+        try:
+            if e2:
+                e1 = e2
+            else:
+                e1 = ''
+                e2 = ''
+        except:
+            e1 = ''
+            e2 = ''
     
     return lt, e, e1, e2
 

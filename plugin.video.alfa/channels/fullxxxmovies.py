@@ -16,7 +16,7 @@ list_language = IDIOMAS.values()
 list_quality = []
 list_servers = ['gounlimited']
 
-host = 'http://fullxxxmovies.net'
+host = 'http://fullxxxmovies.net'          #es   http://freepornstreams.org    http://xxxstreams.org
 
 def mainlist(item):
     logger.info()
@@ -70,10 +70,10 @@ def lista(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     patron = '<article id="post-\d+".*?'
-    patron += '<a href="([^"]+)".*?'
-    patron += '<img src="([^"]+)" alt="([^"]+)"'
+    patron += '<a href="([^"]+)" rel="bookmark">([^<]+)<.*?'
+    patron += '<img src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
+    for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
         thumbnail = scrapedthumbnail
         plot = ""
         if not "Ubiqfile" in scrapedtitle:

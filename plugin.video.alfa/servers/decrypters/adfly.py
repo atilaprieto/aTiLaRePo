@@ -13,7 +13,7 @@ def get_long_url(short_url):
     data = httptools.downloadpage(short_url).data
     ysmm = scrapertools.find_single_match(data, "var ysmm = '([^']+)';")
     b64 = ""
-    for i in reversed(range(len(ysmm))):
+    for i in reversed(list(range(len(ysmm)))):
         if i % 2:
             b64 = b64 + ysmm[i]
         else:

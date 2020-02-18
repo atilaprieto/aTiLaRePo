@@ -86,6 +86,7 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
+    data = scrapertools.find_single_match(data,'Eliminar anuncios(.*?)Eliminar anuncios')
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     patron = '<img id="img_.*?data-src="([^"]+)".*?'
     patron += '<span class="duration">(.*?)</a>.*?'

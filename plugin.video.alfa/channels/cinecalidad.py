@@ -2,7 +2,23 @@
 # -*- Channel Destotal -*-
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
+
+from builtins import map
+from builtins import range
+
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                               # Usamos el nativo de PY2 que es más rápido
+
 import re
+
 from core import tmdb
 from core import httptools
 from core.item import Item
@@ -14,7 +30,7 @@ from platformcode import config, logger
 from channels import filtertools, autoplay
 
 IDIOMAS = {'latino': 'Latino', 'castellano': 'Castellano', 'portugues': 'Portugues'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = ['1080p']
 list_servers = ['gounlimited',
                 'mega',
@@ -166,7 +182,10 @@ def list_all(item):
         except:
             continue
         thumb = re.sub(r'(-\d+x\d+.jpg)', '.jpg', elem.img["src"])
-        plot = elem.p.text
+        if elem.p: 
+            plot = elem.p.text
+        else:
+            plot = ''
         itemlist.append(Item(channel=item.channel, title=title, url=url, thumbnail=thumb, action="findvideos",
                              plot=plot, contentTitle=title, infoLabels={'year': year}))
     tmdb.set_infoLabels_itemlist(itemlist, True)
@@ -224,7 +243,7 @@ def settingCanal(item):
 def dec(item, dec_value):
     link = []
     val = item.split(' ')
-    link = map(int, val)
+    link = list(map(int, val))
     for i in range(len(link)):
         link[i] = link[i] - int(dec_value)
         real = ''.join(map(chr, link))
@@ -292,7 +311,6 @@ def findvideos(item):
             itemlist.append(new_item)
     
     if torrent_link != '':
-        import urllib
         base_url = '%s/protect/v.php' % host
         post = {'i': torrent_link, 'title': item.title}
         post = urllib.urlencode(post)

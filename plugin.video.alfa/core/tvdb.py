@@ -7,8 +7,14 @@
 # del addon y también Kodi.
 # ------------------------------------------------------------
 
+from future import standard_library
+standard_library.install_aliases()
+#from builtins import str
+from builtins import object
+
+import urllib.request, urllib.error, urllib.parse
+
 import re
-import urllib2
 
 from core import jsontools
 from core import scrapertools
@@ -214,7 +220,7 @@ def set_infoLabels_item(item):
                         break
 
                 _next = list_episodes['links']['next']
-                if type(_next) == int:
+                if isinstance(_next, int):
                     page = _next
                 else:
                     break
@@ -326,7 +332,7 @@ def completar_codigos(item):
                 break
 
 
-class Tvdb:
+class Tvdb(object):
     def __init__(self, **kwargs):
 
         self.__check_token()
@@ -394,12 +400,12 @@ class Tvdb:
         params = {"apikey": apikey}
 
         try:
-            req = urllib2.Request(url, data=jsontools.dump(params), headers=DEFAULT_HEADERS)
-            response = urllib2.urlopen(req)
+            req = urllib.request.Request(url, data=jsontools.dump(params), headers=DEFAULT_HEADERS)
+            response = urllib.request.urlopen(req)
             html = response.read()
             response.close()
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -422,12 +428,12 @@ class Tvdb:
         url = HOST + "/refresh_token"
 
         try:
-            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
-            response = urllib2.urlopen(req)
+            req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+            response = urllib.request.urlopen(req)
             html = response.read()
             response.close()
 
-        except urllib2.HTTPError, err:
+        except urllib.error.HTTPError as err:
             logger.error("err.code es %s" % err.code)
             # si hay error 401 es que el token se ha pasado de tiempo y tenemos que volver a llamar a login
             if err.code == 401:
@@ -435,7 +441,7 @@ class Tvdb:
             else:
                 raise
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -521,19 +527,18 @@ class Tvdb:
         params = {"airedSeason": "%s" % season, "airedEpisode": "%s" % episode}
 
         try:
-            import urllib
-            params = urllib.urlencode(params)
+            params = urllib.parse.urlencode(params)
 
             url = HOST + "/series/%s/episodes/query?%s" % (_id, params)
             DEFAULT_HEADERS["Accept-Language"] = lang
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
-            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
-            response = urllib2.urlopen(req)
+            req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+            response = urllib.request.urlopen(req)
             html = response.read()
             response.close()
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -591,12 +596,12 @@ class Tvdb:
             url = HOST + "/series/%s/episodes?page=%s" % (_id, page)
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
-            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
-            response = urllib2.urlopen(req)
+            req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+            response = urllib.request.urlopen(req)
             html = response.read()
             response.close()
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -678,13 +683,13 @@ class Tvdb:
         try:
             DEFAULT_HEADERS["Accept-Language"] = lang
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
-            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
-            response = urllib2.urlopen(req)
+            req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+            response = urllib.request.urlopen(req)
             html = response.read()
             response.close()
 
-        except Exception, ex:
-            if type(ex) == urllib2.HTTPError:
+        except Exception as ex:
+            if isinstance(ex, urllib2).HTTPError:
                 logger.debug("code es %s " % ex.code)
 
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
@@ -737,20 +742,19 @@ class Tvdb:
             elif zap2it_id:
                 params["zap2itId"] = zap2it_id
 
-            import urllib
-            params = urllib.urlencode(params)
+            params = urllib.parse.urlencode(params)
 
             DEFAULT_HEADERS["Accept-Language"] = lang
             url = HOST + "/search/series?%s" % params
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
-            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
-            response = urllib2.urlopen(req)
+            req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+            response = urllib.request.urlopen(req)
             html = response.read()
             response.close()
 
-        except Exception, ex:
-            if type(ex) == urllib2.HTTPError:
+        except Exception as ex:
+            if isinstance(ex, urllib2).HTTPError:
                 logger.debug("code es %s " % ex.code)
 
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
@@ -831,15 +835,15 @@ class Tvdb:
 
         try:
             DEFAULT_HEADERS["Accept-Language"] = lang
-            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
+            req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
-            response = urllib2.urlopen(req)
+            response = urllib.request.urlopen(req)
             html = response.read()
             response.close()
 
-        except Exception, ex:
-            if type(ex) == urllib2.HTTPError:
+        except Exception as ex:
+            if isinstance(ex, urllib2).HTTPError:
                 logger.debug("code es %s " % ex.code)
 
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
@@ -901,18 +905,17 @@ class Tvdb:
 
         try:
 
-            import urllib
-            params = urllib.urlencode(params)
+            params = urllib.parse.urlencode(params)
             DEFAULT_HEADERS["Accept-Language"] = lang
             url = HOST + "/series/%s/images/query?%s" % (_id, params)
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
-            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
-            response = urllib2.urlopen(req)
+            req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+            response = urllib.request.urlopen(req)
             html = response.read()
             response.close()
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -942,8 +945,8 @@ class Tvdb:
         DEFAULT_HEADERS["Accept-Language"] = lang
         logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
-        req = urllib2.Request(url, headers=DEFAULT_HEADERS)
-        response = urllib2.urlopen(req)
+        req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+        response = urllib.request.urlopen(req)
         html = response.read()
         response.close()
 
@@ -1035,7 +1038,7 @@ class Tvdb:
         #     origen['credits_crew'] = dic_origen_credits.get('crew', [])
         #     del origen['credits']
 
-        items = origen.items()
+        items = list(origen.items())
 
         for k, v in items:
             if not v:
@@ -1114,7 +1117,7 @@ class Tvdb:
 
             elif k == 'cast':
                 dic_aux = dict((name, character) for (name, character) in l_castandrole)
-                l_castandrole.extend([(p['name'], p['role']) for p in v if p['name'] not in dic_aux.keys()])
+                l_castandrole.extend([(p['name'], p['role']) for p in v if p['name'] not in list(dic_aux.keys())])
 
             else:
                 logger.debug("Atributos no añadidos: %s=%s" % (k, v))

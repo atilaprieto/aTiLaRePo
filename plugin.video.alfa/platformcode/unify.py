@@ -6,13 +6,16 @@
 # datos obtenidos de las paginas
 # ----------------------------------------------------------
 
-import os
+#from builtins import str
 import sys
-import urllib
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+import os
 import unicodedata
 import re
 
-import config
+from platformcode import config
 from core.item import Item
 from core import scrapertools
 from platformcode import logger
@@ -135,7 +138,7 @@ def set_genre(string):
                    'western':['western', 'westerns', 'oeste western']
                    }
     string = re.sub(r'peliculas de |pelicula de la |peli |cine ','', string)
-    for genre, variants in genres_dict.items():
+    for genre, variants in list(genres_dict.items()):
         if string in variants:
             string = genre
 
@@ -150,7 +153,8 @@ def remove_format(string):
     return string
 
 def normalize(string):
-    string = string.decode('utf-8')
+    if not PY3 and isinstance(string, str):
+        string = string.decode('utf-8')
     normal = ''.join((c for c in unicodedata.normalize('NFD', unicode(string)) if unicodedata.category(c) != 'Mn'))
     return normal
 
@@ -261,11 +265,11 @@ def set_color(title, category):
 def set_lang(language):
     #logger.info()
 
-    cast =['castellano','espanol','cast','esp','espaol', 'es','zc', 'spa', 'spanish', 'vc']
+    cast =['castellano','español','espanol','cast','esp','espaol', 'es','zc', 'spa', 'spanish', 'vc']
     ita =['italiano','italian','ita','it']
-    lat=['latino','lat','la', 'espanol latino', 'espaol latino', 'zl', 'mx', 'co', 'vl']
+    lat=['latino','lat','la', 'español latino', 'espanol latino', 'espaol latino', 'zl', 'mx', 'co', 'vl']
     vose=['subtitulado','subtitulada','sub','sub espanol','vose','espsub','su','subs castellano',
-          'sub: español', 'vs', 'zs', 'vs', 'english-spanish subs', 'ingles sub espanol']
+          'sub: español', 'vs', 'zs', 'vs', 'english-spanish subs', 'ingles sub espanol', 'ingles sub español']
     vos=['vos', 'sub ingles', 'engsub', 'vosi','ingles subtitulado', 'sub: ingles']
     vo=['ingles', 'en','vo', 'ovos', 'eng','v.o', 'english']
     dual=['dual']
@@ -564,10 +568,12 @@ def title_format(item):
 
             title = '[B][COLOR limegreen][%s][/COLOR][/B] %s' % (check, item.title.decode('utf-8'))
             item.title = title.encode('utf-8')
+            if PY3: item.title = item.title.decode('utf-8')
         except:
             check = 'v'
             title = '[B][COLOR limegreen][%s][/COLOR][/B] %s' % (check, item.title.decode('utf-8'))
             item.title = title.encode('utf-8')
+            if PY3: item.title = item.title.decode('utf-8')
 
     return item
 
@@ -617,7 +623,7 @@ def check_rating(rating):
         try:
             # convertimos los deciamles p.e. 7.1
             return "%.1f" % round(_rating, 1)
-        except Exception, ex_dl:
+        except Exception as ex_dl:
             template = "An exception of type %s occured. Arguments:\n%r"
             message = template % (type(ex_dl).__name__, ex_dl.args)
             logger.error(message)
@@ -644,18 +650,18 @@ def check_rating(rating):
     def convert_float(_rating):
         try:
             return float(_rating)
-        except ValueError, ex_ve:
+        except ValueError as ex_ve:
             template = "An exception of type %s occured. Arguments:\n%r"
             message = template % (type(ex_ve).__name__, ex_ve.args)
             logger.error(message)
             return None
 
-    if type(rating) != float:
+    if not isinstance(rating, float):
         # logger.debug("no soy float")
-        if type(rating) == int:
+        if isinstance(rating, int):
             # logger.debug("soy int")
             rating = convert_float(rating)
-        elif type(rating) == str:
+        elif isinstance(rating, str):
             # logger.debug("soy str")
 
             rating = rating.replace("<", "")

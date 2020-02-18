@@ -102,7 +102,7 @@ def lista(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,duracion  in matches:
         logger.debug(scrapedurl)
-        url = urlparse.urljoin(item.url,scrapedurl)
+        url = urlparse.urljoin(item.url,scrapedurl).replace("watch", "embed")
         title = "[COLOR yellow]" + duracion + "[/COLOR] " + scrapedtitle
         contentTitle = title
         thumbnail = scrapedthumbnail
@@ -115,14 +115,8 @@ def lista(item):
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
     return itemlist
 
-
 def play(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron  = 'page_params.video.mediaDefinition =.*?"videoUrl":"([^"]+)"'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    for scrapedurl  in matches:
-        scrapedurl =  scrapedurl.replace("\/", "/").replace("\\u0026", "&")
-    itemlist.append(item.clone(action="play", title=scrapedurl, contentTitle = item.title, url=scrapedurl))
+    logger.info(item)
+    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     return itemlist
+

@@ -94,7 +94,7 @@ def section(item):
     data = get_source(host)
 
     if 'Genero' in item.title:
-        patron = '<li class="cat-item cat-item-\d+"><a href="([^"]+)">(.*?)/i>'
+        patron = '<li class="cat-item cat-item-\d+"><a href="([^"]+)" >(.*?)/i>'
     elif 'Año' in item.title:
         patron = '<li><a href="(.*?release.*?)">(.*?)</a>'
     elif 'Calidad' in item.title:
@@ -106,7 +106,7 @@ def section(item):
         title = scrapedtitle
         plot=''
         if 'Genero' in item.title:
-            quantity =  scrapertools.find_single_match(scrapedtitle,'</a> <i>(.*?)<')
+            quantity = scrapertools.find_single_match(scrapedtitle,'</a> <i>(.*?)<')
             title = scrapertools.find_single_match(scrapedtitle,'(.*?)</')
             title = title
             plot = '%s elementos' % quantity.replace('.','')

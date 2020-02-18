@@ -15,7 +15,7 @@ def mainlist(item):
     logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=host + "/hits/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
+    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/"))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
 
@@ -38,12 +38,16 @@ def categorias(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|\\", "", data)
-    patron = '"i":"([^"]+)","u":"([^"]+)","tf":"([^"]+)"'
+    patron = '"i":"([^"]+)".*?'
+    patron += '"u":"([^"]+)".*?'
+    patron += '"tf":"([^"]+)".*?'
+    patron += '"n":"([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedthumbnail,scrapedurl,scrapedtitle in matches:
-        title = scrapedtitle
+    for scrapedthumbnail,scrapedurl,title,cantidad in matches:
+        title = "%s (%s)" %(title, cantidad)
+        url = scrapedurl.replace("\/" , "/")
         url = urlparse.urljoin(item.url,scrapedurl)
-        thumbnail = scrapedthumbnail
+        thumbnail = scrapedthumbnail.replace("\/" , "/")
         itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     return itemlist

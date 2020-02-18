@@ -65,37 +65,6 @@ def lista(item):
 
 
 def play(item):
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data, '<div class="video_code">(.*?)<h3')
-    patron = '(?:src|SRC)="([^"]+)"'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    for scrapedurl in matches:
-        if 'mixdrop' in scrapedurl:
-            url = "https:" + scrapedurl
-            headers = {'Referer': item.url}
-            data = httptools.downloadpage(url, headers=headers).data
-            url = scrapertools.find_single_match(data, 'vsrc = "([^"]+)"')
-            url= "https:" + url
-        else:
-            url = scrapedurl
-            if 'base64' in scrapedurl:  #el base64 es netu.tv
-                url = "https://hqq.tv/player/embed_player.php?vid=RODE5Z2Hx3hO&autoplay=none"
-
-        itemlist.append(item.clone(action="play", title = "%s", contentTitle= item.title, url=url ))
-    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())  
-    
-    a = len (itemlist)
-    for i in itemlist:
-        if a < 1:
-            return []
-        if 'mixdrop' in i.url: #check_video_link no analiza videos directos
-            res = "green"
-        else:
-            res = servertools.check_video_link(i.url, i.server, timeout=5)
-        a -= 1
-        if 'green' in res:
-            return [i]
-        else:
-            continue
-
+    logger.info(item)
+    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
+    return itemlist

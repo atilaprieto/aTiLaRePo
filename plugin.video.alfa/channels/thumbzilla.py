@@ -117,7 +117,7 @@ def videos(item):
         if ">HD<" in scrapedtime:
             title = "[COLOR yellow]" + time + "[/COLOR] " + "[COLOR red]" + "HD" + "[/COLOR] " + scrapedtitle
         itemlist.append(Item(channel=item.channel, action='play', title=title, thumbnail=scrapedthumbnail,
-                             url=host + scrapedurl, contentTile=scrapedtitle, fanart=scrapedthumbnail))
+                             url=host + scrapedurl, contentTile=title, fanart=scrapedthumbnail))
     paginacion = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)" />').replace('amp;', '')
     if paginacion:
         itemlist.append(Item(channel=item.channel, action="videos",

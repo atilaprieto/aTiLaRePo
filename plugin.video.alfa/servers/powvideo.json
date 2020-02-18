@@ -5,7 +5,7 @@
     "patterns": [
       {
         "pattern": "(?:powvideo|povw1deo|powvldeo).(?:net|xyz|com|cc)/(?:embed-|iframe-|preview-|)([a-z0-9]+)",
-        "url": "https://powvldeo.co/iframe-\\1-1536x701.html"
+        "url": "https://powvldeo.cc/iframe-\\1-1536x701.html"
       }
     ]
   },

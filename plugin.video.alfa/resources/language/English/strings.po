@@ -1694,7 +1694,7 @@ msgid "Delete saved searches"
 msgstr ""
 
 msgctxt "#60420"
-msgid "More Options"
+msgid "More search options"
 msgstr ""
 
 msgctxt "#60421"
@@ -2670,7 +2670,7 @@ msgid "Global Search"
 msgstr ""
 
 msgctxt "#60673"
-msgid "MultiThread Search"
+msgid "Number of Search Threads"
 msgstr ""
 
 msgctxt "#60674"
@@ -4934,3 +4934,103 @@ msgstr ""
 msgctxt "#70562"
 msgid "Autoplay (Enable autoplay on all supported channels)"
 msgstr "Autoplay (Enable autoplay on all supported channels)"
+
+msgctxt "#70570"
+msgid "Search with current selection"
+msgstr ""
+
+msgctxt "#70571"
+msgid "Modify current selection"
+msgstr ""
+
+msgctxt "#70572"
+msgid "Modify from All"
+msgstr ""
+
+msgctxt "#70573"
+msgid "Modify starting from None"
+msgstr ""
+
+msgctxt "#70574"
+msgid "Modify starting from Castellano"
+msgstr ""
+
+msgctxt "#70575"
+msgid "Modify starting from Latino"
+msgstr ""
+
+msgctxt "#70576"
+msgid "Modify starting from Italian"
+msgstr ""
+
+msgctxt "#70577"
+msgid "Modify starting from "
+msgstr ""
+
+msgctxt "#70741"
+msgid "Search %s"
+msgstr ""
+
+msgctxt "#70742"
+msgid "Movies by Year"
+msgstr ""
+
+msgctxt "#70743"
+msgid "Series by Year"
+msgstr ""
+
+msgctxt "#70744"
+msgid "%s channels remaining"
+msgstr ""
+
+msgctxt "#70745"
+msgid "Enter another year..."
+msgstr ""
+
+msgctxt "#70746"
+msgid "When playback ends"
+msgstr ""
+
+msgctxt "#70747"
+msgid "Hide server selection"
+msgstr ""
+
+msgctxt "#70748"
+msgid "Go to the next episode"
+msgstr ""
+
+msgctxt "#70749"
+msgid "Seconds before notification"
+msgstr ""
+
+msgctxt "#70750"
+msgid "Next Episode in"
+msgstr ""
+
+msgctxt "#70751"
+msgid "seconds"
+msgstr ""
+
+msgctxt "#70752"
+msgid "Do nothing"
+msgstr ""
+
+msgctxt "#70753"
+msgid "Playback"
+msgstr ""
+
+msgctxt "#70754"
+msgid "Compact mode"
+msgstr ""
+
+msgctxt "#70755"
+msgid "Coming up..."
+msgstr ""
+
+msgctxt "#70756"
+msgid "WATCH NOW"
+msgstr ""
+
+msgctxt "#70757"
+msgid "CANCEL"
+msgstr ""

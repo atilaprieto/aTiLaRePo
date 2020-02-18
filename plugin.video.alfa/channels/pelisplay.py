@@ -3,9 +3,16 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
-import re
 import sys
-import urlparse
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from channels import autoplay
 from channels import filtertools
@@ -20,7 +27,7 @@ from channelselector import get_thumb
 
 __channel__ = "pelisplay"
 
-host = "https://www.pelisplay.tv/"
+host = "https://www.pelisplay.co/"
 
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
@@ -46,7 +53,7 @@ fanart_host = parameters['fanart']
 thumbnail_host = parameters['thumbnail']
 
 IDIOMAS = {'Latino': 'LAT', 'Castellano': 'CAST', 'Subtitulado': 'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['rapidvideo', 'streamango', 'fastplay', 'openload']
 
@@ -314,7 +321,7 @@ def temporadas(item):
             if i.infoLabels['title']:
                 # Si la temporada tiene nombre propio añadírselo al titulo del item
                 i.title += " - %s" % (i.infoLabels['title'])
-            if i.infoLabels.has_key('poster_path'):
+            if 'poster_path' in i.infoLabels:
                 # Si la temporada tiene poster propio remplazar al de la serie
                 i.thumbnail = i.infoLabels['poster_path']
         # itemlist.sort(key=lambda it: it.title)
@@ -374,7 +381,7 @@ def episodesxseason(item):
                 # Si el capitulo tiene nombre propio añadírselo al titulo del item
                 i.title = "%sx%s: %s" % (
                     i.infoLabels['season'], i.infoLabels['episode'], i.infoLabels['title'])
-            if i.infoLabels.has_key('poster_path'):
+            if 'poster_path' in i.infoLabels:
                 # Si el capitulo tiene imagen propia remplazar al poster
                 i.thumbnail = i.infoLabels['poster_path']
     itemlist.sort(key=lambda it: int(it.infoLabels['episode']),
@@ -401,7 +408,7 @@ def findvideos(item):
         json_data = httptools.downloadpage(post_link, post=post).json
         url = json_data['data']
 
-        if 'pelisplay.tv/embed/' in url:
+        if 'pelisplay.co/embed/' in url:
             new_data = httptools.downloadpage(url).data
             url = scrapertools.find_single_match(
                 new_data, '"file":"([^"]+)",').replace('\\', '')

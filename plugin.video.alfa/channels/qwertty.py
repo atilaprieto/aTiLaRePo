@@ -7,7 +7,6 @@ from core import servertools
 from core.item import Item
 from platformcode import config, logger
 from core import httptools
-from channels import pornhub, xvideos,youporn,TXXX
 
 host = 'http://qwertty.net'
 
@@ -93,23 +92,11 @@ def play(item):
             if url=="#":
                 url = scrapertools.find_single_match(data,'playerData.cdnPath480         = \'([^\']+)\'')
             itemlist.append(item.clone(action="play", title=url, contentTitle = url, url=url))
-    elif "xvideos1" in url1: 
-        item1 = item.clone(url=url1)
-        itemlist = xvideos.play(item1)
-        return itemlist
-    elif "pornhub" in url1 :
-        url = url1
-    elif "txx" in url1:# Falta conector
-        item1 = item.clone(url=url1)
-        itemlist = TXXX.play(item1)
-        return itemlist
-    elif "youporn" in url1: 
-        item1 = item.clone(url=url1)
-        itemlist = youporn.play(item1)
-        return itemlist
     else:
         data = httptools.downloadpage(url1).data
         url  = scrapertools.find_single_match(data,'"quality":"\d+","videoUrl":"([^"]+)"')
+    if not url:
+        url=url1
     url = url.replace("\/", "/")
 
     itemlist.append(item.clone(action="play", title= "%s  " + url1, contentTitle = item.title, url=url))

@@ -3,6 +3,11 @@
 # Common Library Tools
 # ------------------------------------------------------------
 
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import errno
 import math
 import traceback
@@ -121,7 +126,10 @@ def save_movie(item):
     else:
         base_name = item.contentTitle
 
-    base_name = unicode(filetools.validate_path(base_name.replace('/', '-')), "utf8").encode("utf8")
+    if not PY3:
+        base_name = unicode(filetools.validate_path(base_name.replace('/', '-')), "utf8").encode("utf8")
+    else:
+        base_name = filetools.validate_path(base_name.replace('/', '-'))
 
     if config.get_setting("lowerize_title", "videolibrary") == 0:
         base_name = base_name.lower()
@@ -273,7 +281,10 @@ def save_tvshow(item, episodelist):
     else:
         base_name = item.contentSerieName
 
-    base_name = unicode(filetools.validate_path(base_name.replace('/', '-')), "utf8").encode("utf8")
+    if not PY3:
+        base_name = unicode(filetools.validate_path(base_name.replace('/', '-')), "utf8").encode("utf8")
+    else:
+        base_name = filetools.validate_path(base_name.replace('/', '-'))
 
     if config.get_setting("lowerize_title", "videolibrary") == 0:
         base_name = base_name.lower()
@@ -291,7 +302,7 @@ def save_tvshow(item, episodelist):
         logger.info("Creando directorio serie: " + path)
         try:
             filetools.mkdir(path)
-        except OSError, exception:
+        except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
 
@@ -384,7 +395,7 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
     news_in_playcounts = {}
 
     # Listamos todos los ficheros de la serie, asi evitamos tener que comprobar si existe uno por uno
-    raiz, carpetas_series, ficheros = filetools.walk(path).next()
+    raiz, carpetas_series, ficheros = next(filetools.walk(path))
     ficheros = [filetools.join(path, f) for f in ficheros]
 
     nostrm_episodelist = []
@@ -726,7 +737,7 @@ def add_tvshow(item, channel=None):
             try:
                 channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
             except ImportError:
-                exec "import channels." + item.channel + " as channel"
+                exec("import channels." + item.channel + " as channel")
 
         #Para desambiguar títulos, se provoca que TMDB pregunte por el título realmente deseado
         #El usuario puede seleccionar el título entre los ofrecidos en la primera pantalla

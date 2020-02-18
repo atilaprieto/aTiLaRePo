@@ -102,6 +102,7 @@ def search(item, texto):
     item.url = CHANNEL_HOST + "?s="
     texto = texto.replace(" ", "+")
     item.url = item.url + texto
+    item.extra = "search"
     try:
         return peliculas(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -159,7 +160,10 @@ def peliculas(item):
     itemlist = []
     item.text_color = color2
     data = httptools.downloadpage(item.url).data
-    patron = '(?s)class="(?:result-item|item movies)">.*?<img src="([^"]+)'
+    buscar = "data-lazy-src"
+    if item.extra:
+        buscar = "img src"
+    patron = '(?s)class="(?:result-item|item movies)">.*?%s="([^"]+)' %buscar
     patron += '.*?alt="([^"]+)"'
     patron += '(.*?)'
     patron += 'href="([^"]+)"'

@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+from builtins import chr
+from builtins import range
+from past.utils import old_div
+
 from core import httptools
 from core import scrapertools
 from platformcode import config, logger
@@ -93,10 +98,10 @@ def decode(code, parseInt, _0x59ce16, _1x4bfb36):
         _0x2de433 = _0x5eb93a * 2 + 127
 
         for i in range(4):
-            _0x3fa834 = chr(((_0x30725e & _0x2de433) >> (9*8/ 9)* i) - 1)
+            _0x3fa834 = chr(((_0x30725e & _0x2de433) >> (old_div(9*8, 9))* i) - 1)
             if _0x3fa834 != '$':
                 _0x1bf6e5 += _0x3fa834
-            _0x2de433 = (_0x2de433 << (9*8/ 9))
+            _0x2de433 = (_0x2de433 << (old_div(9*8, 9)))
 
         _0x145894 += 1
 

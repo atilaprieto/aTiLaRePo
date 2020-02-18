@@ -3,15 +3,26 @@
 # Download Tools - Original based from code of VideoMonkey XBMC Plugin
 # ---------------------------------------------------------------------------------
 
-import os.path
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+#from builtins import str
+from past.utils import old_div
+import sys
+PY3 = False
+VFS = True
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int; VFS = False
+
+import urllib.request, urllib.parse, urllib.error
+
 import re
 import socket
-import sys
 import time
-import urllib
-import urllib2
 
 from platformcode import config, logger
+from core import filetools
 
 entitydefs2 = {
     '$': '%24',
@@ -72,7 +83,7 @@ def limpia_nombre_caracteres_especiales(s):
 def limpia_nombre_sin_acentos(s):
     if not s:
         return ''
-    for key, value in entitydefs3.iteritems():
+    for key, value in entitydefs3.items():
         for c in key:
             s = s.replace(c, value)
             return s
@@ -99,6 +110,8 @@ def limpia_nombre_excepto_1(s):
     stripped = ''.join(c for c in s if c in validchars)
     # Convierte a iso
     s = stripped.encode("iso-8859-1")
+    if PY3:
+        s = s.decode('utf-8')
     return s
 
 
@@ -118,7 +131,7 @@ def getfilefromtitle(url, title):
     logger.info("plataforma=" + plataforma)
 
     # nombrefichero = xbmc.makeLegalFilename(title + url[-4:])
-    import scrapertools
+    from . import scrapertools
 
     nombrefichero = title + scrapertools.get_filename_from_url(url)[-4:]
     logger.info("nombrefichero=%s" % nombrefichero)
@@ -133,7 +146,7 @@ def getfilefromtitle(url, title):
 
     logger.info("nombrefichero=%s" % nombrefichero)
 
-    fullpath = os.path.join(config.get_setting("downloadpath"), nombrefichero)
+    fullpath = filetools.join(config.get_setting("downloadpath"), nombrefichero)
     logger.info("fullpath=%s" % fullpath)
 
     if config.is_xbmc() and fullpath.startswith("special://"):
@@ -158,7 +171,10 @@ def downloadbest(video_urls, title, continuar=False):
     for elemento in invertida:
         # videotitle = elemento[0]
         url = elemento[1]
-        logger.info("Descargando opción " + title + " " + url.encode('ascii', 'ignore'))
+        if not PY3:
+            logger.info("Descargando opción " + title + " " + url.encode('ascii', 'ignore'))
+        else:
+            logger.info("Descargando opción " + title + " " + url.encode('ascii', 'ignore').decode('utf-8'))
 
         # Calcula el fichero donde debe grabar
         try:
@@ -173,7 +189,7 @@ def downloadbest(video_urls, title, continuar=False):
         try:
             ret = downloadfile(url, fullpath, continuar=continuar)
         # Llegados a este punto, normalmente es un timeout
-        except urllib2.URLError, e:
+        except urllib.error.URLError as e:
             import traceback
             logger.error(traceback.format_exc())
             ret = -2
@@ -183,11 +199,11 @@ def downloadbest(video_urls, title, continuar=False):
             return -1
         else:
             # El fichero ni siquiera existe
-            if not os.path.exists(fullpath):
+            if not filetools.exists(fullpath):
                 logger.info("-> No ha descargado nada, probando con la siguiente opción si existe")
             # El fichero existe
             else:
-                tamanyo = os.path.getsize(fullpath)
+                tamanyo = filetools.getsize(fullpath)
 
                 # Tiene tamaño 0
                 if tamanyo == 0:
@@ -227,10 +243,10 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
         logger.info("nombrefichero=" + nombrefichero)
 
         # El fichero existe y se quiere continuar
-        if os.path.exists(nombrefichero) and continuar:
-            f = open(nombrefichero, 'r+b')
+        if filetools.exists(nombrefichero) and continuar:
+            f = filetools.file_open(nombrefichero, 'r+b', vfs=VFS)
             if resumir:
-                exist_size = os.path.getsize(nombrefichero)
+                exist_size = filetools.getsize(nombrefichero)
                 logger.info("el fichero existe, size=%d" % exist_size)
                 grabado = exist_size
                 f.seek(exist_size)
@@ -239,7 +255,7 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
                 grabado = 0
 
         # el fichero ya existe y no se quiere continuar, se aborta
-        elif os.path.exists(nombrefichero) and not continuar:
+        elif filetools.exists(nombrefichero) and not continuar:
             logger.info("el fichero existe, no se descarga de nuevo")
             return -3
 
@@ -248,7 +264,7 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
             exist_size = 0
             logger.info("el fichero no existe")
 
-            f = open(nombrefichero, 'wb')
+            f = filetools.file_open(nombrefichero, 'wb', vfs=VFS)
             grabado = 0
 
         # Crea el diálogo de progreso
@@ -269,7 +285,7 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
             for additional_header in additional_headers:
                 logger.info("additional_header: " + additional_header)
                 name = re.findall("(.*?)=.*?", additional_header)[0]
-                value = urllib.unquote_plus(re.findall(".*?=(.*?)$", additional_header)[0])
+                value = urllib.parse.unquote_plus(re.findall(".*?=(.*?)$", additional_header)[0])
                 headers.append([name, value])
 
             url = url.split("|")[0]
@@ -278,8 +294,8 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
         # Timeout del socket a 60 segundos
         socket.setdefaulttimeout(60)
 
-        h = urllib2.HTTPHandler(debuglevel=0)
-        request = urllib2.Request(url)
+        h = urllib.request.HTTPHandler(debuglevel=0)
+        request = urllib.request.Request(url)
         for header in headers:
             logger.info("Header=" + header[0] + ": " + header[1])
             request.add_header(header[0], header[1])
@@ -287,11 +303,11 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
         if exist_size > 0:
             request.add_header('Range', 'bytes=%d-' % (exist_size,))
 
-        opener = urllib2.build_opener(h)
-        urllib2.install_opener(opener)
+        opener = urllib.request.build_opener(h)
+        urllib.request.install_opener(opener)
         try:
             connexion = opener.open(request)
-        except urllib2.HTTPError, e:
+        except urllib.error.HTTPError as e:
             logger.error("error %d (%s) al abrir la url %s" %
                          (e.code, e.msg, url))
             f.close()
@@ -337,16 +353,16 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
                         bloqueleido = connexion.read(blocksize)
                         after = time.time()
                         if (after - before) > 0:
-                            velocidad = len(bloqueleido) / (after - before)
+                            velocidad = old_div(len(bloqueleido), (after - before))
                             falta = totalfichero - grabado
                             if velocidad > 0:
-                                tiempofalta = falta / velocidad
+                                tiempofalta = old_div(falta, velocidad)
                             else:
                                 tiempofalta = 0
                             # logger.info(sec_to_hms(tiempofalta))
                             if not silent:
                                 progreso.update(percent, "%.2fMB/%.2fMB (%d%%) %.2f Kb/s %s falta " %
-                                                (descargadosmb, totalmb, percent, velocidad / 1024,
+                                                (descargadosmb, totalmb, percent, old_div(velocidad, 1024),
                                                  sec_to_hms(tiempofalta)))
                         break
                     except:
@@ -429,7 +445,7 @@ def downloadfileRTMP(url, nombrefichero, silent):
     else:
         rtmpdump_cmd = "/usr/bin/rtmpdump"
 
-    if not os.path.isfile(rtmpdump_cmd) and not silent:
+    if not filetools.isfile(rtmpdump_cmd) and not silent:
         from platformcode import platformtools
         advertencia = platformtools.dialog_ok("Falta " + rtmpdump_cmd, "Comprueba que rtmpdump está instalado")
         return True
@@ -510,16 +526,16 @@ def downloadfileGzipped(url, pathfichero):
     # Timeout del socket a 60 segundos
     socket.setdefaulttimeout(10)
 
-    h = urllib2.HTTPHandler(debuglevel=0)
-    request = urllib2.Request(url, txdata, txheaders)
+    h = urllib.request.HTTPHandler(debuglevel=0)
+    request = urllib.request.Request(url, txdata, txheaders)
     # if existSize > 0:
     #    request.add_header('Range', 'bytes=%d-' % (existSize, ))
 
-    opener = urllib2.build_opener(h)
-    urllib2.install_opener(opener)
+    opener = urllib.request.build_opener(h)
+    urllib.request.install_opener(opener)
     try:
         connexion = opener.open(request)
-    except urllib2.HTTPError, e:
+    except urllib.error.HTTPError as e:
         logger.error("error %d (%s) al abrir la url %s" %
                      (e.code, e.msg, url))
         progreso.close()
@@ -529,7 +545,7 @@ def downloadfileGzipped(url, pathfichero):
         else:
             return -2
 
-    nombre_fichero_base = os.path.basename(nombrefichero)
+    nombre_fichero_base = filetools.basename(nombrefichero)
     if len(nombre_fichero_base) == 0:
         logger.info("Buscando nombre en el Headers de respuesta")
         nombre_base = connexion.headers["Content-Disposition"]
@@ -539,15 +555,15 @@ def downloadfileGzipped(url, pathfichero):
         if len(matches) > 0:
             titulo = matches[0]
             titulo = GetTitleFromFile(titulo)
-            nombrefichero = os.path.join(pathfichero, titulo)
+            nombrefichero = filetools.join(pathfichero, titulo)
         else:
             logger.info("Nombre del fichero no encontrado, Colocando nombre temporal :sin_nombre.txt")
             titulo = "sin_nombre.txt"
-            nombrefichero = os.path.join(pathfichero, titulo)
+            nombrefichero = filetools.join(pathfichero, titulo)
     totalfichero = int(connexion.headers["Content-Length"])
 
     # despues
-    f = open(nombrefichero, 'w')
+    f = filetools.file_open(nombrefichero, 'w', vfs=VFS)
 
     logger.info("fichero nuevo abierto")
 
@@ -559,8 +575,8 @@ def downloadfileGzipped(url, pathfichero):
     bloqueleido = connexion.read(blocksize)
 
     try:
-        import StringIO
-        compressedstream = StringIO.StringIO(bloqueleido)
+        import io
+        compressedstream = io.StringIO(bloqueleido)
         import gzip
         gzipper = gzip.GzipFile(fileobj=compressedstream)
         bloquedata = gzipper.read()
@@ -591,22 +607,22 @@ def downloadfileGzipped(url, pathfichero):
                     bloqueleido = connexion.read(blocksize)
 
                     import gzip
-                    import StringIO
-                    compressedstream = StringIO.StringIO(bloqueleido)
+                    import io
+                    compressedstream = io.StringIO(bloqueleido)
                     gzipper = gzip.GzipFile(fileobj=compressedstream)
                     bloquedata = gzipper.read()
                     gzipper.close()
                     after = time.time()
                     if (after - before) > 0:
-                        velocidad = len(bloqueleido) / (after - before)
+                        velocidad = old_div(len(bloqueleido), (after - before))
                         falta = totalfichero - grabado
                         if velocidad > 0:
-                            tiempofalta = falta / velocidad
+                            tiempofalta = old_div(falta, velocidad)
                         else:
                             tiempofalta = 0
                         logger.info(sec_to_hms(tiempofalta))
                         progreso.update(percent, "%.2fMB/%.2fMB (%d%%) %.2f Kb/s %s falta " %
-                                        (descargadosmb, totalmb, percent, velocidad / 1024, sec_to_hms(tiempofalta)))
+                                        (descargadosmb, totalmb, percent, old_div(velocidad, 1024), sec_to_hms(tiempofalta)))
                     break
                 except:
                     reintentos += 1
@@ -671,7 +687,7 @@ def downloadIfNotModifiedSince(url, timestamp):
 
     # Comprueba si ha cambiado
     inicio = time.clock()
-    req = urllib2.Request(url)
+    req = urllib.request.Request(url)
     req.add_header('If-Modified-Since', fecha_formateada)
     req.add_header('User-Agent',
                    'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12')
@@ -679,14 +695,14 @@ def downloadIfNotModifiedSince(url, timestamp):
     updated = False
 
     try:
-        response = urllib2.urlopen(req)
+        response = urllib.request.urlopen(req)
         data = response.read()
 
         # Si llega hasta aquí, es que ha cambiado
         updated = True
         response.close()
 
-    except urllib2.URLError, e:
+    except urllib.error.URLError as e:
         # Si devuelve 304 es que no ha cambiado
         if hasattr(e, 'code'):
             logger.info("Codigo de respuesta HTTP : %d" % e.code)
@@ -758,7 +774,7 @@ def download_all_episodes(item, channel, first_episode="", preferred_server="vid
             mirrors_itemlist = channel.findvideos(episode_item)
         except:
             mirrors_itemlist = servertools.find_video_items(episode_item)
-        print mirrors_itemlist
+        print(mirrors_itemlist)
 
         descargado = False
 
@@ -867,7 +883,7 @@ def download_all_episodes(item, channel, first_episode="", preferred_server="vid
 
 
 def episodio_ya_descargado(show_title, episode_title):
-    import scrapertools
+    from . import scrapertools
     ficheros = os.listdir(".")
 
     for fichero in ficheros:

@@ -310,23 +310,27 @@ def findvideos(item):
                   }
 
     data = get_source(item.url)
-    s_id = scrapertools.find_single_match(data, r'id="loadVideos".*?secid="(\w\d+)"')
+    s_id = scrapertools.find_single_match(data, r'id="loadVideosV4".*?secid="(\w\d+)"')
 
     if s_id:
         import requests
-        url = host + 'json/loadVIDEOS'
-        header = {'User-Agent': 'Mozilla/5.0 (Android 10; Mobile; rv:70.0) Gecko/70.0 Firefox/70.0'}
+        url = host + 'json/loadVIDEOSV4'
+        #header = {'User-Agent': 'Mozilla/5.0 (Android 10; Mobile; rv:70.0) Gecko/70.0 Firefox/70.0'}
         session = requests.Session()
-        page = session.post(url, data={'id': s_id}, headers=header).json()
-
+        page = session.post(url, data={'id': s_id}).json()#, headers=header).json()
         if page.get('status', '') == 200:
             data2 = page['result']
-            patron = r"C_One\(this, (\d+), '([^']+)'.*?"
-            patron += r'src=".*?/img/(\w+)'
+            data2 = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data2)
+            patron = "onclick=\"(?:ifrD|prcss)\('([^']+)', (\d+)\)"
             matches = re.compile(patron, re.DOTALL).findall(data2)
-            for language, url, server in matches:
-                
+            for url, language in matches:
+
+                if "PRCSS" in url:
+                    req = httptools.downloadpage(url, headers=headers).json
+                    url = "%sencrypt/%s" % (host, req.get("data"))
+
                 req = httptools.downloadpage(url, headers=headers, follow_redirects=False)
+
                 location = req.headers.get('location', None)
 
 
@@ -337,62 +341,58 @@ def findvideos(item):
                     url = scrapertools.find_single_match(new_data, 'file": "([^"]+)"')
                 if not url:
                      continue             
-                try:
-                    server = server.split(".")[0]
-                except:
-                    server= ""
 
-                if 'betaserver' in server:
-                    server = 'directo'
 
                 lang = IDIOMAS.get(language, 'VO')
 
                 quality = 'Oficial'
 
-                title = '%s [%s] [%s]' % (server.capitalize(), lang, quality)
+                title = '%s [%s]'
 
                 itemlist.append(Item(channel=item.channel, title=title, url=url, action='play', language=lang,
-                                 quality=quality, server=server, headers=headers, infoLabels=item.infoLabels,
+                                 quality=quality, headers=headers, infoLabels=item.infoLabels,
                                  p_lang=language))
 
-    patron = '<li><a href="([^"]+)".*?<img.*?>([^<]+)<b>([^<]+)<.*?src="([^"]+)"'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for url, server, quality, language in matches:
-        if '/sc_' in url:
-            continue
-        if url != '':
-
-            try:
-                server = server.split(".")[0].replace('1', 'l')
-            except:
-                continue
-
-            _id = scrapertools.find_single_match(url, r'link/\w+_(.*)')
-
-            url = server_url.get(server, url)
-            
-            if not url.startswith(host):
-                url = url % _id
-            
-            language = scrapertools.find_single_match(language, r'/(\d+)\.png')
-            lang = IDIOMAS.get(language, 'VO')
-            
-            title = '%s [%s] [%s]' % (server.capitalize(), lang, quality)
-            
-            itemlist2.append(Item(channel=item.channel, title=title, url=url, action='play', language=lang,
-                                 quality=quality, server=server, headers=headers, infoLabels=item.infoLabels,
-                                 p_lang=language))
+    # patron = '<li><a href="([^"]+)".*?<img.*?>([^<]+)<b>([^<]+)<.*?src="([^"]+)"'
+    # matches = re.compile(patron, re.DOTALL).findall(data)
+    #
+    # for url, server, quality, language in matches:
+    #     if '/sc_' in url:
+    #         continue
+    #     if url != '':
+    #
+    #         try:
+    #             server = server.split(".")[0].replace('1', 'l')
+    #         except:
+    #             continue
+    #
+    #         _id = scrapertools.find_single_match(url, r'link/\w+(.*)')
+    #
+    #         url = server_url.get(server, url)
+    #
+    #         if not url.startswith(host):
+    #             url = url % _id
+    #
+    #         language = scrapertools.find_single_match(language, r'/(\d+)\.png')
+    #         lang = IDIOMAS.get(language, 'VO')
+    #
+    #         title = '%s [%s] [%s]' % (server.capitalize(), lang, quality)
+    #
+    #         itemlist2.append(Item(channel=item.channel, title=title, url=url, action='play', language=lang,
+    #                              quality=quality, server=server, headers=headers, infoLabels=item.infoLabels,
+    #                              p_lang=language))
 
     
-    itemlist2.sort(key=lambda i: (i.p_lang, i.server))
-    
-    itemlist.extend(itemlist2)
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % (i.server, i.language))
 
-    if not itemlist:
-        itemlist.append(Item(channel=item.channel, folder=False, text_color='tomato',
-                            title='[I] Aún no hay enlaces disponibles [/I]'))
-        return itemlist
+   # itemlist2.sort(key=lambda i: (i.p_lang, i.server))
+    
+   #itemlist.extend(itemlist2)
+
+    # if not itemlist:
+    #     itemlist.append(Item(channel=item.channel, folder=False, text_color='tomato',
+    #                         title='[I] Aún no hay enlaces disponibles [/I]'))
+    #     return itemlist
     
     itemlist = filtertools.get_links(itemlist, item, list_language)
 

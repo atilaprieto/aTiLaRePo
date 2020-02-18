@@ -1,7 +1,7 @@
 {
   "id": "wikiseries",
   "name": "WikiSeries",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["lat", "cast"],
   "thumbnail": "https://s31.postimg.cc/tnmcrytnv/16142379_1847422438815031_3788419094563167644_n.jpg",

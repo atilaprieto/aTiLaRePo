@@ -26,7 +26,15 @@ def mainlist(item):
     thumb_series = get_thumb("channels_tvshow.png")
     autoplay.init(item.channel, list_servers, list_quality)
     itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="mainpage", title="Categorías", url=host,
+    itemlist.append(Item(channel=item.channel, action="lista", title="Series Clásicas", url=host+"genero/series-clasicas/",
+                         thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, action="lista", title="Series Actuales", url=host+"genero/series-actuales/",
+                         thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, action="lista", title="Anime Clásico", url=host+"genero/anime-clasico/",
+                         thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, action="lista", title="Anime Moderno", url=host+"genero/anime-moderno/",
+                         thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, action="lista", title="Live Action", url=host+"genero/live-action/",
                          thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, action="lista", title="Peliculas Animadas", url=host+"peliculas/", extra="Peliculas Animadas",
                          thumbnail=thumb_series))
@@ -116,8 +124,9 @@ def lista(item):
     matches = scrapertools.find_multiple_matches(data_lista, patron)
     for scrapedthumbnail, scrapedtitle, scrapedurl, scrapedyear in matches:
         if item.title=="Peliculas Animadas":
+            thumbnail = re.sub('p/w\d+','p/original',scrapedthumbnail)
             itemlist.append(
-                item.clone(title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail, contentType="movie",
+                item.clone(title=scrapedtitle, url=scrapedurl, thumbnail=thumbnail, contentType="movie",
                        action="findvideos", contentTitle=scrapedtitle, infoLabels={'year':scrapedyear}))
         else:    
             itemlist.append(
@@ -176,7 +185,7 @@ def episodiosxtemporada(item):
     patron = '<divid=episodes (.+?)<\/div><\/div><\/div>'
     data_lista = scrapertools.find_single_match(data,patron)
     contentSerieName = item.title
-    patron_caps  = 'href=(.+?)><imgalt=".+?" '
+    patron_caps  = '<ahref=(.+?) ><imgalt=".+?" '
     patron_caps += 'src=([^"]+)><\/a>.*?'
     patron_caps += 'numerando>([^<]+).*?'
     patron_caps += 'episodiotitle>.*?>([^<]+)<\/a>'
@@ -210,7 +219,7 @@ def findvideos(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     headers = {"X-Requested-With":"XMLHttpRequest"}
     for scrapedserver, scrapeduser in matches:
-        data1 = httptools.downloadpage("https://space.danimados.space/gilberto.php?id=%s&sv=mp4" %scrapeduser).data
+        data1 = httptools.downloadpage("https://sv.danimados.com/gilberto.php?id=%s&sv=mp4" %scrapeduser).data
         data1 = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data1)
         url = base64.b64decode(scrapertools.find_single_match(data1, '<iframe data-source="([^"]+)"'))
         url1 = devuelve_enlace(url)

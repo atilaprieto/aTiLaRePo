@@ -1,14 +1,26 @@
 # -*- coding: utf-8 -*-
 
-import re
+from __future__ import division
+from past.utils import old_div
 import sys
-import urllib
-import urlparse
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urlparse
+else:
+    import urllib                                               # Usamos el nativo de PY2 que es más rápido
+    import urlparse
+
+import re
 import time
 import traceback
 
 from channelselector import get_thumb
-from core import httptools, proxytools
+from core import httptools
 from core import scrapertools
 from core import servertools
 from core.item import Item
@@ -21,7 +33,7 @@ from channels import autoplay
 
 #IDIOMAS = {'CAST': 'Castellano', 'LAT': 'Latino', 'VO': 'Version Original'}
 IDIOMAS = {'Castellano': 'CAST', 'Latino': 'LAT', 'Version Original': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['torrent']
 
@@ -233,7 +245,7 @@ def listado(item):
 
     #Capturamos el num. de la última página para informala a pié de página.  Opción para páginas sin paginación
     if pag == False:
-        item.last_page = (len(matches) / cnt_tot) + 1
+        item.last_page = (old_div(len(matches), cnt_tot)) + 1
     
     if not item.last_page and pag:    #Capturamos el num. de la última página para informala a pié de página
         item.last_page = -1
@@ -246,7 +258,7 @@ def listado(item):
             if item.extra == "documentales":
                 item.last_page = int(scrapertools.find_single_match(data_last, patron_last_page))
             else:
-                item.last_page = int(scrapertools.find_single_match(data_last, patron_last_page)) * (len(matches) / cnt_tot)
+                item.last_page = int(scrapertools.find_single_match(data_last, patron_last_page)) * (old_div(len(matches), cnt_tot))
         except:
             item.last_page = 1
 
@@ -574,7 +586,7 @@ def listado_busqueda(item):
         del item.cnt_pag_num
     
     #Capturamos el num. de la última página para informala a pié de página
-    last_page = (len(matches) / cnt_tot) + 1
+    last_page = (old_div(len(matches), cnt_tot)) + 1
 
     if item.next_page != 'b':
         if matches_cnt > cnt_pag + cnt_tot:
@@ -875,8 +887,9 @@ def findvideos(item):
             if not item.armagedon:
                 url1, url2, url3 = scrapertools.find_single_match(torrent_data, patron_torrent)
                 item_local.url = urlparse.urljoin(host, url1)
-                item_local.url = '%s/%s/%s' % (item_local.url, url2, url3)
+                #item_local.url = '%s/%s/%s' % (item_local.url, url2, url3)
                 item_local.url = verificar_url(item_local.url)
+                item_local.post = 'table=%s&name=%s' % (url2, url3)
 
         
         elif not item.armagedon:
@@ -884,8 +897,9 @@ def findvideos(item):
             if 'documentales' in item.post:                 # Si es un documental, se trata como una película
                 url1, url2, url3 = scrapertools.find_single_match(scrapedurl, patron_torrent)
                 item_local.url = urlparse.urljoin(host, url1)
-                item_local.url = '%s/%s/%s' % (item_local.url, url2, url3)
+                #item_local.url = '%s/%s/%s' % (item_local.url, url2, url3)
                 item_local.url = verificar_url(item_local.url)
+                item_local.post = 'table=%s&name=%s' % (url2, url3)
         item_local.url = item_local.url.replace(" ", "%20")
         
         if item.armagedon and item.emergency_urls and not item.videolibray_emergency_urls:
@@ -914,7 +928,7 @@ def findvideos(item):
         size = size.replace('GB', 'G·B').replace('Gb', 'G·b').replace('MB', 'M·B')\
                         .replace('Mb', 'M·b').replace('.', ',')
         if not size and not item.armagedon:
-            size = generictools.get_torrent_size(item_local.url)                        #Buscamos el tamaño en el .torrent
+            size = generictools.get_torrent_size(item_local.url, post=item_local.post, referer=url)     #Buscamos el tamaño en el .torrent
         if size:
             item_local.title = re.sub('\s\[\d+,?\d*?\s\w[b|B]\]', '', item_local.title) #Quitamos size de título, si lo traía
             item_local.quality = re.sub('\s\[\d+,?\d*?\s\w[b|B]\]', '', item_local.quality) #Quitamos size de calidad, si lo traía

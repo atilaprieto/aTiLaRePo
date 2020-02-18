@@ -3,18 +3,29 @@
 # MCT - Mini Cliente Torrent
 # ------------------------------------------------------------
 
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import hex
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+from builtins import range
+from past.utils import old_div
+
 import os
 import re
 import tempfile
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
 import platform
-import sys
 import traceback
 
-import xbmc
-import xbmcgui
-
+try:
+    import xbmc
+    import xbmcgui
+except:
+    pass
 
 from platformcode import config
 LIBTORRENT_PATH = config.get_setting("libtorrent_path", server="torrent", default='')
@@ -31,7 +42,23 @@ try:
 except:
     BUFFER = 50
     config.set_setting("mct_buffer", "50", server="torrent")
-DOWNLOAD_PATH = config.get_setting("mct_download_path", server="torrent", default=config.get_setting("downloadpath"))
+
+try:
+    DOWNLOAD_PATH = ''
+    DOWNLOAD_PATH = xbmc.translatePath(config.get_setting("mct_download_path", \
+                server="torrent", default=config.get_setting("downloadpath")))
+except:
+    DOWNLOAD_PATH = config.get_setting("mct_download_path", server="torrent", default=config.get_setting("downloadpath"))
+if not config.get_setting("mct_download_path", server="torrent") and DOWNLOAD_PATH:
+    config.set_setting("mct_download_path", DOWNLOAD_PATH, server="torrent")
+if not DOWNLOAD_PATH:
+    try:
+        DOWNLOAD_PATH = str(xbmc.translatePath(os.path.join(config.get_data_path(), 'downloads')))
+        config.set_setting("mct_download_path", os.path.join(config.get_data_path(), 'downloads'), server="torrent")
+    except:
+        DOWNLOAD_PATH = os.path.join(config.get_data_path(), 'downloads')
+        config.set_setting("mct_download_path", DOWNLOAD_PATH, server="torrent")
+
 BACKGROUND = config.get_setting("mct_background_download", server="torrent", default=True)
 RAR = config.get_setting("mct_rar_unpack", server="torrent", default=True)
 DOWNLOAD_LIMIT = config.get_setting("mct_download_limit", server="torrent", default="")
@@ -105,7 +132,7 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
 
         # -- El nombre del torrent será el que contiene en los --
         # -- datos.                                             -
-        re_name = urllib.unquote( scrapertools.find_single_match(data,':name\d+:(.*?)\d+:') )
+        re_name = urllib.parse.unquote( scrapertools.find_single_match(data,':name\d+:(.*?)\d+:') )
         torrent_file = os.path.join(save_path_torrents, encode(re_name + '.torrent'))
 
         f = open(torrent_file,'wb')
@@ -123,7 +150,7 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
     try:
         log("XXX libtorrent pathname: %s" % str(LIBTORRENT_PATH))
         ses = lt.session()
-    except Exception, e:
+    except Exception as e:
         do = xbmcgui.Dialog()
         e = e1 or e2
         do.ok('ERROR en el cliente MCT Libtorrent', 'Módulo no encontrado o imcompatible con el dispositivo.', 
@@ -301,7 +328,7 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
     porcent4first_pieces = BUFFER
     if porcent4first_pieces < BUFFER: porcent4first_pieces = BUFFER
     if porcent4first_pieces > 100: porcent4first_pieces = 100
-    porcent4last_pieces = int(porcent4first_pieces/2)
+    porcent4last_pieces = int(old_div(porcent4first_pieces,2))
 
     num_pieces_to_resume = int( video_size * 0.0000000025 )
     if num_pieces_to_resume < 10: num_pieces_to_resume = 10
@@ -460,14 +487,14 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
                     # -- zero                                   -
                     player_getTime = player.getTime()
                     player_getTotalTime = player.getTotalTime()
-                    try: porcent_time = player_getTime / player_getTotalTime * 100
+                    try: porcent_time = old_div(player_getTime, player_getTotalTime) * 100
                     except: porcent_time = 0
 
                     # -- Pieza que se está reproduciendo --------
                     # -- En kodi 18.x se debe controlar         -
                     # -- ZeroDivisionError: float division by   -
                     # -- zero                                   -
-                    try: current_piece = int( porcent_time / 100 * len(piece_set) )
+                    try: current_piece = int( old_div(porcent_time, 100) * len(piece_set) )
                     except:  current_piece = 0
 
                     # -- Banderas de control --------------------
@@ -642,7 +669,7 @@ def getProgress(h, video_file, _pf={}):
         'downloading', 'finished', 'seeding', 'allocating', 'checking fastresume']
 
     message = '%.2f%% d:%.1f kb/s u:%.1f kb/s p:%d s:%d %s' % \
-        (s.progress * 100, s.download_rate / 1000, s.upload_rate / 1000, \
+        (s.progress * 100, old_div(s.download_rate, 1000), old_div(s.upload_rate, 1000), \
         s.num_peers, s.num_seeds, state_str[s.state])
     porcent = int( s.progress * 100 )
 
@@ -764,10 +791,10 @@ def get_video_files_sizes( info ):
             return index, rar_parts, rar_size, len(opciones)
         else:
             d = xbmcgui.Dialog()
-            seleccion = d.select(msg_header + ": Selecciona el vídeo, o 'Cancelar' para todos", opciones.values())
+            seleccion = d.select(msg_header + ": Selecciona el vídeo, o 'Cancelar' para todos", list(opciones.values()))
     else: seleccion = 0
 
-    index = opciones.keys()[seleccion]
+    index = list(opciones.keys())[seleccion]
     if seleccion == -1:
         vfile_name[seleccion] = vid_parts
         vfile_size[seleccion] = vid_size
@@ -865,23 +892,22 @@ def url_get(url, params={}, headers={}):
     USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:20.0) Gecko/20100101 Firefox/20.0"
 
     if params:
-        import urllib
-        url = "%s?%s" % (url, urllib.urlencode(params))
+        url = "%s?%s" % (url, urllib.parse.urlencode(params))
 
-    req = urllib2.Request(url)
+    req = urllib.request.Request(url)
     req.add_header("User-Agent", USER_AGENT)
 
-    for k, v in headers.items():
+    for k, v in list(headers.items()):
         req.add_header(k, v)
 
     try:
-        with closing(urllib2.urlopen(req)) as response:
+        with closing(urllib.request.urlopen(req)) as response:
             data = response.read()
             if response.headers.get("Content-Encoding", "") == "gzip":
                 import zlib
                 return zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data)
             return data
-    except urllib2.HTTPError:
+    except urllib.error.HTTPError:
         return None
 
 

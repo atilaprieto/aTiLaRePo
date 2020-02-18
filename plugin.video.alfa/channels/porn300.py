@@ -20,8 +20,8 @@ def mainlist(item):
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/?page=1"))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
-# view-source:https://www.porn300.com/en_US/ajax/page/show_search?q=big+tit&page=1
-# https://www.porn300.com/en_US/ajax/page/show_search?page=2 
+
+
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
@@ -40,17 +40,27 @@ def categorias(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron  = '<a itemprop="url" href="/([^"]+)".*?'
-    patron += 'data-src="([^"]+)" alt=.*?'
-    patron += 'itemprop="name">([^<]+)</h3>.*?'
-    patron += '</svg>([^<]+)<'
+    if "categories" in item.url:
+        patron  = '<li class="grid__item grid__item--category">.*?'
+        patron += '<a href="([^"]+)".*?'
+        patron += 'data-src="([^"]+)" alt=.*?'
+        patron += '<h3 class="grid__item__title grid__item__title--category">([^<]+)</h3>.*?'
+        patron += '</svg>([^<]+)<'
+    else:
+        patron  = '<a itemprop="url" href="/([^"]+)".*?'
+        patron += 'data-src="([^"]+)" alt=.*?'
+        patron += 'itemprop="name">([^<]+)</h3>.*?'
+        patron += '</svg>([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,cantidad in matches:
         scrapedplot = ""
         cantidad = re.compile("\s+", re.DOTALL).sub(" ", cantidad)
         scrapedtitle = scrapedtitle + " (" + cantidad +")"
-        scrapedurl = scrapedurl.replace("channel/", "producer/")
-        scrapedurl = "/en_US/ajax/page/show_" + scrapedurl + "?page=1"
+        if not "categories" in item.url:
+            scrapedurl = scrapedurl.replace("channel/", "producer/")
+            scrapedurl = "/en_US/ajax/page/show_" + scrapedurl + "?page=1"
+        else:
+            scrapedurl = host + scrapedurl + "?page=1"
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
@@ -69,7 +79,7 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron = '<a itemprop="url" href="([^"]+)".*?'
+    patron = '<a itemprop="url" href="([^"]+)" data-video-id=.*?'
     patron += 'data-src="([^"]+)".*?'
     patron += 'itemprop="name">([^<]+)<.*?'
     patron += '</svg>([^<]+)<'

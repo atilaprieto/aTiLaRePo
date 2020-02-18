@@ -1,5 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from builtins import range
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                               # Usamos el nativo de PY2 que es más rápido
+
 import base64
 import struct
 import zlib
@@ -43,7 +55,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     if "<msg>Media not available</msg>" in data or "flash_block.png" in data:
         httptools.downloadpage(proxy_i)
-        import urllib
         url = urllib.quote(url)
         get = '%sbrowse.php?u=%s&b=4' % (proxy, url)
         data = httptools.downloadpage(get, post=post, headers=GLOBAL_HEADER).data
@@ -113,14 +124,16 @@ def decrypt_subs(iv, data, id):
     data = base64.b64decode(data.encode('utf-8'))
     iv = base64.b64decode(iv.encode('utf-8'))
     id = int(id)
+    
     def obfuscate_key_aux(count, modulo, start):
         output = list(start)
         for _ in range(count):
             output.append(output[-1] + output[-2])
         # cut off start values
         output = output[2:]
-        output = list(map(lambda x: x % modulo + 33, output))
+        output = list([x % modulo + 33 for x in output])
         return output
+    
     def obfuscate_key(key):
         from math import pow, sqrt, floor
         num1 = int(floor(pow(2, 25) * sqrt(6.9)))
@@ -135,6 +148,7 @@ def decrypt_subs(iv, data, id):
             decshaHash.append(ord(char))
         # Extend 160 Bit hash to 256 Bit
         return decshaHash + [0] * 12
+    
     key = obfuscate_key(id)
     key = struct.pack('B' * len(key), *key)
     decryptor = jscrypto.new(key, 2, iv)
@@ -207,5 +221,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         output += ',' + event.attrib['effect']
         output += ',' + event.attrib['text']
         output += '\n'
+        output = output.encode('utf-8')
+        if PY3: output = output.decode("utf-8")
 
-    return output.encode('utf-8')
+    return output

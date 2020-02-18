@@ -22,16 +22,22 @@
     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+from builtins import object
+from past.utils import old_div
 
 import os
 import time
 import re
-import urllib
-import urllib2
-import cookielib
+import urllib.request, urllib.parse, urllib.error
+import http.cookiejar
 import base64
-import mimetools
-import itertools
 
 import xbmc
 import xbmcgui
@@ -47,7 +53,7 @@ RE = {
 #
 # ################################
 
-class HTTP:
+class HTTP(object):
     def __init__(self):
         #self._dirname = xbmc.translatePath('special://temp')                   ### Alfa
         #for subdir in ('xbmcup', 'script.module.libtorrent'):                  ### Alfa
@@ -70,9 +76,9 @@ class HTTP:
         try:
             self._opener()
             self._fetch()
-        except Exception, e:
+        except Exception as e:
             xbmc.log('XBMCup: HTTP: ' + str(e), xbmc.LOGERROR)
-            if isinstance(e, urllib2.HTTPError):
+            if isinstance(e, urllib.error.HTTPError):
                 self.response.code = e.code
             self.response.error = e
         else:
@@ -98,47 +104,47 @@ class HTTP:
 
     def _opener(self):
 
-        build = [urllib2.HTTPHandler()]
+        build = [urllib.request.HTTPHandler()]
 
         if self.request.redirect:
-            build.append(urllib2.HTTPRedirectHandler())
+            build.append(urllib.request.HTTPRedirectHandler())
 
         if self.request.proxy_host and self.request.proxy_port:
-            build.append(urllib2.ProxyHandler(
+            build.append(urllib.request.ProxyHandler(
                 {self.request.proxy_protocol: self.request.proxy_host + ':' + str(self.request.proxy_port)}))
 
             if self.request.proxy_username:
-                proxy_auth_handler = urllib2.ProxyBasicAuthHandler()
+                proxy_auth_handler = urllib.request.ProxyBasicAuthHandler()
                 proxy_auth_handler.add_password('realm', 'uri', self.request.proxy_username,
                                                 self.request.proxy_password)
                 build.append(proxy_auth_handler)
 
         if self.request.cookies:
             self.request.cookies = os.path.join(self._dirname, self.request.cookies)
-            self.cookies = cookielib.MozillaCookieJar()
+            self.cookies = http.cookiejar.MozillaCookieJar()
             if os.path.isfile(self.request.cookies):
                 self.cookies.load(self.request.cookies)
-            build.append(urllib2.HTTPCookieProcessor(self.cookies))
+            build.append(urllib.request.HTTPCookieProcessor(self.cookies))
 
-        urllib2.install_opener(urllib2.build_opener(*build))
+        urllib.request.install_opener(urllib.request.build_opener(*build))
 
     def _fetch(self):
         params = {} if self.request.params is None else self.request.params
 
         if self.request.upload:
             boundary, upload = self._upload(self.request.upload, params)
-            req = urllib2.Request(self.request.url)
+            req = urllib.request.Request(self.request.url)
             req.add_data(upload)
         else:
 
             if self.request.method == 'POST':
                 if isinstance(params, dict) or isinstance(params, list):
-                    params = urllib.urlencode(params)
-                req = urllib2.Request(self.request.url, params)
+                    params = urllib.parse.urlencode(params)
+                req = urllib.request.Request(self.request.url, params)
             else:
-                req = urllib2.Request(self.request.url)
+                req = urllib.request.Request(self.request.url)
 
-        for key, value in self.request.headers.iteritems():
+        for key, value in self.request.headers.items():
             req.add_header(key, value)
 
         if self.request.upload:
@@ -149,7 +155,7 @@ class HTTP:
             req.add_header('Authorization', 'Basic %s' % base64.encodestring(
                 ':'.join([self.request.auth_username, self.request.auth_password])).strip())
 
-        self.con = urllib2.urlopen(req, timeout=self.request.timeout)
+        self.con = urllib.request.urlopen(req, timeout=self.request.timeout)
         # self.con = urllib2.urlopen(req)
         self.response.headers = self._headers(self.con.info())
 
@@ -178,11 +184,11 @@ class HTTP:
             if 'content-disposition' in self.response.headers:
                 r = RE['content-disposition'].search(self.response.headers['content-disposition'])
                 if r:
-                    name = urllib.unquote(r.group(1))
+                    name = urllib.parse.unquote(r.group(1))
 
         while 1:
             buf = self.con.read(bs)
-            if buf == '':
+            if not buf:
                 break
             read += len(buf)
             fd.write(buf)
@@ -193,12 +199,15 @@ class HTTP:
         self.response.filename = self.request.download
 
     def _upload(self, upload, params):
+        import mimetools
+        import itertools
+        
         res = []
         boundary = mimetools.choose_boundary()
         part_boundary = '--' + boundary
 
         if params:
-            for name, value in params.iteritems():
+            for name, value in params.items():
                 res.append([part_boundary, 'Content-Disposition: form-data; name="%s"' % name, '', value])
 
         if isinstance(upload, dict):
@@ -215,11 +224,11 @@ class HTTP:
 
             if content_type:
                 res.append([part_boundary,
-                            'Content-Disposition: file; name="%s"; filename="%s"' % (name, urllib.quote(filename)),
+                            'Content-Disposition: file; name="%s"; filename="%s"' % (name, urllib.parse.quote(filename)),
                             'Content-Type: %s' % content_type, '', body])
             else:
                 res.append([part_boundary,
-                            'Content-Disposition: file; name="%s"; filename="%s"' % (name, urllib.quote(filename)), '',
+                            'Content-Disposition: file; name="%s"; filename="%s"' % (name, urllib.parse.quote(filename)), '',
                             body])
 
         result = list(itertools.chain(*res))
@@ -229,7 +238,7 @@ class HTTP:
 
     def _headers(self, raw):
         headers = {}
-        for line in raw.headers:
+        for line in str(raw).split('\n'):
             pair = line.split(':', 1)
             if len(pair) == 2:
                 tag = pair[0].lower().strip()
@@ -254,7 +263,7 @@ class HTTP:
     def _human(self, size):
         human = None
         for h, f in (('KB', 1024), ('MB', 1024 * 1024), ('GB', 1024 * 1024 * 1024), ('TB', 1024 * 1024 * 1024 * 1024)):
-            if size / f > 0:
+            if old_div(size, f) > 0:
                 human = h
                 factor = f
             else:
@@ -265,7 +274,7 @@ class HTTP:
             return u'%10.2f %s' % (float(size) / float(factor), human)
 
 
-class HTTPRequest:
+class HTTPRequest(object):
     def __init__(self, url, method='GET', headers=None, cookies=None, params=None, upload=None, download=None,
                  progress=False, auth_username=None, auth_password=None, proxy_protocol='http', proxy_host=None,
                  proxy_port=None, proxy_username=None, proxy_password='', timeout=20.0, redirect=True, gzip=False):
@@ -300,10 +309,10 @@ class HTTPRequest:
         self.gzip = gzip
 
     def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__, ','.join('%s=%r' % i for i in self.__dict__.iteritems()))
+        return '%s(%s)' % (self.__class__.__name__, ','.join('%s=%r' % i for i in self.__dict__.items()))
 
 
-class HTTPResponse:
+class HTTPResponse(object):
     def __init__(self, request):
         self.request = request
         self.code = None
@@ -314,7 +323,7 @@ class HTTPResponse:
         self.time = time.time()
 
     def __repr__(self):
-        args = ','.join('%s=%r' % i for i in self.__dict__.iteritems() if i[0] != 'body')
+        args = ','.join('%s=%r' % i for i in self.__dict__.items() if i[0] != 'body')
         if self.body:
             args += ',body=<data>'
         else:

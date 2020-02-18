@@ -3,11 +3,23 @@
 # Item is the object we use for representing data 
 # --------------------------------------------------------------------------------
 
+#from builtins import str
+from builtins import object
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+    from html.parser import HTMLParser
+else:
+    import urllib                                               # Usamos el nativo de PY2 que es más rápido
+    from HTMLParser import HTMLParser
+
 import base64
 import copy
-import os
-import urllib
-from HTMLParser import HTMLParser
 
 from core import jsontools as json
 
@@ -57,12 +69,12 @@ class InfoLabels(dict):
         elif key == 'code':
             code = []
             # Añadir imdb_id al listado de codigos
-            if 'imdb_id' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('imdb_id'):
+            if 'imdb_id' in list(super(InfoLabels, self).keys()) and super(InfoLabels, self).__getitem__('imdb_id'):
                 code.append(super(InfoLabels, self).__getitem__('imdb_id'))
 
             # Completar con el resto de codigos
             for scr in ['tmdb_id', 'tvdb_id', 'noscrap_id']:
-                if scr in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__(scr):
+                if scr in list(super(InfoLabels, self).keys()) and super(InfoLabels, self).__getitem__(scr):
                     value = "%s%s" % (scr[:-2], super(InfoLabels, self).__getitem__(scr))
                     code.append(value)
 
@@ -77,21 +89,21 @@ class InfoLabels(dict):
 
         elif key == 'mediatype':
             # "list", "movie", "tvshow", "season", "episode"
-            if 'tvshowtitle' in super(InfoLabels, self).keys() \
+            if 'tvshowtitle' in list(super(InfoLabels, self).keys()) \
                     and super(InfoLabels, self).__getitem__('tvshowtitle') != "":
-                if 'episode' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('episode') != "":
+                if 'episode' in list(super(InfoLabels, self).keys()) and super(InfoLabels, self).__getitem__('episode') != "":
                     return 'episode'
 
-                if 'episodeName' in super(InfoLabels, self).keys() \
+                if 'episodeName' in list(super(InfoLabels, self).keys()) \
                         and super(InfoLabels, self).__getitem__('episodeName') != "":
                     return 'episode'
 
-                if 'season' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('season') != "":
+                if 'season' in list(super(InfoLabels, self).keys()) and super(InfoLabels, self).__getitem__('season') != "":
                     return 'season'
                 else:
                     return 'tvshow'
 
-            elif 'title' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('title') != "":
+            elif 'title' in list(super(InfoLabels, self).keys()) and super(InfoLabels, self).__getitem__('title') != "":
                 return 'movie'
 
             else:
@@ -103,7 +115,7 @@ class InfoLabels(dict):
 
     def tostring(self, separador=', '):
         ls = []
-        dic = dict(super(InfoLabels, self).items())
+        dic = dict(list(super(InfoLabels, self).items()))
 
         for i in sorted(dic.items()):
             i_str = str(i)[1:-1]
@@ -157,6 +169,7 @@ class Item(object):
         Función llamada al modificar cualquier atributo del item, modifica algunos atributos en función de los datos
         modificados.
         """
+        if PY3: name = self.toutf8(name)
         value = self.toutf8(value)
         if name == "__dict__":
             for key in value:
@@ -312,9 +325,13 @@ class Item(object):
                     valor = dic[var].tostring(',\r\t\t')
                 else:
                     valor = dic[var].tostring()
+            elif PY3 and isinstance(dic[var], bytes):
+                valor = "'%s'" % dic[var].decode('utf-8')
             else:
                 valor = str(dic[var])
 
+            if PY3 and isinstance(var, bytes):
+                var = var.decode('utf-8')
             ls.append(var + "= " + valor)
 
         return separator.join(ls)
@@ -326,12 +343,12 @@ class Item(object):
 
         Uso: url = item.tourl()
         """
-        dump = json.dump(self.__dict__)
+        dump = json.dump(self.__dict__).encode("utf8")
         # if empty dict
         if not dump:
             # set a str to avoid b64encode fails
-            dump = ""
-        return urllib.quote(base64.b64encode(dump))
+            dump = "".encode("utf8")
+        return str(urllib.quote(base64.b64encode(dump)))
 
     def fromurl(self, url):
         """
@@ -366,6 +383,7 @@ class Item(object):
         return self
 
     def tojson(self, path=""):
+        from core import filetools
         """
         Crea un JSON a partir del item, para guardar archivos de favoritos, lista de descargas, etc...
         Si se especifica un path, te lo guarda en la ruta especificada, si no, devuelve la cadena json
@@ -376,11 +394,13 @@ class Item(object):
         @type path: str
         """
         if path:
-            open(path, "wb").write(json.dump(self.__dict__))
+            #open(path, "wb").write(json.dump(self.__dict__))
+            res = filetools.write(path, json.dump(self.__dict__))
         else:
             return json.dump(self.__dict__)
 
     def fromjson(self, json_item=None, path=""):
+        from core import filetools
         """
         Genera un item a partir de un archivo JSON
         Si se especifica un path, lee directamente el archivo, si no, lee la cadena de texto pasada.
@@ -393,8 +413,9 @@ class Item(object):
         @type path: str
         """
         if path:
-            if os.path.exists(path):
-                json_item = open(path, "rb").read()
+            if filetools.exists(path):
+                #json_item = open(path, "rb").read()
+                json_item = filetools.read(path)
             else:
                 json_item = {}
 
@@ -435,6 +456,8 @@ class Item(object):
             unicode_title = unicode(value, "utf8", "ignore")
             return HTMLParser().unescape(unicode_title).encode("utf8")
         except:
+            if PY3 and isinstance(value, bytes):
+                value = value.decode("utf8")
             return value
 
     def toutf8(self, *args):
@@ -446,13 +469,18 @@ class Item(object):
         else:
             value = self.__dict__
 
-        if type(value) == unicode:
-            return value.encode("utf8")
+        if isinstance(value, unicode):
+            value = value.encode("utf8")
+            if PY3: value = value.decode("utf8")
+            return value
 
-        elif type(value) == str:
+        elif not PY3 and isinstance(value, str):
             return unicode(value, "utf8", "ignore").encode("utf8")
+            
+        elif PY3 and isinstance(value, bytes):
+            return value.decode("utf8")
 
-        elif type(value) == list:
+        elif isinstance(value, list):
             for x, key in enumerate(value):
                 value[x] = self.toutf8(value[x])
             return value
@@ -460,11 +488,12 @@ class Item(object):
         elif isinstance(value, dict):
             newdct = {}
             for key in value:
-                v = self.toutf8(value[key])
-                if type(key) == unicode:
-                    key = key.encode("utf8")
+                value_unc = self.toutf8(value[key])
+                key_unc = self.toutf8(key)
+                #if isinstance(key, unicode):
+                #    key = key.encode("utf8")
 
-                newdct[key] = v
+                newdct[key_unc] = value_unc
 
             if len(args) > 0:
                 if isinstance(value, InfoLabels):

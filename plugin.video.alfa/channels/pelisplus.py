@@ -30,7 +30,7 @@ list_servers = [
     'vidoza'
     ]
 
-host = 'https://www.pelisplus.to/'
+host = 'https://www.pelisplushd.tv/'
 
 def get_source(url, referer=None):
     logger.info()

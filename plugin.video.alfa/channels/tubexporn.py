@@ -86,8 +86,9 @@ def play(item):
     for quality,number,key in matches:
         nt = int(int(id)/1000)
         n = str(nt*1000)
-        url = "http://s%s.cdna.tv/xqpvid/%s/%s/%s/%s/%s_%s.mp4" % (server,number,key,n,id,id,quality)
+        url = "http://s%s.fapmedia.com/cqpvid/%s/%s/%s/%s/%s_%s.mp4" % (server,number,key,n,id,id,quality)
         url= url.replace("_720p", "")
         itemlist.append(['.mp4 %s' %quality, url])
     return itemlist
+
 

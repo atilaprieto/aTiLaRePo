@@ -1694,8 +1694,8 @@ msgid "Delete saved searches"
 msgstr "Borrar búsquedas guardadas"
 
 msgctxt "#60420"
-msgid "More Options"
-msgstr "Otros Ajustes"
+msgid "More search options"
+msgstr "Más opciones de búsqueda"
 
 msgctxt "#60421"
 msgid "Channels included in the global search "
@@ -2412,6 +2412,10 @@ msgstr "    Esperar antes de actualizar al iniciar kodi"
 msgctxt "#60607"
 msgid "When Kodi starts"
 msgstr "Al iniciar Kodi"
+
+msgctxt "#60608"
+msgid "Twice a day"
+msgstr "Dos veces al día"
 
 msgctxt "#60609"
 msgid "10 sec"
@@ -4934,3 +4938,99 @@ msgstr "Buscar Similares"
 msgctxt "#70562"
 msgid "Autoplay (Enable autoplay on all supported channels)"
 msgstr "Autoplay (Habilitar autoplay en todos los canales soportados)"
+
+msgctxt "#70570"
+msgid "Search with current selection"
+msgstr "Buscar con la selección actual"
+
+msgctxt "#70571"
+msgid "Modify current selection"
+msgstr "Modificar selección actual"
+
+msgctxt "#70572"
+msgid "Modify from All"
+msgstr "Modificar partiendo de Todos"
+
+msgctxt "#70573"
+msgid "Modify starting from None"
+msgstr "Modificar partiendo de Ninguno"
+
+msgctxt "#70574"
+msgid "Modify starting from Castellano"
+msgstr "Modificar partiendo de Castellano"
+
+msgctxt "#70575"
+msgid "Modify starting from Latino"
+msgstr "Modificar partiendo de Latino"
+
+msgctxt "#70577"
+msgid "Modify starting from "
+msgstr "Modificar partiendo de "
+
+msgctxt "#70741"
+msgid "Search %s"
+msgstr "Buscar %s"
+
+msgctxt "#70742"
+msgid "Movies by Year"
+msgstr "Películas por Año"
+
+msgctxt "#70743"
+msgid "Series by Year"
+msgstr "Series por Año"
+
+msgctxt "#70744"
+msgid "%s channels remaining"
+msgstr "Restan %s canales"
+
+msgctxt "#70745"
+msgid "Enter another year..."
+msgstr "Introduzca otro año..."
+
+msgctxt "#70746"
+msgid "When playback ends"
+msgstr "Al finalizar la reproducción"
+
+msgctxt "#70747"
+msgid "Hide server selection"
+msgstr "Ocultar selección de servidor"
+
+msgctxt "#70748"
+msgid "Go to the next episode"
+msgstr "Reproducir el siguiente episodio"
+
+msgctxt "#70749"
+msgid "Seconds before notification"
+msgstr "Segundos antes de mostrar la notificación"
+
+msgctxt "#70750"
+msgid "Next Episode in"
+msgstr "Siguiente episodio en..."
+
+msgctxt "#70751"
+msgid "seconds"
+msgstr "Segundos"
+
+msgctxt "#70752"
+msgid "Do nothing"
+msgstr "No hacer nada"
+
+msgctxt "#70753"
+msgid "Playback"
+msgstr "Reproducir"
+
+msgctxt "#70754"
+msgid "Compact Mode"
+msgstr "Modo Compacto"
+
+msgctxt "#70755"
+msgid "Coming up..."
+msgstr "A continuación..."
+
+msgctxt "#70756"
+msgid "WATCH NOW"
+msgstr "VER AHORA"
+
+msgctxt "#70757"
+msgid "CANCEL"
+msgstr "CANCELAR"

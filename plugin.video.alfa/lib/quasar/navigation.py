@@ -1,8 +1,17 @@
-import os
+from future import standard_library
+standard_library.install_aliases()
+from future.builtins import map
+#from future.builtins import str
+from future.builtins import range
+from future.builtins import object
+
 import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+import os
 import socket
-import urllib2
-import urlparse
+import urllib.request, urllib.error, urllib.parse
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -28,7 +37,7 @@ class InfoLabels(dict):
         dict.__setitem__(self, key.lower(), val)
 
     def update(self, *args, **kwargs):
-        for k, v in dict(*args, **kwargs).iteritems():
+        for k, v in list(dict(*args, **kwargs).items()):
             self[k] = v
 
 
@@ -43,10 +52,12 @@ class closing(object):
         self.thing.close()
 
 
-class NoRedirectHandler(urllib2.HTTPRedirectHandler):
+class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
-        import urllib
-        infourl = urllib.addinfourl(fp, headers, headers["Location"])
+        if not PY3:
+            infourl = urllib.addinfourl(fp, headers, headers["Location"])
+        else:
+            infourl = urllib.response.addinfourl(fp, headers, headers["Location"])
         infourl.status = code
         infourl.code = code
         return infourl
@@ -61,8 +72,8 @@ def getInfoLabels():
     tmdb_id = id_list[0] if id_list else None
 
     if not tmdb_id:
-        parsed_url = urlparse.urlparse(sys.argv[0] + sys.argv[2])
-        query = urlparse.parse_qs(parsed_url.query)
+        parsed_url = urllib.parse.urlparse(sys.argv[0] + sys.argv[2])
+        query = urllib.parse.parse_qs(parsed_url.query)
         log.debug("Parsed URL: %s, Query: %s", repr(parsed_url), repr(query))
         if 'tmdb' in query and 'show' not in query:
             tmdb_id = query['tmdb'][0]
@@ -87,7 +98,7 @@ def getInfoLabels():
     log.debug("Resolving TMDB item by calling %s for %s" % (url, repr(sys.argv)))
 
     try:
-        with closing(urllib2.urlopen(url)) as response:
+        with closing(urllib.request.urlopen(url)) as response:
             resolved = json.loads(response.read())
             if not resolved:
                 return {}
@@ -97,7 +108,7 @@ def getInfoLabels():
 
             if 'art' in resolved and resolved['art']:
                 resolved['artbanner'] = ''
-                for k, v in resolved['art'].items():
+                for k, v in list(resolved['art'].items()):
                     resolved['art' + k] = v
 
             if 'info' in resolved:
@@ -119,7 +130,7 @@ def getInfoLabels():
 
 
 def _json(url):
-    with closing(urllib2.urlopen(url)) as response:
+    with closing(urllib.request.urlopen(url)) as response:
         if response.code >= 300 and response.code <= 307:
             # Pause currently playing Quasar file to avoid doubling requests
             if xbmc.Player().isPlaying() and ADDON_ID in xbmc.Player().getPlayingFile():
@@ -165,7 +176,7 @@ def run(url_suffix=""):
         dialog.ok("Quasar", getLocalizedString(30141))
 
     socket.setdefaulttimeout(int(ADDON.getSetting("buffer_timeout")))
-    urllib2.install_opener(urllib2.build_opener(NoRedirectHandler()))
+    urllib.request.install_opener(urllib.request.build_opener(NoRedirectHandler()))
 
     # Pause currently playing Quasar file to avoid doubling requests
     if xbmc.Player().isPlaying() and ADDON_ID in xbmc.Player().getPlayingFile():
@@ -176,17 +187,17 @@ def run(url_suffix=""):
 
     try:
         data = _json(url)
-    except urllib2.URLError as e:
+    except urllib.error.URLError as e:
         if 'Connection refused' in e.reason:
             notify(getLocalizedString(30116), time=7000)
         else:
             import traceback
-            map(log.error, traceback.format_exc().split("\n"))
+            list(map(log.error, traceback.format_exc().split("\n")))
             notify(e.reason, time=7000)
         return
     except Exception as e:
         import traceback
-        map(log.error, traceback.format_exc().split("\n"))
+        list(map(log.error, traceback.format_exc().split("\n")))
         try:
             msg = unicode(e)
         except:
@@ -212,11 +223,16 @@ def run(url_suffix=""):
         xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_GENRE)
         xbmcplugin.setContent(HANDLE, content_type)
 
-    listitems = range(len(data["items"]))
+    listitems = list(range(len(data["items"])))
     for i, item in enumerate(data["items"]):
         # Translate labels
         if item["label"][0:8] == "LOCALIZE":
-            item["label"] = unicode(getLocalizedLabel(item["label"]), 'utf-8')
+            if not PY3:
+                item["label"] = unicode(getLocalizedLabel(item["label"]), 'utf-8')
+            else:
+                item["label"] = str(getLocalizedLabel(item["label"]))
+                if isinstance(item["label"], bytes):
+                    item["label"] = item["label"].decode("utf8")
         if item["label2"][0:8] == "LOCALIZE":
             item["label2"] = getLocalizedLabel(item["label2"])
 
@@ -224,11 +240,11 @@ def run(url_suffix=""):
         if item.get("info"):
             listItem.setInfo("video", item["info"])
         if item.get("stream_info"):
-            for type_, values in item["stream_info"].items():
+            for type_, values in list(item["stream_info"].items()):
                 listItem.addStreamInfo(type_, values)
         if item.get("art"):
             listItem.setArt(item["art"])
-        elif ADDON.getSetting('default_fanart') == 'true' and item["label"] != unicode(getLocalizedString(30218), 'utf-8'):
+        elif ADDON.getSetting('default_fanart') == 'true' and ((not PY3 and item["label"] != unicode(getLocalizedString(30218), 'utf-8')) or (PY3 and item["label"] != str(getLocalizedString(30218)))):
             fanart = os.path.join(ADDON_PATH, "fanart.jpg")
             listItem.setArt({'fanart': fanart})
         if item.get("context_menu"):
@@ -239,7 +255,7 @@ def run(url_suffix=""):
             listItem.addContextMenuItems(item["context_menu"])
         listItem.setProperty("isPlayable", item["is_playable"] and "true" or "false")
         if item.get("properties"):
-            for k, v in item["properties"].items():
+            for k, v in list(item["properties"].items()):
                 listItem.setProperty(k, v)
         listitems[i] = (item["path"], listItem, not item["is_playable"])
 

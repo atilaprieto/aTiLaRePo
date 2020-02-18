@@ -7,6 +7,7 @@ from core import scrapertools
 from core.item import Item
 from core import servertools
 from core import httptools
+from core import jsontools as json
 
 host = 'https://sexu.com'
 
@@ -50,12 +51,13 @@ def categorias(item):
         if not scrapedthumbnail.startswith("https"):
             thumbnail = "http:%s" % scrapedthumbnail
         url = urlparse.urljoin(host,scrapedurl)
+        url +="?st=upload"
         itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     next_page = scrapertools.find_single_match(data, '<a class="pagination__arrow pagination__arrow--next" href="([^"]+)">')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="categorias", title="Página Siguiente >>", text_color="blue", 
+        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
                               url=next_page) )
     return itemlist
 
@@ -64,7 +66,7 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    patron = '<a class="item__main" href="([^"]+)" title="([^"]+)".*?'
+    patron = '<a class="item__main" href="/([^"]+)/" title="([^"]+)".*?'
     patron += 'data-src="([^"]+)".*?'
     patron += '<div class="item__counter">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -72,7 +74,7 @@ def lista(item):
         title = "[COLOR yellow]%s[/COLOR] %s" % (time, scrapedtitle)
         if not scrapedthumbnail.startswith("https"):
             thumbnail = "http:%s" % scrapedthumbnail
-        url = urlparse.urljoin(item.url,scrapedurl)
+        url = 'videoId=%s' %scrapedurl
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
@@ -87,11 +89,14 @@ def lista(item):
 def play(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    url = 'https://sexu.com/api/video-info'
+    headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
+    data = httptools.downloadpage(url, post=item.url, headers=headers).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    patron = '<source src="([^"]+)" type="video/mp4" title="([^"]+)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for url,quality in matches:
+    JSONData = json.load(data)
+    for cat in  JSONData["sources"]:
+        url = cat["src"]
+        quality = cat["quality"]
         if not url.startswith("https"):
             url = "https:%s" % url
         itemlist.append(['.mp4 %s' %quality, url])

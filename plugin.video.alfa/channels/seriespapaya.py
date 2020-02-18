@@ -1,9 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urllib
+else:
+    import urllib                                               # Usamos el nativo de PY2 que es más rápido
+    import urlparse
+
 import re
 import string
-import urllib
-import urlparse
 
 from channels import filtertools
 from channelselector import get_thumb
@@ -19,7 +30,7 @@ HOST = "https://www.seriespapaya.nu/"
 
 IDIOMAS = {'es': 'Español', 'lat': 'Latino', 'in': 'Inglés', 'ca': 'Catalán', 'sub': 'VOSE', 'Español Latino':'Latino',
            'Español Castellano':'Español', 'Sub Español':'VOSE'}
-list_idiomas = IDIOMAS.values()
+list_idiomas = list(IDIOMAS.values())
 list_quality = ['360p', '480p', '720p HD', '1080p HD', 'default']
 list_servers = ['powvideo', 'streamplay', 'clipwatching', 'vidoza', 'gamovideo', 'vidtodo']
 thumb_videolibrary = get_thumb("videolibrary_tvshow.png")
@@ -330,7 +341,7 @@ def search(item, texto):
             syear = scrapertools.find_single_match(stitle, r'\s*\((\d{4})\)$')
             title = re.sub(r'\s*\((.*?)\)$', '', stitle)
             
-            filtro_tmdb = {"first_air_date": syear}.items()
+            filtro_tmdb = list({"first_air_date": syear}.items())
             
             itemlist.append(Item(channel=item.channel,
                                 action="seasons",

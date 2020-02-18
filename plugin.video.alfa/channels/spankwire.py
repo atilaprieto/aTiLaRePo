@@ -130,7 +130,10 @@ def play(item):
     logger.info()
     itemlist = []
     json_data = httptools.downloadpage(item.url).json
-    for key, url in json_data["videos"].items():
+    logger.debug(json_data)
+    url = json_data["HLS"]
+    itemlist.append(["m3u", url])
+    for quality, url in json_data["videos"].items():
         url = url.replace("%3D", "=").replace("%2B", "+")
-        itemlist.append(['%s' %key.replace("quality_", ""), url])
+        itemlist.append(['%s' %quality.replace("quality_", ""), url])
     return itemlist

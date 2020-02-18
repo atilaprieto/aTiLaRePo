@@ -6,6 +6,7 @@ from core import httptools
 from core import scrapertools
 from platformcode import logger
 import base64
+from lib import jsunpack
 
 def test_video_exists(page_url):
 
@@ -26,12 +27,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     data = scrapertools.find_single_match(data, 'JuicyCodes.Run\(([^\)]+)\)')
     data = data.replace("+", "")
     data = base64.b64decode(data)
-    logger.debug(data)
-    data = scrapertools.find_single_match(data, 'file\|https\|(.*?)\|autostart\|')
-    a,b = scrapertools.find_single_match(data, 'link\|([^\|]+)\|label\|type\|([^\|]+)\|')
-    matches = scrapertools.find_multiple_matches(data, '\|(\d+)\|')
-    for quality in matches:
-        if int(quality) >= 360:
-            url = "https://manyvideos.xyz/link/%s/%s/%s/" %(a,quality,b)
-            video_urls.append(["[manyvideos] %s" % quality, url])
+    unpack = jsunpack.unpack(data)
+    matches = scrapertools.find_multiple_matches(unpack, '"file":"([^"]+)","label":"([^"]+)"')
+    for url,quality in matches:
+        url = url.replace("v2.", "v1.")
+        video_urls.append(["[manyvideos] %s" % quality, url])
     return video_urls

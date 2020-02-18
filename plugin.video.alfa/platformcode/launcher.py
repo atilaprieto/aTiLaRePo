@@ -3,9 +3,20 @@
 # XBMC Launcher (xbmc / kodi)
 # ------------------------------------------------------------
 
+#from future import standard_library
+#standard_library.install_aliases()
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.error as urllib2                              # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib2                                              # Usamos el nativo de PY2 que es más rápido
+
 import os
 import sys
-import urllib2
 import time
 
 from core import channeltools
@@ -138,7 +149,7 @@ def run(item=None):
                     channel = __import__('channels.%s' % item.channel, None,
                                          None, ["channels.%s" % item.channel])
                 except ImportError:
-                    exec "import channels." + item.channel + " as channel"
+                    exec("import channels." + item.channel + " as channel")
 
             logger.info("Running channel %s | %s" % (channel.__name__, channel.__file__))
 
@@ -259,7 +270,7 @@ def run(item=None):
 
                 platformtools.render_items(itemlist, item)
 
-    except urllib2.URLError, e:
+    except urllib2.URLError as e:
         import traceback
         logger.error(traceback.format_exc())
 
@@ -274,7 +285,7 @@ def run(item=None):
             logger.error("Codigo de error HTTP : %d" % e.code)
             # "El sitio web no funciona correctamente (error http %d)"
             platformtools.dialog_ok("alfa", config.get_localized_string(30051) % e.code)
-    except WebErrorException, e:
+    except WebErrorException as e:
         import traceback
         logger.error(traceback.format_exc())
 
@@ -331,13 +342,19 @@ def reorder_itemlist(itemlist):
                  [config.get_localized_string(60336), '[D]']]
 
     for item in itemlist:
-        old_title = unicode(item.title, "utf8").lower().encode("utf8")
+        if not PY3:
+            old_title = unicode(item.title, "utf8").lower().encode("utf8")
+        else:
+            old_title = item.title.lower()
         for before, after in to_change:
             if before in item.title:
                 item.title = item.title.replace(before, after)
                 break
 
-        new_title = unicode(item.title, "utf8").lower().encode("utf8")
+        if not PY3:
+            new_title = unicode(item.title, "utf8").lower().encode("utf8")
+        else:
+            new_title = item.title.lower()
         if old_title != new_title:
             mod_list.append(item)
             modified += 1
@@ -394,8 +411,8 @@ def play_from_library(item):
     import xbmcgui
     import xbmcplugin
     import xbmc
-    from time import sleep
-    
+    from time import sleep, time
+    from channels import nextep
     # Intentamos reproducir una imagen (esto no hace nada y ademas no da error)
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True,
                               xbmcgui.ListItem(
@@ -407,6 +424,8 @@ def play_from_library(item):
 
     # modificamos el action (actualmente la videoteca necesita "findvideos" ya que es donde se buscan las fuentes
     item.action = "findvideos"
+    check_next_ep = nextep.check(item)
+
 
     window_type = config.get_setting("window_type", "videolibrary")
 
@@ -416,65 +435,83 @@ def play_from_library(item):
         xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
 
     else:
+
         # Ventana emergente
-        from channels import videolibrary
+
+        from channels import videolibrary, autoplay
         p_dialog = platformtools.dialog_progress_bg(config.get_localized_string(20000), config.get_localized_string(70004))
         p_dialog.update(0, '')
 
         itemlist = videolibrary.findvideos(item)
 
+        if check_next_ep and autoplay.is_active(item.contentChannel):
+            p_dialog.update(100, '')
+            sleep(0.5)
+            p_dialog.close()
+            item = nextep.return_item(item)
+            if item.next_ep:
+                return play_from_library(item)
 
-        while platformtools.is_playing():
-                # Ventana convencional
-                sleep(5)
-        p_dialog.update(50, '')
+        else:
+            while platformtools.is_playing():
+                    # Ventana convencional
+                    sleep(5)
+            p_dialog.update(50, '')
 
-        '''# Se filtran los enlaces segun la lista negra
-        if config.get_setting('filter_servers', "servers"):
-            itemlist = servertools.filter_servers(itemlist)'''
+        it = item
+        if not check_next_ep or not autoplay.is_active(item.contentChannel):
 
-        # Se limita la cantidad de enlaces a mostrar
-        if config.get_setting("max_links", "videolibrary") != 0:
-            itemlist = limit_itemlist(itemlist)
+            '''# Se filtran los enlaces segun la lista negra
+            if config.get_setting('filter_servers', "servers"):
+                itemlist = servertools.filter_servers(itemlist)'''
 
-        # Se "limpia" ligeramente la lista de enlaces
-        if config.get_setting("replace_VD", "videolibrary") == 1:
-            itemlist = reorder_itemlist(itemlist)
+            # Se limita la cantidad de enlaces a mostrar
+            if config.get_setting("max_links", "videolibrary") != 0:
+                itemlist = limit_itemlist(itemlist)
 
-
-        import time
-        p_dialog.update(100, '')
-        time.sleep(0.5)
-        p_dialog.close()
+            # Se "limpia" ligeramente la lista de enlaces
+            if config.get_setting("replace_VD", "videolibrary") == 1:
+                itemlist = reorder_itemlist(itemlist)
 
 
-        if len(itemlist) > 0:
-            while not xbmc.Monitor().abortRequested():
-                # El usuario elige el mirror
-                opciones = []
-                for item in itemlist:
-                    opciones.append(item.title)
+            p_dialog.update(100, '')
+            sleep(0.5)
+            p_dialog.close()
 
-                # Se abre la ventana de seleccion
-                if (item.contentSerieName != "" and
-                            item.contentSeason != "" and
-                            item.contentEpisodeNumber != ""):
-                    cabecera = ("%s - %sx%s -- %s" %
-                                (item.contentSerieName,
-                                 item.contentSeason,
-                                 item.contentEpisodeNumber,
-                                 config.get_localized_string(30163)))
-                else:
-                    cabecera = config.get_localized_string(30163)
 
-                seleccion = platformtools.dialog_select(cabecera, opciones)
+            if len(itemlist) > 0:
+                while not xbmc.Monitor().abortRequested():
+                    # El usuario elige el mirror
+                    opciones = []
+                    for item in itemlist:
+                        opciones.append(item.title)
 
-                if seleccion == -1:
-                    return
-                else:
-                    item = videolibrary.play(itemlist[seleccion])[0]
-                    platformtools.play_video(item)
+                    # Se abre la ventana de seleccion
+                    if (item.contentSerieName != "" and
+                                item.contentSeason != "" and
+                                item.contentEpisodeNumber != ""):
+                        cabecera = ("%s - %sx%s -- %s" %
+                                    (item.contentSerieName,
+                                     item.contentSeason,
+                                     item.contentEpisodeNumber,
+                                     config.get_localized_string(30163)))
+                    else:
+                        cabecera = config.get_localized_string(30163)
 
-                from channels import autoplay
-                if (platformtools.is_playing() and item.action) or item.server == 'torrent' or autoplay.is_active(item.contentChannel):
-                    break
+                    seleccion = platformtools.dialog_select(cabecera, opciones)
+
+                    if seleccion == -1:
+                        return
+                    else:
+                        item = videolibrary.play(itemlist[seleccion])[0]
+                        platformtools.play_video(item)
+
+                    from channels import autoplay
+                    if (platformtools.is_playing() and item.action) or item.server == 'torrent' or autoplay.is_active(item.contentChannel):
+                        break
+
+        if it.show_server and check_next_ep:
+            nextep.run(it)
+            sleep(0.5)
+            p_dialog.close()
+

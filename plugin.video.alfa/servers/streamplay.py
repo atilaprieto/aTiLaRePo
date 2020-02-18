@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import base64
-import urllib
 
 from core import httptools
 from core import scrapertools
@@ -32,8 +34,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     sources = eval(scrapertools.find_single_match(unpacked, "sources=(\[[^\]]+\])"))
     for video_url in sources:
         
-        from lib import alfaresolver
-        video_url = alfaresolver.decode_video_url(video_url, data)
+        if not PY3: from lib import alfaresolver
+        else: from lib import alfaresolver_py3 as alfaresolver
+        video_url = alfaresolver.decode_video_url(video_url, data, 2)
         filename = scrapertools.get_filename_from_url(video_url)[-4:]
         if not video_url.endswith(".mpd"):
             video_urls.append([filename + " [streamplay]", video_url])

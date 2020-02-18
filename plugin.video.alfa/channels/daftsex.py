@@ -26,6 +26,7 @@ def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "%20")
     item.url = host + "/video/%s" % texto
+    item.page=0
     try:
         return lista(item)
     except:

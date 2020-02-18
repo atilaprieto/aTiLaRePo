@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 import random
 from core import httptools
 from core import scrapertools
 from lib import jsunpack
 from platformcode import logger
-from lib import alfaresolver
+if not PY3: from lib import alfaresolver
+else: from lib import alfaresolver_py3 as alfaresolver
 
 
 ver = random.randint(66, 67)

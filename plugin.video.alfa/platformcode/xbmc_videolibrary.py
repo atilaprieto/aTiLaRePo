@@ -3,10 +3,17 @@
 # XBMC Library Tools
 # ------------------------------------------------------------
 
+from future import standard_library
+standard_library.install_aliases()
+#from builtins import str
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+    
 import os
 import threading
 import time
-import urllib2
+import re
 
 import xbmc
 from core import filetools
@@ -83,7 +90,6 @@ def sync_trakt_addon(path_folder):
                  "special://home/addons/script.trakt/"]
 
         for path in paths:
-            import sys
             sys.path.append(xbmc.translatePath(path))
 
         # se obtiene las series vistas
@@ -94,10 +100,9 @@ def sync_trakt_addon(path_folder):
             return
 
         shows = traktapi.getShowsWatched({})
-        shows = shows.items()
+        shows = list(shows.items())
 
         # obtenemos el id de la serie para comparar
-        import re
         _id = re.findall("\[(.*?)\]", path_folder, flags=re.DOTALL)[0]
         logger.debug("el id es %s" % _id)
 
@@ -329,7 +334,7 @@ def mark_season_as_watched_on_kodi(item, value=1):
 def mark_content_as_watched_on_alfa(path):
     from channels import videolibrary
     from core import videolibrarytools
-    import re
+    
     """
         marca toda la serie o película como vista o no vista en la Videoteca de Alfa basado en su estado en la Videoteca de Kodi
         @type str: path
@@ -400,7 +405,11 @@ def mark_content_as_watched_on_alfa(path):
             playCount_final = 0
         elif playCount >= 1:
             playCount_final = 1
-        title_plain = title_plain.decode("utf-8").encode("utf-8")       #Hacemos esto porque si no genera esto: u'title_plain'
+
+        elif not PY3 and isinstance(title_plain, (str, unicode)):
+            title_plain = title_plain.decode("utf-8").encode("utf-8")   #Hacemos esto porque si no genera esto: u'title_plain'
+        elif PY3 and isinstance(var, bytes):
+            title_plain = title_plain.decode('utf-8')
         item.library_playcounts.update({title_plain: playCount_final})  #actualizamos el playCount del .nfo
 
     if item.infoLabels['mediatype'] == "tvshow":                        #Actualizamos los playCounts de temporadas y Serie
@@ -421,6 +430,7 @@ def get_data(payload):
     @param payload: data
     :return:
     """
+    import urllib.request, urllib.error
     logger.info("payload: %s" % payload)
     # Required header for XBMC JSON-RPC calls, otherwise you'll get a 415 HTTP response code - Unsupported media type
     headers = {'content-type': 'application/json'}
@@ -434,14 +444,14 @@ def get_data(payload):
 
             xbmc_json_rpc_url = "http://" + config.get_setting("xbmc_host", "videolibrary") + ":" + str(
                 xbmc_port) + "/jsonrpc"
-            req = urllib2.Request(xbmc_json_rpc_url, data=jsontools.dump(payload), headers=headers)
-            f = urllib2.urlopen(req)
+            req = urllib.request.Request(xbmc_json_rpc_url, data=jsontools.dump(payload), headers=headers)
+            f = urllib.request.urlopen(req)
             response = f.read()
             f.close()
 
             logger.info("get_data: response %s" % response)
             data = jsontools.load(response)
-        except Exception, ex:
+        except Exception as ex:
             template = "An exception of type %s occured. Arguments:\n%r"
             message = template % (type(ex).__name__, ex.args)
             logger.error("error en xbmc_json_rpc_url: %s" % message)
@@ -449,7 +459,7 @@ def get_data(payload):
     else:
         try:
             data = jsontools.load(xbmc.executeJSONRPC(jsontools.dump(payload)))
-        except Exception, ex:
+        except Exception as ex:
             template = "An exception of type %s occured. Arguments:\n%r"
             message = template % (type(ex).__name__, ex.args)
             logger.error("error en xbmc.executeJSONRPC: %s" % message)
@@ -898,8 +908,12 @@ def add_sources(path):
     nodo_video.appendChild(nodo_source)
 
     # Guardamos los cambios
-    filetools.write(SOURCES_PATH,
+    if not PY3:
+        filetools.write(SOURCES_PATH,
                     '\n'.join([x for x in xmldoc.toprettyxml().encode("utf-8").splitlines() if x.strip()]))
+    else:
+        filetools.write(SOURCES_PATH,
+                    b'\n'.join([x for x in xmldoc.toprettyxml().encode("utf-8").splitlines() if x.strip()]), vfs=False)
 
 
 def ask_set_content(flag, silent=False):

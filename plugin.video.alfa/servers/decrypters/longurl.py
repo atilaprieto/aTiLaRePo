@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    #from future import standard_library
+    #standard_library.install_aliases()
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                               # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urllib
 
 from core import httptools
 from core import scrapertools
@@ -41,5 +51,5 @@ def get_long_urls(data):
                 long_url = scrapertools.scrapertools.find_single_match(longurl_data, '<long-url><!\[CDATA\[(.*?)\]\]></long-url>')
             except:
                 long_url = ""
-            if (long_url <> ""): data = data.replace(short_url, long_url)
+            if (long_url != ""): data = data.replace(short_url, long_url)
     return data

@@ -5,7 +5,7 @@
 
 import os
 import re
-
+from bs4 import BeautifulSoup
 from core import httptools
 from core import scrapertools
 from core import tmdb
@@ -16,16 +16,26 @@ from channelselector import get_thumb
 host = 'http://bloghorror.com/'
 fanart = 'http://bloghorror.com/wp-content/uploads/2015/04/bloghorror-2017-x.jpg'
 
-def get_source(url):
+
+def create_soup(url, referer=None, unescape=False):
     logger.info()
-    data = httptools.downloadpage(url).data
-    data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    return data
+
+    if referer:
+        data = httptools.downloadpage(url, headers={'Referer': referer}).data
+    else:
+        data = httptools.downloadpage(url).data
+
+    if unescape:
+        data = scrapertools.unescape(data)
+    soup = BeautifulSoup(data, "html5lib", from_encoding="utf-8")
+
+    return soup
+
 
 def mainlist(item):
     logger.info()
 
-    itemlist = []
+    itemlist = list()
 
     itemlist.append(Item(channel=item.channel, fanart=fanart, title="Todas", action="list_all",
                          url=host+'/category/terror', thumbnail=get_thumb('all', auto=True)))
@@ -42,56 +52,46 @@ def mainlist(item):
 def list_all(item):
     logger.info()
 
-    itemlist = []
-    data = get_source(item.url)
-    patron = '<article id="post-\d+".*?data-background="([^"]+)".*?href="([^"]+)".*?<h3.*?internal">([^<]+)'
+    itemlist = list()
 
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    soup = create_soup(item.url)
 
-    for scrapedthumbnail, scrapedurl, scrapedtitle in matches:
-        url = scrapedurl
-        title = scrapertools.find_single_match(scrapedtitle, '(.*?)(?:|\(|\| )\d{4}').strip()
-        year = scrapertools.find_single_match(scrapedtitle, '(\d{4})')
-        thumbnail = scrapedthumbnail
-        new_item = Item(channel=item.channel, fanart=fanart, title=title, url=url, action='findvideos',
-                        thumbnail=thumbnail, infoLabels={'year':year})
+    matches = soup.find(id="primary").find_all("article")
 
-        new_item.contentTitle=title
-        itemlist.append(new_item)
+    for elem in matches:
+
+        title_data = elem.find("h3", class_="article-title").text.strip()
+        title = title_data.replace(")", "").split(" (")
+        url = elem.find("h3", class_="article-title").a["href"]
+        thumb = elem.find("div", class_="data-bg-hover")["data-background"]
+        try:
+            year = title[1]
+        except:
+            year = "-"
+
+        if "serie" in url:
+            continue
+
+        itemlist.append(Item(channel=item.channel, title=title[0], url=url, contentTitle=title[0], thumbnail=thumb,
+                             action="findvideos", infoLabels={"year": year}))
+
+    tmdb.set_infoLabels_itemlist(itemlist, True)
+
 
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
 
     # Paginacion
 
-    if itemlist != []:
+    if itemlist:
 
-        next_page = scrapertools.find_single_match(data, 'page-numbers current.*?<a class="page-numbers" href="([^"]+)"')
-        if next_page != '':
-            itemlist.append(Item(channel=item.channel, fanart=fanart, action="list_all", title='Siguiente >>>', url=next_page))
-        else:
-            item.url=next_page
+        try:
+            next_page = soup.find("div", class_="navigation").find("a", class_="next")["href"]
 
-    return itemlist
-
-
-
-def section(item):
-    logger.info()
-
-    itemlist = []
-    data=get_source(host)
-    if item.title == 'Generos':
-        data = scrapertools.find_single_match(data, 'tabindex="0">Generos<.*?</ul>')
-    elif 'Años' in item.title:
-        data = scrapertools.find_single_match(data, 'tabindex="0">Año<.*?</ul>')
-
-    patron = 'href="([^"]+)">([^<]+)</a>'
-
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for url, title in matches:
-
-        itemlist.append(Item(channel=item.channel, fanart=fanart, title=title, url=url, action='list_all', pages=3))
+            if next_page != '':
+                itemlist.append(Item(channel=item.channel, fanart=fanart, action="list_all", title='Siguiente >>>',
+                                     url=next_page))
+        except:
+            pass
 
     return itemlist
 
@@ -99,57 +99,35 @@ def section(item):
 def findvideos(item):
     logger.info()
 
-    itemlist = []
-    full_data = get_source(item.url)
-    data = scrapertools.find_single_match(full_data, '>FICHA TECNICA:<.*?</ul>')
-    #patron = '(?:bold|strong>|<br/>|<em>)([^<]+)(?:</em>|<br/>).*?="(magnet[^"]+)"'
-    patron = '(?:<em>|<br/><em>|/> )(DVD|720|1080)(?:</em>|<br/>|</span>).*?="(magnet[^"]+)"'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    itemlist = list()
+    urls_list = list()
+    sub_url = ''
 
-    if len(matches) == 0:
-        patron = '<a href="(magnet[^"]+)"'
-        matches = re.compile(patron, re.DOTALL).findall(full_data)
+    soup = create_soup(item.url).find("div", class_="entry-content").find("div").find("p")
+    quality = scrapertools.find_single_match(soup.text, "Calidad: ([^\n]+)\n")
+    video_data = soup.find_all("a")
 
-    patron_sub = 'href="(http://www.subdivx.com/bajar.php[^"]+)"'
-    sub_url = scrapertools.find_single_match(full_data, patron_sub)
-    #sub_num = scrapertools.find_single_match(sub_url, 'u=(\d+)')
+    for link in video_data:
 
-    if sub_url == '':
-        sub = ''
-        lang = 'VO'
-    else:
-        try:
-            sub = subtitletools.get_from_subdivx(sub_url)
-        except:
+        if link["data-wpel-link"] == "external":
+            sub_url = link["href"]
+        else:
+            urls_list.append(link["href"])
+
+    for url in urls_list:
+
+        if not sub_url:
             sub = ''
-        lang = 'VOSE'
+            lang = 'VO'
+        else:
+            try:
+                sub = subtitletools.get_from_subdivx(sub_url)
+            except:
+                sub = ''
+            lang = 'VOSE'
 
-    try:
-
-        for quality, scrapedurl in matches:
-            if quality.strip() not in ['DVD', '720', '1080']:
-                quality = 'DVD'
-            url = scrapedurl
-            if not config.get_setting('unify'):
-                title = ' [Torrent] [%s] [%s]' % (quality, lang)
-            else:
-                title = 'Torrent'
-
-            itemlist.append(Item(channel=item.channel, fanart=fanart, title=title, url=url, action='play',
-                                 server='torrent', quality=quality, language=lang, infoLabels=item.infoLabels,
-                                 subtitle=sub))
-
-    except:
-        for scrapedurl in matches:
-            quality = 'DVD'
-            url = scrapedurl
-            if not config.get_setting('unify'):
-                title = ' [Torrent] [%s] [%s]' % (quality, lang)
-            else:
-                title = 'Torrent'
-            itemlist.append(Item(channel=item.channel, fanart=fanart, title=title, url=url, action='play',
-                                 server='torrent', quality=quality, language=lang, infoLabels=item.infoLabels,
-                                 subtitle=sub))
+        itemlist.append(Item(channel=item.channel, title="%s", url=url, action="play", quality=quality,
+                             language=lang, subtitle=sub, server="torrent", infoLabels=item.infoLabels))
 
     if config.get_videolibrary_support() and len(itemlist) > 0 and item.extra != 'findvideos':
         itemlist.append(Item(channel=item.channel,
@@ -165,15 +143,23 @@ def findvideos(item):
 
 def search(item, texto):
     logger.info()
-    itemlist = []
-    texto = texto.replace(" ", "+")
-    item.url = item.url + texto
-    if texto != '':
-        try:
+
+    try:
+        texto = texto.replace(" ", "+")
+        item.url = item.url + texto
+
+        if texto != '':
             return list_all(item)
-        except:
-            itemlist.append(item.clone(url='', title='No hay elementos...', action=''))
-            return itemlist
+        else:
+            return []
+        # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []
+
 
 def newest(categoria):
     logger.info()

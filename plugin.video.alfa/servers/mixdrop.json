@@ -4,7 +4,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "mixdrop.co/e/([A-z0-9]+)",
+        "pattern": "(?:https:|)//mixdrop.(?:co|to)/(?:e|f)/([A-z0-9]+)",
         "url": "https://mixdrop.co/e/\\1"
       }
     ]

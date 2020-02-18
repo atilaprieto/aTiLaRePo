@@ -20,14 +20,6 @@
       "visible": true
     },
     {
-      "id": "include_in_newest_series",
-      "type": "bool",
-      "label": "Incluir en Novedades - Episodios de series",
-      "default": true,
-      "enabled": true,
-      "visible": true
-    },
-    {
       "id": "filter_languages",
       "type": "list",
       "label": "Mostrar enlaces en idioma...",
@@ -39,20 +31,8 @@
         "Español",
         "Latino",
         "VO",
-        "VOS"
-      ]
-    },
-    {
-      "id": "filterlinks",
-      "type": "list",
-      "label": "Mostrar enlaces de tipo...",
-      "default": 2,
-      "enabled": true,
-      "visible": true,
-      "lvalues": [
-        "Solo Descarga",
-        "Solo Online",
-        "No filtrar"
+        "VOS",
+        "VOSE"
       ]
     }
   ]

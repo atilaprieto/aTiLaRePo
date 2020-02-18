@@ -89,7 +89,8 @@ def findvideos(item):
                 url= url.replace("https://vshares.tk/goto/", "").replace("https://waaws.tk/goto/", "").replace("https://openloads.tk/goto/", "")
                 url = base64.b64decode(url)
                 n -= 1
-        itemlist.append(item.clone(action="play", title ="%s", contentTitle=item.title, url=url ))
+        if not "waaws.tk" in url:  #NETU
+            itemlist.append(item.clone(action="play", title ="%s", contentTitle=item.title, url=url ))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language)

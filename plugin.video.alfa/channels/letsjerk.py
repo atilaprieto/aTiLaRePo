@@ -23,7 +23,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/?s=%s&s=%s" % texto
+    item.url = host + "/?s=%s&s=%s" % (texto, texto)
     try:
         return lista(item)
     except:
@@ -85,6 +85,7 @@ def play(item):
     patron = 'src=([^\s]+)'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for url in matches:
+        url= url.replace("https:/xvideo.to", "https://xvideo.to")
         itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import re
+from __future__ import division
+from past.utils import old_div
 import sys
-import urllib
-import urlparse
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+import re
 import time
 
 from channelselector import get_thumb
@@ -20,7 +23,7 @@ from channels import autoplay
 
 #IDIOMAS = {'CAST': 'Castellano', 'LAT': 'Latino', 'VO': 'Version Original'}
 IDIOMAS = {'Castellano': 'CAST', 'Latino': 'LAT', 'Version Original': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['torrent']
 
@@ -140,7 +143,8 @@ def categorias(item):
         itemlist.append(item.clone(action='', title=item.category + ': ERROR 01: SUBMENU: La Web no responde o ha cambiado de URL. Si la Web está activa, reportar el error con el log'))
         return itemlist                                     #si no hay más datos, algo no funciona, pintamos lo que tenemos
 
-    data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
+    if not PY3:
+        data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     if not matches:
@@ -232,7 +236,8 @@ def listado(item):
         url = item.url % curr_page                                              #Inserto en num de página en la url
         try:
             data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)|&nbsp;", "", httptools.downloadpage(url, timeout=timeout_search).data)
-            data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
+            if not PY3:
+                data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
         except:
             pass
         
@@ -299,7 +304,10 @@ def listado(item):
 
             url = scrapedurl
             title = scrapedtitle
-            title = title.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ü", "u").replace("ï¿½", "ñ").replace("Ã±", "ñ").replace("&atilde;", "a").replace("&etilde;", "e").replace("&itilde;", "i").replace("&otilde;", "o").replace("&utilde;", "u").replace("&ntilde;", "ñ")
+            title = title.replace("á", "a").replace("é", "e").replace("í", "i")\
+                    .replace("ó", "o").replace("ú", "u").replace("ü", "u")\
+                    .replace("ï¿½", "ñ").replace("Ã±", "ñ").replace("&#8217;", "'")\
+                    .replace("&amp;", "&")
             extra = item.extra
 
             #Si es una búsqueda, convierte los episodios en Series completas, aptas para la Videoteca
@@ -311,7 +319,8 @@ def listado(item):
                 data_serie = ''
                 try:
                     data_serie = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)|&nbsp;", "", httptools.downloadpage(scrapedurl, timeout=timeout).data)
-                    data_serie = unicode(data_serie, "iso-8859-1", errors="replace").encode("utf-8")
+                    if not PY3:
+                        data_serie = unicode(data_serie, "iso-8859-1", errors="replace").encode("utf-8")
                 except:
                     pass
                 
@@ -628,8 +637,8 @@ def listado_series(item):
     
     #Control de siguiente página
     if matches_tot > item.matches_current:
-        pag_tot = matches_tot / pag
-        pag_cur = item.matches_current / pag
+        pag_tot = old_div(matches_tot, pag)
+        pag_cur = old_div(item.matches_current, pag)
         
         itemlist.append(Item(channel=item.channel, action="listado_series", title=">> Página siguiente (" + str(pag_cur) + " de " + str(pag_tot) + ")", url=item.url, text_color=color3, text_bold=True, extra=item.extra, matches_current=item.matches_current, matches=matches))
 
@@ -1151,7 +1160,8 @@ def episodios(item):
         url = url_item % curr_page                                                  #Inserto en num de página en la url
         try:
             data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)|&nbsp;", "", httptools.downloadpage(url, timeout=timeout).data)
-            data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
+            if not PY3:
+                data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
         except:                                                                     #Algún error de proceso, salimos
             pass
             

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+from past.utils import old_div
+
 import re
-import sys
-import urllib
-import urlparse
 import time
 
 from channelselector import get_thumb
@@ -20,7 +20,7 @@ from channels import autoplay
 
 #IDIOMAS = {'CAST': 'Castellano', 'LAT': 'Latino', 'VO': 'Version Original'}
 IDIOMAS = {'Castellano': 'CAST', 'Latino': 'LAT', 'Version Original': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['torrent']
 
@@ -115,7 +115,8 @@ def categorias(item):
     data = ''
     try:
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", httptools.downloadpage(host + "/principal", timeout=timeout).data)
-        data = unicode(data, "utf-8", errors="replace").encode("utf-8")
+        if not PY3:
+            data = unicode(data, "utf-8", errors="replace").encode("utf-8")
     except:
         pass
         
@@ -212,7 +213,8 @@ def listado(item):
         data = ''
         try:
             data = httptools.downloadpage(next_page_url, timeout=timeout_search).data
-            data = unicode(data, "utf-8", errors="replace").encode("utf-8")
+            if not PY3:
+                data = unicode(data, "utf-8", errors="replace").encode("utf-8")
             pos = data.find('[')
             if pos > 0: data = data[pos:]
         except:
@@ -241,7 +243,7 @@ def listado(item):
         #logger.debug(data)
 
         if last_page == 99999:                                              #Si es el valor inicial, cargamos el num. de items
-            last_page = int((last_title / (cnt_tot * cnt_pct)))
+            last_page = int((old_div(last_title, (cnt_tot * cnt_pct))))
             curr_page = 1
 
         #Empezamos el procesado de matches
@@ -253,7 +255,10 @@ def listado(item):
             cnt_matches += 1                                                        #Sumamos 1 a total títulos tratados
 
             title = titulo.get("nom", "")                                           #nombre del título
-            title = title.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ü", "u").replace("ï¿½", "ñ").replace("Ã±", "ñ").replace("&atilde;", "a").replace("&etilde;", "e").replace("&itilde;", "i").replace("&otilde;", "o").replace("&utilde;", "u").replace("&ntilde;", "ñ").replace("&#8217;", "'")
+            title = title.replace("á", "a").replace("é", "e").replace("í", "i")\
+                    .replace("ó", "o").replace("ú", "u").replace("ü", "u")\
+                    .replace("ï¿½", "ñ").replace("Ã±", "ñ").replace("&#8217;", "'")\
+                    .replace("&amp;", "&")
 
             item_local = item.clone()                                               #Creamos copia de Item para trabajar
             if item_local.tipo:                                                     #... y limpiamos
@@ -298,7 +303,7 @@ def listado(item):
             #Revisamos para peliculas todos los magnets, extrayendo dirección y calidad
             if item_local.contentType == "movie":
                 item_local.url = []                                         #iniciamos dict. de magnets
-                for etiqueta, magnet in titulo.get("magnets", {}).iteritems():
+                for etiqueta, magnet in titulo.get("magnets", {}).items():
                     if magnet.get("magnet"):                                #buscamos los magnets activos
                         url = magnet.get("magnet")                          #salvamos el magnet
                         quality =  magnet.get("quality", "")                #salvamos la calidad del magnet
@@ -557,7 +562,8 @@ def episodios(item):
     data = ''                                                       #Inserto en num de página en la url
     try:
         data = httptools.downloadpage(item.url, timeout=timeout).data
-        data = unicode(data, "utf-8", errors="replace").encode("utf-8")
+        if not PY3:
+            data = unicode(data, "utf-8", errors="replace").encode("utf-8")
     except:                                                         #Algún error de proceso, salimos
         pass
         

@@ -8,10 +8,6 @@
         "url": "http://www.youtube.com/watch?v=\\1"
       },
       {
-        "pattern": "www.youtube.*?v(?:=|%3D)([0-9A-Za-z_-]{11})",
-        "url": "http://www.youtube.com/watch?v=\\1"
-      },
-      {
         "pattern": "youtube.com/v/([0-9A-Za-z_-]{11})",
         "url": "http://www.youtube.com/watch?v=\\1"
       }

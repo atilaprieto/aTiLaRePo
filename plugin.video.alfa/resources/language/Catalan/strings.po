@@ -1789,8 +1789,8 @@ msgid "Delete saved searches"
 msgstr "Suprimeix les cerques desades"
 
 msgctxt "#60420"
-msgid "More Options"
-msgstr "Mes Opccions"
+msgid "More search options"
+msgstr "Més opcions de cerca"
 
 msgctxt "#60421"
 msgid "Channels included in the global search "

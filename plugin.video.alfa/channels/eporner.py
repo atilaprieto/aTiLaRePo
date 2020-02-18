@@ -5,6 +5,7 @@ import urlparse
 
 from core import httptools
 from core import scrapertools
+from core import servertools
 from platformcode import logger
 
 host = 'http://www.eporner.com'
@@ -87,11 +88,11 @@ def videos(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     patron = '<div class="mvhdico"><span>([^<]+)</span>.*?'
-    patron += '<a href="([^"]+)" title="([^"]+)" id="[^"]+">.*?'
-    patron += 'src="([^"]+)"[^>]+>.*?'
-    patron += '<div class="mbtim">([^<]+)</div>'
+    patron += 'src="([^"]+.jpg)".*?'
+    patron += '<a href="([^"]+)" title="([^"]+)".*?'
+    patron += 'class="mbtim">([^<]+)<'
     matches = re.compile(patron, re.DOTALL).findall(data)
-    for quality, url, title, thumbnail, duration in matches:
+    for quality, thumbnail, url, title, duration in matches:
         title = "[COLOR yellow]" + duration + "[/COLOR] " + "[COLOR red]" + quality + "[/COLOR] " +title
         itemlist.append(item.clone(title=title, url=urlparse.urljoin(item.url, url),
                                    action="play", thumbnail=thumbnail, contentThumbnail=thumbnail,
@@ -104,38 +105,8 @@ def videos(item):
     return itemlist
 
 
-def int_to_base36(num):
-    """Converts a positive integer into a base36 string."""
-    assert num >= 0
-    digits = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.lower()
-
-    res = ''
-    while not res or num > 0:
-        num, i = divmod(num, 36)
-        res = digits[i] + res
-    return res
-
-
 def play(item):
-    logger.info()
-    itemlist = []
+    logger.info(item)
+    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
+    return itemlist
 
-    data = httptools.downloadpage(item.url).data
-
-    patron = "EP: { vid: '([^']+)', hash: '([^']+)'"
-
-    vid, hash = re.compile(patron, re.DOTALL).findall(data)[0]
-
-    hash = int_to_base36(int(hash[0:8], 16)) + int_to_base36(int(hash[8:16], 16)) + int_to_base36(
-        int(hash[16:24], 16)) + int_to_base36(int(hash[24:32], 16))
-
-    url = "https://www.eporner.com/xhr/video/%s?hash=%s" % (vid, hash)
-    jsondata = httptools.downloadpage(url).json
-
-    for source in jsondata["sources"]["mp4"]:
-        url = jsondata["sources"]["mp4"][source]["src"]
-        title = source.split(" ")[0]
-
-        itemlist.append(["%s %s [directo]" % (title, url[-4:]), url])
-
-    return sorted(itemlist, key=lambda i: int(i[0].split("p")[0]))

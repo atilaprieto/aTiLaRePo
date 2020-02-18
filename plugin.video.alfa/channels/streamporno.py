@@ -95,14 +95,7 @@ def lista(item):
 def findvideos(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
-    data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    links_data = scrapertools.find_single_match(data, '<div class="entry-content clearfix">(.*?)</div>')
-    patron = '<iframe src="([^"]+)"'
-    matches = re.compile(patron, re.DOTALL).findall(links_data)
-    for url in matches:
-        itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', language='VO',contentTitle = item.contentTitle))
-    itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server)
+    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language)
     # Requerido para AutoPlay

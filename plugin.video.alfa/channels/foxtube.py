@@ -7,6 +7,7 @@ from core import scrapertools
 from core.item import Item
 from core import servertools
 from core import httptools
+from channels import cumlouder
 
 host = 'https://www.foxtube.com' #https://www.muyzorras.com
 
@@ -96,7 +97,6 @@ def lista(item):
         if 'HD' in duracion :
             title = "[COLOR yellow]" + time + "[/COLOR] " + "[COLOR red]" + "HD" + "[/COLOR]  " + scrapedtitle
         thumbnail = scrapedthumbnail.replace("https","http") + "|Referer=%s/" %host
-        logger.debug(thumbnail)
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl, thumbnail=thumbnail,
                               fanart=thumbnail, plot=plot, contentTitle = title))
@@ -112,10 +112,13 @@ def play(item):
     itemlist = []
     url = ""
     data = httptools.downloadpage(item.url).data
-    url = scrapertools.find_single_match(data,'<iframe title="[^"]+" src="([^"]+)"')
-    if not url:
-        url = scrapertools.find_single_match(data,'href="(https://www.pornhub.com/view_video.php[^"]+)"')
+    url = scrapertools.find_single_match(data,'<iframe title="[^"]+" class="lz" data-src="([^"]+)"')
+    if "cumlouder" in url:
+        item1 = item.clone(url=url)
+        itemlist = cumlouder.play(item1)
+        return itemlist
     itemlist.append(item.clone(action="play", title= "%s", contentTitle = item.title, url=url))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
+
 

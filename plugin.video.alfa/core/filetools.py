@@ -4,9 +4,16 @@
 # Gestion de archivos con discriminación xbmcvfs/samba/local
 # ------------------------------------------------------------
 
+from __future__ import division
+#from builtins import str
+from builtins import range
+from past.utils import old_div
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import os
 import traceback
-import sys
 
 from core import scrapertools
 from platformcode import platformtools, logger
@@ -15,8 +22,9 @@ xbmc_vfs = True                                                 # False para des
 if xbmc_vfs:
     try:
         import xbmcvfs
-        reload(sys)                                             ### Workoround.  Revisar en la migración a Python 3
-        sys.setdefaultencoding('utf-8')                         # xbmcvfs degrada el valor de defaultencoding.  Se reestablece
+        if not PY3:
+            reload(sys)                                         ### Workoround.  Revisar en la migración a Python 3
+            sys.setdefaultencoding('utf-8')                     # xbmcvfs degrada el valor de defaultencoding.  Se reestablece
         xbmc_vfs = True
     except:
         xbmc_vfs = False
@@ -73,7 +81,7 @@ def encode(path, _samba=False):
     @rtype: str
     @return ruta codificada en juego de caracteres del sistema o utf-8 si samba
     """
-    if not type(path) == unicode:
+    if not isinstance(path, unicode):
         path = unicode(path, "utf-8", "ignore")
 
     if scrapertools.find_single_match(path, '(^\w+:\/\/)') or _samba:
@@ -94,13 +102,13 @@ def decode(path):
     @rtype: str
     @return: ruta codificado en UTF-8
     """
-    if type(path) == list:
+    if isinstance(path, list):
         for x in range(len(path)):
-            if not type(path[x]) == unicode:
+            if not isinstance(path[x], unicode):
                 path[x] = path[x].decode(fs_encoding, "ignore")
             path[x] = path[x].encode("utf-8", "ignore")
     else:
-        if not type(path) == unicode:
+        if not isinstance(path, unicode):
             path = path.decode(fs_encoding, "ignore")
         path = path.encode("utf-8", "ignore")
     return path
@@ -121,13 +129,13 @@ def read(path, linea_inicio=0, total_lineas=None, whence=0, silent=False, vfs=Tr
     """
     path = encode(path)
     try:
-        if type(linea_inicio) != int:
+        if not isinstance(linea_inicio, int):
             try:
                 linea_inicio = int(linea_inicio)
             except:
                 logger.error('Read: ERROR de linea_inicio: %s' % str(linea_inicio))
                 linea_inicio = 0
-        if total_lineas != None and type(total_lineas) != int:
+        if total_lineas != None and not isinstance(total_lineas, int):
             try:
                 total_lineas = int(total_lineas)
             except:
@@ -137,7 +145,7 @@ def read(path, linea_inicio=0, total_lineas=None, whence=0, silent=False, vfs=Tr
             if not exists(path): return False
             f = xbmcvfs.File(path, "rb")
             if linea_inicio > 0:
-                if type(whence) != int:
+                if not isinstance(whence, int):
                     try:
                         whence = int(whence)
                     except:
@@ -166,10 +174,13 @@ def read(path, linea_inicio=0, total_lineas=None, whence=0, silent=False, vfs=Tr
         return False
 
     else:
-        return "".join(data)
+        if not PY3:
+            return "".join(data)
+        else:
+            return b"".join(data)
 
 
-def write(path, data, silent=False, vfs=True):
+def write(path, data, mode="wb", silent=False, vfs=True):
     """
     Guarda los datos en un archivo
     @param path: ruta del archivo a guardar
@@ -182,11 +193,14 @@ def write(path, data, silent=False, vfs=True):
     path = encode(path)
     try:
         if xbmc_vfs and vfs:
-            f = xbmcvfs.File(path, "wb")
+            f = xbmcvfs.File(path, mode)
+            result = f.write(data)
+            f.close()
+            return bool(result)
         elif path.lower().startswith("smb://"):
-            f = samba.smb_open(path, "wb")
+            f = samba.smb_open(path, mode)
         else:
-            f = open(path, "wb")
+            f = open(path, mode)
 
         f.write(data)
         f.close()
@@ -372,7 +386,7 @@ def copy(path, dest, silent=False, vfs=True):
             copiado = 0
             while True:
                 if not silent:
-                    dialogo.update(copiado * 100 / size, basename(path))
+                    dialogo.update(old_div(copiado * 100, size), basename(path))
                 buf = fo.read(1024 * 1024)
                 if not buf:
                     break
@@ -493,7 +507,7 @@ def getsize(path, silent=False, vfs=True):
     path = encode(path)
     try:
         if xbmc_vfs and vfs:
-            if not exists(path): return 0L
+            if not exists(path): return long(0)
             f = xbmcvfs.File(path)
             s = f.size()
             f.close()
@@ -506,7 +520,7 @@ def getsize(path, silent=False, vfs=True):
         logger.error("ERROR al obtener el tamaño: %s" % path)
         if not silent:
             logger.error(traceback.format_exc())
-        return 0L
+        return long(0)
 
 
 def remove(path, silent=False, vfs=True):
@@ -677,7 +691,14 @@ def walk_vfs(top, topdown=True, onerror=None):
         yield top, dirs, nondirs
 
     for name in dirs:
-        new_path = "/".join(top.split("/") + [unicode(name, "utf8")])
+        if isinstance(name, unicode):
+            name = name.encode("utf8")
+            if PY3: name = name.decode("utf8")
+        elif PY3 and isinstance(name, bytes):
+            name = name.decode("utf8")
+        elif not PY3:
+            name = unicode(name, "utf8")
+        new_path = "/".join(top.split("/") + [name])
         for x in walk_vfs(new_path, topdown, onerror):
             yield x
     if not topdown:
@@ -722,9 +743,7 @@ def join(*paths):
 
     for path in paths:
         if path:
-            if xbmc_vfs and scrapertools.find_single_match(paths[0], '(^\w+:\/\/)'):
-                path = encode(path, True)
-            elif xbmc_vfs:
+            if xbmc_vfs:
                 path = encode(path)
             list_path += path.replace("\\", "/").strip("/").split("/")
 

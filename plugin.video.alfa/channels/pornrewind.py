@@ -10,7 +10,7 @@ from core import httptools
 
 host = 'https://www.pornrewind.com'
 
-
+# KT player sin decode
 def mainlist(item):
     logger.info()
     itemlist = []

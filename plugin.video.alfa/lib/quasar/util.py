@@ -1,3 +1,7 @@
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import platform
 import xbmc
 import xbmcgui
@@ -24,19 +28,28 @@ def getLocalizedLabel(label):
                 if part[0:8] == "LOCALIZE":
                     parts[i + 1] = getLocalizedString(int(part[9:14]))
 
-            return (translation.decode('utf-8', 'replace') % tuple(parts[1:])).encode('utf-8', 'ignore')
+            if not PY3:
+                return (translation.decode('utf-8', 'replace') % tuple(parts[1:])).encode('utf-8', 'ignore')
+            else:
+                return translation % tuple(parts[1:])
     except:
         return label
 
 def getLocalizedString(stringId):
     try:
-        return ADDON.getLocalizedString(stringId).encode('utf-8', 'ignore')
+        if not PY3:
+            return ADDON.getLocalizedString(stringId).encode('utf-8', 'ignore')
+        else:
+            return ADDON.getLocalizedString(stringId)
     except:
         return stringId
 
 def toUtf8(string):
     if isinstance(string, unicode):
-        return string.encode('utf-8', 'ignore')
+        string = string.encode("utf8", 'ignore')
+        if PY3: string = string.decode("utf8")
+    elif PY3 and isinstance(string, bytes):
+        string = string.decode("utf8")
     return string
 
 def system_information():

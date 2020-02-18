@@ -3,6 +3,8 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*
 
+#from builtins import str
+
 import os
 
 import xbmc

@@ -88,7 +88,7 @@ def lista(item):
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
         itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=thumbnail, plot=plot,
-                              contentTitle = scrapedtitle))
+                              fanart=thumbnail, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"><span>Next')
     if next_page == "":
         next_page = scrapertools.find_single_match(data, '<a href=\'([^\']+)\' title=\'Next Page\'>')
