@@ -17,10 +17,10 @@
     </extension>
 </addon>
 
-<addon id="plugin.googledrive" name="Google Drive" version="1.2.12" provider-name="Carlos Guzman (cguZZman)">
+<addon id="plugin.googledrive" name="Google Drive" version="1.3.3" provider-name="Carlos Guzman (cguZZman)">
 	<requires>
 		<import addon="xbmc.python" version="2.25.0" />
-		<import addon="script.module.clouddrive.common" version="1.2.8"/>
+		<import addon="script.module.clouddrive.common" version="1.2.10"/>
 	</requires>
 	<extension point="xbmc.python.pluginsource" library="addon.py">
 		<provides>image audio video</provides>
@@ -54,7 +54,20 @@ Play all your media from Google Drive including Videos, Music and Pictures (incl
 		<source>https://github.com/cguZZman/plugin.googledrive</source>
 		<forum>https://github.com/cguZZman/plugin.googledrive/issues</forum>
 		<website>https://addons.kodi.tv/show/plugin.googledrive</website>
+		<assets>
+			<icon>icon.png</icon>
+			<fanart>fanart.jpg</fanart>
+		</assets>
 		<news>
+v1.3.3 released Feb 14, 2020:
+- Check for google ban
+v1.3.2 released Feb 12, 2020:
+- Fix video playback in google photos
+- Fix search
+v1.3.1 released Feb 10, 2020:
+- Fix playback
+v1.3.0 released Jan 4, 2019:
+- Ability to specify default playback quality
 v1.2.12 released Oct 2, 2018:
 - Google Photos resolution fix
 v1.2.11 released Sep 20, 2018:
@@ -470,7 +483,7 @@ v.2.1.5
 	</extension>
 </addon>
 
-<addon id="plugin.video.palantir" name="[COLOR gold]Palantir[/COLOR]" version="0.0.71" provider-name="TierraMedia">
+<addon id="plugin.video.palantir" name="[COLOR gold]Palantir[/COLOR]" version="0.0.73" provider-name="TierraMedia">
   <requires>
     <import addon="xbmc.python" version="2.24.0"/>
     <import addon="script.module.simple.downloader" version="1.9.5"/>
@@ -488,12 +501,9 @@ v.2.1.5
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>TV</summary>
-    <news>[COLOR lime][B] versión 0.0.71 [/B][/COLOR]
+    <news>[COLOR lime][B] versión 0.0.73 [/B][/COLOR]
         - [Interno] Reparados servidores:
-		- Artic
-		- Koto
-		- Vike
-		- Omsk
+        - [Interno] Nuevos servidores:
     </news>
     <description>Visualiza el contenido de la nube, series, películas.</description>
     <disclaimer>[B][COLOR red]Todo el contenido disponible en este Addon esta sacado de servidores gratuitos, disponible en la red para todos los usuarios.[/B][/COLOR]</disclaimer>
@@ -885,41 +895,47 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="script.extendedinfo" name="ExtendedInfo Script" version="5.6.1" provider-name="phil65 (Philipp Temminghoff)">
+<addon id="script.extendedinfo" name="OpenInfo" version="6.2.4" provider-name="A4K">
 	<requires>
 		<import addon="xbmc.python" version="2.25.0"/>
-		<import addon="resource.images.studios.white" version="0.0.5"/>
-		<import addon="script.module.kodi65" version="1.0.0"/>
-		<import addon="script.module.routing" version="0.1.0"/>
-		<!-- 		<import addon="script.module.buggalo" version="1.1.6"/>-->
+		<import addon="script.module.pil" version="1.1.7"/>
+		<import addon="plugin.video.youtube" version="6.2.2"/>
+		<import addon="script.module.requests" version="2.9.1"/>
+		<import addon="script.skin.helper.service" version="1.0.0"/>
+		<import addon="resource.images.studios.white" version="0.0.18"/>
+		<import addon="plugin.video.openmeta" version="1.0.0" optional="true"/>
 	</requires>
-	<extension point="xbmc.python.script" library="default.py">
-		<provides>executable</provides>
-	</extension>
+	<extension point="xbmc.python.script" library="script.py"/>
 	<extension point="xbmc.python.pluginsource" library="plugin.py">
 		<provides>video</provides>
 	</extension>
+	<extension point="kodi.context.item">
+		<menu id="kodi.core.main">
+			<item library="context.py">
+				<label>OpenInfo</label>
+				<visible>String.IsEqual(ListItem.dbtype,movie) | String.IsEqual(ListItem.dbtype,tvshow) | String.IsEqual(ListItem.dbtype,season) | String.IsEqual(ListItem.dbtype,episode) | String.IsEqual(ListItem.dbtype,actor) | String.IsEqual(ListItem.dbtype,director)</visible>
+			</item>
+		</menu>
+	</extension>
 	<extension point="xbmc.addon.metadata">
-		<language/>
-		<summary lang="en">ExtendedInfo Script</summary>
-		<description lang="en">This script offers various possibilities to display online content inside skins as well as a complete MovieDB browser including info dialogs for various media types. Used services are themoviedb.org, theaudiodb.org, Trakt.TV, omdbapi.com and a lot more. Needs skin implementation for lot of functions.</description>
-		<summary lang="es">ExtendedInfo Script</summary>
-		<description lang="es">Este script ofrece varias posibilidades para poder mostrar información online dentro de una piel, así como un completo navegador de TheMovieDB, incluidos los cuadros de diálogo de información para diversos tipos de medios. Los servicios usados son themoviedb.org, theaudiodb.org, Trakt.TV, omdbapi.com y mucho más. Necesita la implementación en el skin para muchas de sus funciones.</description>
+		<reuselanguageinvoker>false</reuselanguageinvoker>
 		<platform>all</platform>
-		<license>GNU GENERAL PUBLIC LICENSE Version 2, June 1991</license>
-		<forum>http://forum.kodi.tv/showthread.php?tid=160558</forum>
-		<source>https://github.com/phil65/script.extendedinfo</source>
-		<email>phil65@kodi.tv</email>
-		<news>Fix support for Kodi L* nightlies[CR]Browser window improvements[CR]Fixes for TADB/LastFM</news>
+		<summary>Fork of the ExtendedInfo script from phil65</summary>
+		<description>This script offers various possibilities to display online content inside skins as well as a complete MovieDB browser including info dialogs for various media types. Needs skin implementation for lot of functions and OpenMeta for library functions.</description>
 		<assets>
 			<icon>resources/icon.png</icon>
 			<fanart>resources/fanart.jpg</fanart>
-			<screenshot>resources/screenshot-01.jpg</screenshot>
-			<screenshot>resources/screenshot-02.jpg</screenshot>
-			<screenshot>resources/screenshot-03.jpg</screenshot>
-			<screenshot>resources/screenshot-04.jpg</screenshot>
-			<screenshot>resources/screenshot-05.jpg</screenshot>
+			<screenshot>resources/screenshot1.jpg</screenshot>
+			<screenshot>resources/screenshot2.jpg</screenshot>
+			<screenshot>resources/screenshot3.jpg</screenshot>
 		</assets>
+		<news>
+		6.2.4 - Specify param in TV Show ID
+		6.2.3 - Fix TV Show trailers
+		6.2.2 - Added ability to search using the tvdb_id for "extendedepisodeinfo"
+		6.2.1 - Fix context menu now available for widgets pointing to OpenInfo's video addon items
+		6.2.0 - Added context menu force "player select" to the play button, available via "c" and long press "enter" button
+		</news>
 	</extension>
 </addon>
 
@@ -1004,6 +1020,115 @@ v.2.1.5
   </extension>
 </addon>
 
+<addon id="script.module.clouddrive.common" name="Cloud Drive Common Module" version="1.2.10" provider-name="Carlos Guzman (cguZZman)">
+	<requires>
+		<import addon="xbmc.python" version="2.25.0" />
+		<import addon="script.module.dateutil"/>
+		<import addon="script.module.pyqrcode"/>
+	</requires>
+	<extension point="xbmc.python.module" library="/" />
+	<extension point="xbmc.service" library="service.py" start="login" />
+	<extension point="xbmc.addon.metadata">
+		<platform>all</platform>
+		<summary lang="en_GB">Cloud Drive Common Module</summary>
+		<description lang="en_GB">Common Services and Classes for all the cloud drive addons.</description>
+		<summary lang="he_IL">מודול משותף לכונן בענן</summary>
+		<description lang="he_IL">שירותים ושירותים משותפים לכל התוספים של כונן הענן.</description>
+		<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+		<source>https://github.com/cguZZman/script.module.clouddrive.common</source>
+		<forum>https://github.com/cguZZman/script.module.clouddrive.common/issues</forum>
+		<assets>
+			<icon>icon.png</icon>
+		</assets>
+		<news>
+v1.2.10 released Feb 14, 2020:
+- Check for google ban
+v1.2.9 released Feb 10, 2020:
+- Fix playback
+v1.2.8 released Sep 20, 2018:
+- Resume points and watched status for strm files in library
+v1.2.7 released Sep 12, 2018:
+- Order by date fix
+v1.2.6 released Sep 10, 2018:
+- Subtitles assigned in source mode
+- Fixes
+v1.2.5 released Aug 25, 2018:
+- Fix 'Remove' export option
+- Fix error log
+v1.2.3 released Aug 24, 2018:
+- Fix watch folder creating strm for non-media files
+- strm files saved in the cloud are exported as is.
+v1.2.1 released Aug 18, 2018:
+- Fix source mode
+v1.2.0 released Aug 15, 2018:
+- Added auto export and watch export folder
+v1.1.7 released Jul 14, 2018:
+- Added a QR code to simplify adding an account
+v1.1.5 released Jul 14, 2018:
+- Fixes for slow connections
+v1.1.4 released Jul 12, 2018:
+- Ip change detection.
+- Fixes
+v1.1.0 released Jul 11, 2018:
+- New mode for source and download services. Both moved to respective addons.
+- Source service fixed.
+v1.0.4 released Jul 6, 2018:
+- Fix display more than 100 files in source mode
+v1.0.3 released Jul 5, 2018:
+- Fixes
+v1.0.2 released March 15, 2018:
+- Fixes
+v1.0.1 released Nov 6, 2017:
+- Login app rename
+- Support for images by extension only when the cloud drive doesn't provide image information.
+v1.0.0 released Nov 6, 2017:
+- First release
+		</news>
+		<disclaimer lang="en_GB">
+This cloud drive addon uses a third-party authentication mechanism commonly known as OAuth 2.0.
+If you want to know more about OAuth 2.0 you can visit the following pages:
+- https://oauth.net/2/
+- https://developers.google.com/identity/protocols/OAuth2
+- https://docs.microsoft.com/en-us/onedrive/developer/rest-api/getting-started/msa-oauth
+
+Kodi and myself take no responsibility or liability whatsoever.
+
+The authentication server URL is specified in Settings / Advanced / Sign-in Server. The Sign-in Server implements the OAuth 2.0 protocol.
+The complete source code of the Sign-in Server can be download here: https://github.com/cguZZman/drive-login
+You can clone the project and host it in your own server.
+		</disclaimer>
+	</extension>
+</addon>
+
+<addon id="script.module.cryptopy" name="CryptoPy" version="1.2.7" provider-name="cryptopy.sourceforge.net">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.module" library="lib"/>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="script.module.liveresolver"
+     name="LiveResolver"
+     version="0.1.50"
+     provider-name="natko1412">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="script.module.beautifulsoup" version="3.2.1"/>
+    <import addon="script.module.requests"/>
+    <import addon="script.module.addon.common" version="2.0.0" />
+
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Resolve common live video host URL's to be playable in XBMC/Kodi + find links embeded in sites.</summary>
+    <description lang="en"></description>
+  </extension>
+</addon>
+
 <addon id="script.module.resolveurl" name="ResolveURL" version="5.0.37" provider-name="jsergio">
     <requires>
         <import addon="xbmc.python" version="2.1.0" />
@@ -1026,6 +1151,29 @@ v.2.1.5
 </addon>
 
 <addon id="script.module.urlresolver" name="URLResolver" version="5.0.52" provider-name="tvaddons">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0" />
+        <import addon="plugin.video.youtube" optional="true" />
+        <import addon="script.module.python.twitch" optional="true" />
+        <import addon="script.module.cryptopy" version="1.2.6" optional="true" />
+        <import addon="plugin.video.gdrive" optional="true" />
+    </requires>
+    <extension point="xbmc.python.module" library="lib" />
+    <extension point="xbmc.python.pluginsource" library="lib/default.py" />
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">Resolve common video host URL's to be playable in XBMC/Kodi.</summary>
+        <summary lang="es">Resolver enlaces a videos de sitios populares para poder reproducirlos en XBMC/Kodi.</summary>
+        <summary lang="hr">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju.</summary>
+        <summary lang="el">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi.</summary>
+        <description lang="en">Resolve common video host URL's to be playable in XBMC/Kodi, simplify addon development of video plugins requiring multi video hosts.</description>
+        <description lang="hr">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju, pojednostavnjuje razvoj priključaka za video dodatke koji zahtjevaju višestruke video izvore.</description>
+        <forum>https://www.tvaddons.co/forums</forum>
+        <website>https://www.tvaddons.co</website>
+    </extension>
+</addon>
+
+<addon id="script.module.urlresolver" name="URLResolver" version="5.0.53" provider-name="tvaddons">
     <requires>
         <import addon="xbmc.python" version="2.1.0" />
         <import addon="plugin.video.youtube" optional="true" />
