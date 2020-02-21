@@ -1,6 +1,6 @@
 """
-    resolveurl XBMC Addon
-    Copyright (C) 2011 t0mm0
+    Plugin for ResolveUrl
+    Copyright (C) 2019 twilight0
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,36 +15,38 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import re
+
 from lib import helpers
-from lib import jsunpack
 from resolveurl import common
 from resolveurl.resolver import ResolveUrl, ResolverError
 
-class Mp4uploadResolver(ResolveUrl):
-    name = "mp4upload"
-    domains = ["mp4upload.com"]
-    pattern = '(?://|\.)(mp4upload\.com)/(?:embed-)?([0-9a-zA-Z]+)'
+
+class BrighteonResolver(ResolveUrl):
+    name = "brighteon"
+    domains = ['brighteon.com']
+    pattern = r'(?://|\.)(brighteon\.com)/(?:embed)?/?([\w-]+)'
 
     def __init__(self):
         self.net = common.Net()
 
     def get_media_url(self, host, media_id):
+
         web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.RAND_UA,
-                   'Referer': web_url}
+
+        headers = {'User-Agent': common.RAND_UA}
         html = self.net.http_GET(web_url, headers=headers).content
 
-        r = re.search("script'>(eval.*?)</script", html, re.DOTALL)
-        
-        if r:
-            html = jsunpack.unpack(r.group(1))
-            src = re.search('src\("([^"]+)',html)
-            if src:
-                headers.update({'verifypeer': 'false'})
-                return src.group(1) + helpers.append_headers(headers)
+        try:
 
-        raise ResolverError('Video cannot be located.')
- 
+            sources = helpers.scrape_sources(
+                html, patterns=[r'source src=[\'"](?P<url>.+?)[\'"].+?x-mpegURL']
+            )
+
+            return helpers.pick_source(sources) + helpers.append_headers(headers)
+
+        except Exception:
+            raise ResolverError("Video not found")
+
     def get_url(self, host, media_id):
-        return self._default_get_url(host, media_id, template='https://{host}/embed-{media_id}.html')
+
+        return self._default_get_url(host, media_id, template='https://www.{host}/embed/{media_id}')
