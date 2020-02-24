@@ -219,6 +219,7 @@ def findvideos(item):
 
         if url and 'youtube' not in url:
             # ~ logger.info(url)
+            url = url.replace('#Synchronization+Service', '')
             itemlist.append(Item( channel = item.channel, action = 'play', other = option,
                                   title = '', url = url,
                                   language = IDIOMAS.get(language, language), quality = quality, quality_num = puntuar_calidad(quality)

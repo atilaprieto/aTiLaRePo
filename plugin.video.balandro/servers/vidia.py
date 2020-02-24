@@ -14,11 +14,13 @@ def get_video_url(page_url, url_referer=''):
     packed = scrapertools.find_multiple_matches(data, "(?s)eval(.*?)\s*</script>")
     for pack in packed:
         try:
-            data = jsunpack.unpack(pack)
+            unpacked = jsunpack.unpack(pack)
         except:
-            data = ''
-        # ~ logger.debug(data)
-        if 'sources:[' in data: break
+            unpacked = ''
+        # ~ logger.debug(unpacked)
+        if 'sources:[' in unpacked: 
+            data = unpacked
+            break
     # ~ logger.debug(data)
 
     bloque = scrapertools.find_single_match(data, 'sources:\s*\[(.*?)\]')

@@ -9,7 +9,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "https://(?:vidcloud.co|vcstream.to)/(?:embed|v)/([a-z0-9]+)",
+        "pattern": "https://(?:vidcloud.co|vidcloud.ru|vcstream.to)/(?:embed|v)/([a-z0-9]+)",
         "url": "https://vidcloud.co/player?fid=\\1&page=embed"
       }
     ]

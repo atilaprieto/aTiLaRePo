@@ -1,0 +1,17 @@
+{
+  "id": "streamz",
+  "name": "Streamz",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "streamz.cc/([A-z0-9]+)",
+        "url": "https://streamz.cc/\\1"
+      }
+    ]
+  }
+
+}

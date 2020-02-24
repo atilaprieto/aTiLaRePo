@@ -242,7 +242,7 @@ class Downloader:
 
         self.__get_download_info__()
 
-        logger.info("Descarga inicializada: Partes: %s | Ruta: %s | Archivo: %s | Tamaño: %s" % (
+        logger.info("Descarga inicializada: Partes: %s | Ruta: %s | Archivo: %s | Tamano: %s" % (
         len(self._download_info["parts"]), self._path, self._filename, self._download_info["size"]))
 
     def __url_to_headers__(self, url):

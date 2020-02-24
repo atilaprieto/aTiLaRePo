@@ -1,6 +1,6 @@
 # s-*- coding: utf-8 -*-
 
-from core import httptools, scrapertools
+from core import httptools, scrapertools, servertools
 from core import jsontools as json
 from platformcode import logger, platformtools
 import re, urllib, urlparse, base64
@@ -14,11 +14,13 @@ def get_video_url(page_url, url_referer=''):
         page_url = "http://www.youtube.com/watch?v=%s" % page_url
         logger.info(" page_url->'%s'" % page_url)
 
+    page_url = servertools.normalize_url('youtube', page_url)
+
     data = httptools.downloadpage(page_url).data
     if "File was deleted" in data:
         return 'El archivo no existe o ha sido borrado'
 
-    video_id = scrapertools.find_single_match(page_url, '(?:v=|embed/)([A-z0-9_-]{11})')
+    video_id = scrapertools.find_single_match(page_url, 'v=([A-z0-9_-]{11})')
     video_urls = extract_videos(video_id)
 
     return video_urls

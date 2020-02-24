@@ -7,7 +7,7 @@ from core.item import Item
 from core import httptools, scrapertools, servertools, jsontools, tmdb
 
 
-IDIOMAS = {'Latino': 'Lat', 'Castellano': 'Esp', 'Vo': 'VO', 'Vose': 'VOSE'}
+IDIOMAS = {'Latino': 'Lat', 'Castellano': 'Esp', 'Vo': 'VO', 'Vose': 'VOSE', 'Ingles': 'Eng'}
 
 # ~ host = 'http://www.cinefox.tv' / 'http://gnula.biz'
 
@@ -368,6 +368,12 @@ def findvideos(item):
     return itemlist
 
 
+def corregir_servidor(servidor):
+    servidor = servertools.corregir_servidor(servidor)
+    if servidor == 'miracine': return 'netutv'
+    elif servidor == 'player': return 'vimple'
+    else: return servidor
+
 def get_enlaces(item, url, tipo_enlaces):
     itemlist = []
     other = '' if tipo_enlaces == 'Online' else 'Descarga'
@@ -399,15 +405,11 @@ def get_enlaces(item, url, tipo_enlaces):
     matches = scrapertools.find_multiple_matches(data, patron)
     if matches:
         for scrapedurl, idioma, server, calidad in matches:
-            if server == "streamin": server = "streaminto"
-            if server == "waaw" or server == "miracine": server = "netutv"
-            if server == "ul": server = "uploadedto"
-            if server == "player": server = "vimpleru"
-            if server == "povwideo": server = "powvideo"
+            server = corregir_servidor(server)
 
             itemlist.append(Item(channel = item.channel, action = 'play',
                                  title = '', url = scrapedurl, server = server, 
-                                 language = IDIOMAS[idioma], quality = calidad, quality_num = puntuar_calidad(calidad), other = other
+                                 language = IDIOMAS.get(idioma, idioma), quality = calidad, quality_num = puntuar_calidad(calidad), other = other
                            ))
 
     return itemlist

@@ -1,15 +1,15 @@
 {
   "id": "inkapelis",
-  "name": "InkaPelis",
+  "name": "Inkapelis",
   "thumbnail": "inkapelis.jpg",
 
-  "active": false,
+  "active": true,
 
   "searchable": true,
-  "search_types": ["movie"],
+  "search_types": ["all", "movie", "tvshow"],
 
-  "categories": ["movie"],
+  "categories": ["movie", "tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "notes": "Películas por idioma, calidad, género y año. Estrenos, actualizadas, destacadas, ..."
+  "notes": "Películas y Series, por género, por año, por idioma, ..."
 }

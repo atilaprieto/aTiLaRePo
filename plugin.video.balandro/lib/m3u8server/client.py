@@ -29,7 +29,7 @@ class Client(object):
 
         self._server = Server((self.ip, self.port), Handler, client=self)
         self.add_url(url)
-        self.start()
+        if self.file_local: self.start()
 
     def start(self):
         self.start_time = time.time()
@@ -52,22 +52,26 @@ class Client(object):
         dom = '/'.join(url.split('/')[:3])
         dom_path = '/'.join(url.split('/')[:-1])
 
-        data = httptools.downloadpage(url).data
+        try:
+            data = httptools.downloadpage(url).data
+            # ~ logger.debug(data)
         
-        data_local = ''
-        for lin in data.splitlines():
-            if lin.startswith('#'): 
-                data_local += lin
-            elif lin.startswith('http'): 
-                data_local += self.url_base + base64.b64encode(lin)
-            elif lin.startswith('/'): 
-                data_local += self.url_base + base64.b64encode(dom + lin)
-            else: 
-                data_local += self.url_base + base64.b64encode(dom_path + '/' + lin)
-            data_local += '\n'
+            data_local = ''
+            for lin in data.splitlines():
+                if lin.startswith('#'): 
+                    data_local += lin
+                elif lin.startswith('http'): 
+                    data_local += self.url_base + base64.b64encode(lin)
+                elif lin.startswith('/'): 
+                    data_local += self.url_base + base64.b64encode(dom + lin)
+                else: 
+                    data_local += self.url_base + base64.b64encode(dom_path + '/' + lin)
+                data_local += '\n'
         
-        self.file_local = os.path.join(config.get_data_path(), "m3u8hls.m3u8")
-        with open(self.file_local, 'wb') as f: f.write(data_local); f.close()
+            self.file_local = os.path.join(config.get_data_path(), "m3u8hls.m3u8")
+            with open(self.file_local, 'wb') as f: f.write(data_local); f.close()
+        except:
+            self.file_local = None
 
     def _auto_shutdown(self):
         while self.running:

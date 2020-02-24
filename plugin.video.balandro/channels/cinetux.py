@@ -225,6 +225,7 @@ def play(item):
         # ~ logger.debug(data)
         new_url = scrapertools.find_single_match(data, '<a id="link" href="([^"]+)')
         if new_url: 
+            if '&url=' in new_url: new_url = new_url.split('&url=')[1]
             if 'cinetux.me' in new_url:
                 data = do_downloadpage(new_url)
                 # ~ logger.debug(data)
@@ -235,6 +236,7 @@ def play(item):
                 else:
                     itemlist = extraer_video(item, data)
             else:
+                new_url = servertools.normalize_url(item.server, new_url)
                 itemlist.append(item.clone( url=new_url ))
 
     else:
@@ -251,6 +253,7 @@ def play(item):
                 itemlist.append(item.clone( url=new_url, server=servertools.get_server_from_url(new_url) ))
 
     return itemlist
+
 
 
 def busqueda(item):

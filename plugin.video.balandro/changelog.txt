@@ -1,6 +1,12 @@
 Balandro changelog
 ==================
 
+1.4.4:
+    Canales modificados: Cinetux, InkaPelis, Pedropolis, Cinefox, Cuevana3, Dospelis, 
+    Grantorrent, Pepecine.
+    Servidores modificados: Fembed, Upstream, Powvideo, Streamplay, Netutv, Uqload, 
+    Streamz, Vidia, M3u8hls, Youtube.
+
 1.4.3:
     Canales modificados: Grantorrent, Seriez, Cinefox, Hdfull, Playview.
     Servidores modificados: Fembed, Powvideo, Streamplay, Sendvid, Netutv.

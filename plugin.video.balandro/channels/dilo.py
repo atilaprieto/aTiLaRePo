@@ -128,6 +128,7 @@ def temporadas(item):
 def episodios(item):
     logger.info()
     itemlist = []
+    color_lang = config.get_setting('list_languages_color', default='red')
 
     if not item.item_id:
         data = httptools.downloadpage(item.url).data
@@ -141,7 +142,7 @@ def episodios(item):
         titulo = '%sx%s %s' % (epi['season_number'], epi['number'], epi['name'])
         plot = epi['description']
         langs = re.findall('languajes/([^.]+).png', epi['audio'])
-        if langs: titulo += ' [COLOR pink][%s][/COLOR]' % ','.join([IDIOMAS.get(lang, lang) for lang in langs])
+        if langs: titulo += ' [COLOR %s][%s][/COLOR]' % (color_lang, ','.join([IDIOMAS.get(lang, lang) for lang in langs]))
 
         itemlist.append(item.clone( action='findvideos', url=host+epi['permalink']+'/', title=titulo, plot=plot,
                                     contentType='episode', contentSeason=epi['season_number'], contentEpisodeNumber=epi['number'] ))

@@ -459,3 +459,12 @@ def decode_srtam(url):
     # ~ logger.debug(data)
     # Usa recaptcha v2 invisible
     return ''
+
+def decode_streamcrypt(url):
+    n = 0
+    while url and 'streamcrypt.net/' in url and n < 5:
+        if 'embed.php' in url and not 'p=2' in url: url += '&p=2'
+        url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
+        n += 1
+
+    return url

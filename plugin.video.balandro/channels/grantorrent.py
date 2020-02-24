@@ -6,12 +6,7 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb
 
-# ~ host = 'http://grantorrent.net/'
-# ~ host = 'https://grantorrent1.com/'
-# ~ host = 'https://grantorrent.one/'
-# ~ host = 'https://grantorrent.tv/'
-# ~ host = 'https://grantorrent.la/'
-host = 'https://grantorrent.io/'
+host = 'https://grantorrent.li/'
 
 
 def item_configurar_proxies(item):
@@ -24,11 +19,11 @@ def configurar_proxies(item):
     return proxytools.configurar_proxies_canal(item.channel, host)
 
 def do_downloadpage(url, post=None):
-    url = url.replace('http://grantorrent.net/', 'https://grantorrent1.com/') # por si viene de enlaces guardados
-    url = url.replace('https://grantorrent1.com/', 'https://grantorrent.one/') # por si viene de enlaces guardados
-    url = url.replace('https://grantorrent.one/', 'https://grantorrent.tv/') # por si viene de enlaces guardados
-    url = url.replace('https://grantorrent.tv/', 'https://grantorrent.la/') # por si viene de enlaces guardados
-    url = url.replace('https://grantorrent.la/', 'https://grantorrent.io/') # por si viene de enlaces guardados
+    ant_hosts = ['http://grantorrent.net/', 'https://grantorrent1.com/', 'https://grantorrent.one/', 
+                 'https://grantorrent.tv/', 'https://grantorrent.la/', 'https://grantorrent.io/']
+    for ant in ant_hosts:
+        url = url.replace(ant, host) # por si viene de enlaces guardados
+
     # ~ data = httptools.downloadpage(url, post=post).data
     data = httptools.downloadpage_proxy('grantorrent', url, post=post).data
     # ~ logger.debug(data)
@@ -39,11 +34,7 @@ def do_downloadpage(url, post=None):
             ck_name, ck_value = balandroresolver.get_sucuri_cookie(data)
             if ck_name and ck_value:
                 # ~ logger.debug('Cookies: %s %s' % (ck_name, ck_value))
-                # ~ httptools.save_cookie(ck_name, ck_value, 'grantorrent1.com')
-                # ~ httptools.save_cookie(ck_name, ck_value, 'grantorrent.one')
-                # ~ httptools.save_cookie(ck_name, ck_value, 'grantorrent.tv')
-                # ~ httptools.save_cookie(ck_name, ck_value, 'grantorrent.la')
-                httptools.save_cookie(ck_name, ck_value, 'grantorrent.io')
+                httptools.save_cookie(ck_name, ck_value, host.replace('https://', '')[:-1])
                 # ~ data = httptools.downloadpage(url, post=post).data
                 data = httptools.downloadpage_proxy('grantorrent', url, post=post).data
                 # ~ logger.debug(data)

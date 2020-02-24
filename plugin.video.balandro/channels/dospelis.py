@@ -257,6 +257,7 @@ def corregir_servidor(servidor):
     servidor = servertools.corregir_servidor(servidor)
     if servidor == 'fcom': return 'fembed'
     elif servidor in ['mp4', 'api', 'drive']: return 'gvideo'
+    elif servidor == 'streamcrypt': return ''
     else: return servidor
 
 
@@ -342,7 +343,10 @@ def play(item):
         if url: 
             if 'jwplayer' in url and 'source=' in url: # Ej: https://www.dospelis.online/jwplayer-2/?source=https%3A%2F%2Fyoutu.be%2Fzcn89lxhEWk&id=71977&type=mp4
                 url = urllib.unquote(scrapertools.find_single_match(url, "source=([^&']+)"))
-                
+            elif 'streamcrypt.net/' in url: # Ej: https://streamcrypt.net/embed/streamz.cc/...
+                url = scrapertools.decode_streamcrypt(url)
+
+            if not url: return itemlist
             servidor = servertools.get_server_from_url(url)
             if servidor and servidor != 'directo':
                 url = servertools.normalize_url(servidor, url)

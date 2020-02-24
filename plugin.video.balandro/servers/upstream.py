@@ -8,6 +8,8 @@ def get_video_url(page_url, url_referer=''):
     logger.info("url=" + page_url)
     video_urls = []
 
+    if 'embed-' not in page_url: page_url = page_url.replace('upstream.to/', 'upstream.to/embed-') + '.html'
+
     data = httptools.downloadpage(page_url).data
     # ~ logger.debug(data)
 
@@ -34,5 +36,8 @@ def get_video_url(page_url, url_referer=''):
                 for res, url in matches:
                     if '/iframes' in url: continue
                     video_urls.append([res+'p', url])
+
+        elif url and 'mp4' in url:
+            video_urls.append(['mp4', url])
 
     return video_urls

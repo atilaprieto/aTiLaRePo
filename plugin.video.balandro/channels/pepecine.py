@@ -312,6 +312,9 @@ def findvideos(item):
         if url.startswith('https://goo.gl/'): # acortador de google
             url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
             if not url: continue
+        elif 'streamcrypt.net/' in url: # acortador
+            url = scrapertools.decode_streamcrypt(url)
+            if not url: continue
         
         #TODO? Mostrar info de positive_votes, negative_votes, reports
         

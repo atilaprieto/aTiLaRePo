@@ -245,6 +245,9 @@ def download_video(item, parent_item):
         if mediaurl == '':
             platformtools.dialog_ok(config.__addon_name, 'No se encuentra el vídeo!')
             return False
+        if mediaurl.endswith('.m3u8') or 'm3u8' in video_urls[seleccion][0].lower():
+            platformtools.dialog_ok(config.__addon_name, 'No se puede descargar en formato m3u8')
+            return False
 
         if parent_item.contentType == 'movie':
             file_name = '%s' % parent_item.contentTitle # config.text_clean(...)

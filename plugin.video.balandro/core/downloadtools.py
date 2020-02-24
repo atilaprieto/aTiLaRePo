@@ -22,6 +22,9 @@ def do_download(mediaurl, download_path, file_name, headers=[], silent=False, re
     # Limpiar caracteres para nombre de fichero válido
     file_name = config.text_clean(file_name)
 
+    # Evitar unicode que puede dar problemas luego...
+    if type(mediaurl) == unicode: mediaurl = mediaurl.encode('ascii','ignore')
+
     # Lanzamos la descarga
     d = Downloader(mediaurl, download_path, file_name,
                    headers = headers, 
