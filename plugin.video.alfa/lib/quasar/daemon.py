@@ -1,5 +1,5 @@
-from future import standard_library
-standard_library.install_aliases()
+#from future import standard_library
+#standard_library.install_aliases()
 from future.builtins import map
 #from future.builtins import str
 from future.builtins import range
@@ -8,13 +8,17 @@ import sys
 PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
+if PY3:
+    import urllib.request as urllib2
+else:
+    import urllib2
+
 import os
 import stat
 import time
 import xbmc
 import shutil
 import socket
-import urllib.request, urllib.error, urllib.parse
 import xbmcgui
 import threading
 import subprocess
@@ -84,9 +88,9 @@ def get_quasar_binary():
             dest_binary_dir = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")).decode('utf-8'), "bin", "%(os)s_%(arch)s" % PLATFORM)
         else:
             dest_binary_dir = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")), "bin", "%(os)s_%(arch)s" % PLATFORM)
-            if isinstance(dest_binary_dir, bytes):
-                dest_binary_dir = dest_binary_dir.decode("utf8")
-
+    
+    if PY3 and isinstance(dest_binary_dir, bytes):
+        dest_binary_dir = dest_binary_dir.decode("utf8")
     log.info("Using destination binary folder: %s" % dest_binary_dir)
     binary_path = os.path.join(binary_dir, binary)
     dest_binary_path = os.path.join(dest_binary_dir, binary)
@@ -254,7 +258,7 @@ def start_quasard(**kwargs):
 
 def shutdown():
     try:
-        urllib.request.urlopen(QUASARD_HOST + "/shutdown")
+        urllib2.urlopen(QUASARD_HOST + "/shutdown")
     except:
         pass
 

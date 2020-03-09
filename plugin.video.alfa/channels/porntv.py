@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
@@ -30,7 +39,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "")
-    item.url = host + "/videos/straight/%s-recent.html" % texto
+    item.url = "%s/videos/straight/%s-recent.html" % (host, texto)
     try:
         return lista(item)
     except:
@@ -53,7 +62,7 @@ def categorias(item):
     for scrapedurl,scrapedtitle,scrapedthumbnail,cantidad in matches:
         scrapedplot = ""
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
-        title = scrapedtitle + " " + cantidad
+        title = "%s (%s)" %(scrapedtitle,cantidad)
         itemlist.append( Item(channel=item.channel, action="lista", title=title, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail , plot=scrapedplot) )
     return itemlist
@@ -63,6 +72,7 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
+    logger.debug(data)
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
     patron = '<div class="item" style="width: 320px">.*?'
     patron += '<a href="([^"]+)".*?'
@@ -72,9 +82,9 @@ def lista(item):
     patron += 'clock"></use></svg>([^<]+)</span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,quality,scrapedtitle,scrapedtime in matches:
-        title = "[COLOR yellow]" + scrapedtime + "[/COLOR] " + scrapedtitle
+        title = "[COLOR yellow]%s[/COLOR] %s" % (scrapedtime,scrapedtitle)
         if "flag-hd" in quality:
-            title = "[COLOR yellow]" + scrapedtime + "[/COLOR] " + "[COLOR red]" + "HD" + "[/COLOR] " + scrapedtitle
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (scrapedtime,scrapedtitle)
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = scrapedthumbnail
         plot = ""

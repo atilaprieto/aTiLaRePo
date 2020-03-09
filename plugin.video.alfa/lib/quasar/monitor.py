@@ -1,10 +1,19 @@
-from future import standard_library
-standard_library.install_aliases()
+#from future import standard_library
+#standard_library.install_aliases()
+
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.request as urllib2
+else:
+    import urllib2
 
 import os
 import xbmc
 import base64
-import urllib.request
+
 import threading
 from quasar.daemon import shutdown
 from quasar.config import QUASARD_HOST
@@ -33,14 +42,14 @@ class QuasarMonitor(xbmc.Monitor):
 
     def onSettingsChanged(self):
         try:
-            urllib.request.urlopen("%s/reload" % QUASARD_HOST)
-            urllib.request.urlopen("%s/cmd/clear_page_cache" % QUASARD_HOST)
+            urllib2.urlopen("%s/reload" % QUASARD_HOST)
+            urllib2.urlopen("%s/cmd/clear_page_cache" % QUASARD_HOST)
         except:
             pass
 
     def onNotification(self, sender, method, data):
         try:
-            urllib.request.urlopen("%s/notification?sender=%s&method=%s&data=%s" % (
+            urllib2.urlopen("%s/notification?sender=%s&method=%s&data=%s" % (
                 QUASARD_HOST,
                 sender,
                 method,

@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
 import re
-import urlparse
 
 from core import httptools
 from core import scrapertools
@@ -67,10 +74,8 @@ def lista(item):
         thumbnail = urlparse.urljoin(item.url, scrapedthumbnail)
         title = scrapedtitle.strip()
         itemlist.append(Item(channel=item.channel, action="play", thumbnail=thumbnail, fanart=thumbnail, title=title,
-                             url=url,
-                             viewmode="movie", folder=True))
-    paginacion = scrapertools.find_single_match(data,
-                                                '<li class="active">.*?</li>.*?<a href="([^"]+)">')
+                             url=url, viewmode="movie", folder=True))
+    paginacion = scrapertools.find_single_match(data, '<li class="active">.*?</li>.*?<a href="([^"]+)">')
     if paginacion:
         paginacion = urlparse.urljoin(item.url,paginacion)
         itemlist.append(Item(channel=item.channel, action="lista", title=">> Página Siguiente",
@@ -86,5 +91,4 @@ def play(item):
     itemlist.append(item.clone(action="play", title=item.title, url=url ))
     itemlist = servertools.get_servers_itemlist(itemlist)
     return itemlist
-
 

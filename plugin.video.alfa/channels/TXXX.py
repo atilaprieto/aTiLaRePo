@@ -11,14 +11,15 @@ from core import jsontools as json
 
 
 host = 'https://txxx.com'
-url_api = host + "/api/json/videos/86400/str/"
+url_api = host + "/api/json/videos/%s/str/%s/60/%s.%s.1.all..%s.json"
+
 
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Ultimas" , action="lista", url=url_api + "latest-updates/60/..1.all..day.json"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valoradas" , action="lista", url=url_api + "top-rated/60/..1.all..day.json"))
-    itemlist.append( Item(channel=item.channel, title="Mas popular" , action="lista", url=url_api + "most-popular/60/..1.all..day.json"))
+    itemlist.append( Item(channel=item.channel, title="Ultimas" , action="lista", url=url_api % ("14400", "latest-updates", "", "", "")))
+    itemlist.append( Item(channel=item.channel, title="Mejor valoradas" , action="lista", url=url_api % ("14400", "top-rated", "", "", "")))
+    itemlist.append( Item(channel=item.channel, title="Mas popular" , action="lista", url=url_api % ("14400", "most-popular", "", "", "")))
     itemlist.append( Item(channel=item.channel, title="Pornstar" , action="pornstar", url=host + "/api/json/models/86400/str/filt........../most-popular/48/1.json"))
     itemlist.append( Item(channel=item.channel, title="Canal" , action="catalogo", url=host + "/api/json/channels/86400/str/latest-updates/80/..1.json"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/api/json/categories/14400/str.all.json"))
@@ -29,7 +30,8 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "%20")
-    item.url = "https://txxx.com/api/videos.php?params=86400/str/relevance/60/search..1.all..day&s=%s" % texto
+    item.url = "https://txxx.com/api/videos.php?params=259200/str/relevance/60/search..1.all..&s=%s" % texto
+    
     try:
         return lista(item)
     except:
@@ -42,7 +44,8 @@ def search(item, texto):
 def pornstar(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    headers = {'Referer': "%s" % host}
+    data = httptools.downloadpage(item.url, headers=headers).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     JSONData = json.load(data)
     for cat in  JSONData["models"]:
@@ -54,9 +57,9 @@ def pornstar(item):
         num = num.get(n,n)
         thumbnail = scrapedthumbnail.replace("\/", "/")
         scrapedplot = ""
-        scrapedurl = url_api + "latest-updates/60/model.%s.1.all..day.json" %dir
+        url = url_api % ("14400", "latest-updates", "model", dir, "")
         title = "%s (%s)" %(scrapedtitle,num)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title , url=scrapedurl , 
+        itemlist.append( Item(channel=item.channel, action="lista", title=title , url=url , 
                         thumbnail=thumbnail , plot=scrapedplot) )
     total= int(JSONData["total_count"])
     page = int(scrapertools.find_single_match(item.url,'.*?(\d+).json'))
@@ -71,7 +74,8 @@ def pornstar(item):
 def catalogo(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    headers = {'Referer': "%s" % host}
+    data = httptools.downloadpage(item.url, headers=headers).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     JSONData = json.load(data)
     for cat in  JSONData["channels"]:
@@ -83,9 +87,9 @@ def catalogo(item):
         num = num.get(n,n)
         thumbnail = scrapedthumbnail.replace("\/", "/")
         scrapedplot = ""
-        scrapedurl = url_api + "latest-updates/60/channel.%s.1.all..day.json" %dir
+        url = url_api % ("7200", "latest-updates", "channel", dir, "")
         title = "%s (%s)" %(scrapedtitle,num)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title , url=scrapedurl , 
+        itemlist.append( Item(channel=item.channel, action="lista", title=title , url=url , 
                         thumbnail=thumbnail , plot=scrapedplot) )
     total= int(JSONData["total_count"])
     page = int(scrapertools.find_single_match(item.url,'.*?.(\d+).json'))
@@ -100,13 +104,14 @@ def catalogo(item):
 def categorias(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    headers = {'Referer': "%s" % host}
+    data = httptools.downloadpage(item.url, headers=headers).data
     JSONData = json.load(data)
     for cat in  JSONData["categories"]:
         scrapedtitle = cat["title"]
         dir = cat["dir"]
         num = cat["total_videos"]
-        url = url_api + "latest-updates/60/categories.%s.1.all..day.json" %dir
+        url = url_api % ("14400", "most-popular", "categories", dir, "day")
         thumbnail = ""
         scrapedplot = ""
         title = "%s (%s)" %(scrapedtitle,num)
@@ -118,7 +123,8 @@ def categorias(item):
 def lista(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    headers = {'Referer': "%s" % host}
+    data = httptools.downloadpage(item.url, headers=headers).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     JSONData = json.load(data)
     for Video in  JSONData["videos"]:
@@ -138,12 +144,12 @@ def lista(item):
         itemlist.append( Item(channel=item.channel, action="play" , title=title , url=scrapedurl, thumbnail=thumbnail, 
                         fanart=thumbnail, plot=plot, contentTitle=title) )
     total= int(JSONData["total_count"])
-    page = int(scrapertools.find_single_match(item.url,'(\d+).all..day'))
-    url_page = scrapertools.find_single_match(item.url,'(.*?).\d+.all..day')
-    post = scrapertools.find_single_match(item.url,'all..day(.*)')
+    page = int(scrapertools.find_single_match(item.url,'(\d+).all..'))
+    url_page = scrapertools.find_single_match(item.url,'(.*?).\d+.all..')
+    post = scrapertools.find_single_match(item.url,'all..(.*)')
     next_page = (page+ 1)
     if (page*60) < total:
-        next_page = "%s.%s.all..day%s" %(url_page,next_page,post)
+        next_page = "%s.%s.all..%s" %(url_page,next_page,post)
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
     return itemlist
 

@@ -657,7 +657,7 @@ def novedades_episodios(item):
     post = post.replace("start=" + old_start, "start=" + start)
     next_page = url + "?" + post
     #episodes = httptools.downloadpage(url, post=post).json
-    episodes = httptools.downloadpage(url, post=post, headers={"Referer": item.url}).json
+    episodes = httptools.downloadpage(url, post=post, headers={"Referer": host}).json
     for episode in episodes:
         #Fix para thumbs
         thumb = episode['show'].get('thumbnail', '')

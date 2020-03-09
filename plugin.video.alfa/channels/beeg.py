@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-import urllib
+# import urllib
 
 from core import jsontools as json
 from core import scrapertools
@@ -13,16 +13,13 @@ from core import httptools
 url_api = ""
 Host = "https://beeg.com"
 
-
 def get_api_url():
     global url_api
     data = httptools.downloadpage(Host).data
     version = re.compile('var beeg_version = ([\d]+)').findall(data)[0]
     url_api = Host + "/api/v6/" + version    # https://beeg.com/api/v6/1568386822920/
 
-
 get_api_url()
-
 
 def mainlist(item):
     logger.info()
@@ -42,7 +39,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = url_api + "/index/tag/0/pc?tag=%s" % (texto)
+    item.url =  "%s/index/tag/0/pc?tag=%s" % (url_api, texto)
     
     try:
         return videos(item)
@@ -78,7 +75,7 @@ def videos(item):
         thumbnail = "http://img.beeg.com/264x198/4x3/%s" %image
         url = '%s/video/%s?v=2' % (url_api, Video['svid'])
         title = Video["title"]
-        title = "[COLOR yellow]" + duration + "[/COLOR] " + title
+        title = "[COLOR yellow]%s[/COLOR] %s" %( duration, title)
         itemlist.append(
             Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail, plot="", 
                  folder=True, contentType="movie"))

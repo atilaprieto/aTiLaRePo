@@ -1,10 +1,14 @@
 {
-  "active": false,
+  "active": true,
   "find_videos": {
     "ignore_urls": [],
     "patterns": [
       {
         "pattern": "https://embed.mystream.to/(\\w+)",
+        "url": "https://embed.mystream.to/\\1"
+      },
+      {
+        "pattern": "https://mystream.to/watch/(\\w+)",
         "url": "https://embed.mystream.to/\\1"
       }
     ]

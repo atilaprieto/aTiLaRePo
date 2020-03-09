@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
@@ -46,9 +55,9 @@ def categorias(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     for scrapedurl,scrapedtitle,scrapedthumbnail,cantidad  in matches:
-        scrapedtitle = scrapedtitle + " (" + cantidad + ")"
+        scrapedtitle = "%s (%s)" % (scrapedtitle, cantidad)
         scrapedplot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append( Item(channel=item.channel, action="categorias", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return sorted(itemlist, key=lambda i: i.title)
 
@@ -64,8 +73,9 @@ def lista(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedtime in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
-        title = "[COLOR yellow]" + scrapedtime + "[/COLOR] " + scrapedtitle
-        thumbnail = "http:" + scrapedthumbnail + "|Referer=%s" % item.url
+        title = "[COLOR yellow]%s[/COLOR] %s" % (scrapedtime, scrapedtitle)
+        thumbnail = "http:%s" % scrapedthumbnail 
+        thumbnail += "|Referer=%s" % item.url
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
                               fanart=thumbnail, plot=plot))

@@ -1,13 +1,22 @@
 # -*- coding: utf-8 -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
-import base64
-import hashlib
-import urlparse
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from core import httptools
 from core import servertools
 from core import scrapertools
 from platformcode import logger
+import base64
+import hashlib
+
 
 host = "https://www.nuvid.com"
 
@@ -30,7 +39,8 @@ def mainlist(item):
 
 def search(item, texto):
     logger.info()
-    item.url = "https://www.nuvid.com/search/videos/" + texto.replace(" ", "%20")
+    texto = texto.replace(" ", "%20")
+    item.url = "https://www.nuvid.com/search/videos/%s" %texto 
     item.extra = "buscar"
     return lista(item)
 
@@ -48,7 +58,9 @@ def lista(item):
     if item.extra != "buscar":
         header['Cookie'] = 'area=EU; lang=en; search_filter_new=%s' % filter
     data = httptools.downloadpage(item.url, headers=header, cookies=False).data
-    patron = '<div class="box-tumb related_vid.*?href="([^"]+)" title="([^"]+)".*?src="([^"]+)"(.*?)<i class="time">([^<]+)<'
+    patron = '<div class="box-tumb related_vid.*?'
+    patron += 'href="([^"]+)" title="([^"]+)".*?'
+    patron += 'src="([^"]+)"(.*?)<i class="time">([^<]+)<'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedtitle, scrapedthumbnail, quality, duration in matches:
         scrapedurl = urlparse.urljoin(host, scrapedurl)
@@ -56,6 +68,9 @@ def lista(item):
             scrapedtitle = "%s - %s" % (duration, scrapedtitle)
         if item.calidad == "0" and 'class="hd"' in quality:
             scrapedtitle += "  [COLOR red][HD][/COLOR]"
+        if not scrapedthumbnail.startswith("https"):
+            scrapedthumbnail = "https:%s" % scrapedthumbnail
+
         itemlist.append(
             item.clone(action="play", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail, folder=False))
     next_page = scrapertools.find_single_match(data, '<li class="next1">.*?href="([^"]+)"')
@@ -76,7 +91,7 @@ def categorias(item):
         itemlist.append(item.clone(action="", title=cat, text_color="gold"))
         matches = scrapertools.find_multiple_matches(b, '<li>.*?href="([^"]+)" >(.*?)</span>')
         for scrapedurl, scrapedtitle in matches:
-            scrapedtitle = "   " + scrapedtitle.replace("<span>", "")
+            scrapedtitle = "   %s" % scrapedtitle.replace("<span>", "")
             scrapedurl = urlparse.urljoin(host, scrapedurl)
             itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl))
     return itemlist
@@ -86,22 +101,3 @@ def play(item):
     logger.info(item)
     itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     return itemlist
-
-
-# def play(item):
-    # logger.info()
-    # itemlist = []
-    # data = httptools.downloadpage(item.url, cookies=False).data
-    # h = scrapertools.find_single_match(data, "params\s*\+=\s*'h=([^']+)'")
-    # t = scrapertools.find_single_match(data, "params\s*\+=\s*'%26t=([^']+)'")
-    # vkey = scrapertools.find_single_match(data, "params\s*\+=\s*'%26vkey='.*?'([^']+)'")
-    # pkey = hashlib.md5(vkey + base64.b64decode("aHlyMTRUaTFBYVB0OHhS")).hexdigest()
-    # url = 'https://www.nuvid.com/player_config/?h=%s&check_speed=1&t=%s&vkey=%s&pkey=%s&aid=&domain_id=' % (h,t,vkey,pkey)
-    # data = httptools.downloadpage(url, cookies=False).data
-    # videourl = scrapertools.find_single_match(data, '<video_file>.*?(http.*?)\]\]>')
-    # if videourl:
-        # itemlist.append(['.mp4 [directo]', videourl])
-    # videourl = scrapertools.find_single_match(data, '<hq_video_file>.*?(http.*?)\]\]>')
-    # if videourl:
-        # itemlist.append(['.mp4 HD [directo]', videourl])
-    # return itemlist

@@ -9,6 +9,7 @@ from core import servertools
 from core import tmdb
 from core.item import Item
 from lib import unshortenit
+from bs4 import BeautifulSoup
 
 host = "http://www.descargacineclasico.net"
 
@@ -19,37 +20,43 @@ def mainlist(item):
                          url=host, viewmode="movie_with_plot", thumbnail=get_thumb('last', auto=True)))
     itemlist.append(Item(channel=item.channel, title="Listado por género", action="porGenero",
                          url=host, thumbnail=get_thumb('genres', auto=True)))
-    itemlist.append(Item(channel=item.channel, title="Listado alfabetico", action="porLetra",
-                         url=host + "/cine-online/", thumbnail=get_thumb('alphabet', auto=True)))
     itemlist.append(Item(channel=item.channel, title="Buscar", action="search", url=host,
                          thumbnail=get_thumb('search', auto=True)))
     return itemlist
 
 
-def porLetra(item):
+def create_soup(url, referer=None, unescape=False):
     logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron = 'noindex,nofollow" href="([^"]+)">(\w+)<'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    for url, titulo in matches:
-        if titulo == "0":  continue   # No hay pagina https://www.descargacineclasico.net/tag/0
-        itemlist.append( Item(channel=item.channel , action="agregadas" , title=titulo, url=url, viewmode="movie_with_plot"))
-    return itemlist
+
+    if referer:
+        data = httptools.downloadpage(url, headers={'Referer':referer}).data
+    else:
+        data = httptools.downloadpage(url).data
+
+    if unescape:
+        data = scrapertools.unescape(data)
+    soup = BeautifulSoup(data, "html5lib", from_encoding="utf-8")
+
+    return soup
 
 
 def porGenero(item):
     logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron = '<ul class="columnas">(.*?)</ul>'
-    data = re.compile(patron,re.DOTALL).findall(data)
-    patron = '<li.*?>.*?href="([^"]+).*?>([^<]+)'                                            
-    matches = re.compile(patron,re.DOTALL).findall(data[0])
-    for url, genero in matches:
+    itemlist = list()
+
+    soup = create_soup(item.url)
+    matches = soup.find("div", id="sidebar").find("ul", "columnas")
+
+    for elem in matches.find_all("li"):
+
+        url = elem.a["href"]
+        genero = elem.a.text
+        logger.debug(url)
+        logger.debug(genero)
         if genero == "Erótico" and config.get_setting("adult_mode") == 0:
             continue
-        itemlist.append( Item(channel=item.channel , action="agregadas" , title=genero,url=url, viewmode="movie_with_plot"))
+        itemlist.append(Item(channel=item.channel, action="agregadas", title=genero, url=url))
+
     return itemlist
 
 
@@ -69,35 +76,36 @@ def search(item,texto):
 
 def agregadas(item):
     logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    fichas = re.sub(r"\n|\s{2}","",scrapertools.find_single_match(data,'<div class="review-box-container">(.*?)wp-pagenavi'))
-    patron = '<div class="post-thumbnail"><a href="([^"]+)".*?' # url
-    patron+= 'title="([^"]+)".*?' # title
-    patron+= 'src="([^"]+).*?'     # thumbnail
-    patron+= '<p>([^<]+)'         # plot
-    matches = re.compile(patron,re.DOTALL).findall(fichas)
-    for url, title, thumbnail, plot in matches:
-        title = title.replace("Descargar y ver Online","").strip()
+    itemlist = list()
+
+    soup = create_soup(item.url)
+    matches = soup.find("div", class_="review-box-container")
+
+    for elem in matches.find_all("div", class_="review-box"):
+        logger.debug(elem)
+        url = elem.a["href"]
+        title = elem.img["alt"]
+        thumbnail = elem.img["data-src"]
+        title = title.replace("Descargar y ver Online", "").replace("Gratis", "").strip()
         year = scrapertools.find_single_match(title, '\(([0-9]{4})')
+        plot = elem.p.text
         contentTitle = title.replace("(%s)" %year,"").strip()
         itemlist.append( Item(action="findvideos",
                               channel=item.channel,
-                              contentSerieName="",
-                              title=title+" ",
+                              title=title+"",
                               contentTitle=contentTitle ,
                               infoLabels={'year':year},
                               url=url ,
                               thumbnail=thumbnail,
                               plot=plot,
-                              show=title) )
+                              ))
     tmdb.set_infoLabels(itemlist)
     # Paginación
     try:
-        patron_nextpage = r'<a class="nextpostslink" rel="next" href="([^"]+)'
-        next_page = re.compile(patron_nextpage,re.DOTALL).findall(data)
-        itemlist.append( Item(channel=item.channel, action="agregadas", title="Página siguiente >>" , url=next_page[0], viewmode="movie_with_plot") )
-    except: pass
+        next_page = soup.find("a", class_="nextpostslink")["href"]
+        itemlist.append( Item(channel=item.channel, action="agregadas", title="Página siguiente >>", url=next_page))
+    except:
+        pass
     return itemlist
 
 
@@ -106,18 +114,21 @@ def findvideos(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = scrapertools.unescape(data)
-    patron = '#div_\d_\D.+?<img id="([^"]+).*?<span>.*?</span>.*?<span>(.*?)</span>.*?imgdes.*?imgdes/([^\.]+).*?<a href=([^\s]+)'  #Añado calidad
+    logger.debug(data)
+    patron = '#div_\d_\D.+?<img id=([^ ]+) .*?<span>.*?</span>.*?<span>(.*?)</span>.*?imgdes.*?imgdes/([^\.]+).*?<a href=([^\s]+)'  #Añado calidad
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedidioma, scrapedcalidad, scrapedserver, scrapedurl in matches:
+        if "proximamente" in scrapedurl.lower():
+            continue
         scrapedurl = scrapedurl.replace('"','')
-        while True:
-            loc = httptools.downloadpage(scrapedurl, follow_redirects=False, ignore_response_code = True).headers.get("location", "")
-            if not loc or "/ad/locked" in loc or not loc.startswith("http"):
-                break
-            scrapedurl = loc
-        scrapedurl, c = unshortenit.unshorten_only(scrapedurl)
-        if "dest=" in scrapedurl or "dp_href=" in scrapedurl:
-            scrapedurl = scrapertools.find_single_match(urllib.unquote(scrapedurl), '(?:dest|dp_href)=(.*)')
+        # while True:
+        #     loc = httptools.downloadpage(scrapedurl, follow_redirects=False, ignore_response_code = True).headers.get("location", "")
+        #     if not loc or "/ad/locked" in loc or not loc.startswith("http"):
+        #         break
+        #     scrapedurl = loc
+        # scrapedurl, c = unshortenit.unshorten_only(scrapedurl)
+        # if "dest=" in scrapedurl or "dp_href=" in scrapedurl:
+        #     scrapedurl = scrapertools.find_single_match(urllib.unquote(scrapedurl), '(?:dest|dp_href)=(.*)')
         title = item.title + "_" + scrapedidioma + "_"+ scrapedserver + "_" + scrapedcalidad
         itemlist.append( item.clone(action="play",
                                     title=title,

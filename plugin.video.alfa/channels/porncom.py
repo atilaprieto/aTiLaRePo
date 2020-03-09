@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from platformcode import config, logger
 from core import scrapertools
@@ -25,7 +33,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/videos/search?q=%s" % texto
+    item.url = "%s/videos/search?q=%s" % (host,texto)
     try:
         return lista(item)
     except:
@@ -71,7 +79,7 @@ def lista(item):
     patron += '<span><a href="[^"]+">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail,time,server in matches:
-        title = "[COLOR yellow]%s [/COLOR] [%s] %s" % (time, server, scrapedtitle)
+        title = "[COLOR yellow]%s[/COLOR] [%s] %s" % (time, server, scrapedtitle)
         thumbnail = scrapedthumbnail
         url = ""
         url = scrapertools.find_single_match(scrapedurl,'<a href=".*?/(aHR0[^"]+)/\d+/\d+"') 
@@ -102,3 +110,4 @@ def play(item):
         url = scrapertools.find_single_match(data, 'url:"([^"]+)"')
         itemlist.append(['.mp4', url])
     return itemlist
+

@@ -1,6 +1,10 @@
 Balandro changelog
 ==================
 
+1.4.5:
+    Canales modificados: Retroseriestv, Hdfull, Seriesdanko, Inkapelis, Elhogardelaprendiz. 
+    Servidores modificados: Vidload, Gamovideo, Mixdrop, Uptostream, Powvideo, Streamplay.
+
 1.4.4:
     Canales modificados: Cinetux, InkaPelis, Pedropolis, Cinefox, Cuevana3, Dospelis, 
     Grantorrent, Pepecine.

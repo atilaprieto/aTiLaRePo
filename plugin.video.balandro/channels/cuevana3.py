@@ -196,7 +196,7 @@ def episodios(item):
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
-    orden = ['Cam', 'WEB-S', 'DVD-S', 'TS-HQ', 'DvdRip', 'HD']
+    orden = ['Cam', 'WEB-S', 'DVD-S', 'TS-HQ', 'DVD', 'DvdRip', 'HD']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

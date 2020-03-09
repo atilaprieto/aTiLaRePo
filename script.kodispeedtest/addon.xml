@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.kodispeedtest"
        name="Test de Velocidad"
-       version="0.0.5"
+       version="0.1.0"
        provider-name="[COLOR lime]Catoal[/COLOR]">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

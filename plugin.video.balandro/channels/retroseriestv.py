@@ -124,7 +124,12 @@ def episodios(item):
             continue
 
         thumb = scrapertools.find_single_match(data_epi, " src='([^']+)")
-        url, title = scrapertools.find_single_match(data_epi, " href='([^']+)'>([^<]+)")
+        try:
+            url, title = scrapertools.find_single_match(data_epi, " href='([^']+)'>([^<]+)")
+        except:
+            url = scrapertools.find_single_match(data_epi, " href='([^']+)")
+            title = ''
+        if not url: continue
         titulo = '%sx%s %s' % (season, episode, title)
 
         itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb, 

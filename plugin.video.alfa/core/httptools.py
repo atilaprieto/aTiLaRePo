@@ -38,7 +38,7 @@ DOMAIN_CS = ["animeflv.ru", "www.divxtotal.la", "gnula.nu", "mejortorrent1.net",
              'zooqle.com', 'zooqle1.unblocked.is', 'zooqle.unblocked.win', \
              'zooqle-com.prox2.info', 'blazing.network', 'www.cinetux.to', 'hdfull.io', \
              'vidtodo.com', 'seriesdanko.net', 'sexgalaxy.net', 'grantorrent.io', \
-             'grantorrent.li', 'animeflv.net']
+             'grantorrent.li', 'animeflv.net', 'seriesf.lv']
 
 ## Obtiene la versión del addon
 __version = config.get_addon_version()
@@ -51,7 +51,7 @@ ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
 # Headers por defecto, si no se especifica nada
 default_headers = dict()
 #default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/79.0.3945.117"
-default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
+default_headers["User-Agent"] = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36"
 default_headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
 default_headers["Accept-Language"] = "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"
 default_headers["Accept-Charset"] = "UTF-8"

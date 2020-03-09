@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
-import urlparse
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
 import re
 
 from platformcode import config, logger
@@ -11,7 +19,7 @@ from channels import filtertools
 from channels import autoplay
 
 IDIOMAS = {'vo': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['gounlimited']
 
@@ -37,7 +45,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/?s=%s" % texto
+    item.url =  "%s/?s=%s" % (host, texto)
     try:
         return lista(item)
     except:
@@ -90,12 +98,13 @@ def lista(item):
     patron += '<img src="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
-        logger.debug(scrapedurl)
         scrapedplot = ""
         if not "manyvids" in scrapedtitle:
             itemlist.append(Item(channel=item.channel, action="findvideos", title=scrapedtitle, contentTitle=scrapedtitle,
                              fanart=scrapedthumbnail, url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
-    next_page = scrapertools.find_single_match(data, '<div class="nav-previous"><a href="([^"]+)"')
+# class="page-numbers current">1</span><a class="page-numbers" href="https://sexgalaxy.net/full-movies/page/2/">2</a>
+                             # <a class="next page-numbers" href="https://sexgalaxy.net/full-movies/page/2/">Older posts 
+    next_page = scrapertools.find_single_match(data, '"page-numbers current">.*?href="([^"]+)">')
     if next_page != "":
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
     return itemlist
@@ -115,7 +124,7 @@ def findvideos(item):
         itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', language='VO',contentTitle = item.contentTitle))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server)
     # Requerido para FilterTools
-    itemlist = filtertools.get_links(itemlist, item, list_language)
+    itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)
     # Requerido para AutoPlay
     autoplay.start(itemlist, item)
     return itemlist

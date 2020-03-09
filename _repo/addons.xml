@@ -172,7 +172,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.0.2" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.0.5" provider-name="Alfa Addon">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.libtorrent" optional="true"/>
@@ -196,11 +196,16 @@ You can clone the project and host it in your own server.
       <news>[B]Estos son los cambios para esta versión:[/B]
 
       [COLOR green][B]Arreglos[/B][/COLOR]
-      ¤ Grantorrent               ¤ Destotal
+      ¤ Grantorrent                        ¤ Youtube                 ¤ Allcalidad
+      ¤ Descargacineclasico         ¤ SeriesFLV                ¤ HDFull
+      ¤ Pelix                                    ¤ PelisPlus                 ¤ UnRAR (contraseñas)
       ¤ +18
 
       [COLOR green][B]Novedades[/B][/COLOR]
-      ¤ +18
+      ¤ Entrepeliculasyseries
+      ¤ UnRAR: recuperación automática en caso de fallo
+      ¤ Quasar: compatibilidad total Kodi 19
+      ¤ +18 compatibilidad Kodi 19
 
     </news>
     <description lang="es">Navega con Kodi por páginas web para ver sus videos de manera fácil.</description>
@@ -218,10 +223,12 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.1.4" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.1.5" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
+		<import addon="script.module.urlresolver" />
+		<import addon="script.module.resolveurl" />
 		<import addon="plugin.video.f4mTester" />
 		<import addon="script.video.F4mProxy" />
 	</requires>
@@ -246,7 +253,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.4" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.5" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -263,10 +270,8 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Cinetux, InkaPelis, Pedropolis, Cinefox, Cuevana3, Dospelis,
-    Grantorrent, Pepecine.
-    Servidores modificados: Fembed, Upstream, Powvideo, Streamplay, Netutv, Uqload,
-    Streamz, Vidia, M3u8hls, Youtube.
+    Canales modificados: Retroseriestv, Hdfull, Seriesdanko, Inkapelis, Elhogardelaprendiz.
+    Servidores modificados: Vidload, Gamovideo, Mixdrop, Uptostream, Powvideo, Streamplay.
     </news>
 
     <assets>
@@ -580,7 +585,7 @@ v.2.1.5
 
 <addon id="plugin.video.tvchopo"
        name="[B][LOWERCASE][CAPITALIZE][COLOR white]T[COLOR aquamarine]V[COLOR yellow]C[COLOR orange]H[COLOR red]O[COLOR pink]P[COLOR fuchsia]O[/CAPITALIZE][/LOWERCASE][/B][/COLOR]"
-       version="15"
+       version="16"
        provider-name="equipo-chopo">
  <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -946,7 +951,7 @@ v.2.1.5
 
 <addon id="script.kodispeedtest"
        name="Test de Velocidad"
-       version="0.0.5"
+       version="0.1.0"
        provider-name="[COLOR lime]Catoal[/COLOR]">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -994,7 +999,7 @@ v.2.1.5
 </addon>
 
 <addon id="script.luar"
-  version="0.3.3"
+  version="0.3.5"
   name="Luar"
   provider-name="The Dreamers">
   <requires>
@@ -1025,7 +1030,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="script.module.clouddrive.common" name="Cloud Drive Common Module" version="1.2.10" provider-name="Carlos Guzman (cguZZman)">
+<addon id="script.module.clouddrive.common" name="Cloud Drive Common Module" version="1.2.12" provider-name="Carlos Guzman (cguZZman)">
 	<requires>
 		<import addon="xbmc.python" version="2.25.0" />
 		<import addon="script.module.dateutil"/>
@@ -1039,55 +1044,15 @@ v.2.1.5
 		<description lang="en_GB">Common Services and Classes for all the cloud drive addons.</description>
 		<summary lang="he_IL">מודול משותף לכונן בענן</summary>
 		<description lang="he_IL">שירותים ושירותים משותפים לכל התוספים של כונן הענן.</description>
-		<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+		<license>GPL-3.0-or-later</license>
 		<source>https://github.com/cguZZman/script.module.clouddrive.common</source>
 		<forum>https://github.com/cguZZman/script.module.clouddrive.common/issues</forum>
 		<assets>
 			<icon>icon.png</icon>
 		</assets>
 		<news>
-v1.2.10 released Feb 14, 2020:
-- Check for google ban
-v1.2.9 released Feb 10, 2020:
-- Fix playback
-v1.2.8 released Sep 20, 2018:
-- Resume points and watched status for strm files in library
-v1.2.7 released Sep 12, 2018:
-- Order by date fix
-v1.2.6 released Sep 10, 2018:
-- Subtitles assigned in source mode
-- Fixes
-v1.2.5 released Aug 25, 2018:
-- Fix 'Remove' export option
-- Fix error log
-v1.2.3 released Aug 24, 2018:
-- Fix watch folder creating strm for non-media files
-- strm files saved in the cloud are exported as is.
-v1.2.1 released Aug 18, 2018:
-- Fix source mode
-v1.2.0 released Aug 15, 2018:
-- Added auto export and watch export folder
-v1.1.7 released Jul 14, 2018:
-- Added a QR code to simplify adding an account
-v1.1.5 released Jul 14, 2018:
-- Fixes for slow connections
-v1.1.4 released Jul 12, 2018:
-- Ip change detection.
-- Fixes
-v1.1.0 released Jul 11, 2018:
-- New mode for source and download services. Both moved to respective addons.
-- Source service fixed.
-v1.0.4 released Jul 6, 2018:
-- Fix display more than 100 files in source mode
-v1.0.3 released Jul 5, 2018:
-- Fixes
-v1.0.2 released March 15, 2018:
-- Fixes
-v1.0.1 released Nov 6, 2017:
-- Login app rename
-- Support for images by extension only when the cloud drive doesn't provide image information.
-v1.0.0 released Nov 6, 2017:
-- First release
+v1.2.12 released Mar 3, 2020:
+- NFO export
 		</news>
 		<disclaimer lang="en_GB">
 This cloud drive addon uses a third-party authentication mechanism commonly known as OAuth 2.0.

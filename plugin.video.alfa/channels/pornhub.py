@@ -1,7 +1,15 @@
 ﻿# -*- coding: utf-8 -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
 import re
-import urlparse
+
 from core import httptools
 from core import servertools
 from core import scrapertools
@@ -49,7 +57,7 @@ def categorias(item):
             url = urlparse.urljoin(item.url, scrapedurl + "&o=cm")
         else:
             url = urlparse.urljoin(item.url, scrapedurl + "?o=cm")
-        scrapedtitle = scrapedtitle + " (" + cantidad + ")"
+        scrapedtitle = "%s (%s)" % (scrapedtitle,cantidad)
         itemlist.append(Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
                              fanart=scrapedthumbnail, thumbnail=scrapedthumbnail))
     itemlist.sort(key=lambda x: x.title)
@@ -69,20 +77,21 @@ def lista(item):
     for url, scrapedtitle, thumbnail, duration, scrapedhd in matches:
         scrapedhd = scrapertools.find_single_match(scrapedhd, '<span class="hd-thumbnail">(.*?)</span>')
         if scrapedhd  == 'HD':
-            title = "[COLOR yellow]" +duration+ "[/COLOR] " + "[COLOR red]" +scrapedhd+ "[/COLOR]  "+scrapedtitle
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s"% (duration,scrapedhd,scrapedtitle)
         else:
-            title = "[COLOR yellow]" + duration + "[/COLOR] " + scrapedtitle
+            title = "[COLOR yellow]%s[/COLOR] %s" % (duration,scrapedtitle)
         url = urlparse.urljoin(item.url, url)
         itemlist.append(
             Item(channel=item.channel, action="play", title=title, url=url, fanart=thumbnail, thumbnail=thumbnail))
     if itemlist:
-        # Paginador
+        # Paginador                  https://es.pornhub.com/video/search?search=big+tits&page=2
+                                   # http://es.pornhub.com/video/search?search=big+tits&o=mr&page=2  
         patron = '<li class="page_next"><a href="([^"]+)"'
         matches = re.compile(patron, re.DOTALL).findall(data)
         if matches:
             url = urlparse.urljoin(item.url, matches[0].replace('&amp;', '&'))
             itemlist.append(
-                Item(channel=item.channel, action="lista", title=">> Página siguiente", fanart=item.fanart,
+                Item(channel=item.channel, action="lista", title=url, fanart=item.fanart,       #">> Página siguiente"
                      url=url))
     return itemlist
 
@@ -90,4 +99,4 @@ def play(item):
     logger.info(item)
     itemlist = servertools.find_video_items(item.clone(url = item.url))
     return itemlist
-    
+

@@ -2,9 +2,9 @@
 
 import re, urllib
 
-from platformcode import config, logger, platformtools
+from platformcode import config, logger
 from core.item import Item
-from core import httptools, scrapertools, jsontools, servertools, tmdb
+from core import httptools, scrapertools, servertools, tmdb
 
 host = 'https://inkapelis.me/'
 
@@ -264,10 +264,10 @@ def findvideos(item):
             for lnk in links:
                 lembed = scrapertools.find_single_match(lnk, 'data-embed="([^"]+)')
                 ltype = scrapertools.find_single_match(lnk, 'data-type="([^"]+)')
-                servidor = scrapertools.find_single_match(lnk, 'title="([^"]+)').lower()
+                servidor = scrapertools.find_single_match(lnk, 'title="([^".]+)').lower()
             
                 itemlist.append(Item( channel = item.channel, action = 'play', server = corregir_servidor(servidor),
-                                      title = '', lembed = lembed, ltype = ltype, referer = url,
+                                      title = '', lembed = lembed, ltype = ltype, referer = url, other=servidor,
                                       language = IDIOMAS.get(lang, 'VO')
                                ))
 

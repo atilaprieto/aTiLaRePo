@@ -21,6 +21,72 @@ from core import scrapertools
 from platformcode import config, logger
 
 
+itag_list = {1: "video",
+             5: "flv 240p",
+             6: "flv 270p",
+             17: "3gp 144p",
+             18: "mp4 360p",
+             22: "mp4 720p",
+             34: "flv 360p",
+             35: "flv 480p",
+             36: "3gp 180p",
+             37: "mp4 1080p",
+             38: "mp4 3072p",
+             43: "webm 360p",
+             44: "webm 480p",
+             45: "webm 720p",
+             46: "webm 1080p",
+             82: "mp4 360p 3D",
+             83: "mp4 480p 3D",
+             84: "mp4 720p 3D",
+             85: "mp4 1080p 3D",
+             92: "hls 240p 3D",
+             93: "hls 360p 3D",
+             94: "hls 480p 3D",
+             95: "hls 720p 3D",
+             96: "hls 1080p",
+             100: "webm 360p 3D",
+             101: "webm 480p 3D",
+             102: "webm 720p 3D",
+             132: "hls 240p",
+             133: "mp4 240p",
+             134: "mp4 360p",
+             135: "mp4 480p",
+             136: "mp4 720p",
+             137: "mp4 1080p",
+             138: "mp4 2160p",
+             160: "mp4 144p",
+             167: "webm 360p",
+             168: "webm 480p",
+             169: "webm 1080p",
+             219: "webm 144p",
+             242: "webm 240p",
+             243: "webm 360p",
+             244: "webm 480p",
+             245: "webm 480p",
+             246: "webm 480p",
+             247: "webm 720p",
+             248: "webm 1080p",
+             266: "mp4 2160p",
+             271: "webm 1440p",
+             272: "webm 4320p",
+             278: "webm 144p",
+             298: "mp4 720p",
+             299: "mp4 1080p",
+             302: "webm 720p",
+             303: "webm 1080p",
+             308: "webm 1440p",
+             313: "webm 2160p",
+             315: "webm 2160p",
+             330: "webm 144p hdr",
+             331: "webm 240p hdr",
+             332: "webm 360p hdr",
+             333: "webm 480p hdr",
+             334: "webm 720p hdr",
+             335: "webm 1080p hdr",
+             336: "webm 1440p hdr"}
+
+
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
@@ -28,9 +94,7 @@ def test_video_exists(page_url):
 
     if "File was deleted" in data:
         return False, config.get_localized_string(70449) % "Youtube"
-
     return True, ""
-
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
@@ -42,10 +106,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     video_id = scrapertools.find_single_match(page_url, '(?:v=|embed/)([A-z0-9_-]{11})')
     video_urls = extract_videos(video_id)
-    video_urls.reverse()
-
-    for video_url in video_urls:
-        logger.info(str(video_url))
 
     return video_urls
 
@@ -93,40 +153,37 @@ def extract_flashvars(data):
     return flashvars
 
 
-def extract_videos(video_id):
-    fmt_value = {
-        5: "240p h263 flv",
-        6: "240p h263 flv",
-        18: "360p h264 mp4",
-        22: "720p h264 mp4",
-        26: "???",
-        33: "???",
-        34: "360p h264 flv",
-        35: "480p h264 flv",
-        36: "3gpp",
-        37: "1080p h264 mp4",
-        38: "4K h264 mp4",
-        43: "360p vp8 webm",
-        44: "480p vp8 webm",
-        45: "720p vp8 webm",
-        46: "1080p vp8 webm",
-        59: "480p h264 mp4",
-        78: "480p h264 mp4",
-        82: "360p h264 3D",
-        83: "480p h264 3D",
-        84: "720p h264 3D",
-        85: "1080p h264 3D",
-        100: "360p vp8 3D",
-        101: "480p vp8 3D",
-        102: "720p vp8 3D"
-    }
+def get_signature(youtube_page_data):
 
-    url = 'http://www.youtube.com/get_video_info?video_id=%s&eurl=https://youtube.googleapis.com/v/%s&ssl_stream=1' % \
+    from lib.jsinterpreter import JSInterpreter
+
+    urljs = scrapertools.find_single_match(youtube_page_data, '"assets":.*?"js":\s*"([^"]+)"')
+    urljs = urljs.replace("\\", "")
+    if urljs:
+        if not re.search(r'https?://', urljs):
+            urljs = urlparse.urljoin("https://www.youtube.com", urljs)
+        data_js = httptools.downloadpage(urljs).data
+
+    pattern = r'(?P<fname>\w+)=function\(\w+\){(\w)=\2\.split\(""\);.*?return\s+\2\.join\(""\)}'
+
+    funcname = re.search(pattern, data_js).group('fname')
+
+    jsi = JSInterpreter(data_js)
+    js_signature = jsi.extract_function(funcname)
+
+    return js_signature
+
+
+def extract_videos(video_id):
+
+
+    url = 'https://www.youtube.com/get_video_info?video_id=%s&eurl=https://youtube.googleapis.com/v/%s&ssl_stream=1' % \
           (video_id, video_id)
     data = httptools.downloadpage(url).data
 
     video_urls = []
     params = dict(urlparse.parse_qsl(data))
+
     if params.get('hlsvp'):
         video_urls.append(["(LIVE .m3u8) [youtube]", params['hlsvp']])
         return video_urls
@@ -139,56 +196,27 @@ def extract_videos(video_id):
             if params.get('use_cipher_signature', '') != 'True':
                 video_urls.append(['mpd  HD [youtube]', params['dashmpd'], 0, '', True])
 
-    js_signature = ""
-    youtube_page_data = httptools.downloadpage("http://www.youtube.com/watch?v=%s" % video_id).data
+    youtube_page_data = httptools.downloadpage("https://www.youtube.com/watch?v=%s" % video_id).data
+
     params = extract_flashvars(youtube_page_data)
-    if params.get('url_encoded_fmt_stream_map'):
-        data_flashvars = params["url_encoded_fmt_stream_map"].split(",")
-        for url_desc in data_flashvars:
-            url_desc_map = dict(urlparse.parse_qsl(url_desc))
-            if not url_desc_map.get("url") and not url_desc_map.get("stream"):
-                continue
 
-            try:
-                key = int(url_desc_map["itag"])
-                if not fmt_value.get(key):
-                    continue
-
-                if url_desc_map.get("url"):
-                    url = urllib.unquote(url_desc_map["url"])
-                elif url_desc_map.get("conn") and url_desc_map.get("stream"):
-                    url = urllib.unquote(url_desc_map["conn"])
-                    if url.rfind("/") < len(url) - 1:
-                        url += "/"
-                    url += urllib.unquote(url_desc_map["stream"])
-                elif url_desc_map.get("stream") and not url_desc_map.get("conn"):
-                    url = urllib.unquote(url_desc_map["stream"])
-
-                if url_desc_map.get("sig"):
-                    url += "&signature=" + url_desc_map["sig"]
-                elif url_desc_map.get("s"):
-                    sig = url_desc_map["s"]
-                    if not js_signature:
-                        urljs = scrapertools.find_single_match(youtube_page_data, '"assets":.*?"js":\s*"([^"]+)"')
-                        urljs = urljs.replace("\\", "")
-                        if urljs:
-                            if not re.search(r'https?://', urljs):
-                                urljs = urlparse.urljoin("https://www.youtube.com", urljs)
-                            data_js = httptools.downloadpage(urljs).data
-                            from jsinterpreter import JSInterpreter
-                            funcname = scrapertools.find_single_match(data_js, '\.sig\|\|([A-z0-9$]+)\(')
-                            if not funcname:
-                                funcname = scrapertools.find_single_match(data_js, '["\']signature["\']\s*,\s*'
-                                                                                   '([A-z0-9$]+)\(')
-                            jsi = JSInterpreter(data_js)
-                            js_signature = jsi.extract_function(funcname)
-
-                    signature = js_signature([sig])
-                    url += "&signature=" + signature
-                url = url.replace(",", "%2C")
-                video_urls.append(["(" + fmt_value[key] + ") [youtube]", url])
-            except:
-                import traceback
-                logger.info(traceback.format_exc())
+    if params.get('player_response'):
+        params = json.load(params.get('player_response'))
+        data_flashvars = params["streamingData"]
+        for s_data in data_flashvars:
+            if s_data in ["adaptiveFormats", "formats"]:
+                for opt in data_flashvars[s_data]:
+                    opt = dict(opt)
+                    if "audioQuality" not in opt:
+                        continue
+                    if "cipher" in opt:
+                        signature = get_signature(youtube_page_data)
+                        cipher = dict(urlparse.parse_qsl(urllib.unquote(opt["cipher"])))
+                        url = re.search('url=(.*)', opt["cipher"]).group(1)
+                        s = cipher.get('s')
+                        url = "%s&sig=%s" % (urllib.unquote(url), signature([s]))
+                        video_urls.append(["%s" % itag_list.get(opt["itag"], "video"), url])
+                    elif opt["itag"] in itag_list:
+                        video_urls.append(["%s" % itag_list.get(opt["itag"], "video"), opt["url"]])
 
     return video_urls

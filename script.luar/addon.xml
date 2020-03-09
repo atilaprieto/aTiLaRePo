@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="script.luar"
-  version="0.3.3"
+  version="0.3.5"
   name="Luar"
   provider-name="The Dreamers">
   <requires>

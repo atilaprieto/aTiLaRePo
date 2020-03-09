@@ -1889,7 +1889,10 @@ def doEval(fun_call,page_data,Cookie_Jar,m):
     if functions_dir not in sys.path:
         sys.path.append(functions_dir)
 
-#    print fun_call
+    if not os.path.exists(functions_dir):
+        os.makedirs(functions_dir)
+ 
+
     try:
         py_file='import '+fun_call.split('.')[0]
 #        print py_file,sys.path
@@ -1915,6 +1918,9 @@ def doEvalFunction(fun_call,page_data,Cookie_Jar,m):
         print 'doooodoo'
         if functions_dir not in sys.path:
             sys.path.append(functions_dir)
+            
+        if not os.path.exists(functions_dir):
+            os.makedirs(functions_dir)
 
         filename='LSProdynamicCode%s.py'%str(gLSProDynamicCodeNumber)
         filenamewithpath=os.path.join(functions_dir,filename)

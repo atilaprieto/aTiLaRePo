@@ -2413,6 +2413,10 @@ msgctxt "#60607"
 msgid "When Kodi starts"
 msgstr ""
 
+msgctxt "#60608"
+msgid "Twice a day"
+msgstr ""
+
 msgctxt "#60609"
 msgid "10 sec"
 msgstr ""

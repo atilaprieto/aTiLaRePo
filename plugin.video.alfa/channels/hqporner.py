@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
+
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
@@ -24,7 +34,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/?q=%s" % texto
+    item.url = "%s/?q=%s" % (host, texto)
     try:
         return lista(item)
     except:
@@ -64,7 +74,7 @@ def lista(item):
     patron += '<span class="icon fa-clock-o meta-data">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedtime in matches:
-        title = '[COLOR yellow] %s [/COLOR] %s' % (scrapedtime , scrapedtitle)
+        title = '[COLOR yellow]%s[/COLOR] %s' % (scrapedtime , scrapedtitle)
         thumbnail = "https:" + scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
@@ -89,7 +99,8 @@ def play(item):
     patron = 'file: "([^"]+)", label: "([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(url)
     for url,quality in matches:
-        url = "http:" + url
+        if not url.startswith("https"):
+            url = "http:%s" % url
         if not "Default" in quality:
             itemlist.append(['.mp4 %s' %quality, url])
     return itemlist

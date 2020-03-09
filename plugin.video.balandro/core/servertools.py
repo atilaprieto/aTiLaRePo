@@ -359,10 +359,11 @@ def get_servers_list():
 # Normalizar nombre del servidor (para los canales que no lo obtienen de los patrones)
 def corregir_servidor(servidor):
     servidor = servidor.strip().lower()
-    if servidor in ['waaw', 'waaw1', 'netu', 'hqq']: return 'netutv'
+    if servidor in ['waaw', 'waaw1', 'waav', 'netu', 'hqq']: return 'netutv'
     elif servidor in ['povwideo', 'powvldeo', 'powv1deo', 'povw1deo']: return 'powvideo'
     elif servidor in ['steamplay', 'streamp1ay']: return 'streamplay'
     elif servidor == 'vev': return 'vevio'
+    elif servidor == 'uptobox': return 'uptostream'
     elif servidor in ['ok', 'ok.ru']: return 'okru'
     elif servidor == 'youtu': return 'youtube'
     elif servidor == 'flix': return 'flix555'

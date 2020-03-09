@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,re
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from platformcode import config, logger
 from core import scrapertools
@@ -25,7 +34,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "%20")
-    item.url = host + "/video/%s" % texto
+    item.url = "%s/video/%s" % (host, texto)
     item.page=0
     try:
         return lista(item)
@@ -41,7 +50,7 @@ def categorias(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    if "PornStar" in item.title:
+    if "pornstar" in item.url:
         patron = '<div class="pornstar">.*?'
     else:
         patron = '<div class="video-item">.*?'
@@ -110,7 +119,7 @@ def play(item):
     headers = {'Referer': item.url}
     data = httptools.downloadpage(url, headers=headers).data
     server = scrapertools.find_single_match(data, 'thumb: "([^"]+)"')
-    server = base64.b64decode(server).replace("/thumb.jpg", "")
+    server = base64.b64decode(server).decode('utf-8').replace("/thumb.jpg", "")
     server = "https:%s" % server
     patron = '"mp4_\d+":"(\d+).([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.4" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.5" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -16,10 +16,8 @@
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Cinetux, InkaPelis, Pedropolis, Cinefox, Cuevana3, Dospelis, 
-    Grantorrent, Pepecine.
-    Servidores modificados: Fembed, Upstream, Powvideo, Streamplay, Netutv, Uqload, 
-    Streamz, Vidia, M3u8hls, Youtube.
+    Canales modificados: Retroseriestv, Hdfull, Seriesdanko, Inkapelis, Elhogardelaprendiz. 
+    Servidores modificados: Vidload, Gamovideo, Mixdrop, Uptostream, Powvideo, Streamplay.
     </news>
 
     <assets>

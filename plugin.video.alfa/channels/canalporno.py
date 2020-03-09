@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
-import urlparse,re
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from core import httptools
 from core import scrapertools
@@ -23,7 +32,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/ajax/new_search/?q=%s&page=1" % texto
+    item.url = "%s/ajax/new_search/?q=%s&page=1" % (host, texto)
     try:
         return lista(item)
     except:
@@ -47,15 +56,16 @@ def categorias(item):
         patron += '</span> (\d+) vídeos</div>'
     matches = scrapertools.find_multiple_matches(data, patron)
     for url, scrapedthumbnail, scrapedtitle, cantidad in matches:
-        title= "%s [COLOR yellow] %s [/COLOR]" % (scrapedtitle, cantidad) 
+        cantidad = cantidad.replace("(", "").replace(")", "")
+        title= "%s (%s)" % (scrapedtitle, cantidad) 
         url= url.replace("/videos-porno/", "/ajax/show_category/").replace("/sitio/", "/ajax/show_producer/").replace("/pornstar/", "/ajax/show_pornstar/")
-        url = host + url + "?page=1"
+        url = "%s%s?page=1" % (host, url)
         itemlist.append(item.clone(action="lista", title=title, url=url, thumbnail=scrapedthumbnail))
     if "/?page=" in item.url:
         next_page=item.url
         num= int(scrapertools.find_single_match(item.url,".*?/?page=(\d+)"))
         num += 1
-        next_page = "?page=" + str(num)
+        next_page = "?page=%s" % str(num)
         if next_page!="":
             next_page = urlparse.urljoin(item.url,next_page)
             itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page) )
@@ -76,7 +86,7 @@ def lista(item):
     last=scrapertools.find_single_match(item.url,'(.*?)page=\d+')
     num= int(scrapertools.find_single_match(item.url,".*?/?page=(\d+)"))
     num += 1
-    next_page = "page=" + str(num)
+    next_page = "page=%s" % str(num)
     if next_page!="":
         next_page = last + next_page
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )

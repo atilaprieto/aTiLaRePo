@@ -9,17 +9,5 @@
   "fanart": "https://i.imgur.com/NRdQvFW.jpg",
   "categories": [
     "adult"
-  ],
-  "settings": [
-    {
-      "id": "include_in_global_search",
-      "type": "bool",
-      "label": "Incluir en busqueda global",
-      "default": false,
-      "enabled": true,
-      "visible": true
-    }
-      ]
-    }
   ]
 }

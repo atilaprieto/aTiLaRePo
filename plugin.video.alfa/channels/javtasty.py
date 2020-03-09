@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
-import urlparse
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
 from core import httptools
 from core import scrapertools
 from platformcode import config, logger
 
-host = "https://www.javwhores.com"
+host = "https://www.javbangers.com"
 
 
 def mainlist(item):
@@ -74,9 +80,9 @@ def lista(item):
         scrapedurl = urlparse.urljoin(host, scrapedurl)
         scrapedtitle = scrapedtitle.strip()
         if not 'HD' in quality :
-            title = "[COLOR yellow] %s [/COLOR] %s" % (duration.strip(), scrapedtitle)
+            title = "[COLOR yellow]%s[/COLOR] %s" % (duration.strip(), scrapedtitle)
         else:
-            title = "[COLOR yellow] %s [/COLOR] [COLOR red] HD [/COLOR] %s" % (duration.strip(), scrapedtitle)
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (duration.strip(), scrapedtitle)
         itemlist.append(item.clone(action=action, title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
                                    fanart=scrapedthumbnail))
     # Extrae la marca de siguiente página
@@ -116,3 +122,4 @@ def menu_info(item):
         title = "Imagen %s" % (str(i))
         itemlist.append(item.clone(action="", title=title, thumbnail=img, fanart=img))
     return itemlist
+

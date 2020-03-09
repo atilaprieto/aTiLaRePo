@@ -13,6 +13,7 @@ from core.item import Item
 from core import tmdb
 from channels import autoplay
 from platformcode import config, logger
+from channelselector import get_thumb
 
 import sys
 PY3 = False
@@ -56,11 +57,16 @@ def mainlist(item):
     autoplay.init(item.channel, list_servers, list_quality)
     itemlist = list()
 
-    itemlist.append(Item(channel=item.channel, title="Novedades", action="menu_novedades"))
-    itemlist.append(Item(channel=item.channel, title="Ultimas series", action="latest", url=host))
-    itemlist.append(Item(channel=item.channel, title="Más vistas", action="section", url=host))
-    itemlist.append(Item(channel=item.channel, title="Listado Alfabético", action="section", url=host))
-    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=host + "a/search"))
+    itemlist.append(Item(channel=item.channel, title="Novedades", action="menu_novedades",
+                         thumbnail=get_thumb("newest", auto=True)))
+    itemlist.append(Item(channel=item.channel, title="Ultimas series", action="latest", url=host,
+                         thumbnail=get_thumb("last", auto=True)))
+    itemlist.append(Item(channel=item.channel, title="Más vistas", action="section", url=host,
+                         thumbnail=get_thumb("more_watched", auto=True)))
+    itemlist.append(Item(channel=item.channel, title="Listado Alfabético", action="section", url=host,
+                         thumbnail=get_thumb("alphabet", auto=True)))
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=host + "a/search",
+                         thumbnail=get_thumb("search", auto=True)))
 
     itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, list_quality)
 
@@ -130,7 +136,7 @@ def latest(item):
         url = elem.a["href"]
         title = elem.find("div", class_="tit over txtc").text
 
-        itemlist.append(Item(channel=item.channel, url=url, title=title, contentSerieName=title, action="",
+        itemlist.append(Item(channel=item.channel, url=url, title=title, contentSerieName=title, action="seasons",
                         context=filtertools.context(item, list_idiomas, list_quality)))
 
     tmdb.set_infoLabels_itemlist(itemlist, True)

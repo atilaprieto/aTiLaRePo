@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
@@ -9,7 +18,7 @@ from core import servertools
 from core import httptools
 
 
-host = 'https://www.javwhores.com'
+host = 'https://www.javbangers.com'
 
 
 def mainlist(item):
@@ -26,7 +35,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/search/%s/" % texto
+    item.url = "%s/search/%s/" % (host, texto)
     try:
         return lista(item)
     except:
@@ -46,9 +55,9 @@ def categorias(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     for scrapedurl,scrapedtitle,scrapedthumbnail,cantidad  in matches:
-        scrapedtitle = scrapedtitle + " (" + cantidad + ")"
+        title = "%s (%s)" %(scrapedtitle,cantidad)
         scrapedplot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=scrapedurl,
                               thumbnail=scrapedthumbnail , plot=scrapedplot) )
     return sorted(itemlist, key=lambda i: i.title)
 
@@ -57,18 +66,18 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = '<div class="video-item   ">.*?'
-    patron += '<a href="([^"]+)" title="([^"]+)"  class="thumb">.*?'
-    patron += 'data-original="([^"]+)".*?'
-    patron += '<span class="ico-fav-1(.*?)<p class="inf">'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedtitle,scrapedthumbnail,duracion in matches:
-        url = urlparse.urljoin(item.url,scrapedurl)
-        time = scrapertools.find_single_match(duracion, '<i class="fa fa-clock-o"></i>([^"]+)</div>')
-        if not 'HD' in duracion :
-            title = "[COLOR yellow]" + time + "[/COLOR] " + scrapedtitle
+    # PURGA los PRIVATE 
+    patron  = 'div class="video-item\s+".*?href="([^"]+)".*?'
+    patron += 'data-original="([^"]+)" '
+    patron += 'alt="([^"]+)"(.*?)fa fa-clock-o"></i>([^<]+)<'
+    matches = scrapertools.find_multiple_matches(data, patron)
+    for scrapedurl, scrapedthumbnail, scrapedtitle, quality, duration in matches:
+        url = urlparse.urljoin(host, scrapedurl)
+        scrapedtitle = scrapedtitle.strip()
+        if not 'HD' in quality :
+            title = "[COLOR yellow]%s[/COLOR] %s" % (duration.strip(), scrapedtitle)
         else:
-            title = "[COLOR yellow]" + time + "[/COLOR] " + "[COLOR red]" + "HD" + "[/COLOR]  " + scrapedtitle
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (duration.strip(), scrapedtitle)
         thumbnail = scrapedthumbnail
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
@@ -80,7 +89,7 @@ def lista(item):
         next_page = next + "%s/" % next_page
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title= next_page, text_color="blue", url=next_page ) )
+        itemlist.append(item.clone(action="lista", title= "Página Siguiente >>", text_color="blue", url=next_page ) )
     return itemlist
 
 

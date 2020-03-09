@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
 import re
-import urlparse
 
 from core import httptools
 from core import scrapertools
+from core import servertools
 from core.item import Item
 from platformcode import logger
 
@@ -24,7 +32,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "-")
-    item.url = host + "/search/%s/?from_videos=1" % texto
+    item.url = "%s/search/%s/?from_videos=1" % (host, texto)
     try:
         return lista(item)
     except:
@@ -67,3 +75,4 @@ def play(item):
     logger.info(item)
     itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     return itemlist
+

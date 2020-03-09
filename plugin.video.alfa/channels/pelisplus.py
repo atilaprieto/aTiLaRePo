@@ -32,6 +32,7 @@ list_servers = [
 
 host = 'https://www.pelisplushd.tv/'
 
+
 def get_source(url, referer=None):
     logger.info()
     if referer == None:
@@ -40,6 +41,7 @@ def get_source(url, referer=None):
         data = httptools.downloadpage(url, headers={'Referer':referer}).data
     data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
     return data
+
 
 def mainlist(item):
     logger.info()
@@ -68,6 +70,7 @@ def mainlist(item):
     autoplay.show_option(item.channel, itemlist)
 
     return itemlist
+
 
 def sub_menu(item):
     logger.info()
@@ -98,6 +101,7 @@ def sub_menu(item):
                          ))
     return itemlist
 
+
 def list_all(item):
     logger.info()
     itemlist = []
@@ -109,8 +113,8 @@ def list_all(item):
 
     for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
 
-        year = scrapertools.find_single_match(scrapedtitle, '(\d{4})')
-        title = scrapertools.find_single_match(scrapedtitle, '([^\(]+)\(?').strip()
+        year = scrapertools.find_single_match(scrapedtitle, r'(\d{4})')
+        title = scrapertools.find_single_match(scrapedtitle, r'([^\(]+)\(?').strip()
         thumbnail = scrapedthumbnail
         filter_thumb = thumbnail.replace("https://image.tmdb.org/t/p/w300", "")
         filter_list = {"poster_path": filter_thumb}
@@ -135,20 +139,21 @@ def list_all(item):
     tmdb.set_infoLabels(itemlist, seekTmdb=True)
     #  Paginación
 
-    next_page_pattern = '<a class="page-link" href="([^"]+)" data-ci-pagination-page="\d+" rel="next">&gt;</a>'
+    next_page_pattern = r'<a class="page-link" href="([^"]+)" rel="next'
     url_next_page = scrapertools.find_single_match(full_data, next_page_pattern)
     if url_next_page:
         itemlist.append(Item(channel=item.channel, title="Siguiente >>", url=url_next_page, action='list_all'))
 
     return itemlist
 
+
 def seasons(item):
     logger.info()
 
     itemlist=[]
 
-    data=get_source(item.url)
-    patron='data-toggle="tab">TEMPORADA\s?(\d+)</a>'
+    data = get_source(item.url)
+    patron = r'data-toggle="tab">TEMPORADA\s?(\d+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     infoLabels = item.infoLabels
@@ -166,6 +171,7 @@ def seasons(item):
 
     return itemlist
 
+
 def episodios(item):
     logger.info()
     itemlist = []
@@ -175,15 +181,16 @@ def episodios(item):
 
     return itemlist
 
+
 def episodesxseasons(item):
     logger.info()
 
     itemlist = []
 
     season = item.infoLabels['season']
-    data=get_source(item.url)
+    data = get_source(item.url)
     season_data = scrapertools.find_single_match(data, 'id="pills-vertical-%s">(.*?)</div>' % season)
-    patron='href="([^"]+)".*?block">Capitulo.?(\d+) -.?([^<]+)<'
+    patron = r'href="([^"]+)".*?block">T\d+ - E(\d+):([^<]+)<'
     matches = re.compile(patron, re.DOTALL).findall(season_data)
 
     infoLabels = item.infoLabels
@@ -206,7 +213,7 @@ def section(item):
     itemlist=[]
     data = get_source(host)
     genres_data = scrapertools.find_single_match(data, '>Generos<(.*?)</ul>')
-    patron = 'href="\/\w+\/([^"]+)">([^<]+)<'
+    patron = r'href="\/\w+\/([^"]+)">([^<]+)<'
     matches = re.compile(patron, re.DOTALL).findall(genres_data)
 
     for scrapedurl, scrapedtitle in matches:
@@ -240,13 +247,14 @@ def add_vip(item, video_url, language=None):
                  quality=quality, infoLabels=item.infoLabels))
     return itemlist
 
+
 def findvideos(item):
     logger.info()
     import urllib
     itemlist = []
 
     data = get_source(item.url)
-    patron = 'video\[\d+\] = "([^"]+)";'
+    patron = r"video\[\d+\] = '([^']+)';"
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for video_url in matches:
@@ -259,12 +267,6 @@ def findvideos(item):
 
         if 'pelisplus.net' in video_url:
             itemlist += add_vip(item, video_url, IDIOMAS[language])
-
-
-        # elif not 'vidoza' in video_url and not 'pelishd' in video_url:
-        #     url_data = get_source(video_url)
-        #     url = scrapertools.find_single_match(url_data, '<iframe src="([^"]+)"')
-        #
         else:
             url = video_url
 
@@ -289,7 +291,6 @@ def findvideos(item):
             itemlist.append(Item(channel=item.channel, title='%s'+title, url=url, action='play', language=IDIOMAS[language],
             infoLabels=item.infoLabels))
 
-
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
 
     # Requerido para FilterTools
@@ -310,6 +311,7 @@ def findvideos(item):
                                  contentTitle=item.contentTitle))
     return itemlist
 
+
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
@@ -325,6 +327,7 @@ def search(item, texto):
         for line in sys.exc_info():
             logger.error("%s" % line)
         return []
+
 
 def newest(categoria):
     logger.info()

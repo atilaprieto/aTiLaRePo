@@ -51,11 +51,11 @@ class DialogSelect(xbmcgui.WindowXMLDialog):
         item = xbmcgui.ListItem(label1, label2)
         item.setProperty('index', str(self.count))
         if multi:
-            item.setIconImage(os.path.join(ADDON_PATH, "resources", "img", "multi-cloud.png"))
+            item.setArt({'icon': os.path.join(ADDON_PATH, "resources", "img", "multi-cloud.png")})
         else:
             if icon:
-                item.setIconImage(icon)
+                item.setArt({'icon': icon})
             else:
-                item.setIconImage(os.path.join(ADDON_PATH, "resources", "img", "cloud.png"))
+                item.setArt({'icon': os.path.join(ADDON_PATH, "resources", "img", "cloud.png")})
         listControl.addItem(item)
         self.count += 1

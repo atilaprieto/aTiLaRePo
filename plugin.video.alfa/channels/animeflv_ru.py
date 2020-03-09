@@ -26,10 +26,10 @@ def mainlist(item):
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, action="novedades_episodios", title="Últimos episodios",
-                         url=HOST, thumbnail="https://i.imgur.com/w941jbR.png"))
+                         url=HOST+'anime-online.html', thumbnail="https://i.imgur.com/w941jbR.png"))
 
     itemlist.append(Item(channel=item.channel, action="novedades_anime", title="Últimos animes",
-                         url=HOST, thumbnail="https://i.imgur.com/hMu5RR7.png"))
+                         url=HOST+'anime-online.html', thumbnail="https://i.imgur.com/hMu5RR7.png"))
 
     itemlist.append(Item(channel=item.channel, action="listado", title="Animes",
                          url=HOST + "animes/nombre/lista", thumbnail='https://i.imgur.com/50lMcjW.png'))

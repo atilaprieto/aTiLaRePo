@@ -1,10 +1,15 @@
-from future import standard_library
-standard_library.install_aliases()
+#from future import standard_library
+#standard_library.install_aliases()
 from future.builtins import map
 #from future.builtins import str
 import sys
 PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.request as urllib2
+else:
+    import urllib2
 
 import os
 import re
@@ -12,8 +17,8 @@ import time
 import xbmc
 import xbmcvfs
 import xbmcgui
-import urllib.request, urllib.error, urllib.parse
 import bjsonrpc
+
 from bjsonrpc.handlers import BaseHandler
 from quasar.addon import ADDON, ADDON_PATH
 from quasar.logger import log
@@ -71,7 +76,7 @@ class QuasarRPCServer(BaseHandler):
 
     def Dialog_Confirm(self, title, message):
         dialog = xbmcgui.Dialog()
-        return dialog.yesno(getLocalizedLabel(title), getLocalizedLabel(message))
+        return int(dialog.yesno(getLocalizedLabel(title), getLocalizedLabel(message)))
 
     def Dialog_Select(self, title, items):
         dialog = xbmcgui.Dialog()
@@ -107,10 +112,10 @@ class QuasarRPCServer(BaseHandler):
         return XBMC_PLAYER.getPlayingFile()
 
     def Player_IsPlaying(self, *args, **kwargs):
-        return XBMC_PLAYER.isPlaying(*args, **kwargs)
+        return int(XBMC_PLAYER.isPlaying(*args, **kwargs))
 
     def Player_IsPaused(self):
-        return xbmc.getCondVisibility("Player.Paused")
+        return int(xbmc.getCondVisibility("Player.Paused"))
 
     def Player_WatchTimes(self):
         error = ""
@@ -154,6 +159,8 @@ class QuasarRPCServer(BaseHandler):
                     "summary", "type", "version"):
             info[key] = ADDON.getAddonInfo(key)
         info['path'] = ADDON_PATH
+        info['home'] = "special://home"
+        info['xbmc'] = "special://xbmc"
         return info
 
     def AddonFailure(self, addonId):
@@ -171,7 +178,7 @@ class QuasarRPCServer(BaseHandler):
             try:
                 time.sleep(10)
                 notify(getLocalizedString(30111))
-                urllib.request.urlopen("%s/provider/%s/disable" % (QUASARD_HOST, addonId))
+                urllib2.urlopen("%s/provider/%s/disable" % (QUASARD_HOST, addonId))
             except:
                 notify(getLocalizedString(30112))
                 return 0
@@ -271,7 +278,7 @@ class QuasarRPCServer(BaseHandler):
         return id(dialog)
 
     def DialogProgress_IsCanceled(self, hwnd, *args, **kwargs):
-        return self._objects[hwnd].iscanceled(*args, **kwargs)
+        return int(self._objects[hwnd].iscanceled(*args, **kwargs))
 
     def DialogProgress_Update(self, hwnd, *args, **kwargs):
         return self._objects[hwnd].update(*args, **kwargs)
@@ -294,7 +301,7 @@ class QuasarRPCServer(BaseHandler):
         return dialogId
 
     def DialogProgressBG_IsFinished(self, hwnd):
-        return self._objects[hwnd].isFinished()
+        return int(self._objects[hwnd].isFinished())
 
     def DialogProgressBG_Update(self, hwnd, percent, heading, message):
         if message.startswith("LOCALIZE"):
@@ -333,6 +340,7 @@ class QuasarRPCServer(BaseHandler):
 
 def server_thread():
     try:
+        bjsonrpc.bjsonrpc_options['threaded'] = True
         s = bjsonrpc.createserver(port=JSONRPC_EXT_PORT, handler_factory=QuasarRPCServer)
         log.info("quasar: starting jsonrpc service")
         s.serve()

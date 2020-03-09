@@ -1,5 +1,5 @@
-from future import standard_library
-standard_library.install_aliases()
+#from future import standard_library
+#standard_library.install_aliases()
 from future.builtins import map
 #from future.builtins import str
 from future.builtins import range
@@ -9,9 +9,18 @@ import sys
 PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
+if PY3:
+    import urllib.request as urllib2
+    import urllib.parse as urlparse
+    import urllib.response as urllib
+else:
+    import urllib2
+    import urlparse
+    import urllib
+
 import os
 import socket
-import urllib.request, urllib.error, urllib.parse
+
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -52,12 +61,9 @@ class closing(object):
         self.thing.close()
 
 
-class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+class NoRedirectHandler(urllib2.HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
-        if not PY3:
-            infourl = urllib.addinfourl(fp, headers, headers["Location"])
-        else:
-            infourl = urllib.response.addinfourl(fp, headers, headers["Location"])
+        infourl = urllib.addinfourl(fp, headers, headers["Location"])
         infourl.status = code
         infourl.code = code
         return infourl
@@ -70,12 +76,12 @@ class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
 def getInfoLabels():
     id_list = [int(s) for s in sys.argv[0].split("/") if s.isdigit()]
     tmdb_id = id_list[0] if id_list else None
-
+                                   
     if not tmdb_id:
-        parsed_url = urllib.parse.urlparse(sys.argv[0] + sys.argv[2])
-        query = urllib.parse.parse_qs(parsed_url.query)
+        parsed_url = urlparse.urlparse(sys.argv[0] + sys.argv[2])
+        query = urlparse.parse_qs(parsed_url.query)
         log.debug("Parsed URL: %s, Query: %s", repr(parsed_url), repr(query))
-        if 'tmdb' in query and 'show' not in query:
+        if 'tmdb' in query and 'type' in query and query['type'][0] == 'movie':
             tmdb_id = query['tmdb'][0]
             url = "%s/movie/%s/infolabels" % (QUASARD_HOST, tmdb_id)
         elif 'show' in query:
@@ -98,8 +104,8 @@ def getInfoLabels():
     log.debug("Resolving TMDB item by calling %s for %s" % (url, repr(sys.argv)))
 
     try:
-        with closing(urllib.request.urlopen(url)) as response:
-            resolved = json.loads(response.read())
+        with closing(urllib2.urlopen(url)) as response:
+            resolved = json.loads(response.read(), parse_int=str)
             if not resolved:
                 return {}
 
@@ -130,7 +136,7 @@ def getInfoLabels():
 
 
 def _json(url):
-    with closing(urllib.request.urlopen(url)) as response:
+    with closing(urllib2.urlopen(url)) as response:
         if response.code >= 300 and response.code <= 307:
             # Pause currently playing Quasar file to avoid doubling requests
             if xbmc.Player().isPlaying() and ADDON_ID in xbmc.Player().getPlayingFile():
@@ -144,9 +150,15 @@ def _json(url):
                 thumbnailImage=_infoLabels["thumbnail"])
 
             item.setArt({
+                "thumb": _infoLabels["artthumb"],
                 "poster": _infoLabels["artposter"],
+                "tvshowposter": _infoLabels["arttvshowposter"],
                 "banner": _infoLabels["artbanner"],
-                "fanart": _infoLabels["artfanart"]
+                "fanart": _infoLabels["artfanart"],
+                "clearart": _infoLabels["artclearart"],
+                "clearlogo": _infoLabels["artclearlogo"],
+                "landscape": _infoLabels["artlandscape"],
+                "icon": _infoLabels["articon"]
             })
 
             item.setInfo(type='Video', infoLabels=_infoLabels)
@@ -176,7 +188,7 @@ def run(url_suffix=""):
         dialog.ok("Quasar", getLocalizedString(30141))
 
     socket.setdefaulttimeout(int(ADDON.getSetting("buffer_timeout")))
-    urllib.request.install_opener(urllib.request.build_opener(NoRedirectHandler()))
+    urllib2.install_opener(urllib2.build_opener(NoRedirectHandler()))
 
     # Pause currently playing Quasar file to avoid doubling requests
     if xbmc.Player().isPlaying() and ADDON_ID in xbmc.Player().getPlayingFile():
@@ -187,7 +199,7 @@ def run(url_suffix=""):
 
     try:
         data = _json(url)
-    except urllib.error.URLError as e:
+    except urllib2.URLError as e:
         if 'Connection refused' in e.reason:
             notify(getLocalizedString(30116), time=7000)
         else:
@@ -219,6 +231,8 @@ def run(url_suffix=""):
         xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_UNSORTED)
         if content_type != "tvshows":
             xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
+        else:
+            xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_TITLE_IGNORE_THE)
         xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_DATE)
         xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_GENRE)
         xbmcplugin.setContent(HANDLE, content_type)
@@ -230,7 +244,7 @@ def run(url_suffix=""):
             if not PY3:
                 item["label"] = unicode(getLocalizedLabel(item["label"]), 'utf-8')
             else:
-                item["label"] = str(getLocalizedLabel(item["label"]))
+                item["label"] = getLocalizedLabel(item["label"])
                 if isinstance(item["label"], bytes):
                     item["label"] = item["label"].decode("utf8")
         if item["label2"][0:8] == "LOCALIZE":
@@ -270,4 +284,4 @@ def run(url_suffix=""):
             except Exception as e:
                 log.warning("Unable to SetViewMode(%s): %s" % (viewMode, repr(e)))
 
-    xbmcplugin.endOfDirectory(HANDLE, succeeded=True, updateListing=False, cacheToDisc=True)
+    xbmcplugin.endOfDirectory(HANDLE, succeeded=True, updateListing=False, cacheToDisc=False)

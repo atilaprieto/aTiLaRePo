@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from platformcode import config, logger
 from core import scrapertools
@@ -26,7 +34,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "-")
-    item.url = host + "/search/%s/" % texto
+    item.url = "%s/search/%s/" % (host, texto)
     try:
         return lista(item)
     except:
@@ -74,6 +82,12 @@ def categorias(item):
         itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     return  sorted(itemlist, key=lambda i: i.title)
+
+
+# <li class="next"><a href="#search" data-action="ajax" data-container-id="list_videos_videos_list_search_result_pagination" 
+# data-block-id="list_videos_videos_list_search_result" 
+# data-parameters="q:big%20tits;category_ids:;sort_by:;from_videos+from_albums:2">Next</a></li>
+# https://severeporn.com/search/big-tits/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&q=big+tits&category_ids=&sort_by=&from_videos=2&from_albums=2&_=1582840651693
 
 
 def lista(item):

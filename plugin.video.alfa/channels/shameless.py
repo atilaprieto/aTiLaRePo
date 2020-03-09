@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
@@ -16,9 +25,8 @@ def mainlist(item):
     itemlist = []
 
     itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/videos/1/"))
-    itemlist.append( Item(channel=item.channel, title="Mas popular" , action="lista", url=host + "/videos/popular/week/"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/videos/rated/week/"))
-
+    # itemlist.append( Item(channel=item.channel, title="Mas popular" , action="lista", url=host + "/videos/popular/week/"))
+    # itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/videos/rated/week/"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/"))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
@@ -27,7 +35,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/search/?q=%s" % texto
+    item.url = "%s/search/?q=%s" % (host, texto)
     try:
         return lista(item)
     except:
@@ -48,7 +56,7 @@ def categorias(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,cantidad,scrapedthumbnail in matches:
         scrapedplot = ""
-        title = scrapedtitle + " " + cantidad
+        title = "%s %s " % (scrapedtitle,cantidad)
         itemlist.append( Item(channel=item.channel, action="lista", title=title, url=scrapedurl,
                               thumbnail=scrapedthumbnail , plot=scrapedplot) )
     return itemlist
@@ -65,7 +73,7 @@ def lista(item):
     patron += '<div class="bg"></div>([^<]+)</time>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedtime in matches:
-        title = "[COLOR yellow]" + scrapedtime + "[/COLOR] " + scrapedtitle
+        title = "[COLOR yellow]%s[/COLOR] %s" %(scrapedtime, scrapedtitle)
         thumbnail = scrapedthumbnail + "|Referer=https://www.shameless.com/"
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl,

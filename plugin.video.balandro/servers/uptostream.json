@@ -8,7 +8,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "uptostream.com/(?:iframe/|)([a-z0-9]+)",
+        "pattern": "(?:uptostream|uptobox).com/(?:iframe/|)([a-z0-9]+)",
         "url": "http://uptostream.com/iframe/\\1"
       }
     ]

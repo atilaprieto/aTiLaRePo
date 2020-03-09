@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
 import re
-import urllib
-import urlparse
 
 from core import httptools
 from core import scrapertools
@@ -140,9 +146,9 @@ def videos(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
     for url, thumbnail, title, duration,calidad in matches:
         if "hd sprite" in calidad:
-            title="[COLOR yellow][%s][/COLOR][COLOR red] [HD][/COLOR] %s" % (duration.strip(),  title)
+            title="[COLOR yellow]%s[/COLOR]  [COLOR red]HD[/COLOR] %s" % (duration.strip(),  title)
         else:
-            title="[COLOR yellow][%s][/COLOR] %s" % (duration.strip(), title)
+            title="[COLOR yellow]%s[/COLOR] %s" % (duration.strip(), title)
         if "go.php?" in url:
             url = urllib.unquote(url.split("/go.php?u=")[1].split("&")[0])
             thumbnail = urllib.unquote(thumbnail.split("/go.php?u=")[1].split("&")[0])

@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
 import re
-import urlparse
+
 from core import httptools
 from core import scrapertools
 from core import servertools
 from core.item import Item
 from platformcode import logger
-from channels import youporn
+
 host = 'https://es.redtube.com'
 
 def mainlist(item):
@@ -18,7 +26,7 @@ def mainlist(item):
     itemlist.append( Item(channel=item.channel, title="Mas Vistas" , action="lista", url=host + "/mostviewed"))
     itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/top"))
     itemlist.append( Item(channel=item.channel, title="Pornstars" , action="catalogo", url=host + "/pornstar"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories"))
+    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/popular"))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
 
@@ -26,7 +34,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/?search=%s" % texto
+    item.url = "%s/?search=%s" % (host, texto)
     try:
         return lista(item)
     except:
@@ -50,7 +58,7 @@ def catalogo(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,cantidad in matches:
         scrapedplot = ""
-        scrapedtitle = scrapedtitle +  " [COLOR yellow]" + cantidad + "[/COLOR] "
+        scrapedtitle = "%s (%s)" %(scrapedtitle, cantidad)
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
@@ -75,7 +83,7 @@ def categorias(item):
     for scrapedurl,scrapedthumbnail,scrapedtitle,cantidad in matches:
         scrapedplot = ""
         cantidad = cantidad.strip()
-        scrapedtitle = scrapedtitle + " (" + cantidad + ")"
+        scrapedtitle = "%s (%s)" %(scrapedtitle, cantidad)
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
@@ -88,26 +96,24 @@ def lista(item):
     data = httptools.downloadpage(item.url).data
     data = scrapertools.find_single_match(data,'Eliminar anuncios(.*?)Eliminar anuncios')
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron = '<img id="img_.*?data-src="([^"]+)".*?'
+    patron = 'data-src="([^"]+)".*?'
     patron += '<span class="duration">(.*?)</a>.*?'
-    patron += '<a title="([^"]+)".*?href="([^"]+)"'
+    patron += '<a title="([^"]+)".*?href="(/\d+)"' #purga los premium y yourporn
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedthumbnail,duration,scrapedtitle,scrapedurl in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
-        scrapedhd = scrapertools.find_single_match(duration, '<span class="hd-video-text">(.*?)</span>')
-        if scrapedhd == 'HD':
-            duration = scrapertools.find_single_match(duration, 'HD</span>(.*?)</span>')
-            title = "[COLOR yellow]" + duration + "[/COLOR] " + "[COLOR red]" + scrapedhd  + "[/COLOR]  " + scrapedtitle
+        scrapedhd = scrapertools.find_single_match(duration, '<span class=".*?">([^<]+)</span>')
+        if scrapedhd:
+            duration = scrapertools.find_single_match(duration, '</span>([^<]+)</span>').strip()
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (duration, scrapedhd ,scrapedtitle)
         else:
-            duration = duration.replace("<span class=\"vr-video\">VR</span>", "")
-            title = "[COLOR yellow]" + duration + "[/COLOR] " + scrapedtitle
-        title = title.replace("    </span>", "").replace("    ", "")
+            duration = scrapertools.find_single_match(duration, '([^<]+)</span>').strip()
+            title = "[COLOR yellow]%s[/COLOR] %s" % (duration, scrapedtitle)
         scrapedthumbnail = scrapedthumbnail.replace("{index}.", "1.")
         plot = ""
-        if not "/premium/" in url:
-            itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url,
-                                  fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=plot, contentTitle = title) )
-    next_page_url = scrapertools.find_single_match(data,'<a id="wp_navNext".*?href="([^"]+)">')
+        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url,
+                              fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=plot, contentTitle = title) )
+    next_page_url = scrapertools.find_single_match(data,'<a id="wp_navNext".*?href="([^"]+)">').replace("amp;", "")
     if next_page_url!="":
         next_page_url = urlparse.urljoin(item.url,next_page_url)
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page_url) )
@@ -118,11 +124,6 @@ def play(item):
     logger.info()
     itemlist = []
     url = item.url
-    if "youporn" in url: 
-        item1 = item.clone(url=url)
-        itemlist = youporn.play(item1)
-        return itemlist
-
     itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist

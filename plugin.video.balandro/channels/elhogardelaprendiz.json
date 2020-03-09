@@ -1,0 +1,15 @@
+{
+  "id": "elhogardelaprendiz",
+  "name": "El Hogar del Aprendiz",
+  "thumbnail": "elhogardelaprendiz.png",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow"],
+  "language": ["cast", "lat", "vose"],
+
+  "notes": "Películas y Series en castellano."
+}

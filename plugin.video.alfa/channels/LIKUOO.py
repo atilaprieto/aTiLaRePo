@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
+
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
@@ -24,7 +34,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/search/?s=%s" % texto
+    item.url = "%s/search/?s=%s" % (host, texto)
     try:
         return lista(item)
     except:
@@ -43,10 +53,11 @@ def categorias(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
         scrapedplot = ""
-        scrapedthumbnail = "https:" + scrapedthumbnail
+        if not scrapedthumbnail.startswith("https"):
+            thumbnail = "https:%s" % scrapedthumbnail
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
-                              fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
+                              fanart=thumbnail, thumbnail=thumbnail, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'...<a href="([^"]+)" class="next">&#187;</a>')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
@@ -66,10 +77,11 @@ def lista(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedtime in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
-        scrapedtime = scrapedtime.replace("m", ":").replace("s", " ")
-        title = "[COLOR yellow]" + scrapedtime + "[/COLOR] " +scrapedtitle
+        scrapedtime = scrapedtime.replace("m", ":").replace("s", "")
+        title = "[COLOR yellow]%s[/COLOR] %s" %(scrapedtime,scrapedtitle)
         contentTitle = title
-        thumbnail = "https:" + scrapedthumbnail
+        if not scrapedthumbnail.startswith("https"):
+            thumbnail = "https:%s" % scrapedthumbnail
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
                               fanart=thumbnail, plot=plot, contentTitle = contentTitle))
@@ -90,10 +102,8 @@ def play(item):
     for scrapedurl,post in matches:
         post = post.replace("%3D", "=")
         scrapedurl = host + scrapedurl
-        logger.debug( item.url +" , "+ scrapedurl +" , " +post )
         datas = httptools.downloadpage(scrapedurl, post=post, headers={'Referer':item.url}).data
         datas = datas.replace("\\", "")
-        logger.debug(datas)
         url = scrapertools.find_single_match(datas, 'src="([^"]+)"')
         if not url.startswith("https"):
             url = "https:%s" % url

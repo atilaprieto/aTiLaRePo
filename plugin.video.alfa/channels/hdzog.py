@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
@@ -23,7 +32,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/search/?q=%s" % texto
+    item.url = "%s/search/?q=%s" % (host, texto)
     try:
         return lista(item)
     except:
@@ -45,9 +54,8 @@ def categorias(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,vidnum in matches:
         scrapedplot = ""
-        
-        url= scrapedurl + "?sortby=post_date"
-        title = scrapedtitle + " \(" + vidnum + "\)"
+        url= "%s?sortby=post_date" %scrapedurl
+        title = "%s (%s)" % (scrapedtitle, vidnum)
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
                               thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return itemlist
@@ -64,7 +72,7 @@ def lista(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,time  in matches:
         contentTitle = scrapedtitle
-        title = "[COLOR yellow]" + time + "[/COLOR] " + scrapedtitle
+        title = "[COLOR yellow]%s[/COLOR] %s" % (time, scrapedtitle)
         thumbnail = scrapedthumbnail
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl,
@@ -96,7 +104,10 @@ def play(item):
 
 def dec_url(txt):
     #truco del mendrugo
-    txt = txt.decode('unicode-escape').encode('utf8')
+    if not PY3:
+        txt = txt.decode('unicode-escape').encode('utf8')
+    else:
+        txt = txt.encode('utf8').decode('unicode-escape')
     txt = txt.replace('А', 'A').replace('В', 'B').replace('С', 'C').replace('Е', 'E').replace('М', 'M').replace('~', '=').replace(',','/')
     import base64
     url = base64.b64decode(txt)

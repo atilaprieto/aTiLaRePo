@@ -11,6 +11,7 @@ if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 import traceback
 import xbmc
 import xbmcaddon
+import xbmcgui
 import threading
 import subprocess
 import time
@@ -19,6 +20,7 @@ from platformcode import config, logger, platformtools
 
 from core import jsontools
 from core import filetools
+from core.item import Item
 
 json_data_file_name = 'custom_code.json'
 
@@ -66,6 +68,9 @@ def init():
         version = 'plugin.video.alfa-%s.zip' % config.get_addon_version(with_fix=False)
         filetools.remove(filetools.join(xbmc.translatePath('special://home'), 'addons', 'packages', version), True)
         
+        #Borrar contenido de carpeta de Torrents
+        filetools.rmdirtree(filetools.join(config.get_videolibrary_path(), 'temp_torrents_Alfa'), silent=True)
+        
         #Verifica si Kodi tiene algún achivo de Base de Datos de Vídeo de versiones anteriores, entonces los borra
         verify_Kodi_video_DB()
         
@@ -103,9 +108,13 @@ def init():
             
             #Se verifica si la versión del .json y del add-on son iguales.  Si es así se sale.  Si no se copia "custom_code" al add-on
             verify_copy_folders(custom_code_dir, custom_code_json_path)
+        
+        #Si se han quedado "colgadas" descargas con archivos .RAR, se intenta identificarlos y reactivar el UnRar
+        reactivate_unrar(init=True, mute=True)
+
     except:
         logger.error(traceback.format_exc())
-            
+
 
 def create_folder_structure(custom_code_dir):
     logger.info()
@@ -377,3 +386,132 @@ def verify_Kodi_video_DB():
         logger.error(traceback.format_exc())
         
     return
+    
+
+def reactivate_unrar(init=False, mute=True):
+    logger.info()
+
+    if not mute:
+        platformtools.dialog_notification("Iniciando recuperación de", "UnRARs interrumpidos")
+    torrent_options = []
+    torrent_options.append("Cliente interno BT")
+    torrent_options.append("Cliente interno MCT")
+    torrent_options.extend(platformtools.torrent_client_installed(show_tuple=False))
+    download_paths = []
+    for torr_client in torrent_options:
+        # Localizamos el path de descarga del .torrent
+        torr_client = torr_client.replace('Plugin externo: ', '').replace('Cliente interno ', '')
+        save_path_videos = ''
+        __settings__ = ''
+        if torr_client != 'BT' and torr_client != 'MCT':
+            __settings__ = xbmcaddon.Addon(id="plugin.video.%s" % torr_client)  # Apunta settings del cliente torrent externo
+        if torr_client == 'BT'and str(config.get_setting("bt_download_path", \
+                            server="torrent", default='')):
+            save_path_videos = filetools.join(str(config.get_setting("bt_download_path", \
+                            server="torrent", default='')), 'BT-torrents')
+        elif torr_client == 'MCT' and str(config.get_setting("mct_download_path", \
+                            server="torrent", default='')):
+            save_path_videos = filetools.join(str(config.get_setting("mct_download_path", \
+                            server="torrent", default='')), 'MCT-torrent-videos')
+        elif torr_client == 'torrenter':
+            save_path_videos = str(xbmc.translatePath(__settings__.getSetting('storage')))
+            if not save_path_videos:
+                save_path_videos = str(filetools.join(xbmc.translatePath("special://home/"), \
+                                       "cache", "xbmcup", "plugin.video.torrenter", "Torrenter"))
+        else:
+            save_path_videos = str(xbmc.translatePath(__settings__.getSetting('download_path')))
+            if __settings__.getSetting('download_storage') == '1':              # Descarga en memoria?
+                continue                                                        # pasamos
+        if not save_path_videos:                                                # No hay path de descarga?
+            continue                                                            # pasamos
+
+        for t_client, download_path in download_paths:
+            if save_path_videos == download_path:
+                break
+        else:
+            # Borramos archivos de control "zombies"
+            rar_control = {}
+            if filetools.exists(filetools.join(save_path_videos, '_rar_control.json')):
+                rar_control = jsontools.load(filetools.read(filetools.join(save_path_videos, '_rar_control.json')))
+            if rar_control and len(rar_control['rar_files']) == 1:
+                ret = filetools.remove(filetools.join(save_path_videos, '_rar_control.json'), silent=True)
+            
+            download_paths.append((torr_client, save_path_videos))              # Agregamos el path para este Cliente
+    
+    search_for_unrar_in_error(download_paths, init=init)    
+
+
+def search_for_unrar_in_error(download_paths, init=False):
+    logger.info(download_paths)
+    
+    for torrent_client, path in download_paths:
+        list_dir = filetools.listdir(path)
+        for folder_w in list_dir:
+            folder = filetools.join(path, folder_w)
+            if filetools.isdir(folder):
+                if not filetools.exists(filetools.join(folder, '_rar_control.json')):
+                    continue
+            else:
+                if not '_rar_control.json' in folder:
+                    continue
+
+            rar_control = jsontools.load(filetools.read(filetools.join(folder, '_rar_control.json')))
+            rar_control['status'] += ': Recovery'
+            if ('UnRARing' in rar_control['status'] or 'RECOVERY' in rar_control['status']) and not init:
+                continue
+            if 'UnRARing' in rar_control['status'] or 'ERROR' in rar_control['status']:
+                rar_control['status'] = 'RECOVERY: ' + rar_control['status']
+            rar_control['download_path'] = folder
+            rar_control['torr_client'] = torrent_client
+            if 'ERROR' in rar_control['status'] or 'UnRARing' in rar_control['status'] \
+                        or 'RECOVERY' in rar_control['status']:
+                rar_control['error'] += 1
+            ret = filetools.write(filetools.join(rar_control['download_path'], '_rar_control.json'), jsontools.dump(rar_control))
+            logger.debug('%s, %s, %s, %s, %s, %s' % (rar_control['download_path'], \
+                        rar_control['rar_names'][0], rar_control['password'], \
+                        str(rar_control['error']), rar_control['error_msg'], rar_control['status']))
+            if ('ERROR' in rar_control['status'] and rar_control['error'] > 2) \
+                        or ('UnRARing' in rar_control['status'] and rar_control['error'] > 3) \
+                        or ('RECOVERY' in rar_control['status'] and rar_control['error'] > 3)  \
+                        or 'DONE' in rar_control['status']:
+                continue
+            
+            if ret:
+                try:
+                    threading.Thread(target=call_unrar, args=(rar_control,)).start()    # Creamos un Thread independiente por UnRAR
+                    time.sleep(1)                                               # Dejamos terminar la inicialización...
+                except:                                                         # Si hay problemas de threading, pasamos al siguiente
+                    logger.error(traceback.format_exc())
+
+    if not init:
+        sys.exit(0)
+
+
+def call_unrar(rar_control):
+    logger.info(rar_control['status'])
+    
+    item = Item().fromurl(rar_control['item'])
+    mediaurl = rar_control['mediaurl']
+    rar_files = rar_control['rar_files']
+    torr_client = rar_control['torr_client']
+    password = rar_control['password']
+    size = rar_control['size']
+    
+    # Creamos el listitem
+    xlistitem = xbmcgui.ListItem(path=item.url)
+
+    if config.get_platform(True)['num_version'] >= 16.0:
+        xlistitem.setArt({'icon': item.thumbnail, 'thumb': item.thumbnail, 'poster': item.thumbnail,
+                         'fanart': item.thumbnail})
+    else:
+        xlistitem.setIconImage(item.thumbnail)
+        xlistitem.setThumbnailImage(item.thumbnail)
+        xlistitem.setProperty('fanart_image', item.thumbnail)
+
+    if config.get_setting("player_mode"):
+        xlistitem.setProperty('IsPlayable', 'true')
+
+    platformtools.set_infolabels(xlistitem, item)
+    
+    return platformtools.rar_control_mng(item, xlistitem, mediaurl, rar_files, \
+                    torr_client, password, size, rar_control)

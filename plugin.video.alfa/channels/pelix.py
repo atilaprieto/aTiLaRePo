@@ -38,6 +38,7 @@ __comprueba_enlaces_num__ = config.get_setting('comprueba_enlaces_num', 'pelix')
 
 host = 'https://pelix.tv/'
 
+
 def mainlist(item):
     logger.info()
 
@@ -50,23 +51,21 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title='Series', url=host+'home/genero/5', action='list_all',
                          type='tvshows', thumbnail= get_thumb('tvshows', auto=True), page=0))
     itemlist.append(
-        item.clone(title="Buscar", action="search", url=host + 'movies/headserach', thumbnail=get_thumb("search", auto=True),
+        item.clone(title="Buscar", action="search", url=host + '?s=', thumbnail=get_thumb("search", auto=True),
                    extra='movie'))
 
     autoplay.show_option(item.channel, itemlist)
 
     return itemlist
 
+
 def menu_movies(item):
     logger.info()
 
     itemlist=[]
 
-    itemlist.append(Item(channel=item.channel, title='Ultimas', url=host, path='home/newest?show=', action='list_all',
+    itemlist.append(Item(channel=item.channel, title='Ultimas', url=host, path='ultimos-estrenos', action='list_all',
                          thumbnail=get_thumb('last', auto=True), type='movies', page=0))
-
-    #itemlist.append(Item(channel=item.channel, title='Mas Vistas', url=host, path='home/views?show=', action='list_all',
-    #                     thumbnail=get_thumb('all', auto=True), type='movies', page=0))
 
     itemlist.append(Item(channel=item.channel, title='Genero', action='section',
                          thumbnail=get_thumb('genres', auto=True), type='movies'))
@@ -74,6 +73,7 @@ def menu_movies(item):
                          thumbnail=get_thumb('year', auto=True), type='movies'))
 
     return itemlist
+
 
 def get_source(url):
     logger.info()
@@ -92,6 +92,7 @@ def get_language(lang_data):
         if lang not in language:
             language.append(lang)
     return language
+
 
 def section(item):
     logger.info()
@@ -128,25 +129,25 @@ def list_all(item):
         data = httptools.downloadpage(url_ajax + '/%s' % str(item.page), post=post).data
         data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
 
-    patron = '<div class="base-used">.*?<a href="([^"]+)">.*?<img class="img-thumbnail" src="([^"]+)".*?'
-    patron += '<h2>([^<]+)</h2><p class="year">(\d{4})</p>'
+    patron = '<div class="base-used">.*?<a href="([^"]+)">.*?<img class="img-thumbnail".*?src="([^"]+)".*?'
+    patron += r'<h2>([^<]+)</h2><p class="year">(\d{4})</p>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedthumbnail, scrapedtitle, year in matches:
 
         title = '%s [%s]' % (scrapedtitle, year)
-        contentTitle = scrapedtitle
+        contentTitle = scrapedtitle.replace("(Serie de TV)", "")
         thumbnail = scrapedthumbnail
         url = scrapedurl
         if url.startswith('/'):
             url = host + url[1:]
-        new_item= Item(channel=item.channel,
+        new_item = Item(channel=item.channel,
                        title=title,
                        url=url,
                        thumbnail=thumbnail,
-                       infoLabels={'year':year})
+                       infoLabels={'year': year})
 
-        if item.type == 'movies':
+        if not "Serie de TV" in title:
             new_item.action = 'findvideos'
             new_item.contentTitle = contentTitle
         else:
@@ -163,21 +164,22 @@ def list_all(item):
 
     return itemlist
 
+
 def seasons(item):
     logger.info()
 
     itemlist=[]
 
-    data=get_source(item.url)
-    patron='data-type="host">(Temporada \d+)<'
+    data = get_source(item.url)
+    patron = 'class="item-season-title".*?</i><strong>([^<]+)<.*?class="item-season-episodes"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     if matches is None:
         return findvideos(item)
     infoLabels = item.infoLabels
     for season in matches:
-        season = season.lower().replace('temporada','')
-        infoLabels['season']=season
-        title = 'Temporada %s' % season
+        title = season.strip()
+        season = season.lower().replace('temporada', '')
+        infoLabels['season'] = season
         itemlist.append(Item(channel=item.channel, title=title, url=item.url, action='episodesxseasons',
                              infoLabels=infoLabels))
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
@@ -189,6 +191,7 @@ def seasons(item):
 
     return itemlist
 
+
 def episodios(item):
     logger.info()
     itemlist = []
@@ -198,26 +201,28 @@ def episodios(item):
 
     return itemlist
 
+
 def episodesxseasons(item):
     logger.info()
 
     itemlist = []
     duplicados = []
-    data=get_source(item.url)
-    patron='data-id="(\d+)" season="%s" id_lang="(\d+)" id_movies_types="\d".*?' \
-           'block;">([^<]+)</a>' % item.infoLabels['season']
+    data = get_source(item.url)
+
+    season = item.infoLabels["season"]
+
+    patron = r'onclick="showdownloadServers\(\'%s\',\'\d+\'\)"><i class="fa fa-play"></i>Capítulo (\d+)</a>' % season
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     infoLabels = item.infoLabels
 
-    for scrapedepisode, lang, scrapedtitle in matches:
+    for scrapedepisode  in matches:
 
         infoLabels['episode'] = scrapedepisode
         url = item.url
-        title = '%sx%s - %s' % (infoLabels['season'], infoLabels['episode'], scrapedtitle)
-
+        title = '%sx%s - Episodio %s' % (infoLabels['season'], infoLabels['episode'], infoLabels['episode'])
         if scrapedepisode not in duplicados:
-            itemlist.append(Item(channel=item.channel, title= title, url=url, action='findvideos', infoLabels=infoLabels))
+            itemlist.append(Item(channel=item.channel, title=title, url=url, action='findvideos', infoLabels=infoLabels))
             duplicados.append(scrapedepisode)
 
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
@@ -231,25 +236,9 @@ def findvideos(item):
     itemlist = []
 
     data = get_source(item.url)
-    '''if 'episode="0" season="0"' not in data and item.contentType != 'episode':
-        item.contentSerieName = item.contentTitle
-        item.contentTitle = None
-        item.contentType = None
-        item.infoLabels = None
-        tmdb.set_infoLabels_item(item, seekTmdb=True)
-        return seasons(item)
 
-    if 'episode="0" season="0"' not in data:
-        season = item.infoLabels['season']
-        episode = item.infoLabels['episode']
-    else:
-        season = '0'
-        episode = '0'
-    '''
-    #patron = '<span class="movie-online-list" id_movies_types="(\d)".*?'
-    #patron += 'episode="%s" season="%s" id_lang="([^"]+)".*?online-link="([^"]+)" link-id="\d+">' % (episode, season)
-    bloq = scrapertools.find_single_match(data, 'Contraseña</th>(.*?)</table>')
-   
+    bloq = scrapertools.find_single_match(data, '</th>(.*?)</table>')
+
     patron = '<a href="([^"]+)".*?<td>(.*?)</td><td class="hidden-xs">(.*?)</td>'
     matches = re.compile(patron, re.DOTALL).findall(bloq)
     #for quality_value, lang_value, scrapedurl in matches:
@@ -304,12 +293,11 @@ def findvideos(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    post = 'search=%s' % texto
-    item.post = post
+    item.page = 0
     item.url = item.url
 
     if texto != '':
-        return search_results(item)
+        return list_all(item)
     else:
         return []
 

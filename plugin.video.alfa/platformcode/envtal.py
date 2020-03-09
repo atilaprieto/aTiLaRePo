@@ -171,7 +171,7 @@ def get_environment():
         except:
             pass
         try:
-            video_updates = ['No', 'Inicio', 'Una vez', 'Inicio+Una vez']
+            video_updates = ['No', 'Inicio', 'Una vez', 'Inicio+Una vez', 'Dos veces al día']
             environment['videolab_update'] = str(video_updates[config.get_setting("update", "videolibrary")])
         except:
             environment['videolab_update'] = '?'
@@ -233,10 +233,12 @@ def get_environment():
             if cliente['Plug_in'] == 'BT':
                 cliente['D_load_Path'] = str(config.get_setting("bt_download_path", server="torrent", default=''))
                 if not cliente['D_load_Path']: continue
+                cliente['D_load_Path'] = filetools.join(cliente['D_load_Path'], 'BT-torrents')
                 cliente['Buffer'] = str(config.get_setting("bt_buffer", server="torrent", default=50))
             elif cliente['Plug_in'] == 'MCT':
                 cliente['D_load_Path'] = str(config.get_setting("mct_download_path", server="torrent", default=''))
                 if not cliente['D_load_Path']: continue
+                cliente['D_load_Path'] = filetools.join(cliente['D_load_Path'], 'MCT-torrent-videos')
                 cliente['Buffer'] = str(config.get_setting("mct_buffer", server="torrent", default=50))
             elif xbmc.getCondVisibility('System.HasAddon("plugin.video.%s")' % cliente['Plug_in']):
                 __settings__ = xbmcaddon.Addon(id="plugin.video.%s" % cliente['Plug_in'])

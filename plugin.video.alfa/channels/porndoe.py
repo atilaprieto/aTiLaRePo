@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from platformcode import config, logger
 from core import scrapertools
@@ -29,7 +37,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/search?keywords=%s" % texto
+    item.url = "%s/search?keywords=%s" % (host,texto)
     try:
         return lista(item)
     except:
@@ -44,7 +52,7 @@ def categorias(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|amp;", "", data)
-    patron  = '<div class="item">(.*?)</div>'
+    patron  = 'class="item">(.*?)</div>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for match in matches:
         scrapedurl = scrapertools.find_single_match(match,'href="([^"]+)"')
@@ -60,7 +68,7 @@ def categorias(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
-    next_page = scrapertools.find_single_match(data, '<li class="page next"><a href="([^"]+)"')
+    next_page = scrapertools.find_single_match(data, '<li class="page page-mobile current">.*?href="([^"]+)"')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append( Item(channel=item.channel, action="categorias", title="Página Siguiente >>", text_color="blue", 
@@ -73,9 +81,9 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    patron = '<div data-title="([^"]+)".*?'
+    patron = 'data-title="([^"]+)".*?'
     patron += 'href="([^"]+)".*?'
-    patron += '<img data-src="([^"]+)".*?'
+    patron += 'data-src="([^"]+)".*?'
     patron += '<span class="txt">([^<]+)<(.*?)<\/span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedtitle,scrapedurl,scrapedthumbnail,time,quality in matches:
@@ -88,7 +96,7 @@ def lista(item):
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
-    next_page = scrapertools.find_single_match(data, '<li class="page next"><a href="([^"]+)"')
+    next_page = scrapertools.find_single_match(data, '<li class="page page-mobile current">.*?href="([^"]+)"').replace("amp;", "")
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
@@ -106,4 +114,5 @@ def play(item):
     for quality,url in matches:
         itemlist.append(['.mp4 %s' %quality, url])
     return itemlist
+
 

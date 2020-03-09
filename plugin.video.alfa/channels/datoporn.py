@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import re
 
 from core import httptools
@@ -18,15 +17,24 @@ def mainlist(item):
 
 def search(item, texto):
     logger.info()
-    item.url = "http://dato.porn/?k=%s&op=search" % texto.replace(" ", "+")
-    return lista(item)
+    texto = texto.replace(" ", "+")
+    item.url = "http://dato.porn/?k=%s&op=search" % texto
+    try:
+        return lista(item)
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []
 
 
 def categorias(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = '<div class="vid_block">\s*<a href="([^"]+)".*?url\((.*?)\).*?<span>(.*?)</span>.*?<b>(.*?)</b>'
+    patron = '<div class="vid_block">\s*<a href="([^"]+)".*?'
+    patron += 'url\((.*?)\).*?'
+    patron += '<span>(.*?)</span>.*?<b>(.*?)</b>'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedthumbnail, numero, scrapedtitle in matches:
         if numero:

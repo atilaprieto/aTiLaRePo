@@ -4,7 +4,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "((?:ilovefembed|fembed|divload).(?:com|live|best)/(?:f|v)/[A-z0-9_-]+)",
+        "pattern": "((?:ilovefembed|fembed|divload|feurl|fembad).(?:com|live|best|net)/(?:f|v)/[A-z0-9_-]+)",
         "url": "https://www.\\1"
       },
       {

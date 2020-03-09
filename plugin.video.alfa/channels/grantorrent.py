@@ -46,6 +46,7 @@ list_servers = ['torrent']
 #host = 'https://grantorrent.io/'
 #host = 'https://grantorrent.la/'
 host = 'https://grantorrent.li/'
+#host = 'https://grantorrent.cc/'
 channel = "grantorrent"
 domain = 'grantorrent.li'
 sufix = '.li'

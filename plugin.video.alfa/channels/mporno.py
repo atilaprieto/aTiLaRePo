@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from core import scrapertools
 from core import servertools
 from core.item import Item
@@ -18,14 +27,14 @@ def mainlist(item):
     itemlist.append( Item(channel=item.channel, title="Mas vistas" , action="lista", url=host + "/most-viewed/"))
     itemlist.append( Item(channel=item.channel, title="Longitud" , action="lista", url=host + "/longest/"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/channels/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    # itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
 
 
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/search/videos/%s/page1.html" % texto
+    item.url = "%s/search/videos/%s/page1.html" % (host, texto)
     try:
         return lista(item)
     except:
@@ -44,7 +53,7 @@ def categorias(item):
     for scrapedurl,scrapedtitle,cantidad in matches:
         scrapedplot = ""
         scrapedthumbnail = ""
-        scrapedtitle = scrapedtitle + "  " + cantidad
+        scrapedtitle = "%s %s" %(scrapedtitle,cantidad)
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=scrapedthumbnail , plot=scrapedplot) )
     return itemlist

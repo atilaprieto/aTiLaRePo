@@ -36,7 +36,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         except:
             title = ".%s %s [datoporn]" % (media_url[-4:], res)
         video_urls.append([title, media_url])
-    m3u8 = scrapertools.find_single_match(data, 'file\:"([^"]+\.m3u8)"')
+    m3u8 = scrapertools.find_single_match(data, 'src\:"([^"]+\.m3u8)"')
     if not m3u8:
         m3u8 = str(scrapertools.find_multiple_matches(data, 'player.updateSrc\({src:.?"([^"]+\.m3u8)"')).replace("['", "").replace("']", "")
         calidades = ['720p']
@@ -45,5 +45,3 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     for video_url in video_urls:
         logger.info("%s - %s" % (video_url[0], video_url[1]))
     return video_urls
-
-

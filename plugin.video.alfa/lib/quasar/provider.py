@@ -1,15 +1,20 @@
-from future import standard_library
-standard_library.install_aliases()
+#from future import standard_library
+#standard_library.install_aliases()
 from future.builtins import map
 from future.builtins import object
 import sys
 PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
+if PY3:
+    import urllib.request as urllib2
+    from urllib.parse import urlencode
+else:
+    import urllib2
+    from urllib import urlencode
+
 import json
 import base64
-import urllib.request, urllib.error
-from urllib.parse import urlencode
 from quasar.util import notify, getLocalizedString
 from quasar.logger import log
 from quasar.config import QUASARD_HOST
@@ -53,7 +58,7 @@ CODEC_DTSHDMA = 9
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.66 Safari/537.36"
 
 COOKIE_JAR = CookieJar()
-urllib.request.install_opener(urllib.request.build_opener(urllib.request.HTTPCookieProcessor(COOKIE_JAR)))
+urllib2.install_opener(urllib2.build_opener(urllib2.HTTPCookieProcessor(COOKIE_JAR)))
 
 
 class closing(object):
@@ -84,7 +89,7 @@ def request(url, params={}, headers={}, data=None, method=None):
     if params:
         url = "".join([url, "?", urlencode(params)])
 
-    req = urllib.request.Request(url)
+    req = urllib2.Request(url)
     if method:
         req.get_method = lambda: method
     req.add_header("User-Agent", USER_AGENT)
@@ -94,7 +99,7 @@ def request(url, params={}, headers={}, data=None, method=None):
     if data:
         req.add_data(data)
     try:
-        with closing(urllib.request.urlopen(req)) as response:
+        with closing(urllib2.urlopen(req)) as response:
             data = response.read()
             if response.headers.get("Content-Encoding", "") == "gzip":
                 import zlib
@@ -182,19 +187,19 @@ def register(search, search_movie, search_episode, search_season=None):
             list(map(log.error, traceback.format_exc().split("\n")))
             notify("%s: %s" % (getLocalizedString(30224), repr(e).encode('utf-8')))
             try:
-                urllib.request.urlopen("%s/provider/%s/failure" % (QUASARD_HOST, ADDON_ID))
+                urllib2.urlopen("%s/provider/%s/failure" % (QUASARD_HOST, ADDON_ID))
             except:
                 pass
     finally:
         try:
-            req = urllib.request.Request(payload["callback_url"], data=json.dumps(results))
-            with closing(urllib.request.urlopen(req)) as response:
+            req = urllib2.Request(payload["callback_url"], data=json.dumps(results))
+            with closing(urllib2.urlopen(req)) as response:
                 log.debug("callback returned: %d" % response.getcode())
         except Exception as e:
             import traceback
             list(map(log.error, traceback.format_exc().split("\n")))
             notify("%s: %s" % (getLocalizedString(30224), repr(e).encode('utf-8')))
             try:
-                urllib.request.urlopen("%s/provider/%s/failure" % (QUASARD_HOST, ADDON_ID))
+                urllib2.urlopen("%s/provider/%s/failure" % (QUASARD_HOST, ADDON_ID))
             except:
                 pass

@@ -20,30 +20,20 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("url=" + page_url)
     video_urls = []
-
-    headers = {'Referer': page_url}
-    post_url = 'https://hclips.com/sn4diyux.php'
-
-    data = httptools.downloadpage(page_url).data
-    patron = 'pC3:\'([^\']+)\',.*?'
-    patron += '"video_id": (\d+),'
-    info_b, info_a = scrapertools.find_single_match(data, patron)
-    post = 'param=%s,%s' % (info_a, info_b)
-    new_data = httptools.downloadpage(post_url, post=post, headers=headers).data
-    texto = scrapertools.find_single_match(new_data, 'video_url":"([^"]+)"')
-
+    url = "https://hclips.com/api/videofile.php?video_id=%s&lifetime=8640000" % page_url
+    headers = {'Referer': "https://hclips.com/embed/%s/" % page_url}
+    data = httptools.downloadpage(url, headers=headers).data
+    texto = scrapertools.find_single_match(data, 'video_url":"([^"]+)"')
     url = dec_url(texto)
+    url = "https://hclips.com%s" % url
     media_url = httptools.downloadpage(url, only_headers=True).url
-
-    # if not media_url.startswith('http'):
-        # media_url = 'http:%s' % media_url
     video_urls.append(["[hclips]", media_url])
-
     return video_urls
 
 
 def dec_url(txt):
     #truco del mendrugo
+    # txt = txt.replace('\u0410', 'A').replace('\u0412', 'B').replace('\u0421', 'C').replace('\u0415', 'E').replace('\u041c', 'M').replace('~', '=').replace(',','/')
     txt = txt.decode('unicode-escape').encode('utf8')
     txt = txt.replace('А', 'A').replace('В', 'B').replace('С', 'C').replace('Е', 'E').replace('М', 'M').replace('~', '=').replace(',','/')
     import base64
