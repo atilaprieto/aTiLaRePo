@@ -10,7 +10,7 @@ from core import jsontools, filetools, httptools, scrapertools
 from platformcode import config, logger, platformtools
 
 
-opciones_provider = ['spys.one', 'proxy-list.download', 'proxyscrape.com', 'proxyservers.pro', 'lista_proxies.txt']
+opciones_provider = ['spys.one', 'spys.me', 'proxyscrape.com', 'proxyservers.pro', 'proxy-list.download', 'lista_proxies.txt']
 opciones_tipo = ['Cualquier tipo', 'Elite', 'Anonymous', 'Transparent']
 opciones_pais = ['Cualquier país', 'ES', 'US', 'FR', 'DE', 'CZ', 'IT', 'CH', 'NL', 'MX', 'RU', 'HK', 'SG'] #TODO completar...
 
@@ -178,6 +178,25 @@ def _buscar_proxies(canal, url):
         for prox, puerto in enlaces:
             proxies.append(prox + ':' + decode_puerto(puerto, chash))
                                                           
+    elif provider == 'spys.me': 
+        url_provider = 'http://spys.me/proxy.txt'
+        resp = httptools.downloadpage(url_provider, raise_weberror=False)
+        
+        need_ssl = url.startswith('https')
+        
+        proxies = []
+        enlaces = scrapertools.find_multiple_matches(resp.data, '(\d+\.\d+\.\d+\.\d+)\:(\d+) ([A-Z]{2})-((?:H|A|N){1}(?:!|))(.*?)\n')
+        for prox, puerto, pais, tipo, resto in enlaces:
+            if need_ssl and '-S' not in resto: continue
+            if tipo_proxy != '': 
+                if tipo == 'N' and tipo_proxy != 'transparent': continue
+                elif tipo == 'A' and tipo_proxy != 'anonymous': continue
+                elif tipo == 'H' and tipo_proxy != 'elite': continue
+            if pais_proxy != '': 
+                if pais != pais_proxy: continue
+            
+            proxies.append(prox+':'+puerto)
+
     # fichero personal de proxies en userdata (separados por comas o saltos de línea)
     elif provider == 'lista_proxies.txt':
         proxies_file = os.path.join(config.get_data_path(), 'lista_proxies.txt')

@@ -89,11 +89,9 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
+    url= scrapertools.find_single_match(data, '<iframe sandbox="[^"]+" src="([^"]+)"')
     patron = '<iframe sandbox="[^"]+" src="([^"]+)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for url in matches:
-        itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
+    itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
 

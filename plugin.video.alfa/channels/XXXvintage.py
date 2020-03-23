@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from core import scrapertools
 from core import servertools
 from core.item import Item
@@ -24,7 +33,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "%20")
-    item.url = host + "/search/%s" % texto
+    item.url = "%s/search/%s" % (host, texto)
     try:
         return lista(item)
     except:
@@ -71,9 +80,15 @@ def lista(item):
         scrapedplot = ""
         title = "[COLOR yellow]%s[/COLOR] %s" %(scrapedtime,scrapedtitle)
         scrapedurl = scrapedurl.replace("/xxx.php?tube=", "")
-        scrapedurl = host + scrapedurl
+        scrapedurl = "%s%s" % (host, scrapedurl)
         itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle=title, url=scrapedurl,
                               thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot) )
+                              
+                              # <ul><li class=""><a href="/search/0/40/latest/1?q=big%20tits"><div style="display:inline">First</div></a></li>
+                              # <li class="active"><a href="/search/0/40/latest/1?q=big%20tits"><div style="display:inline">1</div></a></li>
+                              # <li class=""><a href="/search/0/40/latest/2?q=big%20tits"><div style="display:inline">2</div></a></li><li class=""><a href="/search/0/40/latest/3?q=big%20tits"><div style="display:inline">3</div></a></li><li class=""><a href="/search/0/40/latest/4?q=big%20tits"><div style="display:inline">4</div></a></li><li class=""><a href="/search/0/40/latest/5?q=big%20tits"><div style="display:inline">5</div></a></li><li class=""><a href="/search/0/40/latest/6?q=big%20tits"><div style="display:inline">6</div></a></li><li class=""><a href="/search/0/40/latest/7?q=big%20tits"><div style="display:inline">7</div></a></li>
+                              # <li class=""><a href="/search/0/40/latest/20?q=big%20tits"><div style="display:inline">Last</div></a></li></ul>
+                              
     last_page= scrapertools.find_single_match(data,'<a href=".*?/latest/(\d+)"><div style="display:inline">Last<')
     logger.debug(last_page)
     page = scrapertools.find_single_match(item.url, "(.*?)/\d+")
@@ -85,6 +100,9 @@ def lista(item):
     if current_page < last_page:
         current_page = current_page + 1
         next_page = "%s/%s" %(page,current_page)
+    # next_page = scrapertools.find_single_match(data, '<li class="active">.*?<li class=""><a href="([^"]+)"')
+    # if next_page:
+        next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(Item(channel=item.channel, action="lista", title=next_page, text_color="blue",
                               url=next_page, thumbnail=""))
     return itemlist

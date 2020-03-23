@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
 import re
-import sys
-import urlparse
-
 from platformcode import logger
 from core import scrapertools, httptools
 from core.item import Item
@@ -56,13 +61,19 @@ def videos(item):
 
     data = scrapertools.find_single_match(data, '<article.+?>(.*?)</article>')
 
-    # Patron
-    patron = '(?s)<div class="thumb-list__item.*?href="([^"]+)".*?src="([^"]+)".*?alt="([^"]+)">.*?'
+    patron = '(?s)<div class="thumb-list__item.*?'
+    patron += 'href="([^"]+)".*?'
+    patron += '<i class="([^"]+)">.*?'
+    patron += 'src="([^"]+)".*?'
+    patron += 'alt="([^"]+)">.*?'
     patron += '<div class="thumb-image-container__duration">(.+?)</div>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
-    for scrapedurl, scrapedthumbnail, scrapedtitle, duration in matches:
-        title = "[COLOR yellow]" + duration + "[/COLOR] " + scrapedtitle.strip()
+    for scrapedurl, quality, scrapedthumbnail, scrapedtitle, duration in matches:
+        if "uhd" in quality: quality = "4K"
+        if "hd" in quality: quality = "HD"
+        else:  quality = ""
+        title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (duration,quality, scrapedtitle.strip())
         itemlist.append(
             Item(channel=item.channel, action="play", title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
                  folder=True))
@@ -71,8 +82,9 @@ def videos(item):
     patron = '(?s)<div class="pager-container".*?<li class="next">.*?href="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     if len(matches) > 0:
+        url=matches[0].replace("&#x3D;", "=")
         itemlist.append(
-            Item(channel=item.channel, action="videos", title="Página Siguiente", url=matches[0], thumbnail="",
+            Item(channel=item.channel, action="videos", title="Página Siguiente >>", url=url, thumbnail="",
                  folder=True, viewmode="movie"))
 
     return itemlist
@@ -140,3 +152,4 @@ def play(item):
     itemlist.append(item.clone(action="play", title= "%s", contentTitle = item.title, url=url))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
+

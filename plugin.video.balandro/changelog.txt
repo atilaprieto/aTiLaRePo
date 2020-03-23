@@ -1,6 +1,15 @@
 Balandro changelog
 ==================
 
+1.4.7:
+    Canales modificados: Cinetux, Newpct1, Tupelihd, Pelispedia, Mega1link, Seriesmetro. 
+    Servidores modificados: Powvideo, Streamplay.
+
+1.4.6:
+    Canales modificados: Descargacineclasico, Grantorrent, Inkapelis, Xdede, Allpeliculas, Cinetux. 
+    Servidores modificados: Mystream, Streamz, Gamovideo, Digiload, Fembed.
+    Añadida una nueva opción para buscar proxies.
+
 1.4.5:
     Canales modificados: Retroseriestv, Hdfull, Seriesdanko, Inkapelis, Elhogardelaprendiz. 
     Servidores modificados: Vidload, Gamovideo, Mixdrop, Uptostream, Powvideo, Streamplay.

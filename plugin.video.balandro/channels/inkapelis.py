@@ -66,10 +66,11 @@ def generos(item):
     itemlist = []
     
     data = do_downloadpage(host + 'pelicula/')
+    # ~ logger.debug(data)
     
     bloque = scrapertools.find_single_match(data, '<ul class="genres scrolling">(.*?)</ul>')
     
-    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)<i>([^<]+)')
+    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)</a>\s*<i>([^<]+)')
     for url, title, num in matches:
         if '/cine/' in url or '/destacadas/' in url or '/estrenos-hd/' in url: continue # ya están en el listado principal y no son géneros
         itemlist.append(item.clone( action='list_all', title='%s (%s)' % (title, num), url=url ))
@@ -102,14 +103,18 @@ def list_all(item):
     for article in matches:
         url = scrapertools.find_single_match(article, ' href="([^"]+)"')
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
+        if thumb.startswith('//'): thumb = 'https:' + thumb
         title = scrapertools.find_single_match(article, ' alt="([^"]+)"')
         if not url or not title: continue
         title_alt = title.split('(')[0].strip() if ' (' in title else '' # para mejorar detección en tmdb
 
-        year = scrapertools.find_single_match(article, '<span class="year">(\d+)</span>')
         tipo = 'tvshow' if '/serie/' in url else 'movie'
         if tipo != item.search_type: continue
 
+        year = scrapertools.find_single_match(article, '<span class="year">(\d+)</span>')
+        if not year: year = scrapertools.find_single_match(article, '<span>(\d{4})</span>')
+        plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<div class="texto">(.*?)</div>'))
+        
         if tipo == 'movie':
             qlty = scrapertools.find_single_match(article, '<span class="quality">([^<]+)')
             langs = []
@@ -118,10 +123,10 @@ def list_all(item):
             if '<div class="subtitulado">' in article: langs.append('VOSE')
             
             itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, qualities=qlty, languages = ', '.join(langs), 
-                                        contentType='movie', contentTitle=title, infoLabels={'year': year}, contentTitleAlt = title_alt ))
+                                        contentType='movie', contentTitle=title, infoLabels={'year': year, 'plot': plot}, contentTitleAlt = title_alt ))
         else:
             itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb,
-                                        contentType='tvshow', contentSerieName=title, infoLabels={'year': year}, contentTitleAlt = title_alt ))
+                                        contentType='tvshow', contentSerieName=title, infoLabels={'year': year, 'plot': plot}, contentTitleAlt = title_alt ))
 
             
     tmdb.set_infoLabels(itemlist)
@@ -216,6 +221,7 @@ def corregir_servidor(servidor):
     if servidor == 'drive': return 'gvideo'
     elif servidor == 'descargar': return 'mega'
     elif servidor == 'vip': return 'directo'
+    elif servidor == 'premium': return 'digiload'
     else: return servidor
 
 def findvideos(item):
@@ -267,7 +273,7 @@ def findvideos(item):
                 servidor = scrapertools.find_single_match(lnk, 'title="([^".]+)').lower()
             
                 itemlist.append(Item( channel = item.channel, action = 'play', server = corregir_servidor(servidor),
-                                      title = '', lembed = lembed, ltype = ltype, referer = url, other=servidor,
+                                      title = '', lembed = lembed, ltype = ltype, referer = url, #other=servidor,
                                       language = IDIOMAS.get(lang, 'VO')
                                ))
 
@@ -284,14 +290,16 @@ def play(item):
     vurl = None
 
     post = urllib.urlencode( {'type': item.ltype, 'streaming': item.lembed} )
-    data = httptools.downloadpage('https://embed.playerd.xyz/edge-data/', post=post, headers={'Referer':item.referer}).data
+    # ~ data = httptools.downloadpage('https://embed.playerd.xyz/edge-data/', post=post, headers={'Referer':item.referer}).data
+    data = httptools.downloadpage('https://players.inkapelis.me/edge-data/', post=post, headers={'Referer':item.referer}).data
     # ~ logger.debug(data)
 
     url = scrapertools.find_single_match(data, '"url": "([^"]+)')
     if not url and (data.startswith('http') or data.startswith('/')): url = data
 
     if url.startswith('/'):
-        url = 'https://embed.playerd.xyz' + url
+        # ~ url = 'https://embed.playerd.xyz' + url
+        url = 'https://players.inkapelis.me' + url
         resp = httptools.downloadpage(url, headers={'Referer':item.referer}, follow_redirects=False)
         
         if 'refresh' in resp.headers:
@@ -304,8 +312,10 @@ def play(item):
             # ~ logger.debug(resp.data)
             url = scrapertools.find_single_match(resp.data, '<iframe src="([^"]+)')
             if not url: url = scrapertools.find_single_match(resp.data, "window\.open\('([^']+)")
-            if url.startswith('/') or 'embed.playerd.xyz' in url:
-                if url.startswith('/'): url = 'https://embed.playerd.xyz' + url
+            # ~ if url.startswith('/') or 'embed.playerd.xyz' in url:
+                # ~ if url.startswith('/'): url = 'https://embed.playerd.xyz' + url
+            if url.startswith('/') or 'players.inkapelis.me' in url:
+                if url.startswith('/'): url = 'https://players.inkapelis.me' + url
                 url = url.replace('iframe?url=', 'redirect?url=')
                 data = httptools.downloadpage(url, headers={'Referer':item.referer}).data
                 vurl = scrapertools.find_single_match(data, 'downloadurl = "([^"]+)')
@@ -348,7 +358,7 @@ def list_search(item):
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
-    matches = re.compile('<div class="item movies">(.*?)</article>', re.DOTALL).findall(data)
+    matches = re.compile('<div class="result-item">(.*?)</article>', re.DOTALL).findall(data)
     for article in matches:
         url = scrapertools.find_single_match(article, ' href="([^"]+)"')
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
@@ -356,17 +366,25 @@ def list_search(item):
         if not url or not title: continue
         title_alt = title.split('(')[0].strip() if ' (' in title else '' # para mejorar detección en tmdb
 
-        year = scrapertools.find_single_match(article, '<span class="year">(\d+)</span>')
         tipo = 'tvshow' if '/serie/' in url else 'movie'
         if item.search_type not in ['all', tipo]: continue
         sufijo = '' if item.search_type != 'all' else tipo
 
+        year = scrapertools.find_single_match(article, '<span class="year">(\d+)</span>')
+        if not year: year = scrapertools.find_single_match(article, '<span>(\d{4})</span>')
+        plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<p>(.*?)</p>'))
+        
         if tipo == 'movie':
-            itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, fmt_sufijo=sufijo, 
-                                        contentType='movie', contentTitle=title, infoLabels={'year': year}, contentTitleAlt = title_alt ))
+            langs = []
+            if 'castellano.png' in article: langs.append('Esp')
+            if 'latino.png' in article: langs.append('Lat')
+            if 'subtitulado.png' in article: langs.append('VOSE')
+
+            itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, fmt_sufijo=sufijo, languages = ', '.join(langs), 
+                                        contentType='movie', contentTitle=title, infoLabels={'year': year, 'plot': plot}, contentTitleAlt = title_alt ))
         else:
             itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, fmt_sufijo=sufijo,
-                                        contentType='tvshow', contentSerieName=title, infoLabels={'year': year}, contentTitleAlt = title_alt ))
+                                        contentType='tvshow', contentSerieName=title, infoLabels={'year': year, 'plot': plot}, contentTitleAlt = title_alt ))
 
             
     tmdb.set_infoLabels(itemlist)

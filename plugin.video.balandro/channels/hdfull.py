@@ -37,7 +37,7 @@ perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web
 def do_downloadpage(url, post=None):
     url = url.replace('hdfull.tv', 'hdfull.me') # por si viene de enlaces guardados
     url = url.replace('hdfull.me', 'hdfull.io') # por si viene de enlaces guardados
-    data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://hdfull.io', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/73.0'}).data
+    data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://hdfull.io', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:74.0) Gecko/20100101 Firefox/74.0'}).data
     # ~ data = httptools.downloadpage_proxy('hdfull', url, post=post).data
     return data
 

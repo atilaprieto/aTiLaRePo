@@ -14,7 +14,7 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Lista de películas', action = 'list_all', url = host, search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Lista de películas', action = 'list_all', url = host + 'tag/peliculas/', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Películas en Castellano', action = 'list_all', url = host + 'tag/castellano/', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Películas en Latino', action = 'list_all', url = host + 'tag/latino/', search_type = 'movie' ))
@@ -37,9 +37,11 @@ def generos(item):
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
     data = httptools.downloadpage(host).data
+    bloque = scrapertools.find_single_match(data, '<h3>Géneros(.*?)</ul>')
 
-    patron = '<li[^>]*><a href="([^"]+)" title="[^"]*">([^<]+)</a></li>'
-    matches = scrapertools.find_multiple_matches(data, patron)
+    # ~ patron = '<li[^>]*><a href="([^"]+)" title="[^"]*">([^<]+)</a></li>'
+    patron = '<li[^>]*><a href=([^ ]+) title="[^"]*">([^<]+)</a></li>'
+    matches = scrapertools.find_multiple_matches(bloque, patron)
     for url, titulo in matches:
         if descartar_xxx and scrapertools.es_genero_xxx(titulo): continue
         itemlist.append(item.clone( title=titulo, url=url, action='list_all' ))
@@ -47,23 +49,21 @@ def generos(item):
     return itemlist
 
 
-def list_all(item):
+def list_all(item): 
     logger.info()
     itemlist = []
-    
-    IDIOMAS = {'latino':'Lat', 'espanol':'Esp', 'Vose':'VO', 'VOSE':'VOSE'}
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
     
-    patron = '<div class="post-thumbnail">\s*<a href="([^"]+)" title="([^"]+)">\s*'
-    patron += '<img width="[^"]*" height="[^"]*" style="[^"]*" src="([^"]+)"'
+    patron = '<div class=post-thumbnail>\s*<a href=([^ ]+) title="([^"]+)">'
+    patron += '.*? data-src=([^ ]+)'
     patron += '.*?<p>(.*?)</p>'
-    patron += '.*?<div id="campos_idiomas">(.*?)</div>'
+    # descartados idiomas pq los VO y VOSE no se acostrumbran a cumplir
 
     matches = scrapertools.find_multiple_matches(data, patron)
 
-    for url, title, thumb, plot, languages in matches:
+    for url, title, thumb, plot in matches:
         if 'indice-de-peliculas-clasicas' in url: continue
         title = title.replace(' Descargar y ver Online', '')
         year = scrapertools.find_single_match(title, '\((\d{4})\)')
@@ -73,20 +73,12 @@ def list_all(item):
             year = '-'
         plot = scrapertools.decodeHtmlentities(plot)
         
-        langs = [] 
-        # descartado pq los VO y VOSE no se acostrumbran a cumplir
-        # ~ matches = scrapertools.find_multiple_matches(languages, 'style="([^"]+)" id="([^"]+)"')
-        # ~ for estilo, lg in matches:
-            # ~ if lg == 'Vose': continue # descartar pq no está en streaming
-            # ~ if 'grayscale' not in estilo: langs.append(IDIOMAS.get(lg, lg))
-        
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
-                                    languages=', '.join(sorted(langs)),
                                     contentType='movie', contentTitle=title, infoLabels={'year': year, 'plot': plot} ))
 
     tmdb.set_infoLabels(itemlist)
 
-    next_page_link = scrapertools.find_single_match(data, ' rel="next" href="([^"]+)"')
+    next_page_link = scrapertools.find_single_match(data, ' rel=next href=([^ >]+)')
     if next_page_link:
         itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_all' ))
 
@@ -100,15 +92,15 @@ def findvideos(item):
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
     
-    if '<h3>Ver Online' in data: data = data.split('<h3>Ver Online')[1]
+    if '<h2>Ver online' in data: data = data.split('<h2>Ver online')[1]
     
-    patron = '<a href="#(div_\d+_v)" class="MO">\s*'
+    patron = '<a href=#(div_\d+_v) class=MO>\s*'
     patron += '<span>(.*?)</span>\s*'
     patron += '<span>.*?</span>\s*'
     patron += '<span>(.*?)</span>\s*'
     patron += '<span>.*?</span>\s*'
     patron += '<span>.*?</span>\s*'
-    patron += '</a>.*?<div id="([^"]+)"[^>]*>\s*<a href=([^ ]+)'
+    patron += '</a>.*?<div id=([^ ]+) [^>]*>\s*<a href=([^ ]+)'
 
     matches = scrapertools.find_multiple_matches(data, patron)
     # ~ logger.debug(matches)

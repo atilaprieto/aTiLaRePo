@@ -420,6 +420,7 @@ def reactivate_unrar(init=False, mute=True):
                                        "cache", "xbmcup", "plugin.video.torrenter", "Torrenter"))
         else:
             save_path_videos = str(xbmc.translatePath(__settings__.getSetting('download_path')))
+            filetools.remove(filetools.join(save_path_videos, 'torrents', 'cliente_torrent_Alfa.torrent'))  # Borramos .torrent zombie
             if __settings__.getSetting('download_storage') == '1':              # Descarga en memoria?
                 continue                                                        # pasamos
         if not save_path_videos:                                                # No hay path de descarga?

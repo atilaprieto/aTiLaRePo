@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
 import re
 
 from platformcode import config, logger
@@ -12,7 +20,7 @@ from channels import filtertools
 from channels import autoplay
 
 IDIOMAS = {'vo': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['bitp']
 
@@ -37,7 +45,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host+ "/?s=%s" % texto
+    item.url = "%s/?s=%s" % (host, texto)
     try:
         return lista(item)
     except:
@@ -57,7 +65,7 @@ def categorias(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     for scrapedurl,scrapedtitle,cantidad in matches:
-        scrapedtitle = scrapedtitle + " (" + cantidad + ")"
+        scrapedtitle = "%s (%s)" %(scrapedtitle,cantidad)
         scrapedplot = ""
         scrapedthumbnail = ""
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
@@ -78,7 +86,7 @@ def lista(item):
     for scrapedurl,scrapedtitle,scrapedthumbnail,calidad in matches:
         scrapedplot = ""
         calidad = calidad.replace(" Full HD JAV", "")
-        title = "[COLOR red]" + calidad + "[/COLOR] " + scrapedtitle
+        title = "[COLOR red]%s[/COLOR] %s" % (calidad, scrapedtitle)
         itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl,
                               thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<li class=\'current\'>.*?<a rel=\'nofollow\' href=\'([^\']+)\' class=\'inactive\'>')
@@ -104,7 +112,8 @@ def findvideos(item):
         itemlist.append( Item(channel=item.channel, action="play", title = "%s", url=url ))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     # Requerido para FilterTools
-    itemlist = filtertools.get_links(itemlist, item, list_language)
+    itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)
     # Requerido para AutoPlay
     autoplay.start(itemlist, item)
     return itemlist
+

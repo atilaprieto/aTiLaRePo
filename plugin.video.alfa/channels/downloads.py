@@ -22,6 +22,7 @@ from core import scraper
 from core import scrapertools
 from core import servertools
 from core import videolibrarytools
+from core import channeltools
 from core.downloader import Downloader
 from core.item import Item
 from platformcode import config, logger
@@ -514,8 +515,15 @@ def download_from_url(url, item):
 
 
 def download_from_server(item):
-    logger.info(item.tostring())
+    logger.info(item)
+    
     unsupported_servers = ["torrent"]
+    result = {}
+    
+    if item.contentType == 'movie':
+        PATH = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_movies"))
+    else:
+        PATH = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_tvshows"))
 
     progreso = platformtools.dialog_progress(config.get_localized_string(30101), config.get_localized_string(70178) % item.server)
     channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
@@ -542,6 +550,53 @@ def download_from_server(item):
     logger.info("contentAction: %s | contentChannel: %s | server: %s | url: %s" % (
         item.contentAction, item.contentChannel, item.server, item.url))
 
+    if item.server == 'torrent':
+        # Si es .torrent y ha dato error, se intenta usar las urls de emergencia.  Si no, se marca como no error y se pasa al siguiente
+        if filetools.isfile(filetools.join(PATH, item.url)):
+            item.url = filetools.join(PATH, item.url)
+            if not filetools.exists(item.url):
+                item.torrent_info += 'ERROR'
+        if 'cliente_torrent_Alfa.torrent' in item.url or 'ERROR' in item.torrent_info:
+            if item.torrent_alt or item.emergency_urls:
+                if item.torrent_alt:
+                    item.url = item.torrent_alt
+                elif item.emergency_urls:
+                    item.url = item.emergency_urls[0][0]
+                item.url = filetools.join(PATH, item.url)
+                if not filetools.exists(item.url):
+                    PATH = ''
+            else:
+                PATH = ''
+        if not PATH:
+            result["downloadServer"] = {"url": item.url, "server": item.server}
+            result["downloadProgress"] = 0
+            result["downloadStatus"] = STATUS_CODES.error
+            return result
+        
+        import xbmcgui
+        # Creamos el listitem
+        xlistitem = xbmcgui.ListItem(path=item.url)
+
+        if config.get_platform(True)['num_version'] >= 16.0:
+            xlistitem.setArt({'icon': item.thumbnail, 'thumb': item.thumbnail, 'poster': item.thumbnail,
+                             'fanart': item.thumbnail})
+        else:
+            xlistitem.setIconImage(item.thumbnail)
+            xlistitem.setThumbnailImage(item.thumbnail)
+            xlistitem.setProperty('fanart_image', item.thumbnail)
+
+        if config.get_setting("player_mode"):
+            xlistitem.setProperty('IsPlayable', 'true')
+        
+        platformtools.set_infolabels(xlistitem, item)
+        
+        platformtools.play_torrent(item, xlistitem, item.url)
+
+        result["downloadServer"] = {"url": item.url, "server": item.server}
+        result["downloadProgress"] = 100
+        result["downloadStatus"] = STATUS_CODES.completed
+        return result
+    
     if not item.server or not item.url or not item.contentAction == "play" or item.server in unsupported_servers:
         logger.error("El Item no contiene los parametros necesarios.")
         return {"downloadStatus": STATUS_CODES.error}
@@ -559,8 +614,6 @@ def download_from_server(item):
 
     else:
         logger.info("El vídeo **SI** está disponible")
-
-        result = {}
 
         # Recorre todas las opciones hasta que consiga descargar una correctamente
         for video_url in reversed(video_urls):
@@ -687,21 +740,79 @@ def get_episodes(item):
     logger.info("contentAction: %s | contentChannel: %s | contentType: %s" % (
         item.contentAction, item.contentChannel, item.contentType))
 
+    sub_action = ["tvshow", "season", "unseen"]                                 # Acciones especiales desde Findvideos
+    nfo_json = {}
+
     # El item que pretendemos descargar YA es un episodio
-    if item.contentType == "episode":
+    if item.contentType == "episode" and item.sub_action not in sub_action:
         episodes = [item.clone()]
 
     # El item es uma serie o temporada
-    elif item.contentType in ["tvshow", "season"]:
+    elif item.contentType in ["tvshow", "season"] or item.sub_action in sub_action:
         # importamos el canal
         channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
         # Obtenemos el listado de episodios
+        if item.sub_action in sub_action:                                       # Si viene de Play...
+            if item.nfo:
+                head, nfo_json = videolibrarytools.read_nfo(item.nfo)           #... tratamos de recuperar la info de la Serie
+            if item.url_tvshow:
+                item.url = item.url_tvshow
+            elif nfo_json:
+                if item.contentChannel != 'newpct1':
+                    item.url = nfo_json.library_urls[item.contentChannel]
+                else:
+                    item.url = nfo_json.library_urls[item.category.lower()]
+                if not item.url_tvshow:
+                    item.url_tvshow = item.url
+            
+            item.contentAction = 'episodios'
+            item.from_action = 'episodios'
+            if item.sub_action in ["tvshow", "unseen"]:
+                item.contentType = "tvshow"
+                item.season_colapse = False
+                item.ow_force = 1
+                if item.infoLabels['season']: del item.infoLabels['season']
+            else:
+                item.contentType = "season"
+                item.season_colapse = True
+            if item.infoLabels['episode']: del item.infoLabels['episode']
+            if item.from_num_season_colapse: del item.from_num_season_colapse
+            if item.password: del item.password
+            if item.torrent_info: del item.torrent_info
+            if item.torrent_alt: del item.torrent_alt
+
         episodes = getattr(channel, item.contentAction)(item)
 
     itemlist = []
+    SERIES = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_tvshows"))
 
     # Tenemos las lista, ahora vamos a comprobar
     for episode in episodes:
+        if episode.action in ["add_serie_to_library", "actualizar_titulos"] or not episode.action:
+            continue
+
+        # Si se ha llamado con la opción de NO Vistos, se comprueba contra el .NFO de la serie
+        if item.sub_action == 'unseen' and nfo_json.library_playcounts \
+                        and episode.contentSeason and episode.contentEpisodeNumber:   # Descargamos solo los episodios NO vistos
+            seaxepi = '%sx%s' % (str(episode.contentSeason), str(episode.contentEpisodeNumber).zfill(2))
+            try:
+                if nfo_json.library_playcounts[seaxepi] == 1:
+                    continue
+            except:
+                pass
+        
+        # Ajustamos el num. de episodio en episode.strm_path y episode.emergency_urls
+        if item.sub_action in ["tvshow", "unseen"] and episode.strm_path:
+            episode.strm_path = re.sub(r'x\d{2,}.strm', 'x%s.strm' % str(episode.contentEpisodeNumber).zfill(2), episode.strm_path)
+            
+        if episode.emergency_urls:
+            for x, emergency_urls in enumerate(episode.emergency_urls[0]):
+                episode.emergency_urls[0][x] = re.sub(r'x\d{2,}\s*\[', 'x%s [' \
+                            % str(episode.contentEpisodeNumber).zfill(2), emergency_urls)
+                if not filetools.exists(filetools.join(SERIES, episode.emergency_urls[0][x])):
+                    del episode.emergency_urls[0][x]
+            if not episode.emergency_urls[0]:
+                del episode.emergency_urls
 
         # Si partiamos de un item que ya era episodio estos datos ya están bien, no hay que modificarlos
         if item.contentType != "episode":
@@ -734,13 +845,15 @@ def get_episodes(item):
             if not episode.contentTitle:
                 episode.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)|\d*x\d*\s*-", "", episode.title).strip()
 
+            if not episode.contentSeason: episode.contentSeason = 1
+            if not episode.contentEpisodeNumber: episode.contentEpisodeNumber = 1
             episode.downloadFilename = filetools.validate_path(filetools.join(item.downloadFilename, "%dx%0.2d - %s" % (
                 episode.contentSeason, episode.contentEpisodeNumber, episode.contentTitle.strip())))
 
             itemlist.append(episode)
         # Cualquier otro resultado no nos vale, lo ignoramos
         else:
-            logger.info("Omitiendo item no válido: %s" % episode.tostring())
+            logger.info("Omitiendo item no válido: %s" % episode.action)
 
     return itemlist
 
@@ -763,8 +876,8 @@ def write_json(item):
             item.__dict__.pop(name)
 
     path = filetools.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json")
-    filetools.write(path, item.tojson())
     item.path = path
+    filetools.write(path, item.tojson())
     time.sleep(0.1)
 
 
@@ -816,7 +929,9 @@ def save_download_movie(item):
 
     set_movie_title(item)
 
-    result = scraper.find_and_set_infoLabels(item)
+    result = ''
+    if not item.infoLabels["tmdb_id"] and not channeltools.is_adult(item.channel):
+        result = scraper.find_and_set_infoLabels(item)
     if not result:
         progreso.close()
         return save_download_video(item)
@@ -842,7 +957,9 @@ def save_download_tvshow(item):
 
     progreso = platformtools.dialog_progress(config.get_localized_string(30101), config.get_localized_string(70188))
 
-    scraper.find_and_set_infoLabels(item)
+    result = ''
+    if not item.infoLabels["tmdb_id"] and not channeltools.is_adult(item.channel):
+        result = scraper.find_and_set_infoLabels(item)
 
     item.downloadFilename = filetools.validate_path("%s [%s]" % (item.contentSerieName, item.contentChannel))
 

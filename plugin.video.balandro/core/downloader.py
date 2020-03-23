@@ -281,48 +281,34 @@ class Downloader:
 
     def __get_download_filename__(self):
         # Obtenemos nombre de archivo y extension
-        if "filename" in self.response_headers.get("content-disposition",
-                                                   "") and "attachment" in self.response_headers.get(
-                "content-disposition", ""):
+        if "filename" in self.response_headers.get("content-disposition", "") and "attachment" in self.response_headers.get("content-disposition", ""):
             cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(
-                re.compile("attachment; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(
-                    self.response_headers.get("content-disposition")).group(1)))
-        if "filename" in self.response_headers.get("content-disposition", "") and "inline" in self.response_headers.get(
-                "content-disposition", ""):
+                re.compile("attachment; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(self.response_headers.get("content-disposition")).group(1)))
+        if "filename" in self.response_headers.get("content-disposition", "") and "inline" in self.response_headers.get("content-disposition", ""):
             cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(
-                re.compile("inline; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(
-                    self.response_headers.get("content-disposition")).group(1)))
+                re.compile("inline; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(self.response_headers.get("content-disposition")).group(1)))
         else:
             cd_filename, cd_ext = "", ""
 
-        url_filename, url_ext = os.path.splitext(
-            urllib.unquote_plus(filetools.basename(urlparse.urlparse(self.url)[2])))
+        url_filename, url_ext = os.path.splitext(urllib.unquote_plus(filetools.basename(urlparse.urlparse(self.url)[2])))
         if self.response_headers.get("content-type", "application/octet-stream") <> "application/octet-stream":
             mime_ext = mimetypes.guess_extension(self.response_headers.get("content-type"))
         else:
             mime_ext = ""
 
         # Seleccionamos el nombre mas adecuado
-        if cd_filename:
-            self.remote_filename = cd_filename
-            if not self._filename:
-                self._filename = cd_filename
-
-        elif url_filename:
-            self.remote_filename = url_filename
-            if not self._filename:
-                self._filename = url_filename
+        if not self._filename:
+            if cd_filename: self._filename = cd_filename
+            elif url_filename: self._filename = url_filename
+            else: self._filename = 'nonamed'
 
         # Seleccionamos la extension mas adecuada
         if cd_ext:
             if not cd_ext in self._filename: self._filename += cd_ext
-            if self.remote_filename: self.remote_filename += cd_ext
         elif mime_ext:
             if not mime_ext in self._filename: self._filename += mime_ext
-            if self.remote_filename: self.remote_filename += mime_ext
         elif url_ext:
             if not url_ext in self._filename: self._filename += url_ext
-            if self.remote_filename: self.remote_filename += url_ext
 
     def __change_units__(self, value):
         import math

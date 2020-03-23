@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
 import re
-import urlparse
 
 from core import channeltools
 from core import httptools
@@ -115,14 +122,14 @@ def videos(item):
         time = scrapertools.find_single_match(scrapedtime, '>([^<]+)</span>')
         title = "[%s] %s" % (time, scrapedtitle)
         if ">HD<" in scrapedtime:
-            title = "[COLOR yellow]" + time + "[/COLOR] " + "[COLOR red]" + "HD" + "[/COLOR] " + scrapedtitle
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (time, scrapedtitle)
         itemlist.append(Item(channel=item.channel, action='play', title=title, thumbnail=scrapedthumbnail,
                              url=host + scrapedurl, contentTile=title, fanart=scrapedthumbnail))
     paginacion = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)" />').replace('amp;', '')
     if paginacion:
         itemlist.append(Item(channel=item.channel, action="videos",
                              thumbnail=thumbnail % 'rarrow',
-                             title="\xc2\xbb Siguiente \xc2\xbb", url=paginacion))
+                             title="Siguiente >>>", url=paginacion))
     return itemlist
 
 
@@ -142,7 +149,7 @@ def catalogo(item):
     if paginacion:
         itemlist.append(Item(channel=item.channel, action="catalogo",
                              thumbnail=thumbnail % 'rarrow',
-                             title="\xc2\xbb Siguiente \xc2\xbb", url=paginacion))
+                             title="Siguiente >>>", url=paginacion))
     return itemlist
 
 

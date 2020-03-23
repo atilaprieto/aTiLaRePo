@@ -31,7 +31,9 @@ def mainlist(item):
     logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Novedades" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=host + "/?filter=popular"))
+    itemlist.append( Item(channel=item.channel, title="Mas Popular" , action="lista", url=host + "/?filter=popular"))
+    itemlist.append( Item(channel=item.channel, title="Mas Visto" , action="lista", url=host + "/?filter=most-viewed"))
+    itemlist.append( Item(channel=item.channel, title="Mas Largo" , action="lista", url=host + "/?filter=longest"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
@@ -69,9 +71,9 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron  = '<article id="post-\d+".*?'
+    patron  = '<article id=.*?'
     patron  += '<a href="([^"]+)" title="([^"]+)".*?'
-    patron  += '<img data-src="([^"]+)"'
+    patron  += 'src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
         contentTitle = scrapedtitle
@@ -80,7 +82,7 @@ def lista(item):
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl, thumbnail=thumbnail,
                                plot=plot, fanart=thumbnail, contentTitle=contentTitle ))
-    next_page = scrapertools.find_single_match(data,'<li><a class="current">.*?<a href="([^"]+)" class="inactive">')
+    next_page = scrapertools.find_single_match(data,'<li><a class=current>.*?<a href="([^"]+)" class=inactive>')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
@@ -94,8 +96,8 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data,'<div class="responsive-player">(.*?)</div>')
-    patron = 'data-src="([^"]+)"'
+    data = scrapertools.find_single_match(data,'responsive-player(.*?)</div>')
+    patron = 'src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl in matches:
         if "cine-matik.com" in scrapedurl:

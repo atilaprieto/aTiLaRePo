@@ -436,6 +436,8 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
         
         try:
             season_episode = scrapertools.get_season_and_episode(e.title)
+            if not season_episode:
+                continue
         
             # Si se ha marcado la opción de url de emergencia, se añade ésta a cada episodio después de haber ejecutado Findvideos del canal
             if e.emergency_urls and isinstance(e.emergency_urls, dict): del e.emergency_urls    #Borramos trazas anteriores

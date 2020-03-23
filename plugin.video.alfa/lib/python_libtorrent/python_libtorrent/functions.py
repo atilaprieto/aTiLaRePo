@@ -108,21 +108,26 @@ class LibraryManager(object):
         __settings__ = xbmcaddon.Addon(id='plugin.video.alfa')                  ### Alfa
         filetools.mkdir(self.dest_path)
         for libname in get_libname(self.platform):
+            p_version = self.platform['version']
+            if PY3: p_version += '_PY3'
             dest = os.path.join(self.dest_path, libname)
-            log("try to fetch %s" % libname)
-            url = "%s/%s/%s/%s.zip" % (__libbaseurl__, self.platform['system'], self.platform['version'], libname)
+            log("try to fetch %s/%s/%s" % (self.platform['system'], p_version, libname))
+            url = "%s/%s/%s/%s.zip" % (__libbaseurl__, self.platform['system'], p_version, libname)
+            url_size = "%s/%s/%s/%s.size.txt" % (__libbaseurl__, self.platform['system'], p_version, libname)
             if libname!='liblibtorrent.so':
                 try:
                     self.http = HTTP()
-                    self.http.fetch(url, download=dest + ".zip", progress=False)    ### Alfa
+                    self.http.fetch(url, download=dest + ".zip", progress=False)                    ### Alfa
                     log("%s -> %s" % (url, dest))
+                    self.http.fetch(url_size, download=dest + '.size.txt', progress=False)          ### Alfa
+                    log("%s -> %s" % (url_size, dest + '.size.txt'))
                     xbmc.executebuiltin('XBMC.Extract("%s.zip","%s")' % (dest, self.dest_path), True)
                     filetools.remove(dest + ".zip")
                 except:
                     text = 'Failed download %s!' % libname
                     xbmc.executebuiltin("XBMC.Notification(%s,%s,%s,%s)" % (__plugin__,text,750,__icon__))
             else:
-                filetools.copy(os.path.join(self.dest_path, 'libtorrent.so'), dest, silent=True)      ### Alfa
+                filetools.copy(os.path.join(self.dest_path, 'libtorrent.so'), dest, silent=True)    ### Alfa
             dest_alfa = os.path.join(xbmc.translatePath(__settings__.getAddonInfo('Path')), \
                             'lib', libname)                                     ### Alfa
             filetools.copy(dest, dest_alfa, silent=True)                        ### Alfa

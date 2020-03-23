@@ -32,7 +32,7 @@ list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['torrent']
 
-host = 'https://www.elitetorrent.tv'
+host = 'https://www.elitetorrent.nl'
 channel = "elitetorrent"
 
 categoria = channel.capitalize()
@@ -175,10 +175,13 @@ def listado(item):
     patron = '<li>\s*<div\s*class="[^"]+">\s*<a href="([^"]+)"\s*'              #url
     patron += 'title="([^"]+)"\s*(?:alt="[^"]+")?\s*>\s*'                       #título
     patron += '<img (?:class="[^"]+")?\s*src="([^"]+)".*?border="[^"]+"\s*'     #thumb
-    patron += 'title="([^"]+)".*?'                                              #categoría, idioma
+    patron += 'title="([^"]+)".*?'                                              #categoría
+    patron += '<span class="[^"]+"\s*id="[^"]+">\s*<i>\s*'
+    patron += "<img src='[^']+'\s*data-src='[^']+\/(\w+).png'.*?"               #idioma
     patron += '<span class="[^"]+" style="[^"]+"\s*><i>(.*?)?<\/i>'             #calidad
     patron += '(?:<\/span.*?="dig1">(.*?)?)?'                                   #tamaño
     patron += '(?:<.*?="dig2">(.*?)?)?<\/span><\/div>'                          #tipo tamaño
+    
 
     matches = re.compile(patron, re.DOTALL).findall(data)
     if not matches and not '<title>503 Backend fetch failed</title>' in data and not 'No se han encontrado resultados' in data:                                                                            #error
@@ -195,7 +198,8 @@ def listado(item):
     #logger.debug(matches)
     #logger.debug(data)
 
-    for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedcategory, scrapedcalidad, scrapedsize, scrapedsizet in matches:
+    for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedcategory, scrapedlang, \
+                            scrapedcalidad, scrapedsize, scrapedsizet in matches:
         item_local = item.clone()                           #Creamos copia de Item para trabajar
         
         if PY3:
@@ -223,19 +227,20 @@ def listado(item):
             item_local.quality += ' [%s %s]' % (scrapedsize.replace(".", ","), scrapedsizet)
         
         item_local.language = []                            #Verificamos el idioma por si encontramos algo
-        if "latino" in scrapedcategory.lower() or "latino" in item.url or "latino" in title.lower():
+        if "latino" in scrapedlang.lower() or "latino" in item.url or "latino" in title.lower():
             item_local.language += ["LAT"]
-        if "ingles" in scrapedcategory.lower() or "ingles" in item.url or "vose" in scrapedurl or "vose" in item.url:
-            if "VOSE" in scrapedcategory.lower() or "sub" in title.lower() or "vose" in scrapedurl or "vose" in item.url:
-                item_local.language += ["VOS"]
-            else:
+        if scrapedlang.lower() in ['vos', 'vose'] or "vose" in item.url or "vos" in item.url \
+                        or "vose" in scrapedurl or "vos" in scrapedurl or "subt" in title.lower():
+                item_local.language += ["VOSE"]
+        elif scrapedlang.lower() in ['ingles', 'inglés', 'english', 'original', 'vo'] or "ingles" in item.url \
+                        or "vo" in item.url or "ingles" in scrapedurl or "vo" in scrapedurl:
                 item_local.language += ["VO"]
-        if "dual" in scrapedcategory.lower() or "dual" in title.lower():
-            item_local.language[0:0] = ["DUAL"]
-            
         if item_local.language == []:
                 item_local.language = ['CAST']              #Por defecto
         
+        if "dual" in scrapedlang.lower() or "dual" in title.lower():
+            item_local.language[0:0] = ["DUAL"]
+
         #Limpiamos el título de la basura innecesaria
         title = title.replace("Dual", "").replace("dual", "").replace("Subtitulada", "").replace("subtitulada", "").replace("Subt", "").replace("subt", "").replace("Sub", "").replace("sub", "").replace("(Proper)", "").replace("(proper)", "").replace("Proper", "").replace("proper", "").replace("#", "").replace("(Latino)", "").replace("Latino", "")
         title = title.replace("- HDRip", "").replace("(HDRip)", "").replace("- Hdrip", "").replace("(microHD)", "").replace("(DVDRip)", "").replace("(HDRip)", "").replace("(BR-LINE)", "").replace("(HDTS-SCREENER)", "").replace("(BDRip)", "").replace("(BR-Screener)", "").replace("(DVDScreener)", "").replace("TS-Screener", "").replace(" TS", "").replace(" Ts", "").replace("temporada", "").replace("Temporada", "").replace("capitulo", "").replace("Capitulo", "")

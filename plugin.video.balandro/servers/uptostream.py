@@ -14,6 +14,7 @@ def get_video_url(page_url, url_referer=''):
         
         data = scrapertools.find_single_match(resp.data, "JSON\.parse\('(\[.*?\])'\)").replace('\\/', '/')
         # ~ logger.debug(data)
+        if not data: return video_urls
 
         data = jsontools.load(data)
         for video in sorted(data, key=lambda x: int(x['res'])):

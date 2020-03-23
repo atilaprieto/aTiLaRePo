@@ -50,6 +50,8 @@ def search(item, texto):
             logger.error("%s" % line)
         return []
 
+# falla el numero svid
+
 
 def videos(item):
     logger.info()
@@ -57,7 +59,16 @@ def videos(item):
     data = httptools.downloadpage(item.url).data
     JSONData = json.load(data)
     for Video in JSONData["videos"]:
+        title = Video["title"]
+        canal = Video["ps_name"]
+        id = Video['svid']
         segundos = Video["duration"]
+        th2= Video['thumbs']
+        end= scrapertools.find_single_match(str(th2),"'end': (\d+),")
+        image= scrapertools.find_single_match(str(th2),"'image': '([^']+)'")
+        pid= scrapertools.find_single_match(str(th2),"'pid': '([^']+)',")
+        start= scrapertools.find_single_match(str(th2),"'start': (\d+),")
+
         horas=int(segundos/3600)
         segundos-=horas*3600
         minutos=int(segundos/60)
@@ -70,22 +81,18 @@ def videos(item):
             duration = "%s:%s" % (minutos,segundos)
         else:
             duration = "%s:%s:%s" % (horas,minutos,segundos)
-        th2= Video['thumbs']
-        image= scrapertools.find_single_match(str(th2),"'image': '([^']+)'")
+
         thumbnail = "http://img.beeg.com/264x198/4x3/%s" %image
-        url = '%s/video/%s?v=2' % (url_api, Video['svid'])
-        title = Video["title"]
-        title = "[COLOR yellow]%s[/COLOR] %s" %( duration, title)
-        itemlist.append(
-            Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail, plot="", 
-                 folder=True, contentType="movie"))
+        url = '%s/video/%s?v=2&s=%s&e=%s&p=%s' % (url_api, id, start, end, pid)
+        title = "[COLOR yellow]%s[/COLOR] %s - %s" %( duration, canal, title)
+
+        itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail, 
+                             fanart=thumbnail, plot="", folder=True, contentType="movie"))
     # Paginador
-    Actual = int(scrapertools.find_single_match(item.url, url_api + '/index/[^/]+/([0-9]+)/pc'))
+    Actual = int(scrapertools.find_single_match(item.url, '/([0-9]+)/pc'))
     if JSONData["pages"] - 1 > Actual:
-        scrapedurl = item.url.replace("/" + str(Actual) + "/", "/" + str(Actual + 1) + "/")
-        itemlist.append(
-            Item(channel=item.channel, action="videos", title="Página Siguiente", url=scrapedurl, thumbnail="",
-                 viewmode="movie"))
+        next_page = item.url.replace("/" + str(Actual) + "/", "/" + str(Actual + 1) + "/")
+        itemlist.append(item.clone(action="videos", title="Página Siguiente >>", text_color="blue", url=next_page))
     return itemlist
 
 
@@ -95,7 +102,7 @@ def listcategorias(item):
     data = httptools.downloadpage(item.url).data
     JSONData = json.load(data)
     for Tag in JSONData["tags"]:
-        url = url_api + "/index/tag/0/pc?tag=" + Tag["tag"]
+        url = url_api + "/index/tag/0/pc?tag=%s" % Tag["tag"]
         url = url.replace("%20", "-")
         title = '%s (%s)' % (str(Tag["tag"]), str(Tag["videos"]))
         itemlist.append(
@@ -110,12 +117,14 @@ def canal(item):
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     JSONData = json.load(data)
     for Tag in JSONData["channels"]:
-        url = url_api + "/index/channel/0/pc?channel=" + Tag["channel"]
+        canal = Tag["channel"]
+        url = url_api + "/index/channel/0/pc?channel=%s" % canal 
         url = url.replace("%20", "-")
         title = '%s (%s)' % (str(Tag["ps_name"]), str(Tag["videos"]))
         itemlist.append(
             Item(channel=item.channel, action="videos", title=title, url=url, viewmode="movie", type="item"))
     return itemlist
+
 
 def play(item):
     logger.info()

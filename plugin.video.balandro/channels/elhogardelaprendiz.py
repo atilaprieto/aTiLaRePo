@@ -65,7 +65,7 @@ def generos(item):
     for url, title in matches:
         itemlist.append(item.clone( action='list_all', title=title, url=url + url_extra ))
 
-    itemlist.append(item.clone ( action = 'list_all', title = 'Documental', url= host + 'documental/' + url_extra,  ))
+    itemlist.append(item.clone ( action = 'list_all', title = 'Documental', url = host + 'documental/' + url_extra ))
     itemlist.append(item.clone ( action = 'list_all', title = 'Western', url = host + 'western/' + url_extra ))
 
     return sorted(itemlist, key=lambda it: it.title)
@@ -176,7 +176,7 @@ def episodios(item):
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.replace(' ', '').replace('-', '').lower()
-    orden = ['cam', 'tsscreener', 'brscreener', 'hdrip', 'hd720', 'hd1080']
+    orden = ['cam', 'tsscreener', 'brscreener', 'dvdrip', 'hdrip', 'hd720', 'hd1080']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

@@ -26,6 +26,8 @@ list_servers = ['gounlimited']
 
 host = 'http://fullxxxmovies.net'          #es   http://freepornstreams.org    http://xxxstreams.org
 
+# Cloudscraper
+
 def mainlist(item):
     logger.info()
     itemlist = []

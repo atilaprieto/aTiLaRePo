@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
@@ -28,7 +37,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/search.php?what=%s&tab=" % texto
+    item.url = "%s/search.php?what=%s&tab=" % (host, texto)
     try:
         return peliculas(item)
     except:
@@ -42,13 +51,16 @@ def catalogo(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron  = '<div class="vidcountSp">(\d+)</div>.*?<a class="categoryTitle channelTitle" href="([^"]+)" title="([^"]+)">.*?data-original="([^"]+)"'
+    patron  = '<div class="vidcountSp">(\d+)</div>.*?'
+    patron  += '<a class="categoryTitle channelTitle" href="([^"]+)" title="([^"]+)">.*?'
+    patron  += 'data-original="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for cantidad,scrapedurl,scrapedtitle,scrapedthumbnail in matches:
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
-        title = scrapedtitle + " (" + cantidad + ")"
+        title = "%s (%s)" % (scrapedtitle,cantidad)
         scrapedplot = ""
-        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=title, url=scrapedurl,
+                              fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
     next_page_url = scrapertools.find_single_match(data,'<a class="llNav" href="([^"]+)">')
     if next_page_url!="":
         next_page_url = urlparse.urljoin(item.url,next_page_url)
@@ -61,19 +73,25 @@ def categorias(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    if item.title=="PornStars" :
+    if "pornstars" in item.url:
         data = scrapertools.find_single_match(data,'</i> Hall Of Fame Pornstars</h1>(.*?)</section>')
-    patron  = '<a class="thumb" href="([^"]+)">.*?<img src="([^"]+)".*?<div class="vidcountSp">(.*?)</div>.*?<a class="categoryTitle".*?>([^"]+)</a>'
+    patron  = '<a class="thumb" href="([^"]+)">.*?'
+    patron += '<img src="([^"]+)".*?'
+    patron += '<div class="vidcountSp">(.*?)</div>.*?'
+    patron += '<a class="categoryTitle".*?>([^"]+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,cantidad,scrapedtitle in matches:
         scrapedplot = ""
-        if item.title=="Categorias" :
-            scrapedthumbnail = "http:" + scrapedthumbnail
-            scrapedurl = urlparse.urljoin(item.url,scrapedurl)
-        if item.title=="PornStars" :
-            scrapedurl = urlparse.urljoin(item.url,scrapedurl) + "?section=videos"
-        scrapedtitle = scrapedtitle + " (" + cantidad + ")"
-        itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        if not scrapedthumbnail.startswith("https"):
+            scrapedthumbnail = "https:%s" % scrapedthumbnail
+        scrapedurl = urlparse.urljoin(item.url,scrapedurl)
+        if not scrapedurl.startswith("https"):
+            scrapedurl = "https:%s" % scrapedurl
+        if "profile" in scrapedurl:
+            scrapedurl += "?section=videos"
+        scrapedtitle = "%s (%s)" % (scrapedtitle,cantidad)
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=scrapedurl ,
+                              fanart=scrapedthumbnail, thumbnail=scrapedthumbnail , plot=scrapedplot) )
     next_page_url = scrapertools.find_single_match(data,'<a class="llNav" href="([^"]+)">')
     if next_page_url!="":
         next_page_url = urlparse.urljoin(item.url,next_page_url)
@@ -91,10 +109,10 @@ def peliculas(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,duracion,quality in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
-        title = "[COLOR yellow]" + duracion + "[/COLOR] " + scrapedtitle
+        title = "[COLOR yellow]%s[/COLOR] %s" % (duracion, scrapedtitle)
         if quality:
             quality= scrapertools.find_single_match(quality, '>(\d+p)<')
-            title = "[COLOR yellow]" + duracion + "[/COLOR] " + "[COLOR red]" + quality +  "[/COLOR] " + scrapedtitle
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (duracion, quality, scrapedtitle)
         contentTitle = title
         thumbnail = scrapedthumbnail
         plot = ""
@@ -131,7 +149,7 @@ def play(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for title, url in matches:
         url= url.replace("![CDATA[", "http:").replace("]]", "")
-        itemlist.append(["%s %s [directo]" % (title, url), url])
+        itemlist.append([".mp4 %s" % (title), url])
     itemlist.reverse()
     return itemlist
 

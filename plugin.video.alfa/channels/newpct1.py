@@ -62,10 +62,10 @@ clone_list_random = []                                                          
 
 if host_index == 0:                                                             #Si el clones es "Aleatorio"...
     i = 0
-    j = 1                                                                   #... marcamos el último de los clones "buenos"
+    j = 2                                                                       #... marcamos el último de los clones "buenos"
     for active_clone, channel_clone, host_clone, contentType_clone, info_clone in clone_list:
         if i <= j and active_clone == "1":
-            clone_list_random += [clone_list[i]]                            #... añadimos el clone activo "bueno" a la lista
+            clone_list_random += [clone_list[i]]                                #... añadimos el clone activo "bueno" a la lista
         i += 1
     if clone_list_random:                                                       #Si hay clones en la lista aleatoria...
         clone_list = [random.choice(clone_list_random)]                         #Seleccionamos un clone aleatorio
@@ -96,7 +96,7 @@ if item.channel != channel_py:
 __modo_grafico__ = config.get_setting('modo_grafico', channel_py)               #TMDB?
 modo_ultima_temp = config.get_setting('seleccionar_ult_temporadda_activa', channel_py)  #Actualización sólo últ. Temporada?
 timeout = config.get_setting('clonenewpct1_timeout_downloadpage', channel_py)   #Timeout downloadpage
-timeout = timeout * 1.4                                                         # Incremento temporal del 40%
+timeout = timeout * 2.5                                                         # Incremento temporal del 40%
 if timeout == 0: timeout = None
 if httptools.channel_proxy_list(host):                                          #Si usa un proxy, ...
     timeout = timeout * 2                                                       #Duplicamos en timeout
@@ -1011,7 +1011,10 @@ def listado_busqueda(item):
             logger.error("ERROR 01: LISTADO_BUSQUEDA: La Web no responde o ha cambiado de URL: " 
                     + item.url + ' / POST: ' + item.post + " / DATA: " + data)
             #Si no hay datos consistentes, llamamos al método de fail_over para que encuentre un canal que esté activo y pueda gestionar el submenú
-            item, data = generictools.fail_over_newpct1(item, pattern, timeout=timeout_search)
+            if item.extra == "search":
+                item, data = generictools.fail_over_newpct1(item, '', timeout=timeout_search)
+            else:
+                item, data = generictools.fail_over_newpct1(item, pattern, timeout=timeout_search)
         
         if not data:                                                                #Si no ha logrado encontrar nada, salimos
             itemlist.append(item.clone(action='', title="[COLOR yellow]" + item.channel.capitalize() 
@@ -1026,11 +1029,18 @@ def listado_busqueda(item):
                 item, itemlist = generictools.post_tmdb_listado(item, itemlist)
             return itemlist                                 #si no hay más datos, algo no funciona, pintamos lo que tenemos
         elif item.channel_alt:                              #Si ha habido fail-over, lo comento
-            host_alt = host_alt.replace(item.channel_alt, item.channel)
+            #host_alt = host_alt.replace(item.channel_alt, item.category.lower())
+            for active_clone, channel_clone, host_clone, contentType_clone, info_clone in clone_list:
+                if channel_clone == item.category.lower():
+                    host_alt = host_clone
+                    break
 
         #Obtiene la dirección de la próxima página, si la hay
         try:
-            post_actual = item.post     #Guardamos el post actual por si hay overflow de Itemlist y hay que hechar marcha atrás
+            if item.extra != "novedades":
+                post_actual = item.post     #Guardamos el post actual por si hay overflow de Itemlist y hay que hechar marcha atrás
+            else:
+                post_actual = item.url
             # Probamos para descargas2020 y pctnew
             if scrapertools.find_single_match(data, '"total":\d+,"all":(\d+),'):
                 total_pag = int(scrapertools.find_single_match(data, '"total":\d+,"all":(\d+),'))
@@ -1054,11 +1064,17 @@ def listado_busqueda(item):
             cnt_next = 99                                   #No hay más páginas.  Salir del bucle después de procesar ésta
             logger.error(traceback.format_exc())
 
-        if post:                                            #puntero a la siguiente página.  Cada página de la web tiene 30 entradas
+        if post and item.extra != "novedades":              #puntero a la siguiente página.  Cada página de la web tiene 30 entradas
             if "pg" in item.post:
                 item.post = re.sub(r"pg=(\d+)", "pg=%s" % post, item.post)
             else:
                 item.post += "&pg=%s" % post
+            post_num = int(post)-1                                              #Guardo página actual
+        elif post:
+            if "/pg" in item.url:
+                item.url = re.sub(r"\/pg\/(\d+)", "/pg/%s" % post, item.url)
+            else:
+                item.url += "pg/%s" % post
             post_num = int(post)-1                                              #Guardo página actual
 
         # Preparamos un patron que pretence recoger todos los datos significativos del video
@@ -1161,8 +1177,11 @@ def listado_busqueda(item):
             if cnt_title >= cnt_tot*0.65:           #si se acerca al máximo num. de lineas por pagina, tratamos lo que tenemos
                 cnt_next = 99                       #Casi completo, no sobrepasar con la siguiente página
                 if cnt_title > cnt_tot or item.extra == 'novedades':
-                    if item.extra != 'novedades': cnt_title = 99                #Sobrepasado el máximo.  Ignoro página actual
-                    item.post = post_actual         #Restauro puntero "next" a la página actual, para releearla en otra pasada
+                    if item.extra != 'novedades': 
+                        cnt_title = 99              #Sobrepasado el máximo.  Ignoro página actual
+                        item.post = post_actual     #Restauro puntero "next" a la página actual, para releearla en otra pasadaatrás
+                    else:
+                        item.url = post_actual
                     post_num -= 1                   #Restauro puntero a la página actual en el pie de página
                     break
 
@@ -2509,7 +2528,7 @@ def episodios(item):
 
     max_page = 100                                                              # Límite de páginas a visitar
     if item.library_playcounts: 
-        max_page = old_div(max_page, 5)                                                 # Si es una actualización, recortamos
+        max_page = old_div(max_page, 5)                                         # Si es una actualización, recortamos
     page = 1
     if scrapertools.find_single_match(item.url, '\/(\d{4,20})\/*$'):            # Tiene número de serie?
         list_pages = ['%s/pg/%s' % (item.url, page)]
@@ -2814,10 +2833,14 @@ def episodios(item):
                     break
             else:
                 lang = ''
-            if item_local.quality == item.quality and lang and item_local.title not in str(list_episodes):
-                list_episodes += [item_local.title]
-                
-                itemlist.append(item_local.clone())
+            #if item_local.quality == item.quality and lang and item_local.title not in str(list_episodes):
+            if lang and item_local.title not in str(list_episodes):
+                if (item.quality == 'HDTV' and item_local.quality == item.quality) \
+                                or (item.quality != 'HDTV' and item_local.quality != 'HDTV'):
+                    list_episodes += [item_local.title]
+                    
+                    item_local.quality = item.quality
+                    itemlist.append(item_local.clone())
             
             #logger.debug(item_local)
             
@@ -2897,7 +2920,10 @@ def verify_host(item, host_call, force=True, category=''):
         item.channel_host = host_call
         dom_sufix_org = scrapertools.find_single_match(item.url, ':\/\/(.*?)[\/|?]').replace('.', '-')
         dom_sufix_clone = scrapertools.find_single_match(host_call, ':\/\/(.*?)\/*$').replace('.', '-')
-        if 'descargas2020' not in dom_sufix_clone and 'pctnew' not in dom_sufix_clone: dom_sufix_clone = ''
+        if 'pctreload' in dom_sufix_clone:
+            dom_sufix_clone = 'pctnew-org'
+        if 'descargas2020' not in dom_sufix_clone and 'pctnew' not in dom_sufix_clone \
+                        and 'pctreload' not in dom_sufix_clone: dom_sufix_clone = ''
         item.url = re.sub(scrapertools.find_single_match(item.url, '(http.*\:\/\/(?:www.)?\w+\.\w+\/)'), host_call, item.url)
         item.url = item.url.replace(dom_sufix_org, dom_sufix_clone)
         item.category = channel_clone.capitalize()
@@ -2921,13 +2947,17 @@ def search(item, texto):
     # texto = texto.replace(" ", "+")
 
     try:
-        if '.org' in host:
+        if '.org' in host or 'pctreload' in host:
             item.url = host + "get/result/"
             item.post = "categoryIDR=&categoryID=&idioma=&calidad=&ordenar=Fecha&inon=Descendente&s=%s&pg=1" % texto
+        elif 'pctreload' in host:
+            item.url = host + "buscar"
+            item.post = "pg=&categoryIDR=&categoryID=&idioma=&calidad=&ordenar=Fecha&inon=Descendente&q=%s&pg=1" % texto
         else:
             item.url = host + "buscar"
             item.post = "q=%s" % texto
         item.pattern = "buscar-list"
+        item.extra = "search"
         itemlist = listado_busqueda(item)
         
         return itemlist

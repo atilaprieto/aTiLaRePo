@@ -1,7 +1,7 @@
 {
   "id": "alsoporn",
   "name": "alsoporn",
-  "active": true,
+  "active": false,
   "adult": true,
   "language": ["*"],
   "thumbnail": "http://alsoporn.com/images/alsoporn.png",

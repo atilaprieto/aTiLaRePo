@@ -2,7 +2,8 @@
   "id": "streamplay",
   "name": "Streamplay",
 
-  "active": true,
+  "active": false,
+  "notes": "Requiere recaptcha",
 
   "find_videos": {
     "ignore_urls": [],

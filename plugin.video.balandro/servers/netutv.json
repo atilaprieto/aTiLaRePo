@@ -9,6 +9,10 @@
     "ignore_urls": [],
     "patterns": [
       {
+        "pattern": "megavideo.cam/watch_video.php\\?v=([a-zA-Z0-9]+)",
+        "url": "http://netu.tv/watch_video.php?v=\\1"
+      },
+      {
         "pattern": "/netu/tv/(embed_)(.*?$)",
         "url": "http://netu.tv/watch_video.php?v=\\2"
       },

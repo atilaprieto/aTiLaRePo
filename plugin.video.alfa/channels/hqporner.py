@@ -93,15 +93,7 @@ def play(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     url= scrapertools.find_single_match(data, '<div class="videoWrapper".*?src="([^"]+)"')
-    url = "https:" + url
-    data = httptools.downloadpage(url).data
-    url = scrapertools.find_single_match(data, 'var srca = (\[.*?\])')
-    patron = 'file: "([^"]+)", label: "([^"]+)"'
-    matches = re.compile(patron,re.DOTALL).findall(url)
-    for url,quality in matches:
-        if not url.startswith("https"):
-            url = "http:%s" % url
-        if not "Default" in quality:
-            itemlist.append(['.mp4 %s' %quality, url])
+    itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
 

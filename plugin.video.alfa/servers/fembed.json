@@ -4,11 +4,11 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "((?:ilovefembed|fembed|divload|feurl|fembad).(?:com|live|best|net)/(?:f|v)/[A-z0-9_-]+)",
+        "pattern": "((?:ilovefembed|fembed|divload|fembad).(?:com|live|best|net)/(?:f|v)/[A-z0-9_-]+)",
         "url": "https://www.\\1"
       },
       {
-        "pattern": "(?:ilovefembed).(?:best)(/(?:f|v)/[A-z0-9_-]+)",
+        "pattern": "(?:ilovefembed|feurl).(?:best|net|com)(/(?:f|v)/[A-z0-9_-]+)",
         "url": "https://www.fembed.com\\1"
       }
     ]

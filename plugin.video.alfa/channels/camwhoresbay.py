@@ -56,8 +56,11 @@ def categorias(item):
     scrapertools.printMatches(matches)
     for scrapedurl,scrapedtitle,scrapedthumbnail,cantidad  in matches:
         scrapedtitle = "%s (%s)" % (scrapedtitle, cantidad)
+        if not scrapedthumbnail.startswith("https"):
+            scrapedthumbnail = "http:%s" % scrapedthumbnail
+        scrapedthumbnail += "|Referer=%s" % item.url
         scrapedplot = ""
-        itemlist.append( Item(channel=item.channel, action="categorias", title=scrapedtitle, url=scrapedurl,
+        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return sorted(itemlist, key=lambda i: i.title)
 
@@ -66,7 +69,7 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = '<div class="video-item   ">.*?'
+    patron = '<div class="video-item\s+">.*?'
     patron += '<a href="([^"]+)" title="([^"]+)"  class="thumb">.*?'
     patron += 'data-original="([^"]+)".*?'
     patron += '<i class="fa fa-clock-o"></i>(.*?)</div>'
@@ -74,11 +77,12 @@ def lista(item):
     for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedtime in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
         title = "[COLOR yellow]%s[/COLOR] %s" % (scrapedtime, scrapedtitle)
-        thumbnail = "http:%s" % scrapedthumbnail 
-        thumbnail += "|Referer=%s" % item.url
+        if not scrapedthumbnail.startswith("https"):
+            scrapedthumbnail = "http:%s" % scrapedthumbnail
+        scrapedthumbnail += "|Referer=%s" % item.url
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
-                              fanart=thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=scrapedthumbnail,
+                              fanart=scrapedthumbnail, plot=plot))
     if item.extra:
        next_page = scrapertools.find_single_match(data, '<li class="next">.*?from_videos\+from_albums:(\d+)')
        if next_page:

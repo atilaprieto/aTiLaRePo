@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from core import scrapertools
 from core import servertools
 from core.item import Item
 from platformcode import config, logger
 from core import httptools
 from core import jsontools as json
-
 
 host = 'https://txxx.com'
 url_api = host + "/api/json/videos/%s/str/%s/60/%s.%s.1.all..%s.json"
@@ -136,9 +144,9 @@ def lista(item):
         scrapedhd =  Video["props"]
         scrapedurl = "https://txxx.com/embed/%s" %video_id
         if scrapedhd:
-            title = "[COLOR yellow]" +duration+ "[/COLOR] " + "[COLOR tomato] HD [/COLOR] "+scrapedtitle
+            title = "[COLOR yellow]%s[/COLOR] [COLOR tomato]HD[/COLOR] %s" % (duration, scrapedtitle)
         else:
-            title = "[COLOR yellow]" + duration + "[/COLOR] " + scrapedtitle
+            title = "[COLOR yellow]%s[/COLOR] %s" % (duration, scrapedtitle)
         thumbnail = scrapedthumbnail.replace("\/", "/")
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play" , title=title , url=scrapedurl, thumbnail=thumbnail, 

@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------
-import urlparse
-import urllib2
-import urllib
-import re
-import os
 import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from platformcode import config, logger
 from core import scrapertools
@@ -32,8 +36,8 @@ def mainlist(item):
 
 def search(item, texto):
     logger.info()
-    texto = texto.replace(" ", "+")
-    item.url = host + "/search/%s/" % texto
+    texto = texto.replace(" ", "-")
+    item.url = "%s/search/%s/?sort_by=post_date&from_videos=1" % (host, texto)
     try:
         return lista(item)
     except:
@@ -57,20 +61,20 @@ def categorias(item):
         scrapedurl += "1/" 
         cantidad = scrapertools.find_single_match(cantidad, '(\d+) videos</div>')
         if cantidad:
-            scrapedtitle += " (" + cantidad + ")"
+            scrapedtitle= "%s (%s)" % (scrapedtitle, cantidad)
         itemlist.append(Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                              thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot))
     if not "models" in item.url:
         itemlist.sort(key=lambda x: x.title)
 
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
-    page = scrapertools.find_single_match(item.url, '([^"]+/)\d+/')
+    page = scrapertools.find_single_match(item.url, '([^"]+)\d+')
     if next_page != "#videos" and next_page != "":
         next_page = urlparse.urljoin(item.url, next_page)
         itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page))
     if next_page == "#videos":
-        next_page = scrapertools.find_single_match(data, 'from:(\d+)">Next</a>')
-        next_page = page + next_page + "/"
+        next_page = scrapertools.find_single_match(data, ':(\d+)">Next</a>')
+        next_page = "%s%s/" %(page, next_page)
         itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page))
     return itemlist
 
@@ -87,7 +91,7 @@ def lista(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedthumbnail, scrapedtitle, duracion in matches:
         url = scrapedurl
-        title = "[COLOR yellow]" + duracion + "[/COLOR] " + scrapedtitle
+        title = "[COLOR yellow]%s[/COLOR] %s" % (duracion, scrapedtitle)
         contentTitle = title
         thumbnail = scrapedthumbnail
         plot = ""
@@ -95,13 +99,13 @@ def lista(item):
         itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
                              fanart=thumbnail, plot=plot, contentTitle=contentTitle))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
-    page = scrapertools.find_single_match(item.url, '([^"]+/)\d+/')
-    if next_page != "#videos" and next_page != "#search":
+    page = scrapertools.find_single_match(item.url, '([^"]+)\d+')
+    if not "#" in next_page:
         next_page = urlparse.urljoin(item.url, next_page)
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
-    if next_page == "#videos" or next_page == "#search":
-        next_page = scrapertools.find_single_match(data, 'from:(\d+)">Next</a>')
-        next_page = page + next_page + "/"
+    else:
+        next_page = scrapertools.find_single_match(data, ':(\d+)">Next</a>')
+        next_page = "%s%s/" %(page, next_page)
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
     return itemlist
 

@@ -10,6 +10,17 @@
     "adult"
   ],
   "settings": [
+    {
+      "id": "filter_languages",
+      "type": "list",
+      "label": "Mostrar enlaces en idioma...",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "No filtrar"
+      ]
+    }
   ]
 }
 

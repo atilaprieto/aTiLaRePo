@@ -17,10 +17,10 @@
     </extension>
 </addon>
 
-<addon id="plugin.googledrive" name="Google Drive" version="1.3.3" provider-name="Carlos Guzman (cguZZman)">
+<addon id="plugin.googledrive" name="Google Drive" version="1.3.4" provider-name="Carlos Guzman (cguZZman)">
 	<requires>
 		<import addon="xbmc.python" version="2.25.0" />
-		<import addon="script.module.clouddrive.common" version="1.2.10"/>
+		<import addon="script.module.clouddrive.common" version="1.2.12"/>
 	</requires>
 	<extension point="xbmc.python.pluginsource" library="addon.py">
 		<provides>image audio video</provides>
@@ -50,7 +50,7 @@ Play all your media from Google Drive including Videos, Music and Pictures (incl
   - שימוש ב-Google Drive כמקור
   - תוכנית זו אינה קשורה או ממומנת על ידי Google.
 		</description>
-		<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+		<license>GPL-3.0-or-later</license>
 		<source>https://github.com/cguZZman/plugin.googledrive</source>
 		<forum>https://github.com/cguZZman/plugin.googledrive/issues</forum>
 		<website>https://addons.kodi.tv/show/plugin.googledrive</website>
@@ -59,55 +59,8 @@ Play all your media from Google Drive including Videos, Music and Pictures (incl
 			<fanart>fanart.jpg</fanart>
 		</assets>
 		<news>
-v1.3.3 released Feb 14, 2020:
-- Check for google ban
-v1.3.2 released Feb 12, 2020:
-- Fix video playback in google photos
-- Fix search
-v1.3.1 released Feb 10, 2020:
-- Fix playback
-v1.3.0 released Jan 4, 2019:
-- Ability to specify default playback quality
-v1.2.12 released Oct 2, 2018:
-- Google Photos resolution fix
-v1.2.11 released Sep 20, 2018:
-- Resume points and watched status for strm files in library
-v1.2.10 released Sep 12, 2018:
-- Google Photos fix
-- Order by date fix
-v1.2.8 released Sep 11, 2018:
-- Subtitles assigned in source mode
-- Fixes
-v1.2.6 released Aug 26, 2018:
-- Team drive list fix
-v1.2.4 released Aug 24, 2018:
-- strm files saved in the cloud are exported as is.
-v1.2.3 released Aug 17, 2018:
-- Auto export and watch export folder.
-- Fixes
-v1.2.2 released Jul 15, 2018:
-- Fix requesting files with a single quote in the name in source mode.
-v1.2.1 released Jul 14, 2018:
-- Source mode fix
-v1.2.0 released Jul 12, 2018:
-- Team Drive support
-v1.1.0 released Jul 11, 2018:
-- New mode for source and download services. Both moved to respective addons.
-- Source service fixed.
-v1.0.5 released July 6, 2018:
-- Fix display more than 100 files in source mode
-v1.0.4 released July 5, 2018:
-- Fix exporting and google photos
-v1.0.3 released April 13, 2018:
-- Fix bug playing files with a single quote in the name.
-v1.0.2 released March 15, 2018:
-- Bug fixes
-- Auto export strm
-- Select stream format
-v1.0.1 released Nov 30, 2017:
-- Bug fixes
-v1.0.0 Nov 6, 2017:
-- First release
+v1.3.4 released Mar 3, 2020:
+- NFO export
 		</news>
 		<disclaimer lang="en_GB">
 This cloud drive addon uses a third-party authentication mechanism commonly known as OAuth 2.0.
@@ -172,7 +125,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.0.5" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.0.6" provider-name="Alfa Addon">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.libtorrent" optional="true"/>
@@ -196,16 +149,16 @@ You can clone the project and host it in your own server.
       <news>[B]Estos son los cambios para esta versión:[/B]
 
       [COLOR green][B]Arreglos[/B][/COLOR]
-      ¤ Grantorrent                        ¤ Youtube                 ¤ Allcalidad
-      ¤ Descargacineclasico         ¤ SeriesFLV                ¤ HDFull
-      ¤ Pelix                                    ¤ PelisPlus                 ¤ UnRAR (contraseñas)
-      ¤ +18
+      ¤ Grantorrent                        ¤ Elitetorrent                 ¤ Dontorrent
+      ¤ AnimeFLV.ru                       ¤ Allcalidad                    ¤ Repelisgo
+      ¤ +18: descargas en segundo plano
 
       [COLOR green][B]Novedades[/B][/COLOR]
-      ¤ Entrepeliculasyseries
-      ¤ UnRAR: recuperación automática en caso de fallo
-      ¤ Quasar: compatibilidad total Kodi 19
-      ¤ +18 compatibilidad Kodi 19
+      ¤ NewPct1: nuevo clone "Pctreload"
+      ¤ Descargas en segundo plano desde canales Torrent
+      ¤ +18 compatibilidad total Kodi 19
+
+      Agradecimiento a @mac12m99 por su aportación a esta versión.
 
     </news>
     <description lang="es">Navega con Kodi por páginas web para ver sus videos de manera fácil.</description>
@@ -223,7 +176,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.1.5" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.1.7" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -253,7 +206,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.5" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.7" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -270,8 +223,8 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Retroseriestv, Hdfull, Seriesdanko, Inkapelis, Elhogardelaprendiz.
-    Servidores modificados: Vidload, Gamovideo, Mixdrop, Uptostream, Powvideo, Streamplay.
+    Canales modificados: Cinetux, Newpct1, Tupelihd, Pelispedia, Mega1link, Seriesmetro.
+    Servidores modificados: Powvideo, Streamplay.
     </news>
 
     <assets>
@@ -362,7 +315,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.0.3" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.0.4" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -467,10 +420,12 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.mitele" name="MITELE" version="1.1.1" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.mitele" name="MITELE" version="1.1.3" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
+		<import addon="script.module.urlresolver" />
+		<import addon="script.module.resolveurl" />
 	</requires>
 	<extension point="xbmc.python.pluginsource" library="default.py">
 		<provides>video</provides>

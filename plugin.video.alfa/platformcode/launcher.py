@@ -504,7 +504,14 @@ def play_from_library(item):
                         return
                     else:
                         item = videolibrary.play(itemlist[seleccion])[0]
-                        platformtools.play_video(item)
+                        if item.action == 'play':
+                            platformtools.play_video(item)
+                        else:
+                            channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
+                            if hasattr(channel, item.action):
+                                play_items = getattr(channel, item.action)(item.clone(action=item.action, 
+                                                     channel=item.contentChannel))
+                            return
 
                     from channels import autoplay
                     if (platformtools.is_playing() and item.action) or item.server == 'torrent' or autoplay.is_active(item.contentChannel):

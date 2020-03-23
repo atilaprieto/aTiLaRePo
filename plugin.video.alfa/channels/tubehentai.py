@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
 import re
-import urlparse
 
 from core import httptools
 from core import scrapertools
@@ -24,7 +31,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "%20")
-    item.url = host + "/search/%s/" % texto
+    item.url = "%s/search/%s/" % (host, texto)
     try:
         return lista(item)
     # Se captura la excepciÛn, para no interrumpir al buscador global si un canal falla
@@ -44,7 +51,7 @@ def lista(item):
     patron += '<img src="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,duration,scrapedthumbnail in matches:
-        title = "[COLOR yellow]" + duration + "[/COLOR] " + scrapedtitle
+        title = "[COLOR yellow]%s[/COLOR] %s" % (duration, scrapedtitle)
         itemlist.append(Item(channel=item.channel, action="play", title=title, url=scrapedurl, 
                         fanart=scrapedthumbnail, thumbnail=scrapedthumbnail))
     next_page = scrapertools.find_single_match(data,'<a rel=\'next\' title=\'Next\' href=\'([^\']+)\'')

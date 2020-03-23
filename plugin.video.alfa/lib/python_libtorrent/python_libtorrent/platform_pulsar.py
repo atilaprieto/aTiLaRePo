@@ -165,30 +165,30 @@ def get_system(ret):
     ret["system"] = ''
     ret["message"] = ['', '']
 
-    if ret["os"] == 'windows' and ret["arch"] != "x64":                         ### Alfa
+    if ret["os"] == 'windows' and ret["arch"] != "x64":                                         ### Alfa
         ret["system"] = 'windows'
         ret["message"] = ['Windows has static compiled python-libtorrent included.',
-                          'You should install "script.module.libtorrent" from "MyShows.me Kodi Repo"']
-    elif ret["os"] == 'windows' and ret["arch"] == "x64":                                                           ### Alfa
-        ret["system"] = 'windows_x64'                                                                               ### Alfa
-        ret["message"] = ['Windows x64 has static compiled python-libtorrent included.',                            ### Alfa
-                           'You should install "script.module.libtorrent" from "MyShows.me Kodi Repo"']             ### Alfa
+                          '"script.module.libtorrent" included']
+    elif ret["os"] == 'windows' and ret["arch"] == "x64":                                       ### Alfa
+        ret["system"] = 'windows_x64'                                                           ### Alfa
+        ret["message"] = ['Windows x64 has static compiled python-libtorrent included.',        ### Alfa
+                          '"script.module.libtorrent" included']                                ### Alfa
     elif ret["os"] == "linux" and ret["arch"] == "x64":
         ret["system"] = 'linux_x86_64'
         ret["message"] = ['Linux x64 has not static compiled python-libtorrent included.',
-                          'You should install it by "sudo apt-get install python-libtorrent"']
+                          '"script.module.libtorrent" included']
     elif ret["os"] == "linux" and ret["arch"] == "x86":
         ret["system"] = 'linux_x86'
         ret["message"] = ['Linux has static compiled python-libtorrent included but it didn\'t work.',
-                          'You should install it by "sudo apt-get install python-libtorrent"']
+                          '"script.module.libtorrent" included']
     elif ret["os"] == "linux" and "aarch64" in ret["arch"]:
         ret["system"] = 'linux_' + ret["arch"]
         ret["message"] = ['Linux has static compiled python-libtorrent included but it didn\'t work.',
-                          'You should install it by "sudo apt-get install python-libtorrent"']
+                          '"script.module.libtorrent" included']
     elif ret["os"] == "linux" and ("arm" or "mips" in ret["arch"]):
         ret["system"] = 'linux_'+ret["arch"]
         ret["message"] = ['As far as I know you can compile python-libtorrent for ARMv6-7.',
-                          'You should search for "OneEvil\'s OpenELEC libtorrent" or use Ace Stream.']
+                          '"script.module.libtorrent" included']
     elif ret["os"] == "android":
         if ret["arch"]=='arm':
             ret["system"] = 'android_armv7'

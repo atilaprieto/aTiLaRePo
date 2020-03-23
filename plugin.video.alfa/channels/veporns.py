@@ -1,31 +1,53 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,re
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
 from core import servertools
 from core import httptools
+from channels import filtertools
+from channels import autoplay
 
+IDIOMAS = {'vo': 'VO'}
+list_language = list(IDIOMAS.values())
+list_quality = []
+list_servers = ['gounlimited']
 host = 'http://www.veporns.com'
+
 
 def mainlist(item):
     logger.info()
     itemlist = []
+
+    autoplay.init(item.channel, list_servers, list_quality)
+
     itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host))
     itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "/month"))
     itemlist.append( Item(channel=item.channel, title="Mejor valorado" , action="lista", url=host + "/top-videos"))
     itemlist.append( Item(channel=item.channel, title="PornStar" , action="catalogo", url=host + "/pornstars"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories"))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+
+    autoplay.show_option(item.channel, itemlist)
+
     return itemlist
 
 
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "-")
-    item.url = host + "/porn/%s/" % texto
+    item.url = "%s/porn/%s/" % (host, texto)
     try:
         return lista(item)
     except:
@@ -105,12 +127,13 @@ def lista(item):
     patron += 'title="([^"]+)".*?image:url\(([^")]+)\)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
-        title = scrapedtitle
+        title = scrapedtitle.strip()
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
+                              # porstar paginacion
     next_page = scrapertools.find_single_match(data, '<a class="active".*?<a class="" href="([^"]+)">')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
@@ -119,18 +142,24 @@ def lista(item):
     return itemlist
 
 
-def play(item):
+def findvideos(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    url = scrapertools.find_single_match(data, 'onClick="toplay\((.*?)\)')
-    url = url.replace("'", "").split(",")
-    url = "http://www.veporns.com/ajax.php?page=video_play&thumb=%s&theme=%s&video=%s&id=%s&catid=%s&tip=%s&server=%s" %(url[0],url[1],url[2],url[3],url[4],url[5],str(url[6]))
-    headers = {"X-Requested-With":"XMLHttpRequest"}
-    data = httptools.downloadpage(url, headers=headers).data
-    url = scrapertools.find_single_match(data, '<iframe src="([^"]+)"')
-    itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
+    patron = 'onClick="toplay\((.*?)\).*?>Mirror'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    for url in matches:
+        url = url.replace("'", "").split(",")
+        url = "http://www.veporns.com/ajax.php?page=video_play&thumb=%s&theme=%s&video=%s&id=%s&catid=%s&tip=%s&server=%s" %(url[0],url[1],url[2],url[3],url[4],url[5],str(url[6]))
+        headers = {"X-Requested-With":"XMLHttpRequest"}
+        data = httptools.downloadpage(url, headers=headers).data
+        url = scrapertools.find_single_match(data, '<iframe src="([^"]+)"')
+        itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
+    # Requerido para FilterTools
+    itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)
+    # Requerido para AutoPlay
+    autoplay.start(itemlist, item)
     return itemlist
 

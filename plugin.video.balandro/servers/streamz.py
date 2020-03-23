@@ -18,6 +18,8 @@ def get_video_url(page_url, url_referer=''):
         url = scrapertools.find_single_match(unpacked.replace("\\'", "'"), "src:'([^']+)")
         if url and url.startswith('http'):
             url = httptools.downloadpage(url, headers={'Referer': page_url}, follow_redirects=False, only_headers=True).headers.get('location', '')
-            if url: video_urls.append(['mp4', url])
+            if url: 
+                if '/issue.mp4' in url: return 'El vídeo no está disponible en este momento'
+                video_urls.append(['mp4', url])
 
     return video_urls

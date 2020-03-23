@@ -37,8 +37,9 @@ global DOMAIN_CS
 DOMAIN_CS = ["animeflv.ru", "www.divxtotal.la", "gnula.nu", "mejortorrent1.net", \
              'zooqle.com', 'zooqle1.unblocked.is', 'zooqle.unblocked.win', \
              'zooqle-com.prox2.info', 'blazing.network', 'www.cinetux.to', 'hdfull.io', \
-             'vidtodo.com', 'seriesdanko.net', 'sexgalaxy.net', 'grantorrent.io', \
-             'grantorrent.li', 'animeflv.net', 'seriesf.lv']
+             'vidtodo.com', 'seriesdanko.net', 'sexgalaxy.net', 'grantorrent.cc', \
+             'grantorrent.li', 'animeflv.net', 'seriesf.lv', 'fullxxxmovies.net', \
+             'repelisgo.net']
 
 ## Obtiene la versión del addon
 __version = config.get_addon_version()
@@ -494,10 +495,10 @@ def downloadpage(url, **opt):
             session.cookies = cj
         session.headers.update(req_headers)
         
-        # Prepara la url en caso de necesitar proxy, o si se envía "proxies" desde el canal
+        # Prepara la url en caso de necesitar proxy, o si se envía "proxy_addr_forced" desde el canal
         url, proxy_data, opt = check_proxy(url, **opt)
-        if opt.get('proxies', None) is not None:
-            session.proxies = opt['proxies']
+        if opt.get('proxy_addr_forced', {}):
+            session.proxies = opt['proxy_addr_forced']
         elif proxy_data.get('dict', {}):
             session.proxies = proxy_data['dict']
 

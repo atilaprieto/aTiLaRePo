@@ -238,13 +238,10 @@ def resolve_video_urls_for_playing(server, url, url_referer=''):
 
 # Para servers con varios ids, busca si es uno de los ids alternativos y devuelve el id principal
 def get_server_id(serverid):
-    serverid = serverid.lower()
     # A mano para evitar recorrer todos los servidores !? (buscar "more_ids" en los json de servidores)
-    if serverid in ['netu','waaw','hqq']: return 'netutv'
-    if serverid in ['uploaded','ul.to']: return 'uploadedto'
-    if serverid == 'ok.ru': return 'okru'
-    if serverid == 'biter': return 'byter'
-    return serverid
+    return corregir_servidor(serverid)
+
+    serverid = serverid.lower()
 
     # Obtenemos el listado de servers
     server_list = get_servers_list().keys()
@@ -356,20 +353,23 @@ def get_servers_list():
     return server_list
 
 
-# Normalizar nombre del servidor (para los canales que no lo obtienen de los patrones)
+# Normalizar nombre del servidor (para los canales que no lo obtienen de los patrones, y para evitar bucle more_ids en get_server_id())
 def corregir_servidor(servidor):
     servidor = servidor.strip().lower()
-    if servidor in ['waaw', 'waaw1', 'waav', 'netu', 'hqq']: return 'netutv'
+    if servidor in ['waaw', 'waaw1', 'waav', 'netu', 'hqq', 'megavideo']: return 'netutv'
     elif servidor in ['povwideo', 'powvldeo', 'powv1deo', 'povw1deo']: return 'powvideo'
     elif servidor in ['steamplay', 'streamp1ay']: return 'streamplay'
+    elif servidor in ['jplayer', 'feurl']: return 'fembed'
+    elif servidor == 'vidto': return 'vidtodo'
     elif servidor == 'vev': return 'vevio'
     elif servidor == 'uptobox': return 'uptostream'
     elif servidor in ['ok', 'ok.ru']: return 'okru'
     elif servidor == 'youtu': return 'youtube'
     elif servidor == 'flix': return 'flix555'
+    elif servidor == 'biter': return 'byter'
     elif servidor == 'thevideo': return 'thevideome'
-    elif servidor == '1fichier': return 'onefichier'
-    elif servidor in ['uploaded', 'ul']: return 'uploadedto'
+    elif servidor == 'onefichier': return '1fichier'
+    elif servidor in ['uploaded', 'ul', 'ul.to']: return 'uploadedto'
     else: return servidor
 
 

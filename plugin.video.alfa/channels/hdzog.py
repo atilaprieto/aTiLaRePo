@@ -25,14 +25,16 @@ def mainlist(item):
     itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/new/"))
     itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=host + "/popular/"))
     itemlist.append( Item(channel=item.channel, title="Longitud" , action="lista", url=host + "/longest/"))
+    itemlist.append( Item(channel=item.channel, title="Canal" , action="categorias", url=host + "/channels/"))
+    itemlist.append( Item(channel=item.channel, title="Pornstar" , action="categorias", url=host + "/models/"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/"))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
 
 def search(item, texto):
     logger.info()
-    texto = texto.replace(" ", "+")
-    item.url = "%s/search/?q=%s" % (host, texto)
+    texto = texto.replace(" ", "%20")
+    item.url = "%s/search/%s/" % (host, texto)
     try:
         return lista(item)
     except:
@@ -46,18 +48,21 @@ def categorias(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data,'<ul class="cf">(.*?)</ul>')
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     patron = '<li>.*?<a href="([^"]+)".*?'
-    patron += '<img class="thumb" src="([^"]+)" alt="([^"]+)".*?'
+    patron += 'src="([^"]+)" alt="([^"]+)".*?'
     patron += '<span class="videos-count">(\d+)</span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,vidnum in matches:
         scrapedplot = ""
         url= "%s?sortby=post_date" %scrapedurl
         title = "%s (%s)" % (scrapedtitle, vidnum)
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
+        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
                               thumbnail=scrapedthumbnail, plot=scrapedplot) )
+    next_page = scrapertools.find_single_match(data,'<a href="([^"]+)" title="Next Page" data-page-num="\d+">Next page &raquo;</a>')
+    if next_page!="":
+        next_page = urlparse.urljoin(item.url,next_page)
+        itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page) )
     return itemlist
 
 
@@ -85,6 +90,7 @@ def lista(item):
 
 
 def play(item):
+    logger.info()
     headers = {'Referer': item.url}
     post_url = host+'/sn4diyux.php'
     data = httptools.downloadpage(item.url).data

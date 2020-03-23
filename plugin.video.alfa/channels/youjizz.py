@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------
-import urlparse
-import urllib2
-import urllib
-import re
-import os
 import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from platformcode import config, logger
 from core import scrapertools
 from core.item import Item
@@ -30,7 +35,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = host + "/search/recent_%s-1.html" % texto
+    item.url = "%s/search/recent_%s-1.html" % (host, texto)
     try:
         return lista(item)
     except:
@@ -51,7 +56,6 @@ def categorias(item):
     for scrapedurl, scrapedtitle in matches:
         scrapedplot = ""
         scrapedthumbnail = ""
-        scrapedtitle = scrapedtitle
         scrapedurl = urlparse.urljoin(item.url, scrapedurl)
         itemlist.append(Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                              thumbnail=scrapedthumbnail, plot=scrapedplot))
@@ -65,26 +69,27 @@ def lista(item):
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     patron = '<div class="video-item">.*?'
     patron += 'class="frame image" href="([^"]+)".*?'
-    patron += 'data-original="([^"]+)" />.*?'
+    patron += 'data-original="([^"]+)".*?'
     patron += '<div class="video-title">.*?'
     patron += '>(.*?)</a>.*?'
     patron += '<span class="time">(.*?)</span>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedthumbnail, scrapedtitle, duracion in matches:
         url = urlparse.urljoin(item.url, scrapedurl)
-        title = "[COLOR yellow]" + duracion + "[/COLOR] " + scrapedtitle
+        title = "[COLOR yellow]%s[/COLOR] %s" % (duracion, scrapedtitle)
         quality = ""
         if '-720-' in scrapedthumbnail:
             quality = "720"
         if '-1080-' in scrapedthumbnail:
             quality = "1080"
         if quality:
-            title = "[COLOR yellow]" + duracion + "[/COLOR] " + "[COLOR red]" + quality + "p[/COLOR] " + scrapedtitle
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red]%sp[/COLOR] %s" % (duracion, quality, scrapedtitle)
         contentTitle = title
-        thumbnail = "http:" + scrapedthumbnail
+        if not scrapedthumbnail.startswith("https"):
+            scrapedthumbnail = "http:%s" % scrapedthumbnail
         plot = ""
         year = ""
-        itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
+        itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=scrapedthumbnail,
                              plot=plot, quality=quality, contentTitle=contentTitle))
     next_page = scrapertools.find_single_match(data, '<li><a class="pagination-next" href="([^"]+)">Next &raquo;</a>')
     if next_page != "":
@@ -97,10 +102,11 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data, 'var encodings(.*?)var')
+    data = scrapertools.find_single_match(data, 'var dataEncodings(.*?)var')
     patron = '"quality":"(\d+)","filename":"([^"]+)",'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for quality,scrapedurl in matches:
-        url = "https:" + scrapedurl.replace("\\", "")
+    for quality,url in matches:
+        if not url.startswith("https"):
+            url = "https:%s" % url.replace("\\", "")
         itemlist.append(['%sp' %quality, url])
     return itemlist

@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
 import re
 
 from platformcode import config, logger
@@ -12,9 +20,9 @@ from channels import filtertools
 from channels import autoplay
 
 IDIOMAS = {'vo': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
-list_servers = ['datoporn']
+list_servers = ['mangovideo']
 
 host = 'https://xxxparodyhd.net'
 
@@ -100,7 +108,7 @@ def findvideos(item):
             itemlist.append( Item(channel=item.channel, action="play", title = "%s", contentTitle=item.title, url=url ))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     # Requerido para FilterTools
-    itemlist = filtertools.get_links(itemlist, item, list_language)
+    itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)
     # Requerido para AutoPlay
     autoplay.start(itemlist, item)
     return itemlist

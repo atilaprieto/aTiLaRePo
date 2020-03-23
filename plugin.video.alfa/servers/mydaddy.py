@@ -22,11 +22,13 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info()
     video_urls = []
     data = httptools.downloadpage(page_url).data
-    data = scrapertools.find_single_match(data, 'var srca = \[(.*?)\]')
-    matches = scrapertools.find_multiple_matches(data, 'file: "([^"]+)", label: "([^"]+)"')
+    data = scrapertools.find_single_match(data, 'else(.*?)You can download it')
+    data = data.replace("\\", "")
+    matches = scrapertools.find_multiple_matches(data, '<source src="([^"]+)" title="([^"]+)"')
     for url,quality in matches:
         if not url.startswith("http"):
             url = "http:%s" % url
         if not "Default" in quality:
             video_urls.append(["[mydaddy] %s" % quality, url])
     return video_urls
+

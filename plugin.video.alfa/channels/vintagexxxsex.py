@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
+
 from core import scrapertools
 from core import servertools
 from core.item import Item
@@ -25,7 +34,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "%20")
-    item.url = host + "/en/search/%s/" % texto
+    item.url = "%s/en/search/%s/" % (host, texto)
     try:
         return lista(item)
     except:
@@ -68,7 +77,7 @@ def lista(item):
     for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedtime in matches:
         title = "[COLOR yellow]%s[/COLOR] %s" %(scrapedtime.strip(),scrapedtitle)
         scrapedurl = scrapedurl.replace("/real.php?tube=", "")
-        scrapedurl = host + scrapedurl
+        scrapedurl = "%s%s" %(host,scrapedurl)
         if not scrapedthumbnail.startswith("https"):
             thumbnail= "https:%s" %scrapedthumbnail
         plot = ""

@@ -24,7 +24,8 @@ def mainlist(item):
     logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Nuevas" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/top-raped/"))
+    itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/top-rated/"))
+    itemlist.append( Item(channel=item.channel, title="Mas largo" , action="lista", url=host + "/longest/"))
     itemlist.append( Item(channel=item.channel, title="Modelos" , action="categorias", url=host + "/models/most-popular/"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/"))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))

@@ -16,9 +16,10 @@ CLONES = [
     # ~ ['tumejortorrent', 'https://tumejortorrent.org/', 'movie, tvshow', 'tumejortorrent.jpg'],
     # ~ ['torrentrapid', 'https://torrentrapid.org/', 'movie, tvshow', 'torrentrapid.png'],
     ['torrentlocura', 'http://torrentlocura.cc/', 'movie, tvshow', 'torrentlocura.png'],
-    ['planetatorrent', 'http://planetatorrent.com/', 'movie, tvshow', 'planetatorrent.png'],
-    ['mispelisyseries', 'http://mispelisyseries.com/', 'movie', 'mispelisyseries.png'],
-    ['tvsinpagar', 'http://www.tvsinpagar.com/', 'movie, tvshow', 'tvsinpagar.png']
+    ['pctreload', 'https://pctreload.com/', 'movie, tvshow', 'pctreload.png'] # new
+    # ~ ['planetatorrent', 'http://planetatorrent.com/', 'movie, tvshow', 'planetatorrent.png'],
+    # ~ ['mispelisyseries', 'http://mispelisyseries.com/', 'movie', 'mispelisyseries.png'],
+    # ~ ['tvsinpagar', 'http://www.tvsinpagar.com/', 'movie, tvshow', 'tvsinpagar.png']
 ]
 
 # Notas:
@@ -67,6 +68,7 @@ def mainlist_pelis_clon(item):
         ['Películas en Latino', 'peliculas-latino/'],
         ['Películas en VO', 'peliculas-vo/'],
         ['Estrenos de cine', 'estrenos-de-cine/'],
+        ['Otras películas', 'otras-peliculas/'],
         ['Películas en HD', 'peliculas-hd/'],
         ['Películas en X264', 'peliculas-x264-mkv/'],
         ['Películas en 3D', 'peliculas-3d/']
@@ -83,13 +85,21 @@ def mainlist_pelis_clon(item):
         # ~ ['4K Webrip', 'peliculas-hd/4k-webrip/'],
         # ~ ['Full UHD4K', 'peliculas-hd/full-uhd4k/'],
         # ~ ['Documentales', 'varios/'], # algunos documentales, pero la mayoría de enlaces son pdfs de revistas, etc.
-    # Excepciones: planetatorrent no tiene x264-mkv. torrentrapid no tiene buscar
 
     for enlace in enlaces:
-        if item.title == 'planetatorrent' and 'x264' in enlace[1]: continue
+        # ~ if item.title == 'planetatorrent' and 'x264' in enlace[1]: continue
+
+        if item.title == 'pctnew' and 'otras-peliculas' in enlace[1]: continue
+        if item.title == 'pctnew' and 'peliculas-vo' in enlace[1]: continue
+
+        if item.title == 'descargas2020' and 'otras-peliculas' in enlace[1]: continue
+        if item.title == 'descargas2020' and 'peliculas-vo' in enlace[1]: continue
+
+        if item.title == 'pctreload' and 'otras-peliculas' in enlace[1]: continue
+
         itemlist.append(item.clone( title = enlace[0], action = 'list_all', url = item.url + enlace[1], search_type = 'movie' ))
 
-    if item.title != 'torrentrapid':
+    if item.title == 'pctnew' or item.title == 'descargas2020':
         itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', url = item.url, search_type = 'movie' ))
 
     return itemlist
@@ -118,12 +128,11 @@ def mainlist_series_clon(item):
         ['Series HD', 'series-hd/'],
         ['Series VO', 'series-vo/']
     ]
-    # Excepciones: torrentrapid no tiene buscar
 
     for enlace in enlaces:
         itemlist.append(item.clone( title = enlace[0], action = 'list_all', url = item.url + enlace[1], search_type = 'tvshow' ))
 
-    if item.title != 'torrentrapid':
+    if item.title == 'pctnew' or item.title == 'descargas2020':
         itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', url = item.url, search_type = 'tvshow' ))
 
     return itemlist

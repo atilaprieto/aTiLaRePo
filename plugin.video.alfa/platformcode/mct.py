@@ -75,6 +75,7 @@ msg_header = 'Alfa MCT Cliente Torrent'
 
 def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
     allocate = True
+    
     try:
         log("XXX KODI XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
         log("OS platform: %s %s" % (platform.system(),platform.release()))
@@ -116,6 +117,11 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
     video_path = ''
     global bkg_user
     bkg_user = False
+    DOWNGROUND = False
+    if item.downloadFilename:                                                   # Descargas
+        BACKGROUND = True
+        DOWNGROUND = True
+        bkg_user = True
     ses_lt = False
     if item:
         if item.contentType == 'movie':
@@ -286,7 +292,7 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
         filename = video_file
         if "/" in filename:
             filename = filename.split("/")[1]
-        if RAR and BACKGROUND:
+        if (RAR and BACKGROUND):
             xbmcgui.Dialog().notification("Encontrado archivo .RAR de %.2f MB" % (video_size / 1048576.0),
                                         "Puedes realizar otras tareas en Kodi mientrastanto. " + \
                                         "Te informaremos...", time=10000)
@@ -347,9 +353,13 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
     log("##### total piece_set ## %s ##" % len(piece_set))
 
     if dp_cerrado:
-        # -- Crear diálogo de progreso para el primer bucle ---------
-        dp = xbmcgui.DialogProgress()
-        dp.create(msg_header)
+        if bkg_user:
+            dp = xbmcgui.DialogProgressBG()
+            dp.create(msg_header)
+        else:
+            # -- Crear diálogo de progreso para el primer bucle ---------
+            dp = xbmcgui.DialogProgress()
+            dp.create(msg_header)
 
     _pieces_info = {}
 

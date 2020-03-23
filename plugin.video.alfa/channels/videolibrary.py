@@ -537,6 +537,7 @@ def findvideos(item):
             exec("import channels." + nom_canal + " as channel")
 
         item_json = Item().fromjson(filetools.read(json_path))
+        item_json.nfo = item.nfo
         ###### Redirección al canal NewPct1.py si es un clone, o a otro canal y url si ha intervención judicial
         try:
             if item_json:
@@ -580,7 +581,9 @@ def findvideos(item):
 
         # Cambiarle el titulo a los servers añadiendoles el nombre del canal delante y
         # las infoLabels y las imagenes del item si el server no tiene
-        for server in list_servers:
+        y = -1
+        z_torrent_url = ''
+        for x, server in enumerate(list_servers):
             #if not server.action:  # Ignorar/PERMITIR las etiquetas
             #    continue
             server.contentChannel = server.channel
@@ -588,6 +591,14 @@ def findvideos(item):
             server.nfo = item.nfo
             server.strm_path = item.strm_path
             
+            # Para downloads de Torrents desde ventana flotante (sin context menu)
+            if server.contentChannel == 'downloads' and not server.sub_action:
+                y = x
+            if server.server == 'torrent' and server.contentChannel != 'downloads' and not z_torrent_url:
+                z_torrent_url = server.url
+            if server.contentChannel == 'downloads':
+                server.channel = server.contentChannel
+
             #### Compatibilidad con Kodi 18: evita que se quede la ruedecedita dando vueltas en enlaces Directos
             if server.action == 'play':
                 server.folder = False
@@ -602,6 +613,10 @@ def findvideos(item):
 
             # logger.debug("server:\n%s" % server.tostring('\n'))
             itemlist.append(server)
+            
+        #Pego la url del primer torrent en el pseudo-context "Descargar"
+        if y >= 0:
+            itemlist[y].url = z_torrent_url
 
     # return sorted(itemlist, key=lambda it: it.title.lower())
     autoplay.play_multi_channel(item, itemlist)

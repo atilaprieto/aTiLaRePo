@@ -9,9 +9,13 @@ def get_video_url(page_url, video_password):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
     data = httptools.downloadpage(page_url).data
-    patron = '"fallback":"([^"]+)","quality":"([0-9]+p)"'
+    url = scrapertools.find_single_match(data, '"url":"([^"]+)"')
+    url =  url.replace("\/", "/")
+    url = "https://xhamster.com%s" % url
+    data = httptools.downloadpage(url).data
+    patron = ',NAME="([0-9]+p)".*?(https:.*?.mp4)'
     matches = scrapertools.find_multiple_matches(data, patron)
-    for scrapedurl, quality  in matches:
-        url =  scrapedurl.replace("\/", "/")
+    for quality,scrapedurl  in matches:
         video_urls.append(["[xhamster] %s" %quality, url])
     return video_urls
+
