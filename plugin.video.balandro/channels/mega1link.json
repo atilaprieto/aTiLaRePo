@@ -1,0 +1,15 @@
+{
+  "id": "mega1link",
+  "name": "Mega1link",
+  "thumbnail": "mega1link.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast", "lat", "vose"],
+
+  "notes": "Películas por idiomas, géneros y calidades."
+}

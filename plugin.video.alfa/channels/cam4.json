@@ -1,0 +1,15 @@
+{
+  "id": "cam4",
+  "name": "cam4",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "cam4.png",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+  ]
+}
+

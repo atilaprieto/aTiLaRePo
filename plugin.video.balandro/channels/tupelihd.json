@@ -1,0 +1,15 @@
+{
+  "id": "tupelihd",
+  "name": "TuPeliHd",
+  "thumbnail": "tupelihd.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow", "torrent"],
+  "language": ["cast", "lat"],
+
+  "notes": "Películas y Series en castellano, y algunas en latino."
+}

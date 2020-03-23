@@ -1,0 +1,17 @@
+{
+  "id": "digiload",
+  "name": "DigiLoad",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "http(?:s|)://digiload.co/(?:e|f)/(?:embed-|)([A-z0-9]+)",
+        "url": "https://digiload.co/e/\\1"
+      }
+    ]
+  }
+
+}
