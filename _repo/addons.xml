@@ -125,10 +125,9 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.0.6" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.0.7" provider-name="Alfa Addon">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
-    <import addon="script.module.libtorrent" optional="true"/>
     <import addon="script.module.requests"/>
     <import addon="script.module.beautifulsoup4" version="4.5.3"/>
     <import addon="script.module.html5lib" version="0.999.0"/>
@@ -151,6 +150,7 @@ You can clone the project and host it in your own server.
       [COLOR green][B]Arreglos[/B][/COLOR]
       ¤ Grantorrent                        ¤ Elitetorrent                 ¤ Dontorrent
       ¤ AnimeFLV.ru                       ¤ Allcalidad                    ¤ Repelisgo
+      ¤ Simpsons-latino
       ¤ +18: descargas en segundo plano
 
       [COLOR green][B]Novedades[/B][/COLOR]
@@ -158,7 +158,7 @@ You can clone the project and host it in your own server.
       ¤ Descargas en segundo plano desde canales Torrent
       ¤ +18 compatibilidad total Kodi 19
 
-      Agradecimiento a @mac12m99 por su aportación a esta versión.
+      Agradecimiento a @mac12m99 y a @DamianBacalov por su aportación a esta versión.
 
     </news>
     <description lang="es">Navega con Kodi por páginas web para ver sus videos de manera fácil.</description>
@@ -176,7 +176,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.1.7" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.1.8" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -448,7 +448,7 @@ v.2.1.5
 	</extension>
 </addon>
 
-<addon id="plugin.video.palantir" name="[COLOR gold]Palantir[/COLOR]" version="0.0.74" provider-name="TierraMedia">
+<addon id="plugin.video.palantir" name="[COLOR gold]Palantir[/COLOR]" version="0.0.76" provider-name="TierraMedia">
   <requires>
     <import addon="xbmc.python" version="2.24.0"/>
     <import addon="script.module.simple.downloader" version="1.9.5"/>
@@ -466,9 +466,8 @@ v.2.1.5
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>TV</summary>
-    <news>[COLOR lime][B] versión 0.0.74 [/B][/COLOR]
-        - [Interno] Reparados servidores:
-        - [Interno] Nuevo servidor (Hilvan):
+    <news>[COLOR lime][B] versión 0.0.76 [/B][/COLOR]
+        - [Interno] Reparado el servidor TOP
     </news>
     <description>Visualiza el contenido de la nube, series, películas.</description>
     <disclaimer>[B][COLOR red]Todo el contenido disponible en este Addon esta sacado de servidores gratuitos, disponible en la red para todos los usuarios.[/B][/COLOR]</disclaimer>
@@ -594,7 +593,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.youtube" name="YouTube" version="6.6.0" provider-name="anxdpanic, bromix">
+<addon id="plugin.video.youtube" name="YouTube" version="6.7.0" provider-name="anxdpanic, bromix">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
         <import addon="script.module.six" version="1.11.0"/>
@@ -608,20 +607,19 @@ v.2.1.5
     <extension point="xbmc.python.module" library="resources/lib/"/>
     <extension point="xbmc.addon.metadata">
         <news>
-[add] 'Play (Ask for quality)' context menu
-[add] search by channel or playlist id
-[add] hide_folders, hide_playlists, hide_search, and hide_live to /channel/&lt;channel_id&gt;/ end-point
-    - ie. plugin://plugin.video.youtube/channel/UC4PooiX37Pld1T8J5SYT-SQ/?hide_folders=true will hide all folders(Playlists, Search, and Live) in the channel listing
-[fix] playback for some videos (ie. music videos)
-[fix] playback of some videos with no adaptive video streams
-[fix] don't update watch history when incognito/screensaver/live |contrib: regseb|
-[fix] search prompting for input after video playback or refresh
-[lang] el_gr strings |contrib: twilight0|
-[lang] es_es strings |contrib: roliverosc|
-[lang] pt_br strings |contrib: MediaBrasil|
-[lang] cs_cz strings |contrib: llzn.cz|
-[lang] it_it strings |contrib: SebastianoPistore|
+[add] send PlaybackInit, PlaybackStarted, PlaybackStopped notifications containing video id, channel id, and the status of the playing video
+[fix] allow playback regardless of API status
+    - fixes playback for strm, playlists, other add-ons, and sharing videos from devices
+[fix] finding player config, allow playback to continue when not found if possible
+[fix] fix possible loop due to invalid keys and login information
+[fix] fix playback of mpeg-dash streams if HTTP Server - Listen on IP is blank
+[upd] use a dialog to notify users of API key requirements with link to wiki
+    - https://ytaddon.page.link/keys
+[rem] remove provided api keys
 [lang] de_de strings |contrib: tweimer|
+[lang] el_gr strings |contrib: twilight0|
+[lang] hu_hu strings |contrib: thelacesz|
+[lang] pl_pl strings |contrib: drrak|
         </news>
         <assets>
             <icon>icon.png</icon>
@@ -668,7 +666,6 @@ v.2.1.5
         <summary lang="tr_TR">YouTube için eklenti</summary>
         <description lang="tr_TR">YouTube, dünya üzerindeki en büyük video paylaşma platformlarından birisidir</description>
         <disclaimer lang="tr_TR">Bu eklenti Google tarafından üretilmemiştir</disclaimer>
-        <language></language>
         <platform>all</platform>
         <license>GPL-2.0-only</license>
         <forum>https://forum.kodi.tv/showthread.php?tid=348464</forum>

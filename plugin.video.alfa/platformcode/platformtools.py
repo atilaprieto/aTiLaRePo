@@ -1379,10 +1379,13 @@ def play_torrent(item, xlistitem, mediaurl):
                                       item.url)                     # dirección del .torrent local en la Videoteca
             if filetools.copy(item.url, torrents_path, silent=True):    # se copia a la carpeta generíca para evitar problemas de encode
                 item.url = torrents_path
+            size, url, torrent_f, rar_files = generictools.get_torrent_size(item.url, file_list=True, 
+                                                    lookup=False, torrents_path=torrents_path, short_pad=True)
+            if url and url != item.url:
+                filetools.remove(torrents_path, silent=True)
+                item.url = url
             if "torrentin" in torrent_options[seleccion][0]:        # Si es Torrentin, hay que añadir un prefijo
                 item.url = 'file://' + item.url
-            size, rar_files = generictools.get_torrent_size('', file_list=True, local_torr=torrents_path,
-                                                            short_pad=True)
 
         mediaurl = item.url
 
@@ -1436,15 +1439,13 @@ def play_torrent(item, xlistitem, mediaurl):
 
             # Si es un archivo RAR, monitorizamos el cliente Torrent hasta que haya descargado el archivo,
             # y después lo extraemos, incluso con RAR's anidados y con contraseña
-            
-            if ('RAR-' in size and RAR_UNPACK) or ('RAR-' not in size and item.downloadFilename):
-                #rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password, size)
-                try:
-                    threading.Thread(target=rar_control_mng, args=(item, xlistitem, mediaurl, \
-                            rar_files, torr_client, password, size)).start()    # Creamos un Thread independiente por .torrent
-                    time.sleep(3)                                               # Dejamos terminar la inicialización...
-                except:                                                         # Si hay problemas de threading, salimos
-                    logger.error(traceback.format_exc())
+            #rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password, size)
+            try:
+                threading.Thread(target=rar_control_mng, args=(item, xlistitem, mediaurl, \
+                        rar_files, torr_client, password, size)).start()        # Creamos un Thread independiente por .torrent
+                time.sleep(3)                                                   # Dejamos terminar la inicialización...
+            except:                                                             # Si hay problemas de threading, salimos
+                logger.error(traceback.format_exc())
 
 
 def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password, size, rar_control={}):
@@ -1462,8 +1463,9 @@ def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password,
     # Si es un archivo RAR, monitorizamos el cliente Torrent hasta que haya descargado el archivo,
     # y después lo extraemos, incluso con RAR's anidados y con contraseña
     UNRAR = config.get_setting("unrar_path", server="torrent", default="")
+    RAR_UNPACK = config.get_setting("mct_rar_unpack", server="torrent", default='')
     #if 'RAR-' in size and torr_client in ['quasar', 'elementum'] and UNRAR:
-    if 'RAR-' in size and UNRAR:
+    if 'RAR-' in size and UNRAR and RAR_UNPACK:
         rar_file, save_path_videos, folder_torr, rar_control = torrent.wait_for_download(item, mediaurl, 
                                 rar_files, torr_client, password, size, rar_control)    # Esperamos mientras se descarga el RAR
         if rar_file and save_path_videos:  # Si se ha descargado el RAR...
@@ -1474,9 +1476,9 @@ def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password,
             dp.close()
 
             # Reproducimos el vídeo extraido, si no hay nada en reproducción
-            while is_playing() and rar and not xbmc.abortRequested:
+            while is_playing() and rar:
                 time.sleep(3)  # Repetimos cada intervalo
-            if rar and not item.downloadFilename and not xbmc.abortRequested:
+            if rar and not item.downloadFilename:
                 time.sleep(1)
                 video_play = filetools.join(video_path, video_file)
                 log("##### video_play: %s" % video_play)
@@ -1490,9 +1492,9 @@ def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password,
         torrent.mark_auto_as_watched(item)
 
         # Si se ha extraido un RAR, se pregunta para borrar los archivos después de reproducir el vídeo (plugins externos)
-        while is_playing() and rar and not xbmc.abortRequested:
+        while is_playing() and rar:
             time.sleep(3)                                                       # Repetimos cada intervalo
-        if rar and not xbmc.abortRequested:
+        if rar:
             if dialog_yesno('Alfa %s' % torr_client, '¿Borrar las descargas del RAR y Vídeo?'):
                 log("##### erase_file_path: %s" % erase_file_path)
                 try:

@@ -110,18 +110,16 @@ def findvideos(item):
     logger.info()
 
     itemlist = list()
-
     soup = create_soup(item.url)
-
     player_data = soup.find("div", class_="item get_player_content")["data-player-content"]
     player = scrapertools.find_single_match(player_data, 'iframe src="([^"]+)"')
 
     soup = create_soup(player, referer=item.url)
-
-    matches = soup.find_all("div", class_="btn-embed")
+    matches = soup.find_all("a", class_="button-xlarge")
 
     for elem in matches:
         url = base64.b64decode(elem["data-embed"]+'==')
+        logger.debug(url)
         itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', language='LAT'))
 
     servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server)

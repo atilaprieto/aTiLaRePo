@@ -14,6 +14,7 @@ from past.utils import old_div
 import re
 import time
 import unicodedata
+import traceback
 
 
 from core import filetools
@@ -189,7 +190,7 @@ def restart_error(item):
                             filetools.join(config.get_setting("downloadpath"), download_item.downloadFilename))
 
                     update_json(item.path,
-                                {"downloadStatus": STATUS_CODES.stoped, "downloadComplete": 0, "downloadProgress": 0})
+                                {"downloadStatus": STATUS_CODES.stoped, "downloadCompleted": 0, "downloadProgress": 0})
 
     platformtools.itemlist_refresh()
 
@@ -251,7 +252,7 @@ def menu(item):
     logger.info("opcion=%s" % (opciones[seleccion]))
     # Opcion Eliminar
     if opciones[seleccion] == op[1]:
-        filetools.remove(item.path)
+        filetools.remove(filetools.join(config.get_setting("downloadlistpath"), item.path))
 
     # Opcion inicaiar descarga
     if opciones[seleccion] == op[0]:
@@ -266,7 +267,7 @@ def menu(item):
         if filetools.isfile(filetools.join(config.get_setting("downloadpath"), item.downloadFilename)):
             filetools.remove(filetools.join(config.get_setting("downloadpath"), item.downloadFilename))
 
-        update_json(item.path, {"downloadStatus": STATUS_CODES.stoped, "downloadComplete": 0, "downloadProgress": 0,
+        update_json(item.path, {"downloadStatus": STATUS_CODES.stoped, "downloadCompleted": 0, "downloadProgress": 0,
                                 "downloadServer": {}})
 
     platformtools.itemlist_refresh()
@@ -308,6 +309,7 @@ def move_to_libray(item):
 
 
 def update_json(path, params):
+    path = filetools.join(config.get_setting("downloadlistpath"), path)
     item = Item().fromjson(filetools.read(path))
     item.__dict__.update(params)
     filetools.write(path, item.tojson())
@@ -515,7 +517,7 @@ def download_from_url(url, item):
 
 
 def download_from_server(item):
-    logger.info(item)
+    logger.info()
     
     unsupported_servers = ["torrent"]
     result = {}
@@ -552,30 +554,32 @@ def download_from_server(item):
 
     if item.server == 'torrent':
         # Si es .torrent y ha dato error, se intenta usar las urls de emergencia.  Si no, se marca como no error y se pasa al siguiente
-        if filetools.isfile(filetools.join(PATH, item.url)):
-            item.url = filetools.join(PATH, item.url)
-            if not filetools.exists(item.url):
+        if not item.url.startswith('http') and filetools.isfile(filetools.join(PATH, item.url)):
+            if not filetools.exists(filetools.join(PATH, item.url)):
                 item.torrent_info += 'ERROR'
         if 'cliente_torrent_Alfa.torrent' in item.url or 'ERROR' in item.torrent_info:
-            if item.torrent_alt or item.emergency_urls:
-                if item.torrent_alt:
-                    item.url = item.torrent_alt
-                elif item.emergency_urls:
-                    item.url = item.emergency_urls[0][0]
-                item.url = filetools.join(PATH, item.url)
-                if not filetools.exists(item.url):
+            try:
+                if item.torrent_alt or item.emergency_urls:
+                    if item.torrent_alt:
+                        item.url = item.torrent_alt
+                    elif item.emergency_urls:
+                        item.url = item.emergency_urls[0][0]
+                    if not filetools.exists(filetools.join(PATH, item.url)):
+                        PATH = ''
+                elif 'ERROR' in item.torrent_info and not item.url.startswith('http'):
                     PATH = ''
-            else:
+            except:
                 PATH = ''
+                logger.error(traceback.format_exc())
         if not PATH:
-            result["downloadServer"] = {"url": item.url, "server": item.server}
+            result["downloadServer"] = {"url": filetools.join(PATH, item.url), "server": item.server}
             result["downloadProgress"] = 0
             result["downloadStatus"] = STATUS_CODES.error
             return result
         
         import xbmcgui
         # Creamos el listitem
-        xlistitem = xbmcgui.ListItem(path=item.url)
+        xlistitem = xbmcgui.ListItem(path=filetools.join(PATH, item.url))
 
         if config.get_platform(True)['num_version'] >= 16.0:
             xlistitem.setArt({'icon': item.thumbnail, 'thumb': item.thumbnail, 'poster': item.thumbnail,
@@ -587,12 +591,13 @@ def download_from_server(item):
 
         if config.get_setting("player_mode"):
             xlistitem.setProperty('IsPlayable', 'true')
+        item.folder = False
         
         platformtools.set_infolabels(xlistitem, item)
         
-        platformtools.play_torrent(item, xlistitem, item.url)
+        platformtools.play_torrent(item, xlistitem, filetools.join(PATH, item.url))
 
-        result["downloadServer"] = {"url": item.url, "server": item.server}
+        result["downloadServer"] = {"url": filetools.join(PATH, item.url), "server": item.server}
         result["downloadProgress"] = 100
         result["downloadStatus"] = STATUS_CODES.completed
         return result
@@ -742,10 +747,13 @@ def get_episodes(item):
 
     sub_action = ["tvshow", "season", "unseen"]                                 # Acciones especiales desde Findvideos
     nfo_json = {}
+    episode_local = False
 
     # El item que pretendemos descargar YA es un episodio
     if item.contentType == "episode" and item.sub_action not in sub_action:
         episodes = [item.clone()]
+        if item.strm_path:
+            episode_local = True
 
     # El item es uma serie o temporada
     elif item.contentType in ["tvshow", "season"] or item.sub_action in sub_action:
@@ -753,6 +761,9 @@ def get_episodes(item):
         channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
         # Obtenemos el listado de episodios
         if item.sub_action in sub_action:                                       # Si viene de Play...
+            if item.sub_action in ["unseen"] and config.is_xbmc() and item.nfo:
+                from platformcode import xbmc_videolibrary
+                xbmc_videolibrary.mark_content_as_watched_on_alfa(item.nfo)     # Sincronizamos los Vistos de Kodi con Alfa
             if item.nfo:
                 head, nfo_json = videolibrarytools.read_nfo(item.nfo)           #... tratamos de recuperar la info de la Serie
             if item.url_tvshow:
@@ -781,7 +792,31 @@ def get_episodes(item):
             if item.torrent_info: del item.torrent_info
             if item.torrent_alt: del item.torrent_alt
 
-        episodes = getattr(channel, item.contentAction)(item)
+        if item.strm_path:                                                      # Si viene de Videoteca, usamos los .jsons
+            serie_path = filetools.dirname(item.strm_path)
+            serie_listdir = filetools.listdir(serie_path)
+            episodes = []
+            episode_local = True
+            
+            for file in serie_listdir:
+                if not file.endswith('.json'):
+                    continue
+                if item.sub_action == "season" and scrapertools.find_single_match(file, '^(\d+)x\d+') \
+                                != str(item.infoLabels['season']):
+                    continue
+                episode = Item().fromjson(filetools.read(filetools.join(serie_path, file)))
+                episode.server = 'torrent'
+                episode.strm_path = filetools.join(serie_path, '%sx%s.strm' % \
+                        (str(episode.infoLabels['season']), str(episode.infoLabels['episode']).zfill(2)))
+                episode.sub_action = item.sub_action
+                episode.channel = item.contentChannel
+                episode.action = 'play'
+                episode.folder = False
+                episode.downloadServer = {}
+                episodes.append(episode.clone())
+        
+        else:
+            episodes = getattr(channel, item.contentAction)(item)               # Si no viene de Videoteca, descargamos desde la web
 
     itemlist = []
     SERIES = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_tvshows"))
@@ -807,12 +842,23 @@ def get_episodes(item):
             
         if episode.emergency_urls:
             for x, emergency_urls in enumerate(episode.emergency_urls[0]):
-                episode.emergency_urls[0][x] = re.sub(r'x\d{2,}\s*\[', 'x%s [' \
+                if not episode_local:
+                    episode.emergency_urls[0][x] = re.sub(r'x\d{2,}\s*\[', 'x%s [' \
                             % str(episode.contentEpisodeNumber).zfill(2), emergency_urls)
                 if not filetools.exists(filetools.join(SERIES, episode.emergency_urls[0][x])):
                     del episode.emergency_urls[0][x]
+            if len(episode.emergency_urls) > 1 and not episode_local:
+                for x, emergency_urls in enumerate(episode.emergency_urls):
+                    if x == 0:
+                        continue
+                    episode.emergency_urls[x] = []
             if not episode.emergency_urls[0]:
                 del episode.emergency_urls
+                if episode_local:
+                    episode.action = 'findvideos'
+            elif episode_local:
+                episode.torrent_alt = episode.url
+                episode.url = episode.emergency_urls[0][0]
 
         # Si partiamos de un item que ya era episodio estos datos ya están bien, no hay que modificarlos
         if item.contentType != "episode":
@@ -875,9 +921,8 @@ def write_json(item):
         if name in item.__dict__:
             item.__dict__.pop(name)
 
-    path = filetools.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json")
-    item.path = path
-    filetools.write(path, item.tojson())
+    item.path = str(time.time()) + ".json"
+    filetools.write(filetools.join(config.get_setting("downloadlistpath"), item.path), item.tojson())
     time.sleep(0.1)
 
 

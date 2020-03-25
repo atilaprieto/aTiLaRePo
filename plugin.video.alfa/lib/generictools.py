@@ -896,11 +896,13 @@ def post_tmdb_episodios(item, itemlist):
             #    item_local.channel = scrapertools.find_single_match(item_local.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/').lower()
             #item_local.category = scrapertools.find_single_match(item_local.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/').capitalize()
         #Restauramos valores para cada Episodio si ha habido fail-over de un clone de NewPct1
-        if item_local.channel_alt or item_local.channel_redir:
+        if (item_local.channel_alt or item_local.channel_redir) and not item.downloadFilename:
             item_local.channel = item_local.channel_redir.lower() or item_local.channel_alt.lower()
             item_local.category = item_local.channel_redir.capitalize() or item_local.channel_alt.capitalize()
             if item_local.channel_alt: del item_local.channel_alt
             #if item_local.channel_redir: del item_local.channel_redir
+        if (item_local.channel_alt or item_local.channel_redir) and item.downloadFilename:
+            item_local.channel_alt = channel_alt
         if item_local.url_alt:
             host_act = scrapertools.find_single_match(item_local.url, '(http.*\:\/\/(?:www.)?\w+\.\w+\/)')
             host_org = scrapertools.find_single_match(item_local.url_alt, '(http.*\:\/\/(?:www.)?\w+\.\w+\/)')
@@ -1400,6 +1402,9 @@ def find_rar_password(item):
                  ['1', 'https://pctnew.org/', [['<input\s*type="text"\s*id="txt_password"\s*' + \
                                 'name="[^"]+"\s*onClick="[^"]+"\s*value="([^"]+)"']], [['capitulo-[^0][^\d]', 'None'], \
                                 ['capitulo-', 'capitulo-0'], ['capitulos-', 'capitulos-0']]], 
+                 ['1', 'https://pctreload.org/', [['<input\s*type="text"\s*id="txt_password"\s*' + \
+                                'name="[^"]+"\s*onClick="[^"]+"\s*value="([^"]+)"']], [['capitulo-[^0][^\d]', 'None'], \
+                                ['capitulo-', 'capitulo-0'], ['capitulos-', 'capitulos-0']]], 
                  ['2', 'https://grantorrent.net/', [[]], [['series(?:-\d+)?\/', 'descargar/serie-en-hd/'], \
                                 ['-temporada', '/temporada'], ['^((?!serie).)*$', 'None'], \
                                 ['.net\/', '.net/descargar/peliculas-castellano/'], ['\/$', '/blurayrip-ac3-5-1/']]], 
@@ -1830,6 +1835,15 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
         channel_host_failed_bis = scrapertools.find_single_match(item.url, \
                             '((?:http.*\:)?\/\/(?:www\.)?[^\?|\/]+)(?:\?|\/)')
         item.url = item.url.replace(channel_host_failed_bis, channel_host_bis)
+        if item.url.endswith('-org'):
+            item.url = item.url.replace(channel_failed, channel)
+        if channel == 'pctreload':
+            item.url = re.sub('\/\w+-(?:org|com)$', '/pctnew-org', item.url)
+            url_alt += [item.url]                                       #salvamos la url para el bucle
+            item.url = re.sub('\/\w+-(?:org|com)$', '/pctreload-com', item.url)
+        if channel == 'planetatorrent':
+            item.url = re.sub('\/\w+-(?:org|com)$', '', item.url)
+            item.url = re.sub('\/\w+-(?:org|com)$', '', item.url)
         
         url_alt += [item.url]                                           #salvamos la url para el bucle
         item.channel_host = channel_host
@@ -1897,6 +1911,8 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
                         web_intervenida(item, data)
                         data = ''
                         continue
+                    else:
+                        break                                               #por fin !!!  Este canal parece que funciona
                 else:
                     #Función especial para encontrar en otro clone un .torrent válido
                     if verify_torrent == 'torrent:check:status':
@@ -1952,7 +1968,7 @@ def verify_channel(channel):
         if settings['id'] == "clonenewpct1_channels_list":              #Encontramos en setting
             clones = settings['default']                                #Carga lista de clones
             channel_alt = "'%s'" % channel
-            if channel_alt in clones:                                   #Si es un clon se pone como canal newpct1, si no se deja
+            if channel_alt in str(clones):                              #Si es un clon se pone como canal newpct1, si no se deja
                 channel = channel_py
             return channel
     

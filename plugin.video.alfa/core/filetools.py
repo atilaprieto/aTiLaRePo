@@ -89,6 +89,9 @@ def encode(path, _samba=False):
     else:
         if fs_encoding:
             path = path.encode(fs_encoding, "ignore")
+    
+    if PY3 and isinstance(path, bytes):
+        path = path.decode('utf-8')
 
     return path
 
@@ -111,6 +114,10 @@ def decode(path):
         if not isinstance(path, unicode):
             path = path.decode(fs_encoding, "ignore")
         path = path.encode("utf-8", "ignore")
+    
+    if PY3 and isinstance(path, bytes):
+        path = path.decode('utf-8')
+    
     return path
 
 
