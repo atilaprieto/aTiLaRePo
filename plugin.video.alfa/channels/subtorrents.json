@@ -37,6 +37,14 @@
       "visible": true
     },
     {
+      "id": "auto_download_new",
+      "type": "bool",
+      "label": "Desea que se descarguen automáticamente los nuevos episodios de la Videoteca?",
+      "default": false,
+      "enabled": true,
+      "visible": true
+    },
+    {
       "id": "filter_languages",
       "type": "list",
       "label": "Mostrar enlaces en idioma...",

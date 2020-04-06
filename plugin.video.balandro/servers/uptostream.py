@@ -2,29 +2,23 @@
 
 from core import httptools, scrapertools, jsontools
 from platformcode import logger
-
+from lib import balandroresolver
 
 def get_video_url(page_url, url_referer=''):
     logger.info("url=" + page_url)
     video_urls = []
 
-    try:
-        resp = httptools.downloadpage(page_url)
-        # ~ logger.debug(resp.data)
-        
-        data = scrapertools.find_single_match(resp.data, "JSON\.parse\('(\[.*?\])'\)").replace('\\/', '/')
-        # ~ logger.debug(data)
-        if not data: return video_urls
-
-        data = jsontools.load(data)
-        for video in sorted(data, key=lambda x: int(x['res'])):
-            if 'src' not in video: continue
-            lbl = video['label'] if 'label' in video else ''
-            if 'lang' in video: lbl += ' (lang: ' + video['lang'] + ')'
-            if not lbl: lbl = 'mp4'
-            video_urls.append([lbl, video['src']])
-
-    except:
-        pass
+    vid = scrapertools.find_single_match(page_url, "uptostream.com/(?:iframe/|)([A-z0-9]+)")
+    if not vid: return video_urls
+    data = httptools.downloadpage('https://uptostream.com/api/streaming/source/get?token=null&file_code='+vid).data
+    # ~ logger.debug(data)
+    
+    if 'data":{"sources":"' in data:
+        data = scrapertools.find_single_match(data, 'data":\{"sources":"(.*?)"\}\}')
+    
+        lbl, url = balandroresolver.decode_video_uptostream(data)
+        if lbl and url:
+            video_urls.append([lbl, url])
 
     return video_urls
+

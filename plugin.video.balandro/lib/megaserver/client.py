@@ -88,8 +88,14 @@ class Client(object):
                 files.append({"name":n,"url":u,"size":s, "id": file_id})
         return files
 
+    # ~ old: https://mega.nz/embed#!9sQx1AzS!28dX7jCqIzJEEL-3_yd-fniYrKpNBDqX34DkSQyTP2Q
+    # ~ new: https://mega.nz/embed#!dFghjLZb#uEU70KRB5l-PrKWkD2nI2tV4aWgbbYpmWtUEGFFJTDw
+    # ~ new: https://mega.nz/embed#!#!IcZB1A6T!pSWKHWGRSTPWbTEd9uZKpJr52-dyMTIU3uauwAniRGM
+    # ~ servers/mega.py: page_url = page_url.replace('/embed#', '/#')
     def add_url(self, url):
+        url = url.replace('/#!#!', '/#!') # old2new
         url = url.split("/#")[1]
+        url = url.replace('#', '!') # old2new
         id_video = None
         if "|" in url:
             url, id_video = url.split("|")

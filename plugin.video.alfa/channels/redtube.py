@@ -25,7 +25,8 @@ def mainlist(item):
     itemlist.append( Item(channel=item.channel, title="Nuevas" , action="lista", url=host + "/newest"))
     itemlist.append( Item(channel=item.channel, title="Mas Vistas" , action="lista", url=host + "/mostviewed"))
     itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/top"))
-    itemlist.append( Item(channel=item.channel, title="Pornstars" , action="catalogo", url=host + "/pornstar"))
+    itemlist.append( Item(channel=item.channel, title="Canal" , action="catalogo", url=host + "/channel/top-rated"))
+    itemlist.append( Item(channel=item.channel, title="Pornstars" , action="categorias", url=host + "/pornstar/trending"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/popular"))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
@@ -49,14 +50,13 @@ def catalogo(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    data = scrapertools.find_single_match(data,'<ul id="recommended_pornstars_block"(.*?)<div id="footer_container">')
-    patron  = '<a class="pornstar_link js_mpop js-pop".*?'
-    patron  = 'href="([^"]+)".*?'
-    patron += 'data-src = "([^"]+)".*?'
-    patron += 'title="([^"]+)".*?'
-    patron += '<div class="ps_info_count">\s+(\d+)\s+Videos'
+    patron  = '<span class="channel-logo">.*?'
+    patron += 'data-src="([^"]+)".*?'
+    patron += 'alt="([^"]+)".*?'
+    patron += '<a href="([^"]+)">.*?'
+    patron += 'videos">\s+([^<]+) Videos'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedthumbnail,scrapedtitle,cantidad in matches:
+    for scrapedthumbnail,scrapedtitle,scrapedurl,cantidad in matches:
         scrapedplot = ""
         scrapedtitle = "%s (%s)" %(scrapedtitle, cantidad)
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
@@ -74,11 +74,14 @@ def categorias(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron = '<li id="categories_list_block_.*?'
-    patron += '<a href="([^"]+)".*?'
-    patron += 'data-src="([^"]+)".*?'
+    if "categories" in item.url:
+        patron = '<li id="categories_list_block_.*?'
+    else:
+        patron  = '<li id="recommended_pornstars_block_ps_.*?'
+    patron += 'href="([^"]+)".*?'
+    patron += 'data-src\s*=\s*"([^"]+)".*?'
     patron += 'alt="([^"]+)".*?'
-    patron += '_count">([^"]+) Videos'
+    patron += 'count">\s*([^<]+)\s*Videos'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,cantidad in matches:
         scrapedplot = ""
@@ -87,6 +90,10 @@ def categorias(item):
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
+    next_page_url = scrapertools.find_single_match(data,'<a id="wp_navNext".*?href="([^"]+)">')
+    if next_page_url!="":
+        next_page_url = urlparse.urljoin(item.url,next_page_url)
+        itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page_url) )
     return itemlist
 
 
@@ -94,7 +101,7 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data,'Eliminar anuncios(.*?)Eliminar anuncios')
+    data = scrapertools.find_single_match(data,'<em class="premium_tab_icon rt_icon rt_Menu_Star">(.*?)<div class="footer">')
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     patron = 'data-src="([^"]+)".*?'
     patron += '<span class="duration">(.*?)</a>.*?'

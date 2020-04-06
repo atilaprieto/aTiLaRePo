@@ -25,7 +25,7 @@ def mainlist(item):
     logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Ultimos" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="PornStar" , action="catalogo", url=host + '/pornstars/top-pornstars/'))
+    itemlist.append( Item(channel=item.channel, title="PornStar" , action="catalogo", url=host + '/pornstars/'))
     itemlist.append( Item(channel=item.channel, title="Canal" , action="catalogo", url=host + '/channels/'))
     
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
@@ -97,14 +97,16 @@ def lista(item):
         id = scrapertools.find_single_match(data,'<section id="contenedor".*?a href="https://www.foxtube.com/pu/(\d+)')
         canal = scrapertools.find_single_match(data,'path : \'([^\']+)\'')
         logger.debug(canal)
+        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         post = {'path': '%s' %canal, 'order_vid': 'uv'} 
         item.url = "https://www.foxtube.com/users/get/%s/videos/1/" % id
-        data = httptools.downloadpage(item.url, post=post).data
+        data = httptools.downloadpage(item.url, post=post, headers=headers).data
     if "users" in item.url:
         canal= item.canal
         logger.debug(canal)
+        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         post = {'path': '%s' %canal, 'order_vid': 'uv'} 
-        data = httptools.downloadpage(item.url, post=post).data
+        data = httptools.downloadpage(item.url, post=post, headers=headers).data
     else:
         data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
@@ -134,7 +136,7 @@ def lista(item):
         next_page = scrapertools.find_single_match(data, '<li class="selected">.*?data-pag="(\d+)"')
         if next_page:
             next_page = "%s/%s/" %(page,next_page)
-            itemlist.append(item.clone(action="lista" , title=next_page, text_color="blue", url=next_page, canal= canal) )
+            itemlist.append(item.clone(action="lista" , title="Página Siguiente >>", text_color="blue", url=next_page, canal= canal) )
     else:
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(item.clone(action="lista" , title="Página Siguiente >>", text_color="blue", url=next_page) )

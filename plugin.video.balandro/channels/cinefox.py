@@ -170,7 +170,7 @@ def secciones(item):
 
     if item.seccion not in ['Género','Año','País','Calidad','Idioma']: item.seccion = 'Género'
     data_seccion = scrapertools.find_single_match(data,'<div class="dropdown-sub">%s.*?</ul>' % item.seccion)
-    logger.debug(data_seccion)
+    # ~ logger.debug(data_seccion)
 
     patron  = '<li><a href="([^"]+)">([^<]+)</a></li>'
     matches = scrapertools.find_multiple_matches(data_seccion, patron)

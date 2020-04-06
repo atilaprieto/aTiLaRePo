@@ -1986,7 +1986,7 @@ def findvideos(item):
     # Verificamos la url torrent o usamos la de emergencia
     if not item.armagedon:
         item_local.url = url_torr
-        if item_local.url == 'javascript:;': 
+        if 'javascript:;' in item_local.url: 
             item_local.url = ''                                                 #evitamos url vacías
         item_local.url = item_local.url.replace(" ", "%20")                     #sustituimos espacios por %20, por si acaso
     
@@ -2920,8 +2920,8 @@ def verify_host(item, host_call, force=True, category=''):
         item.channel_host = host_call
         dom_sufix_org = scrapertools.find_single_match(item.url, ':\/\/(.*?)[\/|?]').replace('.', '-')
         dom_sufix_clone = scrapertools.find_single_match(host_call, ':\/\/(.*?)\/*$').replace('.', '-')
-        if 'pctreload' in dom_sufix_clone:
-            dom_sufix_clone = 'pctnew-org'
+        #if 'pctreload' in dom_sufix_clone:
+        #    dom_sufix_clone = 'pctnew-org'
         if 'descargas2020' not in dom_sufix_clone and 'pctnew' not in dom_sufix_clone \
                         and 'pctreload' not in dom_sufix_clone: dom_sufix_clone = ''
         item.url = re.sub(scrapertools.find_single_match(item.url, '(http.*\:\/\/(?:www.)?\w+\.\w+\/)'), host_call, item.url)

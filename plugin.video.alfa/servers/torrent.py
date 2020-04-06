@@ -83,8 +83,10 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
                     lookup=False, data_torrent=False, headers={}, proxy_retries=1):
     if torrents_path != None:
         logger.info("path = " + torrents_path)
+        if url != torrents_path:
+            logger.info("url = " + url)
     else:
-        logger.info()
+        logger.info("url = " + url)
     if referer and post:
         logger.info('REFERER: ' + referer)
 
@@ -134,8 +136,14 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
                 if data_torrent:
                     return (torrents_path, torrent_file)
                 return torrents_path                                            #Si hay un error, devolvemos el "path" vacío
-        elif not url.startswith("http") and filetools.isfile(url):
+        elif not url.startswith("http"):
             torrent_file = filetools.read(url, silent=True, vfs=VFS)
+            if not torrent_file:
+                logger.error('No es un archivo Torrent: ' + url)
+                torrents_path = ''
+                if data_torrent:
+                    return (torrents_path, torrent_file)
+                return torrents_path                                            #Si hay un error, devolvemos el "path" vacío
             torrent_file_uncoded = torrent_file
             if PY3 and isinstance(torrent_file, bytes):
                 torrent_file = "".join(chr(x) for x in bytes(torrent_file_uncoded))
@@ -218,7 +226,10 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
         #Salvamos el .torrent
         if not lookup:
             if not url.startswith("http") and not torrent_file.startswith("PK") and filetools.isfile(url):
-                ret = filetools.copy(url, torrents_path_encode, silent=True)
+                if url != torrents_path_encode:
+                    ret = filetools.copy(url, torrents_path_encode, silent=True)
+                else:
+                    ret = True
             else:
                 ret = filetools.write(torrents_path_encode, torrent_file_uncoded, silent=True, vfs=VFS)
             if not ret:
@@ -341,6 +352,13 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
         save_path_videos = ''
         save_path_videos = filetools.join(config.get_setting("bt_download_path", server="torrent", \
                default=config.get_setting("downloadpath")), 'BT-torrents')
+        torrent_path = filetools.join(save_path_videos, '.cache', filetools.basename(mediaurl).upper())
+        if mediaurl.startswith('magnet:'):
+            t_hash = scrapertools.find_single_match(item.url, 'xt=urn:btih:([^\&]+)\&')
+            if t_hash:
+                torrent_path = filetools.join(save_path_videos, '.cache', t_hash.upper()+'.torrent')
+        if not filetools.exists(torrent_path):
+            filetools.copy(mediaurl, torrent_path, silent=True)
     except:
         pass
     if not config.get_setting("bt_download_path", server="torrent") and save_path_videos:
@@ -372,11 +390,14 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
     rar = False
     rar_res = False
     bkg_user = False
+    progress_file = 0
+    torrent_deleted = False
     DOWNGROUND = False
-    if item.downloadFilename:                                                   # Descargas
+    if item.downloadFilename and item.downloadStatus in [2, 4]:                 # Descargas AUTO
         bkg_user = True
         BACKGROUND = True
         DOWNGROUND = True
+    
     video_names = []
     video_file = ''
     video_path = ''
@@ -401,11 +422,12 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
             elif file == '__name':
                 video_path = path
                 video_file = path
+    if rar: rar_names = sorted(rar_names)
     if rar: rar_file = '%s/%s' % (video_path, rar_names[0])
     erase_file_path = filetools.join(save_path_videos, video_path)
     video_path = erase_file_path
     if video_names: video_file = video_names[0]
-    if not video_file and mediaurl.startswith('magnet'):
+    if not video_file and mediaurl.startswith('magnet:'):
         video_file = urllib.unquote_plus(scrapertools.find_single_match(mediaurl, '(?:\&|&amp;)dn=([^\&]+)\&'))
         erase_file_path = filetools.join(save_path_videos, video_file)
     
@@ -416,7 +438,7 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
 
     # Iniciamos el cliente:
     c = Client(url=mediaurl, is_playing_fnc=xbmc_player.isPlaying, wait_time=None, auto_shutdown=False, timeout=10,
-               temp_path=save_path_videos, print_status=debug, auto_delete=False)
+               temp_path=save_path_videos, print_status=debug, auto_delete=False, bkg_user=bkg_user)
     
     activo = True
     finalizado = False
@@ -437,9 +459,12 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
         monitor = xbmc.Monitor()                                                # For Kodi >= 14
     else:
         monitor = None
+    x = 1
     try:
-        while not c.closed and not ((monitor and monitor.abortRequested()) or (not monitor and xbmc.abortRequested)):
+        while not c.closed and not torrent_deleted and not ((monitor and monitor.abortRequested()) \
+                                    or (not monitor and xbmc.abortRequested)):
             # Obtenemos el estado del torrent
+            x += 1
             s = c.status
             if debug:
                 # Montamos las tres lineas con la info del torrent
@@ -463,6 +488,11 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
             else:
                 progreso.update(s.buffer, txt, txt2, txt3)
             time.sleep(1)
+            if s.progress_file > 1 and (str(x).endswith('0') or str(x).endswith('5')) and not filetools.exists(torrent_path):
+                progress_file = s.progress_file
+                torrent_deleted = True
+                finalizado = False
+                
 
             if (not bkg_user and progreso.iscanceled()) and (not (rar and RAR and BACKGROUND) and progreso.iscanceled()):
                 
@@ -496,7 +526,7 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
                         progreso = platformtools.dialog_progress_bg(msg_header)
                         progreso.update(s.buffer, txt, txt2)
                         if not c.closed:
-                            c.set_speed_limits(DOWNLOAD_LIMIT, UPLOAD_LIMIT)        # Bajamos la velocidad en background
+                            c.set_speed_limits(DOWNLOAD_LIMIT, UPLOAD_LIMIT)    # Bajamos la velocidad en background
 
             # Si el buffer se ha llenado y la reproduccion no ha sido iniciada, se inicia
             if ((s.pieces_sum >= BUFFER  or 'Finalizado' in s.str_state or 'Seeding' in s.str_state) and not rar and not bkg_user) or \
@@ -511,6 +541,11 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
                     dp_cerrado = False
                     video_file, rar_res, video_path, erase_file_path = extract_files(rar_file, \
                                     save_path_videos, password, progreso, item, torr_client)  # ... extraemos el vídeo del RAR
+                    
+                    item.downloadFilename = video_path.replace(save_path_videos, '')
+                    item.downloadFilename = filetools.join(item.downloadFilename, video_file)
+                    item.downloadFilename = ':%s: %s' % ('BT', item.downloadFilename)
+                    
                     if rar_res:
                         time.sleep(1)
                     else:
@@ -528,14 +563,14 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
 
                 # Reproducimos el vídeo extraido, si no hay nada en reproducción
                 if not c.closed:
-                    c.set_speed_limits(DOWNLOAD_LIMIT, UPLOAD_LIMIT)        # Bajamos la velocidad en background
+                    c.set_speed_limits(DOWNLOAD_LIMIT, UPLOAD_LIMIT)            # Bajamos la velocidad en background
                 bkg_auto = True
                 while xbmc_player.isPlaying():
                     time.sleep(3)      
                 
                 # Obtenemos el playlist del torrent
                 #videourl = c.get_play_list()
-                if not rar_res:                                             # Es un Magnet ?
+                if not rar_res:                                                 # Es un Magnet ?
                     video_file = filetools.join(save_path_videos, s.file_name)
                     if erase_file_path == save_path_videos:
                         erase_file_path = video_file
@@ -633,9 +668,19 @@ def bt_client(mediaurl, xlistitem, rar_files, subtitle=None, password=None, item
         progreso.close()
         dp_cerrado = True
     
+    # Actualizado .json de control de descargas
+    item.downloadProgress = 100
+    if torrent_deleted:
+        item.downloadProgress = 0
+        log("##### Progreso: %s, .torrent borrado: %s" % (str(progress_file), erase_file_path))
+    update_control(item)
+    if item.downloadStatus in [2, 4]:
+        if item.downloadProgress in [100]:
+            return
+    
     # Y borramos los archivos de descarga restantes
     time.sleep(1)
-    if filetools.exists(erase_file_path) and not bkg_user:
+    if (filetools.exists(erase_file_path) and not bkg_user) or torrent_deleted:
         if finalizado and not platformtools.dialog_yesno(msg_header, '¿Borrarmos los archivos descargados? (completos)'):
             return
         log("##### erase_file_path: %s" % erase_file_path)
@@ -657,17 +702,9 @@ def call_torrent_via_web(mediaurl, torr_client):
     logger.info()
     
     post = ''
-    ELEMENTUMD_HOST = "http://localhost:65220"
-    if torr_client == 'elementum':
-        try:
-            ADDON = xbmcaddon.Addon("plugin.video.elementum")
-        except:
-            ADDON = False
-        if ADDON:
-            ELEMENTUMD_HOST = "http://" + ADDON.getSetting("remote_host") + ":" + ADDON.getSetting("remote_port")
-
+    torrent_paths = torrent_dirs()
     local_host = {"quasar": ["http://localhost:65251/torrents/", "add?uri"], \
-                  "elementum": ["%s/torrents/" % ELEMENTUMD_HOST, "add"]}
+                  "elementum": ["%storrents/" % torrent_paths['ELEMENTUM_web'], "add"]}
     
     if torr_client == "quasar":
         uri = '%s%s=%s' % (local_host[torr_client][0], local_host[torr_client][1], mediaurl)
@@ -680,14 +717,398 @@ def call_torrent_via_web(mediaurl, torr_client):
     else:
         response = httptools.downloadpage(uri, timeout=5, alfa_s=True, ignore_response_code=True)
 
+    if not response.sucess:
+        logger.error('Error %s al acceder al la web de %s' % (str(response.code), torr_client.upper()))
     return response.sucess
+
+
+def get_tclient_data(folder, torr_client, elementum_port=65220, delete=False):
+    # Monitoriza el estado de descarga del torrent en Quasar y Elementum
+
+    local_host = {"quasar": "http://localhost:65251/torrents/", "elementum": "http://localhost:%s/torrents/" % elementum_port}
+    torr = ''
+    torr_id = ''
+    x = 0
+    y = ''
+    
+    if torr_client not in str(local_host):
+        log('##### Servicio para %s no disponible' % (torr_client))
+        return '', '', 0
+    
+    try:
+        data = httptools.downloadpage(local_host[torr_client], timeout=5, alfa_s=True).data
+        if not data:
+            log('##### Servicio de %s no disponible: %s' % (torr_client, local_host[torr_client]))
+            return '', local_host[torr_client], 0
+
+        data = jsontools.load(data)
+        data = data['items']
+        for x, torr in enumerate(data):
+            if not folder in torr['label']:
+                continue
+            if "elementum" in torr_client:
+                torr_id = scrapertools.find_single_match(str(torr), 'torrents\/move\/(.*?)\)')
+            if torr_id:
+                y = torr_id
+            else:
+                y = x
+            if delete:
+                data = httptools.downloadpage('%sdelete/%s' % (local_host[torr_client], y), timeout=5,
+                                              alfa_s=True, ignore_response_code=True).data
+                time.sleep(1)
+            break
+        else:
+            return '', local_host[torr_client], -1
+    except:
+        log(traceback.format_exc(1))
+        return '', local_host[torr_client], 0
+
+    return torr, local_host[torr_client], y
+
+
+def torrent_dirs():
+    
+    torrent_options = []
+    torrent_options.append("Cliente interno BT")
+    torrent_options.append("Cliente interno MCT")
+    torrent_options.extend(platformtools.torrent_client_installed(show_tuple=False))
+    torrent_paths = {
+                     'TORR_opt': 0,
+                     'TORR_client': '',
+                     'TORR_libtorrent_path': '',
+                     'TORR_unrar_path': '',
+                     'TORR_background_download': True,
+                     'TORR_rar_unpack': True,
+                     'BT': '',
+                     'BT_torrents': '',
+                     'BT_buffer': 0,
+                     'MCT': '',
+                     'MCT_torrents': '',
+                     'MCT_buffer': 0,
+                     'TORRENTER': '',
+                     'TORRENTER_torrents': '',
+                     'TORRENTER_buffer': 0,
+                     'QUASAR': '',
+                     'QUASAR_torrents': '',
+                     'QUASAR_buffer': 0,
+                     'QUASAR_port': 65251,
+                     'QUASAR_web': 'http://localhost:65251/',
+                     'ELEMENTUM': '',
+                     'ELEMENTUM_torrents': '',
+                     'ELEMENTUM_buffer': 0,
+                     'ELEMENTUM_memory_size': 0,
+                     'ELEMENTUM_port': 65220,
+                     'ELEMENTUM_web': 'http://localhost:',
+                     'TORRENTER': '',
+                     'TORRENTER_torrents': '',
+                     'TORRENTER_buffer': 0,
+                     'TORRENTER_web': ''
+                    }
+    
+    torrent_paths['TORR_opt'] = config.get_setting("torrent_client", server="torrent", default=0)
+    if torrent_paths['TORR_opt'] > 0 and torrent_paths['TORR_opt'] <= len(torrent_options):
+        torrent_paths['TORR_client'] = scrapertools.find_single_match(torrent_options[torrent_paths['TORR_opt']-1], ':\s*(\w+)').lower()
+    torrent_paths['TORR_libtorrent_path'] = config.get_setting("libtorrent_path", server="torrent", default='')
+    torrent_paths['TORR_unrar_path'] = config.get_setting("unrar_path", server="torrent", default='')
+    torrent_paths['TORR_background_download'] = config.get_setting("mct_background_download", server="torrent", default=True)
+    torrent_paths['TORR_rar_unpack'] = config.get_setting("mct_rar_unpack", server="torrent", default=True)
+    torr_client = ''
+    
+    for torr_client_g in torrent_options:
+        # Localizamos el path de descarga del .torrent y la carpeta de almacenamiento de los archivos .torrent
+        if 'BT' in torr_client_g:
+            torr_client = 'BT'
+        elif 'MCT' in torr_client_g:
+            torr_client = 'MCT'
+        else:
+            torr_client = scrapertools.find_single_match(torr_client_g, ':\s*(\w+)').lower()
+        __settings__ = ''
+        
+        if torr_client != 'BT' and torr_client != 'MCT':
+            __settings__ = xbmcaddon.Addon(id="plugin.video.%s" % torr_client)  # Apunta settings del cliente torrent externo
+        if torr_client == 'BT'and str(config.get_setting("bt_download_path", \
+                            server="torrent", default='')):
+            if torrent_paths['TORR_libtorrent_path']:
+                torrent_paths['BT'] = filetools.join(str(config.get_setting("bt_download_path", \
+                            server="torrent", default='')), 'BT-torrents')
+                torrent_paths['BT_torrents'] = filetools.join(torrent_paths['BT'], '.cache')
+                torrent_paths['BT_buffer'] = config.get_setting("bt_buffer", server="torrent", default=50)
+        elif torr_client == 'MCT' and str(config.get_setting("mct_download_path", \
+                            server="torrent", default='')):
+            if torrent_paths['TORR_libtorrent_path']:
+                torrent_paths['MCT'] = filetools.join(str(config.get_setting("mct_download_path", \
+                            server="torrent", default='')), 'MCT-torrent-videos')
+                torrent_paths['MCT_torrents'] = filetools.join(str(config.get_setting("mct_download_path", \
+                            server="torrent", default='')), 'MCT-torrents')
+                torrent_paths['MCT_buffer'] = config.get_setting("mct_buffer", server="torrent", default=50)
+        elif 'torrenter' in torr_client.lower():
+            torrent_paths[torr_client.upper()] = str(filetools.join(xbmc.translatePath(__settings__.getSetting('storage')),  "Torrenter"))
+            if not torrent_paths[torr_client.upper()]:
+                torrent_paths[torr_client.upper()] = str(filetools.join(xbmc.translatePath("special://home/"), \
+                                       "cache", "xbmcup", "plugin.video.torrenter", "Torrenter"))
+            torrent_paths[torr_client.upper()+'_torrents'] = filetools.join(torrent_paths[torr_client.upper()], 'torrents')
+            torrent_paths[torr_client.upper()+'_buffer'] = __settings__.getSetting('pre_buffer_bytes')
+        elif torr_client in ['quasar', 'elementum']:
+            try:
+                if not __settings__: continue
+                torrent_paths[torr_client.upper()] = str(xbmc.translatePath(__settings__.getSetting('download_path')))
+                torrent_paths[torr_client.upper() + '_torrents'] = filetools.join(torrent_paths[torr_client.upper()], 'torrents')
+                torrent_paths[torr_client.upper() + '_buffer'] = __settings__.getSetting('buffer_size')
+                if 'elementum' in torr_client.lower():
+                    torrent_paths['ELEMENTUM_torrents'] = str(xbmc.translatePath(__settings__.getSetting('torrents_path')))
+                    torrent_paths['ELEMENTUM_port'] = __settings__.getSetting('remote_port')
+                    torrent_paths['ELEMENTUM_web'] = '%s%s/' % (torrent_paths['ELEMENTUM_web'], \
+                                str(torrent_paths['ELEMENTUM_port']))
+                    if __settings__.getSetting('download_storage') == '1':
+                        torrent_paths['ELEMENTUM'] = 'Memory'
+                        if __settings__.getSetting('memory_size'):
+                            torrent_paths['ELEMENTUM_memory_size'] = __settings__.getSetting('memory_size')
+
+            except:
+                logger.error(traceback.format_exc(1))
+        else:
+            torrent_paths[torr_client.upper()] = ''
+            torrent_paths[torr_client.upper() + '_torrents'] = ''
+            torrent_paths[torr_client.upper() + '_buffer'] = 0
+            torrent_paths[torr_client.upper() + '_web'] = ''
+    
+    if not torrent_paths['QUASAR']: torrent_paths['QUASAR_web'] = ''
+    if not torrent_paths['ELEMENTUM']: torrent_paths['ELEMENTUM_web'] = ''
+    
+    #logger.debug(torrent_paths)
+    
+    return torrent_paths
+
+
+def update_control(item):
+    logger.info(
+        "contentAction: %s | contentChannel: %s | downloadProgress: %s | url: %s" % \
+                    (item.contentAction, item.contentChannel, item.downloadProgress, item.url))
+
+    file = False
+    
+    # Crea un punto de control para gestionar las descargas Torrents de forma centralizada
+    if not item.downloadProgress and not item.path.endswith('.json'):
+        from lib import generictools
+        item.downloadProgress = 1
+        item.downloadSize = 0
+        item.downloadCompleted = 0
+        item.downloadStatus = 5
+        if not item.downloadServer:
+            item.downloadServer = {"url": item.url, "server": item.server}
+        if not item.contentThumbnail:
+            item.contentThumbnail = item.thumbnail
+        item.path = str(time.time()) + ".json"
+        item_control = item.clone()
+        item_control.server = 'torrent'
+        item_control.contentAction = 'play'
+        if item.category:
+            item_control.contentChannel = generictools.verify_channel(item.category.lower())
+        else:
+            item_control.contentChannel = generictools.verify_channel(item.channel)
+        item_control.action = 'menu'
+        item_control.channel = 'downloads'
+        item_control.url = item.url_control
+        item_control.url_control = item.url
+        if item_control.strm_path and item.server == 'torrent':
+            if item_control.contentType == 'movie':
+                PATH = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_movies"))
+            else:
+                PATH = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_tvshows"))
+            item_control.strm_path = item_control.strm_path.replace(PATH, '')
+        file = True
+    else:
+        path = filetools.join(config.get_setting("downloadlistpath"), item.path)
+        if path.endswith('.json') and filetools.exists(path):
+            item_control = Item().fromjson(filetools.read(path))
+            file = True
+            item_control.server = 'torrent'
+            item_control.action = 'menu'
+            item_control.channel = 'downloads'
+            item_control.contentAction = 'play'
+            item_control.downloadStatus = item.downloadStatus
+            item_control.downloadCompleted = item.downloadCompleted
+            item_control.downloadProgress = item.downloadProgress
+            item_control.downloadFilename = item.downloadFilename
+            item_control.torr_folder = item.torr_folder
+            if not item.url.startswith('magnet:'):
+                item.downloadServer = {"url": item.url, "server": item.server}
+            item_control.downloadServer = item.downloadServer
+            item_control.url = item.url
+            item_control.url_control = item.url_control
+
+    if file:
+        ret = filetools.write(filetools.join(config.get_setting("downloadlistpath"), item.path), item_control.tojson())
+    elif not file or not ret:
+        logger.error('No hay archivo de CONTROL: ' + path)
+
+
+def mark_torrent_as_watched():
+    logger.info()
+
+    # Si hay descargas de BT o MCT inacabadas, se reinician la descargas secuencialmente
+    try:
+        threading.Thread(target=restart_unfinished_downloads).start()           # Creamos un Thread independiente
+        time.sleep(3)                                                           # Dejamos terminar la inicialización...
+    except:                                                                     # Si hay problemas de threading, salimos
+        logger.error(traceback.format_exc())
+
+    #Inicia un rastreo de vídeos decargados: marca los VISTOS y elimina los controles de los BORRADOS
+    if config.get_platform(True)['num_version'] >= 14:
+        monitor = xbmc.Monitor()                                                # For Kodi >= 14
+    else:
+        monitor = False                                                         # For Kodi < 14
+    if monitor:
+        while not monitor.abortRequested():
+
+            check_seen_torrents()                                               # Ha las comprobaciones...
+            if monitor.waitForAbort(900):                                       # ... cada 15'
+                break
+            
+    else:
+        while not xbmc.abortRequested:
+
+            check_seen_torrents()                                               # Ha las comprobaciones...
+            xbmc.sleep(900)                                                     # ... cada 15'
+
+
+def restart_unfinished_downloads():
+    logger.info()
+    
+    # Si hay una descarga de BT o MCT inacabada, se reinicia la descarga
+    torrent_paths = torrent_dirs()
+    DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
+    LISTDIR = sorted(filetools.listdir(DOWNLOAD_LIST_PATH))
+    
+    for fichero in LISTDIR:
+        if not filetools.exists(filetools.join(DOWNLOAD_LIST_PATH, fichero)):
+            continue
+        if fichero.endswith(".json"):
+            item = Item(path=filetools.join(DOWNLOAD_LIST_PATH, fichero)).fromjson(
+                filetools.read(filetools.join(DOWNLOAD_LIST_PATH, fichero)))
+            
+            torr_client = scrapertools.find_single_match(item.downloadFilename, '\:(\w+)\:')
+            if torr_client not in ['BT', 'MCT', 'TORRENTER']:
+                continue
+            if not item.downloadStatus in [2, 4, 5] or item.server != 'torrent':
+                continue
+            if item.downloadProgress < 4 or item.downloadCompleted == 1:
+                if item.downloadServer and 'url' in str(item.downloadServer):
+                    new_torrent_url = filetools.join(torrent_paths[torr_client+'_torrents'], \
+                                filetools.basename(item.downloadServer['url']).upper())
+                    if filetools.exists(new_torrent_url):
+                        item.downloadServer['url'] = new_torrent_url
+                        item.url = new_torrent_url
+                        item.downloadProgress += 1
+                        update_control(item)
+                        logger.info('RECUPERANDO descarga de: %s' % (torr_client))
+                        from channels import downloads
+                        downloads.start_download(item)
+
+
+def check_seen_torrents():
+    
+    # Localiza la correspondecia entre los vídeos descargados vistos en las áreas de descarga 
+    # con los registros en las Videotecas de Kody y Alfa
+    from platformcode import xbmc_videolibrary
+    
+    torrent_paths = torrent_dirs()
+    DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
+    MOVIES = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_movies"))
+    SERIES = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_tvshows"))
+    LISTDIR = sorted(filetools.listdir(DOWNLOAD_LIST_PATH))
+    
+    for fichero in LISTDIR:
+        if fichero.endswith(".json"):
+            item = Item(path=filetools.join(DOWNLOAD_LIST_PATH, fichero)).fromjson(
+                filetools.read(filetools.join(DOWNLOAD_LIST_PATH, fichero)))
+ 
+            if not item.downloadStatus in [2, 4, 5] or not item.downloadFilename:
+                continue
+                
+            filename = filetools.basename(scrapertools.find_single_match(item.downloadFilename, '(?:\:\w+\:\s*)?(.*?\.\w+)$'))
+            if item.contentType == 'movie':
+                PATH = MOVIES
+            else:
+                PATH = SERIES
+            if item.strm_path:                                                      # Si viene de Videoteca lo procesamos
+                item.strm_path = filetools.join(PATH, item.strm_path)
+
+                sql = 'select * from files where (strFilename like "%s" and playCount not like "")' % filename
+                if config.is_xbmc():
+                    nun_records, records = xbmc_videolibrary.execute_sql_kodi(sql)  # ejecución de la SQL
+                    if nun_records > 0:                                             # si el vídeo está visto...
+                        xbmc_videolibrary.mark_content_as_watched_on_kodi(item, 1)  # ... marcamos en Kodi como visto
+                        item.downloadProgress = 100
+                        if item.nfo:
+                            xbmc_videolibrary.mark_content_as_watched_on_alfa(item.nfo) # ... y sincronizamos los Vistos de Kodi con Alfa
+                            logger.info("Status: %s | Progress: %s | File: %s | Title: %s" % \
+                                            (item.downloadStatus, item.downloadProgress, fichero, filename))
+                            filename = ''
+
+            if item.server == 'torrent':
+                check_deleted_sessions(item, torrent_paths, DOWNLOAD_LIST_PATH, LISTDIR, fichero, filename)
+
+
+def check_deleted_sessions(item, torrent_paths, DOWNLOAD_LIST_PATH, LISTDIR, fichero, filename=''):
+    if filename:
+        logger.info("Status: %s | Progress: %s | File: %s | Title: %s" % \
+                            (item.downloadStatus, item.downloadProgress, fichero, filename))
+    
+    # Busca sesiones y archivos de descarga "zombies" y los borra
+    torr_client = scrapertools.find_single_match(item.downloadFilename, '\:(\w+)\:')
+    downloadFilename = scrapertools.find_single_match(item.downloadFilename, '\:\w+\:\s*(.*?)$')
+    file = ''
+    
+    if torr_client not in ['BT', 'MCT', 'QUASAR', 'ELEMENTUM'] or torrent_paths[torr_client.upper()] == 'Memory':
+        if item.downloadProgress in [100]:
+            filetools.remove(filetools.join(DOWNLOAD_LIST_PATH, fichero), silent=True)
+            logger.info('ERASED: file: %s' % (fichero))
+        return
+
+    if 'url' in str(item.downloadServer):
+        if item.downloadServer['url'].startswith('http'):
+            filebase = filetools.basename(item.url_control)
+        else:
+            filebase = filetools.basename(item.downloadServer['url'])
+        if item.downloadServer['url'].startswith(':BT:') or item.downloadServer['url'].startswith(':MCT:'):
+            filebase = filebase.upper()
+        file = filetools.join(torrent_paths[torr_client+'_torrents'], filebase)
+    
+    if item.downloadProgress in [1, 2, 3, 100] and (not torr_client or not downloadFilename):
+        filetools.remove(filetools.join(DOWNLOAD_LIST_PATH, fichero), silent=True)
+        logger.info('ERROR: %s' % (fichero))
+        return
+    if item.downloadProgress in [0]:
+        return
+    if item.downloadProgress in [1, 2, 3] and file and filetools.exists(file):
+        return
+    
+    if not filetools.exists(filetools.join(torrent_paths[torr_client], downloadFilename)):
+        
+        filetools.remove(filetools.join(DOWNLOAD_LIST_PATH, fichero), silent=True)
+        logger.info('ERASED: file: %s' % (fichero))
+        
+        if torr_client in ['BT', 'MCT'] and file:
+            filetools.remove(file, silent=True)
+            return
+        
+        if item.torr_folder:
+            folder = item.torr_folder
+        else:
+            folder = filetools.dirname(scrapertools.find_single_match(item.downloadFilename, '^\:\w+\:\s*(.*?)$'))
+            folder = folder.replace('\\', '').replace('/', '')
+
+        torr_client = torr_client.lower()
+        if torr_client in ['quasar', 'elementum'] and file:
+            torr_data, deamon_url, index = get_tclient_data(folder, torr_client, torrent_paths['ELEMENTUM_port'], delete=True)
 
 
 def mark_auto_as_watched(item):
     
-    time_limit = time.time() + 150                                      #Marcamos el timepo máx. de buffering
-    while not platformtools.is_playing() and time.time() < time_limit:  #Esperamos mientra buffera    
-        time.sleep(5)                                                   #Repetimos cada intervalo
+    time_limit = time.time() + 150                                              #Marcamos el timepo máx. de buffering
+    while not platformtools.is_playing() and time.time() < time_limit:          #Esperamos mientra buffera    
+        time.sleep(5)                                                           #Repetimos cada intervalo
         #logger.debug(str(time_limit))
     if item.subtitle:
         time.sleep(5)
@@ -695,9 +1116,9 @@ def mark_auto_as_watched(item):
         #subt = xbmcgui.ListItem(path=item.url, thumbnailImage=item.thumbnail)
         #subt.setSubtitles([item.subtitle])
 
-    if item.strm_path and platformtools.is_playing():                   #Sólo si es de Videoteca
+    if item.strm_path and platformtools.is_playing():                           #Sólo si es de Videoteca
         from platformcode import xbmc_videolibrary
-        xbmc_videolibrary.mark_auto_as_watched(item)                    #Marcamos como visto al terminar
+        xbmc_videolibrary.mark_auto_as_watched(item)                            #Marcamos como visto al terminar
         #logger.debug("Llamado el marcado")
 
 
@@ -707,11 +1128,15 @@ def wait_for_download(item, mediaurl, rar_files, torr_client, password='', size=
 
     from subprocess import Popen, PIPE, STDOUT
     
+    torrent_paths = torrent_dirs()
+    
     # Analizamos los archivos dentro del .torrent
     rar = False
     rar_names = []
     rar_names_abs = []
+    rar_file = ''
     folder = ''
+    ret = ''
     if rar_control:
         for x, entry in enumerate(rar_control['rar_files']):
             if '__name' in entry:
@@ -727,37 +1152,20 @@ def wait_for_download(item, mediaurl, rar_files, torr_client, password='', size=
                         rar = True
                 elif file == '__name':
                     folder = path
-    
+
     if not folder:                                                              # Si no se detecta el folder...
-        return ('', '', '', {})                                                     # ... no podemos hacer nada
-        
-    if not rar_names:
-        return ('', '', folder, {})
-    rar_file = '%s/%s' % (folder, rar_names[0])
-    log("##### rar_file: %s" % rar_file)
+        return ('', '', '', {})                                                 # ... no podemos hacer nada
+    if rar_names: rar_names = sorted(rar_names)
+    if rar_names:
+        rar_file = '%s/%s' % (folder, rar_names[0])
+        log("##### rar_file: %s" % rar_file)
     if len(rar_names) > 1:
         log("##### rar_names: %s" % str(rar_names))
 
     # Localizamos el path de descarga del .torrent
-    save_path_videos = ''
-    __settings__ = ''
-    if torr_client != 'BT' and torr_client != 'MCT':
-        __settings__ = xbmcaddon.Addon(id="plugin.video.%s" % torr_client)      # Apunta settings del cliente torrent externo
-    if torr_client == 'BT':
-        save_path_videos = filetools.join(str(config.get_setting("bt_download_path", \
-                        server="torrent", default='')), 'BT-torrents')
-    elif torr_client == 'MCT':        
-        save_path_videos = filetools.join(str(config.get_setting("mct_download_path", \
-                        server="torrent", default='')), 'MCT-torrent-videos')
-    elif torr_client == 'torrenter':
-        save_path_videos = str(xbmc.translatePath(__settings__.getSetting('storage')))
-        if not save_path_videos:
-            save_path_videos = str(filetools.join(xbmc.translatePath("special://home/"), \
-                                   "cache", "xbmcup", "plugin.video.torrenter", "Torrenter"))
-    else:
-        save_path_videos = str(xbmc.translatePath(__settings__.getSetting('download_path')))
-        if __settings__.getSetting('download_storage') == '1':                  # Descarga en memoria?
-            return ('', '', folder, {})                                         # volvemos
+    save_path_videos = torrent_paths[torr_client.upper()]
+    if save_path_videos == 'Memory':                                            # Descarga en memoria?
+        return ('', '', folder, {})                                             # volvemos
     if not save_path_videos:                                                    # No hay path de descarga?
         return ('', '', folder, {})                                             # Volvemos
     log("##### save_path_videos: %s" % save_path_videos)
@@ -784,48 +1192,58 @@ def wait_for_download(item, mediaurl, rar_files, torr_client, password='', size=
                       }
 
     # Esperamos mientras el .torrent se descarga.  Verificamos si el .RAR está descargado al completo
-    #platformtools.dialog_notification("Automatizando la extracción", "Te iremos guiando...", time=10000)
+    #if rar_file:
+    #   platformtools.dialog_notification("Automatizando la extracción", "Te iremos guiando...", time=10000)
+    if rar_file:
+        ret = filetools.write(filetools.join(rar_control['download_path'], \
+                            '_rar_control.json'), jsontools.dump(rar_control))
     
     # Plan A: usar el monitor del cliente torrent para ver el status de la descarga
-    loop = 3600                                                                 # Loop de 10 horas hasta crear archivo
-    wait_time = 10
-    time.sleep(wait_time)
-    fast = False
-    if config.get_platform(True)['num_version'] >= 14:
-        monitor = xbmc.Monitor()                                                # For Kodi >= 14
-    else:
-        monitor = None                                                          # For Kodi < 14
-    ret = filetools.write(filetools.join(rar_control['download_path'], '_rar_control.json'), jsontools.dump(rar_control))
+    if torrent_paths[torr_client.upper()+'_web']:                               # Tiene web para monitorizar?
     
-    for x in range(loop):
-        if (monitor and monitor.abortRequested()) or (not monitor and xbmc.abortRequested):
-            return ('', '', folder, {})
+        loop = 3600                                                             # Loop de 10 horas hasta crear archivo
+        wait_time = 10
+        time.sleep(wait_time)
+        fast = False
+        if config.get_platform(True)['num_version'] >= 14:
+            monitor = xbmc.Monitor()                                            # For Kodi >= 14
+        else:
+            monitor = None                                                      # For Kodi < 14
 
-        torr_data, deamon_url, index = get_tclient_data(folder, torr_client)
-        if not torr_data or not deamon_url:
-            if len(filetools.listdir(rar_control['download_path'], silent=True)) <= 1:
-                filetools.remove(filetools.join(rar_control['download_path'], '_rar_control.json'), silent=True)
-                filetools.rmdir(rar_control['download_path'], silent=True)
-            return ('', '', folder, {})                                         # Volvemos
-        if (torr_client in ['quasar'] or torr_client in ['elementum']) and not \
-                        torr_data['label'].startswith('0.00%') and not fast:
-            platformtools.dialog_notification("Descarga RAR en curso", "Puedes realizar otras tareas. " + \
-                    "Te iremos guiando...", time=10000)
-            fast = True
-        if not torr_data['label'].startswith('100.00%'):
-            if not ret:
-                ret = filetools.write(filetools.join(rar_control['download_path'], '_rar_control.json'), jsontools.dump(rar_control))
-            log("##### Descargado: %s, ID: %s" % (scrapertools.find_single_match(torr_data['label'], '(^.*?\%)'), index))
-            time.sleep(wait_time)
-            continue
-        
-        update_rar_control(rar_control['download_path'], status='downloaded')
-        log("##### Torrent FINALIZADO: %s" % str(folder))
-        return (rar_file, save_path_videos, folder, rar_control)
+        for x in range(loop):
+            if (monitor and monitor.abortRequested()) or (not monitor and xbmc.abortRequested):
+                return ('', '', folder, {})
+
+            torr_data, deamon_url, index = get_tclient_data(folder, torr_client, torrent_paths['ELEMENTUM_port'])
+            
+            if not torr_data or not deamon_url:
+                if rar_file and len(filetools.listdir(rar_control['download_path'], silent=True)) <= 1:
+                    filetools.remove(filetools.join(rar_control['download_path'], '_rar_control.json'), silent=True)
+                    filetools.rmdir(rar_control['download_path'], silent=True)
+                return ('', '', folder, {})                                     # Volvemos
+
+            if (torr_client in ['quasar'] or torr_client in ['elementum']) and not \
+                            torr_data['label'].startswith('0.00%') and not fast and rar_file:
+                platformtools.dialog_notification("Descarga RAR en curso", "Puedes realizar otras tareas. " + \
+                        "Te iremos guiando...", time=10000)
+                fast = True
+
+            if not torr_data['label'].startswith('100.00%'):
+                if not ret and rar_file:
+                    ret = filetools.write(filetools.join(rar_control['download_path'], \
+                                    '_rar_control.json'), jsontools.dump(rar_control))
+                log("##### Descargado: %s, ID: %s" % (scrapertools.find_single_match(torr_data['label'], '(^.*?\%)'), index))
+                time.sleep(wait_time)
+                continue
+            
+            if rar_file: update_rar_control(rar_control['download_path'], status='downloaded')
+            log("##### Torrent FINALIZADO: %s" % str(folder))
+            return (rar_file, save_path_videos, folder, rar_control)
+    
     
     # Plan B: monitorizar con UnRAR si los archivos se han desacargado por completo
     unrar_path = config.get_setting("unrar_path", server="torrent", default="")
-    if not unrar_path:                                                          # Si Unrar no está instalado...
+    if not unrar_path or not rar_file:                                          # Si Unrar no está instalado o no es un RAR...
         return ('', '', folder, {})                                             # ... no podemos hacer nada
         
     cmd = []
@@ -920,51 +1338,6 @@ def wait_for_download(item, mediaurl, rar_files, torr_client, password='', size=
         logger.error('##### Torrent NO DESCARGADO: %s, %s' % (str(out__), str(returncode)))
     
     return (rar_file, save_path_videos, folder, rar_control)
-    
-    
-def get_tclient_data(folder, torr_client):
-
-    # Monitoriza el estado de descarga del torrent en Quasar y Elementum
-    ELEMENTUMD_HOST = "http://localhost:65220"
-    if torr_client == 'elementum':
-        try:
-            ADDON = xbmcaddon.Addon("plugin.video.elementum")
-        except:
-            ADDON = False
-        if ADDON:
-            ELEMENTUMD_HOST = "http://" + ADDON.getSetting("remote_host") + ":" + ADDON.getSetting("remote_port")
-
-    local_host = {"quasar": "http://localhost:65251/torrents/", "elementum": "%s/torrents/" % ELEMENTUMD_HOST}
-    torr = ''
-    torr_id = ''
-    x = 0
-    y = ''
-    
-    try:
-        data = httptools.downloadpage(local_host[torr_client], timeout=5, alfa_s=True).data
-        if not data:
-            log('##### Servicio de %s no disponible: %s' % (torr_client, local_host[torr_client]))
-            return '', local_host[torr_client], 0
-
-        data = jsontools.load(data)
-        data = data['items']
-        for x, torr in enumerate(data):
-            if not folder in torr['label']:
-                continue
-            if "elementum" in torr_client:
-                torr_id = scrapertools.find_single_match(str(torr), 'torrents\/move\/(.*?)\)')
-            break
-        else:
-            return '', local_host[torr_client], -1
-    except:
-        log(traceback.format_exc(1))
-        return '', local_host[torr_client], 0
-    
-    if torr_id:
-        y = torr_id
-    else:
-        y = x
-    return torr, local_host[torr_client], y
 
 
 def extract_files(rar_file, save_path_videos, password, dp, item=None, \
@@ -1027,6 +1400,7 @@ def extract_files(rar_file, save_path_videos, password, dp, item=None, \
         rename_status, rar_file = rename_rar_dir(org_rar_file, org_save_path_videos, video_path, torr_client)
 
     # Calculamos el path para del RAR
+    folders = []
     if "/" in rar_file:
         folders = rar_file.split("/")
         erase_file_path = filetools.join(save_path_videos, folders[0])
@@ -1174,7 +1548,7 @@ def extract_files(rar_file, save_path_videos, password, dp, item=None, \
 
             # Si hay RARs anidados, ajustamos los paths para la siguiente pasada
             if '.rar' in str(file_result):
-                for file_r in file_result:
+                for file_r in sorted(file_result):
                     if '.rar' in file_r:
                         rar_file = file_r
                         file_path = str(filetools.join(save_path_videos, rar_file))
@@ -1182,6 +1556,7 @@ def extract_files(rar_file, save_path_videos, password, dp, item=None, \
                         rar_control = update_rar_control(erase_file_path, newextract=(rar_file))
                         if not filetools.exists(save_path_videos): filetools.mkdir(save_path_videos)
                         platformtools.dialog_notification("Siguiente extracción...", rar_file, time=5000)
+                        break
             
             # Si ya se ha extraido todo, preparamos el retorno            
             else:

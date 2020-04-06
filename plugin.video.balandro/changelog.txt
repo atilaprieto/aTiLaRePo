@@ -1,6 +1,15 @@
 Balandro changelog
 ==================
 
+1.4.9:
+    Canales modificados: Serieslan. Seriesflv. 
+    Servidores modificados: Mp4upload, Gamovideo, Vidmoly, Netutv, Uptobox, Uptostream, 
+    Gounlimited, Vshare, Vidlox.
+
+1.4.8:
+    Canales modificados: Pedropolis, Grantorrent, Seriesmetro, Cinecalidad. 
+    Servidores modificados: Clipwatching, Uptostream, Netutv, Videomega, Watchvideo.
+
 1.4.7:
     Canales modificados: Cinetux, Newpct1, Tupelihd, Pelispedia, Mega1link, Seriesmetro. 
     Servidores modificados: Powvideo, Streamplay.

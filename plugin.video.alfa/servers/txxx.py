@@ -5,12 +5,21 @@ from core import scrapertools
 from platformcode import logger
 
 
+def test_video_exists(page_url):
+    logger.info("(page_url='%s')" % page_url)
+    global data
+    data = httptools.downloadpage(page_url).data
+    if "<h2>WE ARE SORRY</h2>" in data or '<title>404 Not Found</title>' in data:
+        return False, config.get_localized_string(70449) % "hclips"
+    return True, ""
+
+
 def get_video_url(page_url, video_password):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
-    url= "https://txxx.com/api/videofile.php?video_id=%s&lifetime=864000" % page_url
-    ref= "https://txxx.com/embed/%s/" % page_url
-    headers = {'Referer': ref}
+    id = scrapertools.find_single_match(page_url, r"embed/([0-9]+)")
+    url= "https://txxx.com/api/videofile.php?video_id=%s&lifetime=864000" % id
+    headers = {'Referer': page_url}
     data = httptools.downloadpage(url, headers=headers).data
     texto = scrapertools.find_single_match(data, '"video_url":"([^"]+)"')
     url = dec_url(texto)

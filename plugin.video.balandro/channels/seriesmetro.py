@@ -2,7 +2,7 @@
 
 import re
 
-from platformcode import config, logger
+from platformcode import config, logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, servertools, tmdb
 
@@ -217,7 +217,11 @@ def play(item):
         
         url = scrapertools.find_single_match(data, 'file:\s*"([^"]+)')
         if url:
-            itemlist.append(['m3u8', url])
+            if url.endswith('.mpd'):
+                if platformtools.is_mpd_enabled():
+                    itemlist.append(['mpd', url, 0, '', True])
+            else:
+                itemlist.append(['m3u8', url])
 
     else:
         if 'dailymotion' in url: url = 'https://www.dailymotion.com/' + url.split('/')[-1]

@@ -72,6 +72,7 @@ def generos(item):
     
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)</a>\s*<i>([^<]+)')
     for url, title, num in matches:
+        if num == '0': continue
         if '/cine/' in url or '/destacadas/' in url or '/estrenos-hd/' in url: continue # ya están en el listado principal y no son géneros
         itemlist.append(item.clone( action='list_all', title='%s (%s)' % (title, num), url=url ))
 

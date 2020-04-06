@@ -89,6 +89,7 @@ def generos(item):
     
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)</a>\s*<i>([^<]+)')
     for url, title, num in matches:
+        if num == '0': continue
         if '/estrenos/' in url or '/proximos-estrenos/' in url: continue # en el listado principal / no son géneros
         if descartar_xxx and scrapertools.es_genero_xxx(title): continue
         
@@ -104,11 +105,12 @@ def anyos(item):
     itemlist = []
     if item.search_type != 'movie': return []
 
-    from datetime import datetime
-    current_year = int(datetime.today().year)
-
-    for x in range(current_year, 1958, -1):
-        itemlist.append(item.clone( title=str(x), url=host+'release/'+str(x)+'/', action='peliculas' ))
+    data = httptools.downloadpage(host+'genero/proximos-estrenos/').data
+    bloque = scrapertools.find_single_match(data, '<ul class="releases(.*?)</ul>')
+    
+    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">(\d{4})')
+    for url, title in matches:
+        itemlist.append(item.clone( action='peliculas', title=title, url=url ))
 
     return itemlist
 
@@ -119,7 +121,9 @@ def peliculas(item):
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
-    bloque = scrapertools.find_single_match(data, '<div class="content">(.*?)<div class="pagination"')
+    if '<div class="pagination"' in data: bloque = scrapertools.find_single_match(data, '<div class="content">(.*?)<div class="pagination"')
+    elif '<div class="sidebar' in data: bloque = scrapertools.find_single_match(data, '<div class="content">(.*?)<div class="sidebar')
+    else: bloque = data
     
     matches = re.compile('<article.*?</article>', re.DOTALL).findall(bloque)
     for article in matches:

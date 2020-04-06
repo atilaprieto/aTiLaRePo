@@ -102,7 +102,7 @@ def submenu(item):
 
     patron = '<h1\s*class="list-group-item top"\s*style="[^"]+">.*?<\/h1>\s*(.*?)<\/span><\/div>'
     data, success, code, item, itemlist = generictools.downloadpage(item.url, timeout=timeout, s2=False, 
-                                          patron=patron, item=item)             # Descargamos la página
+                                          patron=patron, item=item, itemlist=[])    # Descargamos la página
 
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
     if not success or itemlist:                                                 # Si ERROR o lista de errores ...
@@ -193,7 +193,7 @@ def genero(item):
     patron = '<select\s*name="valor2"\s*id="valor2"\s*'
     patron += 'class="[^"]+">(.*?)<\/select>'
     data, success, code, item, itemlist = generictools.downloadpage(item.url, timeout=timeout,  s2=False, 
-                                          patron=patron, item=item)             # Descargamos la página
+                                          patron=patron, item=item, itemlist=[])    # Descargamos la página
 
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
     if not success or itemlist:                                                 # Si ERROR o lista de errores ...
@@ -240,7 +240,7 @@ def novedades(item):
     patron = '<span\s*class="text-muted">(?:\d{4})?[^<]+<\/span>\s*<a\s*href="([^"]+)"'
     patron += '\s*class="text-primary">([^<]+)<\/a>(?:\s*<span\s*class="text-muted">\((.*?)\)<\/span>)?'
     data, success, code, item, itemlist = generictools.downloadpage(item.url, timeout=timeout, s2=False, 
-                                          patron=patron, item=item)             # Descargamos la página
+                                          patron=patron, item=item, itemlist=[])     # Descargamos la página)
     
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
     if not success or itemlist:                                                 # Si ERROR o lista de errores ...
@@ -321,7 +321,7 @@ def listado(item):                                                              
         if not item.matches:                                                    # si no viene de una pasada anterior, descargamos
             data, success, code, item, itemlist = generictools.downloadpage(next_page_url, 
                                           timeout=timeout_search, post=post, s2=False, 
-                                          item=item)                            # Descargamos la página
+                                          item=item, itemlist=itemlist)         # Descargamos la página)
             
             curr_page += 1                                                      #Apunto ya a la página siguiente
             if not data:                                                        #Si la web está caída salimos sin dar error
@@ -399,12 +399,12 @@ def listado(item):                                                              
             elif item.extra2 == 'novedades':                                    # Novedades, no hay última página
                 last_page = 0
             else:                                                               # Resto, se descarga la página 9999 para ver la última real
-                patron_last = '<li\s*class="page-item active"\s*aria-current="page">'
-                patron_last += '<a\s*class="page-link" href="#">(\d+)<\/a><\/li>'
+                patron_last = '<li\s*class="page-item\s*active"\s*aria-current="page">\s*'
+                patron_last += '<a\s*class="page-link"\s*href="#">\s*(\d+)\s*<\/a>\s*<\/li>'
                 last_page_url = re.sub(r'page\/(\d+)', 'page/9999', item.url)
                 data, success, code, item, itemlist = generictools.downloadpage(last_page_url, 
                                           timeout=timeout_search, post=post, patron=patron_last, 
-                                          s2=False, item=item)                  # Descargamos la página
+                                          s2=False, item=item, itemlist=itemlist)   # Descargamos la página)
                 
                 try:
                     last_page = int(scrapertools.find_single_match(data, patron_last))
@@ -623,7 +623,7 @@ def findvideos(item):
         patron += '"popover"\s*title="Contraseña del Torrent.*?data-clave="([^"]+)">)?'
     
     data, success, code, item, itemlist = generictools.downloadpage(item.url, timeout=timeout, 
-                                          s2=False, patron=patron, item=item)   #Descargamos la página
+                                          s2=False, patron=patron, item=item, itemlist=[])      # Descargamos la página)
     
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
     if not data or code == 999:
@@ -833,68 +833,22 @@ def episodios(item):
             y += [int(x)]
         max_nfo = max(y)
 
-    # Obtenemos todas las Temporada de la Serie desde Search
+    # Si la series tiene solo una temporada, o se lista solo una temporada, guardamos la url y seguimos normalmente
     list_temps = []
     list_temp = []
-    #patron_quality = '(?:Temporada|Miniserie)(?:-(.*?)(?:\.|$)|()\.|()$)'
-    patron_quality = '(?:Temporada|Miniserie)(?:-(.*?)(?:\.|-$|$))'
     if season_display > 0 or max_temp == 1:
         list_temps.append(item.url)
-    
+        
+    # Obtenemos todas las Temporada de la Serie desde Search
     # Si no hay TMDB o es sólo una temporada, listamos lo que tenemos
     if season_display == 0 and item.infoLabels['tmdb_id'] and max_temp > 1:
         # Si hay varias temporadas, buscamos todas las ocurrencias y las filtraos por TMDB y calidad
-        item_search = item.clone()
-        item_search.extra = 'search'
-        item_search.extra2 = 'episodios'
-        title = scrapertools.find_single_match(item_search.contentSerieName, '(^.*?)\s*(?:$|\(|\[)')    # Limpiamos un poco el título
-        item_search.title = title
-        item_search.url = host + 'buscar/' + title.lower().replace(" ", "%20") + '/page/1'
-        item_search.infoLabels = {}                                             # Limpiamos infoLabels
-        itemlist = listado(item_search)                                         # Llamamos a 'Listado' para que procese la búsqueda
-        if len(itemlist) == 0:
-            list_temps.append(item.url)
-
-        for item_found in itemlist:                                             # Procesamos el Itemlist de respuesta
-            if item_found.url in str(list_temps):                               # Si ya está la url, pasamos a la siguiente
-                continue
-            if not item_found.infoLabels['tmdb_id']:                            # tiene TMDB?
-                continue
-            if item_found.infoLabels['tmdb_id'] != item.infoLabels['tmdb_id']:  # Es el mismo TMDB?
-                continue
-            if item.language and item_found.language:                           # Es el mismo Idioma?
-                if item.language != item_found.language:
-                    continue
-            if item.quality and item_found.quality:                             # Es la misma Calidad?, si la hay...
-                if item.quality != item_found.quality:
-                    continue
-            elif scrapertools.find_single_match(item.url, patron_quality) != \
-                        scrapertools.find_single_match(item_found.url, patron_quality):  # Coincide la calidad? (alternativo)
-                continue
-            list_temps.append(item_found.url)                                   # Si hay ocurrencia, guardamos la url
-        
-        if len(list_temps) > 1:
-            list_temps = sorted(list_temps)                                     # Clasificamos las urls
-            item.url = list_temps[-1]                                           # Guardamos la url de la última Temporada en .NFO
-
-        if max_temp >= max_nfo and item.library_playcounts and modo_ultima_temp_alt:    # Si viene de videoteca, solo tratamos lo nuevo
-            for url in list_temps:
-                if scrapertools.find_single_match(url, '-(\d+)-Temporada'):     # Está la Temporada en la url?
-                    try:                                                        # Miramos si la Temporada está procesada
-                        if int(scrapertools.find_single_match(url, '-(\d+)-Temporada')) >= max_nfo:
-                            list_temp.append(url)                               # No está procesada, la añadimos
-                    except:
-                        list_temp.append(url)
-                else:                                                           # Si no está la Temporada en la url, se añade la url
-                    list_temp.append(url)                                       # Por seguridad, la añadimos
-        else:
-            list_temp = list_temps[:]
+        list_temp = find_seasons(item, modo_ultima_temp_alt, max_temp, max_nfo)
 
     if not list_temp:
         list_temp = list_temps[:]                                               # Lista final de Temporadas a procesar
 
     # Descarga las páginas
-    itemlist = []
     for url in list_temp:                                                       # Recorre todas las temporadas encontradas
         patron = '<tr><td style=[^>]+>([^<]+)<\/td><td><a\s*class="text-white[^"]+"'
         patron += '\s*style="font-size[^"]+"\s*href="([^"]+)"\s*download>Descargar<\/a>'
@@ -1015,6 +969,73 @@ def episodios(item):
     return itemlist
     
     
+def find_seasons(item, modo_ultima_temp_alt, max_temp, max_nfo, list_temps=[]):
+    logger.info()
+    
+    # Si hay varias temporadas, buscamos todas las ocurrencias y las filtraos por TMDB, calidad e idioma
+    list_temp = []
+    itemlist = []
+    #patron_quality = '(?:Temporada|Miniserie)(?:-(.*?)(?:\.|$)|()\.|()$)'
+    patron_quality = '(?:Temporada|Miniserie)(?:-(.*?)(?:\.|-$|$))'
+
+    try:
+        item_search = item.clone()
+        item_search.extra = 'search'
+        item_search.extra2 = 'episodios'
+        title = scrapertools.find_single_match(item_search.contentSerieName, '(^.*?)\s*(?:$|\(|\[)')    # Limpiamos un poco el título
+        item_search.title = title
+        item_search.infoLabels = {}                                             # Limpiamos infoLabels
+        
+        itemlist = search(item_search, title.lower())                           # Llamamos a 'Listado' para que procese la búsqueda
+
+        if len(itemlist) == 0:
+            list_temps.append(item.url)
+
+        for item_found in itemlist:                                             # Procesamos el Itemlist de respuesta
+            if item_found.url in str(list_temps):                               # Si ya está la url, pasamos a la siguiente
+                continue
+            if not item_found.infoLabels['tmdb_id']:                            # tiene TMDB?
+                continue
+            if item_found.infoLabels['tmdb_id'] != item.infoLabels['tmdb_id']:  # Es el mismo TMDB?
+                continue
+            if item.language and item_found.language:                           # Es el mismo Idioma?
+                if item.language != item_found.language:
+                    continue
+            if item.quality and item_found.quality:                             # Es la misma Calidad?, si la hay...
+                if item.quality != item_found.quality:
+                    continue
+            elif scrapertools.find_single_match(item.url, patron_quality) != \
+                        scrapertools.find_single_match(item_found.url, patron_quality):  # Coincide la calidad? (alternativo)
+                continue
+            list_temps.append(item_found.url)                                   # Si hay ocurrencia, guardamos la url
+        
+        if len(list_temps) > 1:
+            list_temps = sorted(list_temps)                                     # Clasificamos las urls
+            item.url = list_temps[-1]                                           # Guardamos la url de la última Temporada en .NFO
+
+        if max_temp >= max_nfo and item.library_playcounts and modo_ultima_temp_alt:    # Si viene de videoteca, solo tratamos lo nuevo
+            for url in list_temps:
+                if scrapertools.find_single_match(url, '-(\d+)-Temporada'):     # Está la Temporada en la url?
+                    try:                                                        # Miramos si la Temporada está procesada
+                        if int(scrapertools.find_single_match(url, '-(\d+)-Temporada')) >= max_nfo:
+                            list_temp.append(url)                               # No está procesada, la añadimos
+                    except:
+                        list_temp.append(url)
+                else:                                                           # Si no está la Temporada en la url, se añade la url
+                    list_temp.append(url)                                       # Por seguridad, la añadimos
+        else:
+            list_temp = list_temps[:]
+    
+    except:
+        list_temp = []
+        list_temp.append(item.url)
+        logger.error(traceback.format_exc(1))
+    
+    #logger.debug(list_temp)
+    
+    return list_temp
+
+
 def actualizar_titulos(item):
     logger.info()
     
@@ -1033,8 +1054,10 @@ def search(item, texto):
         item.url = host + 'buscar/' + texto + '/page/1'
         item.extra = 'search'
 
-        if texto != '':
+        if texto:
             return listado(item)
+        else:
+            return []
     except:
         for line in sys.exc_info():
             logger.error("{0}".format(line))

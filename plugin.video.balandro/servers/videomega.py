@@ -14,9 +14,12 @@ def get_video_url(page_url, url_referer=''):
     data = httptools.downloadpage(page_url, headers=headers).data
     # ~ logger.debug(data)
     
-    tn = scrapertools.find_single_match(data, "tnaketalikom = document\.getElementById\('([^']+)")
-    bb = scrapertools.find_single_match(data, "bigbangass = document\.getElementById\('([^']+)")
-    fo = scrapertools.find_single_match(data, "fuckoff = document\.getElementById\('([^']+)")
+    tn = scrapertools.find_single_match(data, "tnaketalikom\s*=\s*document\.getElementById\('([^']+)")
+    if not tn: tn = scrapertools.find_single_match(data, 'tnaketalikom\s*=\s*document\.getElementById\("([^"]+)')
+    bb = scrapertools.find_single_match(data, "bigbangass\s*=\s*document\.getElementById\('([^']+)")
+    if not bb: bb = scrapertools.find_single_match(data, 'bigbangass\s*=\s*document\.getElementById\("([^"]+)')
+    fo = scrapertools.find_single_match(data, "fuckoff\s*=\s*document\.getElementById\('([^']+)")
+    if not fo: fo = scrapertools.find_single_match(data, 'fuckoff\s*=\s*document\.getElementById\("([^"]+)')
     if not tn or not bb or not fo: return video_urls
 
     tn = scrapertools.find_single_match(data, 'href="([^"]+)" id="%s"' % tn)

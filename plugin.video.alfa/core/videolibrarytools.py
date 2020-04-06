@@ -842,7 +842,7 @@ def emergency_urls(item, channel=None, path=None, headers={}):
             post = None
             channel_bis = generictools.verify_channel(item.channel)
             if config.get_setting("emergency_urls_torrents", channel_bis) and item_res.emergency_urls and path != None:
-                videolibrary_path = config.get_videolibrary_path()          #detectamos el path absoluto del título
+                videolibrary_path = config.get_videolibrary_path()              #detectamos el path absoluto del título
                 movies = config.get_setting("folder_movies")
                 series = config.get_setting("folder_tvshows")
                 if movies in path: 
@@ -853,13 +853,15 @@ def emergency_urls(item, channel=None, path=None, headers={}):
                 i = 1
                 if item_res.referer: referer = item_res.referer
                 if item_res.post: post = item_res.post
-                for url in item_res.emergency_urls[0]:                      #Recorremos las urls de emergencia...
+                for url in item_res.emergency_urls[0]:                          #Recorremos las urls de emergencia...
                     torrents_path = re.sub(r'(?:\.\w+$)', '_%s.torrent' % str(i).zfill(2), path)
                     path_real = ''
                     if magnet_caching_e or not url.startswith('magnet'):
-                        path_real = torrent.caching_torrents(url, referer, post, torrents_path=torrents_path, headers=headers)  #...  para descargar los .torrents
-                    if path_real:                                           #Si ha tenido éxito...
+                        path_real = torrent.caching_torrents(url, referer, post, \
+                                torrents_path=torrents_path, headers=headers)   #...  para descargar los .torrents
+                    if path_real:                                               #Si ha tenido éxito...
                         item_res.emergency_urls[0][i-1] = path_real.replace(videolibrary_path, '')  #se guarda el "path" relativo
+                        if 'ERROR' in item.torrent_info: item.torrent_info = ''
                     i += 1
                     
                 #Restauramos variables originales

@@ -18,6 +18,10 @@
       {
         "pattern": "(mega.nz/\\#F\\![A-Za-z0-9\\-\\_]+\\![A-Za-z0-9\\-\\_]+)",
         "url": "https://\\1"
+      },
+      {
+        "pattern": "mega.nz/file/([^\\#]+)\\#([A-Za-z0-9-_]+)",
+        "url": "https://mega.nz/#!\\1!\\2"
       }
     ]
   },

@@ -39,7 +39,7 @@ DOMAIN_CS = ["animeflv.ru", "www.divxtotal.la", "gnula.nu", "mejortorrent1.net",
              'zooqle-com.prox2.info', 'blazing.network', 'www.cinetux.to', 'hdfull.io', \
              'vidtodo.com', 'seriesdanko.net', 'sexgalaxy.net', 'grantorrent.cc', \
              'grantorrent.li', 'animeflv.net', 'seriesf.lv', 'fullxxxmovies.net', \
-             'repelisgo.net', 'www.rexpelis.com']
+             'repelisgo.net', 'www.rexpelis.com', 'animebum.net', 'pepecine.tv']
 
 ## Obtiene la versión del addon
 __version = config.get_addon_version()

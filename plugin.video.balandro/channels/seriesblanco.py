@@ -147,6 +147,7 @@ def episodios(item):
             continue
 
         languages = scrapertools.find_multiple_matches(data_epi, 'images/language/([^.]+)\.png')
+        languages = list(dict.fromkeys(languages))
         
         titulo = '%sx%s %s [COLOR %s][%s][/COLOR]' % (season, episode, title, color_lang, ', '.join([IDIOMAS.get(lang, lang) for lang in languages]))
 

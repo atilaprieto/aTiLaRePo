@@ -14,9 +14,8 @@ from channels import autoplay
 
 IDIOMAS = {'latino': 'Latino'}
 list_language = IDIOMAS.values()
-list_servers = ['openload',
+list_servers = [
                 'okru',
-                'netutv',
                 'rapidvideo'
                 ]
 list_quality = ['default']
@@ -88,7 +87,7 @@ def lista(item):
     #logger.info("Pagina para regex "+data)
     patron = '<div class="serie">' #Encabezado regex
     patron +="<a href='(.+?)'>" #scrapedurl
-    patron +="<img src='(.+?)'.+?" #scrapedthumbnail
+    patron +="<img.*?data-src='(.+?)'.+?" #scrapedthumbnail
     patron +="<p class='.+?'>(.+?)<\/p>" #scrapedtitle
     patron +=".+?<span .+?>(.+?)<\/span>" #scrapedplot
 
@@ -133,8 +132,8 @@ def episodios(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-    patron = '<div class="pagina">(.*?)cajaSocial'
-    data = scrapertools.find_single_match(data, patron)
+    #patron = '<div class="pagina">(.*?)cajaSocial'
+    #data = scrapertools.find_single_match(data, patron)
     patron_caps = "<li><a href='(.+?)'>Cap(?:i|í)tulo: (.+?) - (.+?)<\/a>"
     matches = scrapertools.find_multiple_matches(data, patron_caps)
     #show = scrapertools.find_single_match(data, '<span>Titulo.+?<\/span>(.+?)<br><span>')
@@ -189,6 +188,7 @@ def findvideos(item):
     itemlist = []
 
     data = httptools.downloadpage(item.url).data
+    logger.info("Pagina para regexvideo "+data)
     data1 = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
     data_vid = scrapertools.find_single_match(data1, 'var q = \[ \[(.+?)\] \]')
     # name = scrapertools.find_single_match(data,'<span>Titulo.+?<\/span>([^<]+)<br>')

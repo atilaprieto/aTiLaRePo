@@ -291,9 +291,9 @@ def findvideos(item):
         link = '%s?trembed=%s&trid=%s&trtype=2' % (host, ide, term_id)
         soup = create_soup(link)
         url = soup.find('iframe')['src']
-
-        title = '%s [COLOR silver][%s][/COLOR]' % (srv, language)
-
+        url = url.replace('&#038;', '&')
+        url = "%s|%s" % (url, host)
+        title = '%s [COLOR silver][%s][/COLOR]' % (server, language)
 
         itemlist.append(Item(channel=item.channel, title=title, url=url, action='play',
                              language=language, infoLabels=item.infoLabels, 

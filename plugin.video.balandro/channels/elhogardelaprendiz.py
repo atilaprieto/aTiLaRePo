@@ -252,7 +252,7 @@ def play(item):
 
     if url:
         if url.startswith('//'): url = 'https:' + url
-        url = url.replace('https://uptostream/', 'https://uptostream.com/')
+        url = url.replace('https://uptostream/', 'https://uptostream.com/') # corregir url errónea en algunos links
 
         servidor = servertools.get_server_from_url(url)
         if servidor and servidor != 'directo':

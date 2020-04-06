@@ -18,6 +18,7 @@ def get_video_url(page_url, url_referer=''):
     matches = scrapertools.find_multiple_matches(bloque, '(http.*?)"')
     for videourl in matches:
         extension = scrapertools.get_filename_from_url(videourl)[-4:]
-        video_urls.append([extension, videourl])
+        # ~ video_urls.append([extension, videourl])
+        video_urls.append([extension, videourl+'|Referer=https://vidlox.me/'])
 
     return video_urls

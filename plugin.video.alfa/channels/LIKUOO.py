@@ -20,7 +20,7 @@ from core import httptools
 
 host = 'https://www.likuoo.video'
 
-
+# JETLOAD
 def mainlist(item):
     logger.info()
     itemlist = []
@@ -107,6 +107,7 @@ def play(item):
         url = scrapertools.find_single_match(datas, 'src="([^"]+)"')
         if not url.startswith("https"):
             url = "https:%s" % url
+        logger.debug(url)
         itemlist.append( Item(channel=item.channel, action="play", title="%s",contentTitle = item.title, url=url ))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist

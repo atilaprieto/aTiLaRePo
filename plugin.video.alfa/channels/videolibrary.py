@@ -179,7 +179,7 @@ def list_tvshows(item):
                 
                 #Sincronizamos los episodios vistos desde la videoteca de Kodi con la de Alfa
                 try:
-                    if config.is_xbmc():                #Si es Kodi, lo hacemos
+                    if config.is_xbmc():                    #Si es Kodi, lo hacemos
                         from platformcode import xbmc_videolibrary
                         xbmc_videolibrary.mark_content_as_watched_on_alfa(tvshow_path)
                 except:
@@ -187,7 +187,7 @@ def list_tvshows(item):
                 
                 head_nfo, item_tvshow = videolibrarytools.read_nfo(tvshow_path)
                 
-                if not item_tvshow:                        #Si no ha leído bien el .nfo, pasamos a la siguiente
+                if not item_tvshow:                         #Si no ha leído bien el .nfo, pasamos a la siguiente
                     logger.error('.nfo erroneo en ' + str(tvshow_path))
                     continue
 
@@ -699,6 +699,13 @@ def update_tvshow(item):
         xbmc_videolibrary.update(folder=filetools.basename(item.path))
 
     p_dialog.close()
+    
+    for channel, url in list(item.library_urls.items()):
+        channel_f = generictools.verify_channel(channel)
+        if config.get_setting('auto_download_new', channel_f):
+            from channels import downloads
+            downloads.download_auto(item)
+            break
 
 
 def verify_playcount_series(item, path):

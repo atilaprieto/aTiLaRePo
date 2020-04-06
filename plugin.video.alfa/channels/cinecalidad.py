@@ -18,7 +18,6 @@ else:
     import urllib                                               # Usamos el nativo de PY2 que es más rápido
 
 import re
-
 from core import tmdb
 from core import httptools
 from core.item import Item
@@ -220,15 +219,14 @@ def genres(item):
 
     itemlist = list()
 
-    soup = create_soup(item.url, unescape=True).find("ul", id="menu-menu")
-
-    for elem in soup.find_all("li"):
+    soup = create_soup(item.url, unescape=True).find("ul")
+    for elem in soup.find_all("li", class_=re.compile("menu-item-object-category")):
         url = elem.a["href"]
         title = elem.a.text
         if not url.startswith('http'):
             url = host +url
-        if 'año' not in title:
-            itemlist.append(Item(channel=item.channel, title=title, url=url, action="list_all"))
+        
+        itemlist.append(Item(channel=item.channel, title=title, url=url, action="list_all"))
 
     return itemlist
 
@@ -273,7 +271,7 @@ def findvideos(item):
     server_url = {'yourupload': 'https://www.yourupload.com/embed/%s',
                   'trailer': 'https://www.youtube.com/embed/%s',
                   'bittorrent': '',
-                  'mega': 'https://mega.nz/#!%s',
+                  'mega': 'https://mega.nz/file/%s',
                   'fembed': 'https://www.fembed.com/v/%s',
                   'gounlimited': 'https://gounlimited.to/embed-%s.html',
                   'clipwatching': 'https://clipwatching.com/embed-%s.html',

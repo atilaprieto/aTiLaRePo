@@ -26,7 +26,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="lista", title="Populares",
                          url=host + "/topvideos.html?page=1"))
     itemlist.append(
-        Item(channel=item.channel, action="categorias", title="Categorias", url=host + "/browse.html"))
+        Item(channel=item.channel, action="categorias", title="Canal", url=host + "/browse.html"))
 
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar",
                          url=host + "/search.php?keywords="))

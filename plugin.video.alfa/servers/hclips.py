@@ -20,8 +20,9 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("url=" + page_url)
     video_urls = []
-    url = "https://hclips.com/api/videofile.php?video_id=%s&lifetime=8640000" % page_url
-    headers = {'Referer': "https://hclips.com/embed/%s/" % page_url}
+    id = scrapertools.find_single_match(page_url, r"embed/([0-9]+)")
+    url = "https://hclips.com/api/videofile.php?video_id=%s&lifetime=8640000" % id
+    headers = {'Referer': page_url}
     data = httptools.downloadpage(url, headers=headers).data
     texto = scrapertools.find_single_match(data, 'video_url":"([^"]+)"')
     url = dec_url(texto)
@@ -39,3 +40,4 @@ def dec_url(txt):
     import base64
     url = base64.b64decode(txt)
     return url
+

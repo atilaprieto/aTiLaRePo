@@ -68,7 +68,7 @@ class Client(object):
                   '.rar': 'video/unrar'}
 
     def __init__(self, url=None, port=None, ip=None, auto_shutdown=True, wait_time=20, timeout=5, auto_delete=True,
-                 temp_path=None, is_playing_fnc=None, print_status=False):
+                 temp_path=None, is_playing_fnc=None, print_status=False, bkg_user=False):
 
         # server
         if port:
@@ -95,6 +95,7 @@ class Client(object):
         self.first_pieces_priorize = BUFFER
         self.last_pieces_priorize = 5
         self.state_file = "state"
+        self.bkg_user = bkg_user
         try:
             self.torrent_paramss = {'save_path': self.temp_path, 'storage_mode': lt.storage_mode_t.storage_mode_allocate}
         except Exception, e:
@@ -604,7 +605,7 @@ class Client(object):
             lista = []
             seleccion = 0
             for file in self.files:
-                if '.rar' in str(file.path):
+                if '.rar' in str(file.path) or self.bkg_user:
                     seleccion = -9
                 lista += [os.path.split(str(file.path))[1]]
             if len(lista) > 1 and seleccion >= 0:

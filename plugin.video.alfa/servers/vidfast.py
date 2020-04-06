@@ -8,6 +8,8 @@ from core import scrapertools
 from platformcode import logger
 
 video_urls = []
+
+
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
@@ -23,10 +25,14 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
-    logger.info("Intel11 %s" %data)
-    media_url = scrapertools.find_single_match(data, 'file:"([^"]+)')
-    if media_url:
-        ext = media_url[-4:]
-        video_urls.append(["%s [vidfast]" % (ext), media_url])
+    referer = 'https://vidfast.co'
+    new_url = scrapertools.find_single_match(data, 'sources: \[{file:"([^"]+)"')
+    new_data = httptools.downloadpage(new_url, headers={"referer": referer}).data
+    patron = 'RESOLUTION=(\d+x\d+).*?URI="([^"]+)"'
+    matches = re.compile(patron, re.DOTALL).findall(new_data)
+    for res, url in matches:
+        url = url.replace("iframes", "index")
+        media_url = url + "|referer=%s" % referer
+        video_urls.append(["%s [vidfast]" % (res), media_url])
 
     return video_urls

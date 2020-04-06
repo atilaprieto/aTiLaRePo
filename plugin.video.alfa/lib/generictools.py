@@ -85,7 +85,7 @@ def downloadpage(url, post=None, headers=None, random_headers=False, replace_hea
         data = ''
         success = False
         code = 999
-        if not item: Item()
+        if not item: item = Item()
 
         if response:
             data = response.data
@@ -1402,7 +1402,7 @@ def find_rar_password(item):
                  ['1', 'https://pctnew.org/', [['<input\s*type="text"\s*id="txt_password"\s*' + \
                                 'name="[^"]+"\s*onClick="[^"]+"\s*value="([^"]+)"']], [['capitulo-[^0][^\d]', 'None'], \
                                 ['capitulo-', 'capitulo-0'], ['capitulos-', 'capitulos-0']]], 
-                 ['1', 'https://pctreload.org/', [['<input\s*type="text"\s*id="txt_password"\s*' + \
+                 ['1', 'https://pctreload.com/', [['<input\s*type="text"\s*id="txt_password"\s*' + \
                                 'name="[^"]+"\s*onClick="[^"]+"\s*value="([^"]+)"']], [['capitulo-[^0][^\d]', 'None'], \
                                 ['capitulo-', 'capitulo-0'], ['capitulos-', 'capitulos-0']]], 
                  ['2', 'https://grantorrent.net/', [[]], [['series(?:-\d+)?\/', 'descargar/serie-en-hd/'], \
@@ -1429,11 +1429,13 @@ def find_rar_password(item):
             if item.password: break
             if active != x: continue
             if x == '2' and clone_id not in url_host: continue
+            if x == '1' and clone_id in item.url: continue
             url_password = url_password.replace(url_host_act, clone_id)
             url_host_act = scrapertools.find_single_match(url_password, '(http.*\:\/\/(?:www.)?\w+\.\w+\/)')
 
             dom_sufix_clone = scrapertools.find_single_match(url_host_act, ':\/\/(.*?)\/*$').replace('.', '-')
-            if 'descargas2020' not in dom_sufix_clone and 'pctnew' not in dom_sufix_clone: dom_sufix_clone = ''
+            if 'descargas2020' not in dom_sufix_clone and 'pctnew' not in \
+                        dom_sufix_clone and  'pctreload' not in dom_sufix_clone: dom_sufix_clone = ''
             url_password = url_password.replace(dom_sufix_org, dom_sufix_clone)
             dom_sufix_org = dom_sufix_clone
 
@@ -1837,13 +1839,14 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
         item.url = item.url.replace(channel_host_failed_bis, channel_host_bis)
         if item.url.endswith('-org'):
             item.url = item.url.replace(channel_failed, channel)
+            item.url = re.sub('\/\w+(-\w+)$', r'/%s\1' % channel, item.url)
         if channel == 'pctreload':
-            item.url = re.sub('\/\w+-(?:org|com)$', '/pctnew-org', item.url)
+            item.url = re.sub('\/\w+-\w+$', '/pctreload-com', item.url)
             url_alt += [item.url]                                       #salvamos la url para el bucle
-            item.url = re.sub('\/\w+-(?:org|com)$', '/pctreload-com', item.url)
+            item.url = re.sub('\/\w+-\w+$', '/pctnew-org', item.url)
         if channel == 'planetatorrent':
-            item.url = re.sub('\/\w+-(?:org|com)$', '', item.url)
-            item.url = re.sub('\/\w+-(?:org|com)$', '', item.url)
+            item.url = re.sub('\/\w+-\w+$', '', item.url)
+            item.url = re.sub('\/\w+-\w+$', '', item.url)
         
         url_alt += [item.url]                                           #salvamos la url para el bucle
         item.channel_host = channel_host
@@ -2385,6 +2388,8 @@ def redirect_clone_newpct1(item, head_nfo=None, it=None, path=False, overwrite=F
                 if item.channel == channel_py:                  #Si es un clone de Newpct1, salvamos la nueva categoría
                     item.category = scrapertools.find_single_match(item.url, \
                             'http.*\:\/\/(?:www.)?(\w+)\.\w+\/').capitalize()   #Salvamos categoría
+                    if canal_org != item.category.lower():
+                        item.category_alt = canal_org.capitalize()
                 else:
                     item.category = canal_des.capitalize()                      #si no, salvamos nueva categoría
                 

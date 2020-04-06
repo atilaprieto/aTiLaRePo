@@ -329,6 +329,7 @@ def findvideos(item):
                     pass
             if quality != '':
                 title += ' [%s]' % quality
+        url = "%s|%s" % (url, host)
         new_item = Item(channel=item.channel,
                         url=url,
                         title= '%s'+ title,

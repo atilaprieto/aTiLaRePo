@@ -4,7 +4,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "https://(?:www.|)txxx.com/(?:embed|videos)/([0-9]+)",
+        "pattern": "(https://(?:www.|)txxx.com/(?:embed|videos)/[0-9]+)",
         "url": "\\1"
       }
     ]

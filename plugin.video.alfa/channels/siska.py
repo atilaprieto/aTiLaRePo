@@ -24,7 +24,7 @@ list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['gounlimited']
 
-host = 'http://www.siska.tv/'
+host = 'http://siska.video/'
 
 def mainlist(item):
     logger.info()
@@ -32,10 +32,9 @@ def mainlist(item):
 
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "newVideo.php?language=en"))
-    itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "MostViewed.php?views=month&language=en"))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="categorias", url=host + "Channel.php?language=en"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "index.php?category=1&language=en"))
+    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "best_xvideos.php?views=month"))
+    itemlist.append( Item(channel=item.channel, title="Canal" , action="catalogo", url=host + "chanells.php"))
+    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "category.php"))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
 
     autoplay.show_option(item.channel, itemlist)
@@ -46,7 +45,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = "%ssearch.php?q=%s&language=en&search=Search" % (host, texto)
+    item.url = "%ssearch.php?s=%s&search=search" % (host, texto)
     try:
         return lista(item)
     except:
@@ -56,14 +55,31 @@ def search(item, texto):
         return []
 
 
+def catalogo(item):
+    logger.info()
+    itemlist = []
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
+    patron = '<div class="back">.*?'
+    patron += 'href="([^"]+)" class="">([^<]+)<'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    for scrapedurl,scrapedtitle in matches:
+        scrapedplot = ""
+        url = urlparse.urljoin(item.url,scrapedurl)
+        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
+                              thumbnail="" , plot=scrapedplot) )
+    return sorted(itemlist, key=lambda i: i.title)
+
+
 def categorias(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    data = scrapertools.find_single_match(data,'<div id="content">(.*?)<div class="maincat">')
-    patron = '<a href="(.*?)".*?'
-    patron += '<img src="(.*?)".*?alt="(.*?)"'
+    data = scrapertools.find_single_match(data,'<h1 class=(.*?)<div id="footer"')
+    patron = 'href="([^"]+)".*?'
+    patron += '<img src="([^"]+)".*?'
+    patron += 'title">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         scrapedplot = ""
@@ -80,16 +96,13 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    if "catID=" in item.url:
-        patron = '<li><h3><a href="([^"]+)">.*?'
-        patron += '<img src="([^"]+)" class="imgt" alt="([^"]+)".*?'
-        patron += '<div class="time">(.*?)</div>'
-    else:
-        patron = '<li><h3><a href=\'([^\']+)\'>.*?'
-        patron += '<img src=\'([^\']+)\' class=\'imgt\' alt=\'(.*?)\'.*?'
-        patron += '<div class=\'time\'>(.*?)</div>'
+    patron = '<li class=\'pure-u-1-3.*?'
+    patron += '<a title=\'[^\']+\' href=\'([^\']+)\'.*?'
+    patron += 'duration\'>([^<]+)<.*?'
+    patron += 'data-src=\'([^\']+)\'.*?'
+    patron += 'alt=\'([^\']+)\''
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedtime in matches:
+    for scrapedurl,scrapedtime,scrapedthumbnail,scrapedtitle in matches:
         scrapedtime = scrapedtime.replace("Duration: ", "").replace(" : ", ":")
         url = urlparse.urljoin(item.url,scrapedurl)
         title = "[COLOR yellow]%s[/COLOR] %s" % (scrapedtime, scrapedtitle)
@@ -97,7 +110,9 @@ def lista(item):
         plot = ""
         itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=thumbnail, plot=plot,
                               fanart=thumbnail, contentTitle = title))
-    next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"><span>Next')
+                              
+                              
+    next_page = scrapertools.find_single_match(data, 'href="([^"]+)">Next')
     if next_page == "":
         next_page = scrapertools.find_single_match(data, '<a href=\'([^\']+)\' title=\'Next Page\'>')
     if next_page:
@@ -115,7 +130,8 @@ def findvideos(item):
     patron = '<iframe src="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for url in matches:
-        itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', language='VO',contentTitle = item.contentTitle))
+        logger.debug(url)
+        itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', contentTitle = item.contentTitle))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server)
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)

@@ -27,8 +27,8 @@ list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['torrent']
 
-host = 'http://estrenoske.net/'
-host_alt = 'http://estrenosby.net/' # 'http://estrenosli.org/'
+host = 'http://estrenosflix.net/'
+host_alt = 'http://estrenosgo.site/' # 'http://estrenosli.org/'
 channel = "estrenosgo"
 
 color1, color2, color3 = ['0xFF58D3F7', '0xFF2E64FE', '0xFF0404B4']

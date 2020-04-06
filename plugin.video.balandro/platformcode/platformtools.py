@@ -823,7 +823,7 @@ def handle_wait(time_to_wait, title, text):
 def play_torrent(mediaurl, parent_item):
     cliente_torrent = config.get_setting('cliente_torrent', default='Ninguno')
     if cliente_torrent == 'Ninguno':
-        dialog_ok(config.__addon_name, 'Necesitas indicar un cliente Torrent en la configuración')
+        dialog_ok(config.__addon_name, 'Necesitas tener instalado un cliente Torrent e indicarlo en la configuración')
         return False
     cliente_torrent = cliente_torrent.lower()
         

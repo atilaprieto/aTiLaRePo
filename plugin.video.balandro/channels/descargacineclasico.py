@@ -53,6 +53,8 @@ def list_all(item):
     logger.info()
     itemlist = []
 
+    # ~ data = httptools.downloadpage(item.url, headers={'Referer': item.url, 'Host': 'descargacineclasico.net', 'Origin': 'https://descargacineclasico.net'}).data
+    # ~ data = httptools.downloadpage(item.url, headers={'Referer': item.url}).data
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
     

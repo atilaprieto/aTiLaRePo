@@ -147,7 +147,7 @@ def episodios(item):
     # ~ logger.debug(data)
 
     if item.contentSeason: # reducir datos a la temporada pedida
-        data = scrapertools.find_single_match(data, "<span class='se-t[^']*'>%s(.*?)</ul>" % item.contentSeason)
+        data = scrapertools.find_single_match(data, "<span class='se-t[^']*'>%s</span>(.*?)</ul>" % item.contentSeason)
 
     matches = re.compile('<li(.*?)</li>', re.DOTALL).findall(data)
     for data_epi in matches:

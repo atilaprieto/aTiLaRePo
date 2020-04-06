@@ -4,19 +4,24 @@ from core import httptools, scrapertools
 from platformcode import logger
 from lib import jsunpack
 
-def normalizar_url(page_url):
-    vid = scrapertools.find_single_match(page_url, "gounlimited.to/(?:embed-|)([A-z0-9]+)")
-    if vid: return "https://gounlimited.to/embed-" + vid + ".html"
-    return page_url
-
 
 def get_video_url(page_url, url_referer=''):
     logger.info("url=" + page_url)
+
+    vid = scrapertools.find_single_match(page_url, "gounlimited.to/(?:embed-|)([A-z0-9]+)")
+    if not vid: vid = scrapertools.find_single_match(page_url, "tazmovies.com/(?:embed-|)([A-z0-9]+)")
+
+    video_urls = get_embed(vid)
+    if len(video_urls) == 0:
+        video_urls = get_download(vid)
+
+    return video_urls
+
+
+def get_embed(vid):
     video_urls = []
 
-    page_url = normalizar_url(page_url)
-
-    data = httptools.downloadpage(page_url).data
+    data = httptools.downloadpage('https://gounlimited.to/embed-' + vid + '.html').data
     # ~ logger.debug(data)
 
     packer = scrapertools.find_single_match(data, "<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
@@ -24,9 +29,27 @@ def get_video_url(page_url, url_referer=''):
         data = jsunpack.unpack(packer)
         # ~ logger.debug(data)
 
-    subtitulos = scrapertools.find_single_match(data, 'src:"([^"]+\.vtt)"')
-
     mp4 = scrapertools.find_single_match(data, 'sources:\["([^"]+)')
-    if mp4: video_urls.append(["mp4", mp4, 0, subtitulos])
+    if mp4: 
+        subtitulos = scrapertools.find_single_match(data, 'src:"([^"]+\.vtt)"')
+        video_urls.append(["mp4", mp4, 0, subtitulos])
+
+    return video_urls
+
+def get_download(vid):
+    video_urls = []
+
+    data = httptools.downloadpage('https://gounlimited.to/' + vid).data
+    # ~ logger.debug(data)
+
+    matches = scrapertools.find_multiple_matches(data, "download_video\('([^']+)','([^']+)','([^']+)'")
+    for p0, p1, p2 in matches:
+        url = 'https://gounlimited.to/dl?op=download_orig&id=%s&mode=%s&hash=%s' % (p0, p1, p2)
+        data = httptools.downloadpage(url).data
+        # ~ logger.debug(data)
+        
+        url = scrapertools.find_single_match(data, ' href="([^"]+)">Direct Download Link</a>')
+        if url:
+            video_urls.append(["mp4", url])
 
     return video_urls

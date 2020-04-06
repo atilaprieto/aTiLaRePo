@@ -32,7 +32,7 @@ list_servers = [
 __comprueba_enlaces__ = config.get_setting('comprueba_enlaces', 'poseidonhd')
 __comprueba_enlaces_num__ = config.get_setting('comprueba_enlaces_num', 'poseidonhd')
 
-host = 'https://poseidonhd.co/'
+host = 'https://poseidonhd.me/'
 
 def mainlist(item):
     logger.info()
@@ -94,7 +94,7 @@ def section(item):
     data = get_source(host)
 
     if 'Genero' in item.title:
-        patron = '<li class="cat-item cat-item-\d+"><a href="([^"]+)" >(.*?)/i>'
+        patron = '<li class="cat-item cat-item-\d+"><a href="([^"]+)">(.*?)/i>'
     elif 'Año' in item.title:
         patron = '<li><a href="(.*?release.*?)">(.*?)</a>'
     elif 'Calidad' in item.title:
@@ -374,7 +374,7 @@ def search_results(item):
             new_item.contentTitle = new_item.title
         else:
             new_item.contentSerieName = new_item.title
-            new_item.context = filtertools.context(item, list_language, list_quality),
+            new_item.context = filtertools.context(item, list_language, list_quality)
 
         itemlist.append(new_item)
 

@@ -9,7 +9,7 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
-    page_url = page_url.replace('http://clipwatching.com/', 'http://www.clipwatching.com/')
+    page_url = page_url.replace('http://', 'https://').replace('://www.', '://')
 
     data = httptools.downloadpage(page_url).data
     # ~ logger.debug(data)

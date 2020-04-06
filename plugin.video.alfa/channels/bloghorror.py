@@ -103,8 +103,8 @@ def findvideos(item):
     urls_list = list()
     sub_url = ''
 
-    soup = create_soup(item.url).find("div", class_="entry-content").find("div").find("p")
-    quality = scrapertools.find_single_match(soup.text, "Calidad: ([^\n]+)\n")
+    soup = create_soup(item.url).find("div", class_="entry-content").find("div")
+    quality = scrapertools.find_single_match(soup.text, r"Calidad: ([^\n]+)\n")
     video_data = soup.find_all("a")
 
     for link in video_data:

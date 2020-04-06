@@ -276,6 +276,18 @@ def is_server_enabled(server):
         return False
     return config.get_setting('status', server=server, default=0) >= 0
 
+def is_server_available(server):
+    """
+    Función comprobar si existe el json de un servidor
+    @param server: Nombre del servidor
+    @type server: str
+
+    @return: resultado de la comprobación
+    @rtype: bool
+    """
+    path = os.path.join(config.get_runtime_path(), 'servers', server + '.json')
+    return os.path.isfile(path)
+
 
 def get_server_parameters(server):
     """
@@ -362,9 +374,12 @@ def corregir_servidor(servidor):
     elif servidor in ['jplayer', 'feurl']: return 'fembed'
     elif servidor == 'vidto': return 'vidtodo'
     elif servidor == 'vev': return 'vevio'
-    elif servidor == 'uptobox': return 'uptostream'
-    elif servidor in ['ok', 'ok.ru']: return 'okru'
+    # ~ elif servidor == 'uptobox': return 'uptostream'
+    elif servidor in ['ok', 'ok.ru', 'ok server']: return 'okru'
     elif servidor == 'youtu': return 'youtube'
+    elif servidor == 'mp4up': return 'mp4upload'
+    elif servidor == 'yourup': return 'yourupload'
+    elif servidor == 'verys': return 'verystream'
     elif servidor == 'flix': return 'flix555'
     elif servidor == 'biter': return 'byter'
     elif servidor == 'thevideo': return 'thevideome'

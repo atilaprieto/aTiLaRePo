@@ -83,24 +83,35 @@ def mainlist_pelis_lang(item):
     itemlist.append(item_configurar_proxies(item))
     return itemlist
 
+
 def generos(item):
     logger.info()
     itemlist = []
 
-    # ~ item.url = host_by_lang(item.idioma)+'genero-peliculas/'
-    item.url = host_by_lang(item.idioma)
+    opciones = [
+        ('accion','Acción'), 
+        ('animacion','Animación'), 
+        ('aventura','Aventura'), 
+        ('biografia','Biografía'), 
+        ('ciencia-ficcion','Ciencia ficción'), 
+        ('comedia','Comedia'), 
+        ('crimen','Crimen'), 
+        ('drama','Drama'), 
+        ('fantasia','Fantasía'), 
+        ('guerra','Guerra'), 
+        ('historia','Historia'), 
+        ('infantil','Infantil'), 
+        ('misterio','Misterio'), 
+        ('musica','Música'), 
+        ('romance','Romance'), 
+        ('suspenso','Suspenso'), 
+        ('terror','Terror'), 
+    ]
+    url_base = host_by_lang(item.idioma)
+    for opc, tit in opciones:
+        itemlist.append(item.clone( title=tit, url=url_base + 'genero-peliculas/' + opc + '/', action='peliculas' ))
 
-    data = do_downloadpage(item.url)
-    # ~ patron = '<li id="menu-item-.*?" class="menu-item menu-item-type-taxonomy menu-item-object-category ' \
-             # ~ 'menu-item-.*?"><a href="([^"]+)">([^<]+)<\/a></li>'
-    patron = ' class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-[^"]*"><a href=([^>]+)>([^<]+)<\/a></li>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    for scrapedurl, scrapedtitle in matches:
-        url = urlparse.urljoin(item.url, scrapedurl)
-        itemlist.append(item.clone( title=scrapedtitle, action='peliculas', url=url ))
-
-    return sorted(itemlist, key=lambda it: it.title)
-
+    return itemlist
 
 def anyos(item):
     logger.info()

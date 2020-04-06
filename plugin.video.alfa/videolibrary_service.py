@@ -107,6 +107,13 @@ def update(path, p_dialog, i, t, serie, overwrite):
                 message = template % (type(ex).__name__, ex.args)
                 logger.error(message)
                 logger.error(traceback.format_exc())
+                
+            #Si el canal lo permite, se comienza el proceso de descarga de los nuevos episodios descargados
+            serie.channel = generictools.verify_channel(serie.channel)
+            if insertados > 0  and config.get_setting('auto_download_new', serie.channel):
+                serie.sub_action = 'auto'
+                from channels import downloads
+                downloads.save_download(serie, silent=True)
 
         else:
             logger.debug("Canal %s no activo no se actualiza" % serie.channel)
@@ -304,10 +311,15 @@ def check_for_update(overwrite=True):
 
         if p_dialog:
             p_dialog.close()
-            
+    
+    # Sincroniza los "vistos" de la Videoteca de Películas    
     from core.item import Item
     item_dummy = Item()
     videolibrary.list_movies(item_dummy, silent=True)
+    
+    # Descarga los últimos episodios disponibles, si el canal lo permite
+    from channels import downloads
+    downloads.download_auto(item_dummy)
 
 
 def start(thread=True):
