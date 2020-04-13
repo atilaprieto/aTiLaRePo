@@ -24,7 +24,7 @@ def mainlist(item):
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Ultimos" , action="lista", url=host + "/tube/last-1/"))
     itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=host + "/tube/popular-1/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
+    # itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
 

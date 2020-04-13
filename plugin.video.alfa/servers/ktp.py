@@ -40,13 +40,10 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         patron = 'video_url:\s*\'([^\']+)\'.*?'
         patron += 'postfix:\s*\'([^\']+)\''
     matches = re.compile(patron,re.DOTALL).findall(data)
-    logger.debug(matches)
     for url,quality in matches:
         if not "?login" in url:
             if "function/" in url:
                 url = decode(url, license_code)
             itemlist.append(['%s' %quality, url])
-    logger.debug(quality + " : " + url)
     return itemlist
 
-    # return [["[ktplayer]", decode(video_url, license_code)]]

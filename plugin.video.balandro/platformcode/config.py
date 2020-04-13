@@ -112,6 +112,14 @@ def format_bytes(num):
             return "%3.1f %s" % (num, x)
         num /= step_unit
 
+# This function will convert seconds to HhMMm
+def format_seconds_to_duration(seconds):
+    hours = seconds // (60*60)
+    seconds %= (60*60)
+    minutes = seconds // 60
+    if hours == 0: return '%dm' % minutes
+    return '%dh%02dm' % (hours, minutes)
+
 
 # PARÁMETROS CONFIGURABLES
 # ========================

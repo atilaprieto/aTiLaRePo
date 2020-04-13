@@ -1,7 +1,7 @@
 {
 "id": "peliculonhd",
   "name": "PeliculonHD",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["lat", "cast"],
   "thumbnail": "https://www.peliculonhd.tv/wp-content/uploads/2018/09/peliculonnewlogo3-.png",

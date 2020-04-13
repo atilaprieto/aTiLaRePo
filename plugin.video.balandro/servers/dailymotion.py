@@ -11,6 +11,9 @@ def get_video_url(page_url, url_referer=''):
     headers = {}
     if url_referer: headers['Referer'] = url_referer
 
+    if '/embed/' not in page_url:
+        page_url = page_url.replace('dailymotion.com/video/', 'dailymotion.com/embed/video/')
+
     resp = httptools.downloadpage(page_url, headers=headers, cookies=False)
     # ~ logger.debug(resp.data)
 

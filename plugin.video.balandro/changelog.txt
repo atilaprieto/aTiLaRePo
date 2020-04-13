@@ -1,6 +1,13 @@
 Balandro changelog
 ==================
 
+1.4.10:
+    Canales modificados: Descargacineclasico, Inkapelis, Playview, Allpeliculas, 
+    Torrentdivx, Verdocumentalesonline, Tucineclasico, Cinemaclasic, SerieMega. 
+    Servidores modificados: Mega, Dailymotion, Netutv, Vidia, Mixdrop, Doodstream, 
+    Vidmoly, Vidlox, Supervideo, Youtube, Clipwatching, Myvi.
+    Limpieza de canales documentales.
+
 1.4.9:
     Canales modificados: Serieslan. Seriesflv. 
     Servidores modificados: Mp4upload, Gamovideo, Vidmoly, Netutv, Uptobox, Uptostream, 

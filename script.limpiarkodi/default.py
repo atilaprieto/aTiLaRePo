@@ -57,12 +57,14 @@ icon14 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarko
 icon15 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'Mante.png'))
 icon16 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'Mante.png'))
 icon17 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'lupa.png'))
+icon18 = xbmc.translatePath(os.path.join('special://home/addons/script.limpiarkodi/media' , 'gdrive.png'))
 thumbnailPath = xbmc.translatePath('special://thumbnails');
 cachePath = os.path.join(xbmc.translatePath('special://home'), 'cache')
-cdmPath = os.path.join(xbmc.translatePath('special://home'), 'cdm')
+##cdmPath = os.path.join(xbmc.translatePath('special://home'), 'cdm')
 purgePath = os.path.join(xbmc.translatePath('special://home/addons'), 'packages')
 tempPath = xbmc.translatePath('special://home/addons/temp/')
 indigoPath = xbmc.translatePath('special://home/addons/plugin.program.indigo')
+gdrivePath = xbmc.translatePath('special://home/addons/plugin.video.gdrive')
 ltempPath = xbmc.translatePath('special://home/temp')
 addonPath = os.path.join(os.path.join(xbmc.translatePath('special://home'), 'addons'),'script.limpiarkodi')
 mediaPath = os.path.join(addonPath, 'media')
@@ -223,27 +225,27 @@ def clearCache():
                         
             else:
                 pass
-    if os.path.exists(cdmPath)==True:    
-        for root, dirs, files in os.walk(cdmPath):
-            file_count = 0
-            file_count += len(files)
-            if file_count > 0:
-                dialog = xbmcgui.Dialog()
-                if dialog.yesno("Borrar Archivos en CDM", str(file_count) + " Archivos Encontrados", "Desea Eliminarlos?"):
-                    for h in files:
-                        try:
-                            if (h == "*.dmp" or f == "*.txt"): continue
-                            os.unlink(os.path.join(root, h))
-                        except:
-                            pass
-                    for d in dirs:
-                        try:
-                            shutil.rmtree(os.path.join(root, d))
-                        except:
-                            pass
+    ##if os.path.exists(cdmPath)==True:    
+      ##  for root, dirs, files in os.walk(cdmPath):
+        ##    file_count = 0
+          ##  file_count += len(files)
+            ##if file_count > 0:
+               ## dialog = xbmcgui.Dialog()
+                ##if dialog.yesno("Borrar Archivos en CDM", str(file_count) + " Archivos Encontrados", "Desea Eliminarlos?"):
+                  ##  for h in files:
+                    ##    try:
+                      ##      if (h == "*.dmp" or f == "*.txt"): continue
+                        ##    os.unlink(os.path.join(root, h))
+                        ##except:
+                          ##  pass
+                    ##for d in dirs:
+                      ##  try:
+                        ##    shutil.rmtree(os.path.join(root, d))
+                       ## except:
+                         ##   pass
                         
-            else:
-                pass
+            ##else:
+              ##  pass
     if os.path.exists(purgePath)==True:
         for root, dirs, files in os.walk(purgePath):
             file_count = 0
@@ -467,6 +469,37 @@ def deleteindigo():
                 xbmcgui.Dialog().notification('Limpia Tu Kodi', "Indigo [COLOR green] Desinstalado[/COLOR]")
                 pass
 
+def deletegdrive():
+
+    gdrivePath = xbmc.translatePath('special://home/addons/plugin.video.gdrive')
+    dialog = xbmcgui.Dialog()
+    for root, dirs, files in os.walk(gdrivePath):
+            file_count = 0
+            file_count += len(files)
+    if os.path.exists(gdrivePath)==True:    
+        for root, dirs, files in os.walk(gdrivePath):
+            file_count = 0
+            file_count += len(files)
+            if file_count > 0:
+                dialog = xbmcgui.Dialog()
+                if dialog.yesno("Este Proceso Desinstala gdrive", str() + "Despues de desinstalar gdrive Kodi se  [COLOR red]reiniciara[/COLOR] ", "Esta seguro de que desea eliminar gdrive?"):
+
+                    for f in files:
+                        try:
+                            if (f == "*.*" or f == "*.*"): continue
+                            os.unlink(os.path.join(root, f))
+                            xbmc.executebuiltin("RestartApp")()
+                        except:
+                            pass
+                    for d in dirs:
+                        try:
+                            shutil.rmtree(os.path.join(root, d))
+                        except:
+                            pass
+                        
+            else:
+                xbmcgui.Dialog().notification('Limpia Tu Kodi', "gdrive [COLOR green] Desinstalado[/COLOR]")
+                pass
 
 def luar():
 
@@ -661,6 +694,7 @@ def herram():
     addItem('  Actualizar Addons y Repositorios', 'url', 5,icon8)
     addItem('  Compactar Base de Datos', 'url', 13,icon12)
     addItem('  Eliminar Indigo', 'url', 7,icon2)
+    addItem('  Eliminar Gdrive', 'url', 20,icon18)
     addItem('  Activar InputStream Adaptive', 'url', 10,icon4)
     addItem('  Activar RTMP Input', 'url', 11,icon4)
     addItem('  Limpiar Bibloteca Kodi', 'url', 12,icon5)
@@ -754,4 +788,7 @@ elif mode==19:
 
 elif mode==18:
         herram()
+		
+elif mode==20:
+        deletegdrive()
 xbmcplugin.endOfDirectory(int(sys.argv[1]))

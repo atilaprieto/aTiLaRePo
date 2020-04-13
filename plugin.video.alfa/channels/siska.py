@@ -130,7 +130,6 @@ def findvideos(item):
     patron = '<iframe src="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for url in matches:
-        logger.debug(url)
         itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', contentTitle = item.contentTitle))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server)
     # Requerido para FilterTools

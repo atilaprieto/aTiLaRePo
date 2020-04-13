@@ -299,6 +299,10 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
     log("##### _video_file ## %s ##" % str(_video_file))
     log("##### _video_file_ext ## %s ##" % _video_file_ext)
 
+    if url.startswith('magnet:'):
+        item.downloadFilename = ':%s: %s' % ('MCT', video_file)
+        torr.update_control(item)
+
     dp_cerrado = True
     rar = False
     global extracted_rar

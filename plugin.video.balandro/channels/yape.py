@@ -104,7 +104,7 @@ def anyos(item):
     from datetime import datetime
     current_year = int(datetime.today().year)
 
-    for x in range(current_year - 1, 1984, -1):
+    for x in range(current_year, 1984, -1):
         itemlist.append(item.clone( title=str(x), url=host_catalogue+'?year[]='+str(x), action='list_all' ))
         
     return itemlist

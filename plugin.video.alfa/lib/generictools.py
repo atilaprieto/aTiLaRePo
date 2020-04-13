@@ -50,7 +50,7 @@ intervenido_sucuri = 'Access Denied - Sucuri Website Firewall'
 
 def downloadpage(url, post=None, headers=None, random_headers=False, replace_headers=False, 
                  only_headers=False, referer=None, follow_redirects=True, timeout=None, 
-                 proxy=False, proxy_web=False, proxy_addr_forced={}, forced_proxy=None, 
+                 proxy=True, proxy_web=False, proxy_addr_forced={}, forced_proxy=None, 
                  proxy_retries=1, CF=False, file=None, filename=None, ignore_response_code=True, 
                  alfa_s=False, decode_code=None, s2=None, patron=None, item={}, itemlist=[]):
     
@@ -73,6 +73,10 @@ def downloadpage(url, post=None, headers=None, random_headers=False, replace_hea
             headers = {'Referer':referer}
         else:
             headers['Referer'] = referer
+    data = ''
+    success = False
+    code = 999
+    if not item: item = Item()
     
     try:
         response = httptools.downloadpage(url, post=post, headers=headers, random_headers=random_headers, 
@@ -82,11 +86,6 @@ def downloadpage(url, post=None, headers=None, random_headers=False, replace_hea
                                       proxy_addr_forced=proxy_addr_forced, forced_proxy=forced_proxy, 
                                       proxy_retries=proxy_retries, CF=CF, file=file, filename=filename, 
                                       ignore_response_code=ignore_response_code, alfa_s=alfa_s)
-        data = ''
-        success = False
-        code = 999
-        if not item: item = Item()
-
         if response:
             data = response.data
             success = response.sucess
@@ -115,7 +114,7 @@ def downloadpage(url, post=None, headers=None, random_headers=False, replace_hea
                              '[COLOR yellow]' + str(code) + '[/COLOR]: ERROR 02: ' + ERROR_02, 
                              folder=False))
         else:                                                                   # Si no hay datos, se verifica la razón
-            item = generictools.web_intervenida(item, data)                     #Verificamos que no haya sido clausurada
+            item = web_intervenida(item, data)                                  #Verificamos que no haya sido clausurada
             if item.intervencion:                                               #Sí ha sido clausurada judicialmente
                 for clone_inter, autoridad in item.intervencion:
                     thumb_intervenido = get_thumb(autoridad)
@@ -1580,6 +1579,7 @@ def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torr
         elif local_torr:
             torrent_file = filetools.read(local_torr)
         if not torrent_file:
+            size = 'ERROR'
             if not lookup:
                 return (size, torrents_path, torrent_f, files)
             elif file_list and data_torrent:

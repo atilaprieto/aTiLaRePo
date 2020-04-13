@@ -102,6 +102,7 @@ js_signature = None
 js_signature_checked = False
 def obtener_js_signature(youtube_page_data):
     global js_signature, js_signature_checked
+    # ~ logger.debug(youtube_page_data)
 
     js_signature_checked = True
     urljs = scrapertools.find_single_match(youtube_page_data, '"assets":.*?"js":\s*"([^"]+)"').replace("\\", "")
@@ -113,7 +114,7 @@ def obtener_js_signature(youtube_page_data):
         if not funcname:
             funcname = scrapertools.find_single_match(data_js, '["\']signature["\']\s*,\s*([A-z0-9$]+)\(')
         if not funcname:
-            funcname = scrapertools.find_single_match(data_js, '([A-z0-9$]+)\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*""\s*\)')
+            funcname = scrapertools.find_single_match(data_js, '([A-z0-9$]+)\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*""\s*\);\w+\.')
         if not funcname:
             logger.debug('Youtube signature not found!')
             return #'No se puede decodificar este vídeo'
@@ -128,14 +129,15 @@ def extract_from_player_response(params, youtube_page_data=''):
     video_urls = []
     try:
         pr = json.load(params['player_response'])
+        # ~ logger.debug(pr)
         if not 'streamingData' in pr: raise()
         if not 'formats' in pr['streamingData']: raise()
         # ~ logger.debug(pr['streamingData']['formats'])
         for vid in sorted(pr['streamingData']['formats'], key=lambda x: (x['height'], x['mimeType'])):
+            # ~ logger.debug(vid)
             if not 'url' in vid and not 'cipher' in vid: continue
             if not 'url' in vid:
                 if not youtube_page_data: continue
-                # ~ logger.debug(vid['cipher'])
                 v_url = urllib.unquote(scrapertools.find_single_match(vid['cipher'], 'url=([^&]+)'))
                 v_sig = urllib.unquote(scrapertools.find_single_match(vid['cipher'], 's=([^&]+)'))
                 if not js_signature and not js_signature_checked:

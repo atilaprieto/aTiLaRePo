@@ -95,8 +95,11 @@ def lista(item):
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
                               fanart=thumbnail, plot=plot, contentTitle = contentTitle))
     next_page = scrapertools.find_single_match(data,'<link rel="next" href="([^"]+)"')
+    if not next_page:
+        next_page = scrapertools.find_single_match(data,'next "><a href="([^"]+)"')
+        next_page = urlparse.urljoin(host,next_page)
+
     if next_page!="":
-        next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
     return itemlist
 

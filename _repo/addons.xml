@@ -125,7 +125,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.0.7" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.0.8" provider-name="Alfa Addon">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.requests"/>
@@ -148,17 +148,17 @@ You can clone the project and host it in your own server.
       <news>[B]Estos son los cambios para esta versión:[/B]
 
       [COLOR green][B]Arreglos[/B][/COLOR]
-      ¤ Grantorrent                        ¤ Elitetorrent                 ¤ Dontorrent
-      ¤ AnimeFLV.ru                       ¤ Allcalidad                    ¤ Repelisgo
-      ¤ Simpsons-latino
-      ¤ +18: descargas en segundo plano
+      ¤ DivxTotal                           ¤ Grantorrent                   ¤ Anilegends
+      ¤ Dangotoons                     ¤ Danimados                    ¤ BlogHorror
+      ¤ CineCalidad                      ¤ HomeCine                      ¤ PoseidonHD
+      ¤ SeoDiv                               ¤ SeriesMetro                   ¤ PoseidonHD
+      ¤ Simpsons-latino               ¤ +18
 
       [COLOR green][B]Novedades[/B][/COLOR]
-      ¤ NewPct1: nuevo clone "Pctreload"
-      ¤ Descargas en segundo plano desde canales Torrent
-      ¤ +18 compatibilidad total Kodi 19
-
-      Agradecimiento a @mac12m99 y a @DamianBacalov por su aportación a esta versión.
+      ¤ Descargas: gestión integral de canales Torrent
+      ¤ Aniyet                               ¤ CineClasicoOnLine         ¤ CineIS
+      ¤ SerieMega                       ¤ TuCineClasico
+      ¤ +18: compatibilidad total Kodi 19
 
     </news>
     <description lang="es">Navega con Kodi por páginas web para ver sus videos de manera fácil.</description>
@@ -176,7 +176,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.2.1" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.2.3" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -206,7 +206,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.9" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.10" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -223,9 +223,11 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Serieslan. Seriesflv.
-    Servidores modificados: Mp4upload, Gamovideo, Vidmoly, Netutv, Uptobox, Uptostream,
-    Gounlimited, Vshare, Vidlox.
+    Canales modificados: Descargacineclasico, Inkapelis, Playview, Allpeliculas,
+    Torrentdivx, Verdocumentalesonline, Tucineclasico, Cinemaclasic, SerieMega.
+    Servidores modificados: Mega, Dailymotion, Netutv, Vidia, Mixdrop, Doodstream,
+    Vidmoly, Vidlox, Supervideo, Youtube, Clipwatching, Myvi.
+    Limpieza de canales documentales.
     </news>
 
     <assets>
@@ -922,7 +924,7 @@ v.2.1.5
 
 <addon id="script.limpiarkodi"
        name="Limpia Tu Kodi"
-       version="2.0.6"
+       version="2.0.8"
        provider-name="Catoal - Teco">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

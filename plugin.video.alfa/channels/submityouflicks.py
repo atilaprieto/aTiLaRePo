@@ -18,11 +18,13 @@ from platformcode import logger
 
 host = 'http://www.submityourflicks.com'
 
+                                # KT PLAYER 5.1.1
+
 def mainlist(item):
     logger.info()
     itemlist = []
     
-    itemlist.append(Item(channel=item.channel, title="Útimos videos", action="lista", url= host + "/top-rated/?&from=1"))
+    itemlist.append(Item(channel=item.channel, title="Útimos videos", action="lista", url= host + "/latest-updates/?&from=1"))
     itemlist.append(Item(channel=item.channel, title="Mas vistos", action="lista", url= host + "/most-popular/?&from=1"))
     itemlist.append(Item(channel=item.channel, title="Mejor valorados", action="lista", url= host + "/top-rated/?&from=1"))
     itemlist.append(Item(channel=item.channel, title="Buscar", action="search", url= host))

@@ -111,8 +111,9 @@ def lista(item):
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<li><a href="([^"]+)" class="no-page next-page">Siguiente')
-    if "profile" in item.url:
-        next_page = scrapertools.find_single_match(data, '<li><a class="active" href="">(\d+)</a></li><li><a href="#')
+    if next_page=="":
+        next_page = scrapertools.find_single_match(data, '<li><a class="active".*?<a href="([^"]+)"')
+    next_page = next_page.replace("#", "")
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 

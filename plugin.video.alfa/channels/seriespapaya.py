@@ -298,6 +298,7 @@ def episodesxseasons(item):
         languages = " ".join(
             ["[%s]" % IDIOMAS.get(lang, lang) for lang in re.findall('images/s-([^\.]+)', langs)])
         filter_lang = languages.replace("[", "").replace("]", "").split(" ")
+        logger.error(filter_lang)
         itemlist.append(item.clone(action="findvideos",
                                    infoLabels = infoLabels,
                                    language=filter_lang,
@@ -306,7 +307,8 @@ def episodesxseasons(item):
                                    ))
     itemlist = filtertools.get_links(itemlist, item, list_idiomas, list_quality)
     
-    itemlist.sort(key=lambda it: int(it.infoLabels["episode"]))
+    if len(itemlist) > 1:
+        itemlist.sort(key=lambda it: int(it.infoLabels["episode"]))
     
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
     

@@ -31,6 +31,7 @@ def get_video_url(page_url, url_referer=''):
                         url = resp.headers['location']
                 
                 video_urls.append([videos['label'], url])
+                # ~ video_urls.append([videos['label'], url+'|Referer='+page_url.split('api/source/')[0]])
     except:
         pass
 

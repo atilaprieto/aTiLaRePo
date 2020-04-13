@@ -100,6 +100,7 @@ def findvideos(item):
     itemlist = []
 
     data = httptools.downloadpage(item.url).data
+    # ~ logger.debug(data)
 
     try:
         sub_url, sub_lang = scrapertools.find_single_match(data, 'file:\s*"/(webvtt/[^"]+)",\s*label: "([^"]*)"')
@@ -108,10 +109,13 @@ def findvideos(item):
     except:
         sub_url = ''; sub_lang = ''
     
-    matches = scrapertools.find_multiple_matches(data, 'file:\s*"([^"]+)",\s*label: "([^"]*)"')
+    matches = scrapertools.find_multiple_matches(data, 'file:\s*"([^"]+)",.*?label: "([^"]*)"')
+    # ~ logger.debug(matches)
     for url, lbl in matches:
-        if '.mp4' not in url: continue
-        # ~ url += '|Referer=' + item.url # !?
+        if '.mp4' not in url and url != 'video.php' and url != 'video3Dfull.php': continue
+        if url in ['video.php', 'video3Dfull.php']: 
+            url = HOST + url + '|Referer=' + item.url 
+            url += '&Cookie=' + httptools.get_cookies('area-documental.com')
         lang = 'VOSE' if 'Espa' in sub_lang else 'Esp' # !?
         
         itemlist.append(Item( channel = item.channel, action = 'play', server='directo', 

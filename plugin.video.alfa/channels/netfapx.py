@@ -19,6 +19,7 @@ from core import httptools
 
 host = 'https://netfapx.com'
 
+# Timming 
 def mainlist(item):
     logger.info()
     itemlist = []
@@ -118,7 +119,7 @@ def lista(item):
 def play(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    data = httptools.downloadpage(item.url, timeout=15).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
     url = scrapertools.find_single_match(data, 'source:"([^"]+)"')
     itemlist.append(item.clone(action="play", title = url, url=url))

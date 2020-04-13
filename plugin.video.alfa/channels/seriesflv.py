@@ -292,16 +292,17 @@ def findvideos(item):
 
     itemlist = list()
 
-    soup = create_soup(item.url).find("table", class_="table table-hover").find("tbody")
+    soup = create_soup(item.url, referer=host).find("table", class_="table table-hover").find("tbody")
 
     for elem in soup.find_all("tr"):
-
         url = elem.a["href"]
         server = elem.find("td", class_="e_server").text.lower().strip()
+        if server == "vidabc":
+            server = "clipwatching"
         lang = scrapertools.find_single_match(elem.img["src"], "(\w+).%s" % "png")
 
         itemlist.append(Item(channel=item.channel, url=url, title=server, server=server, action="play",
-                             language=IDIOMAS.get(lang,lang)))
+                             language=IDIOMAS.get(lang, lang)))
 
     # Requerido para FilterTools
 
@@ -320,8 +321,9 @@ def play(item):
     itemlist = list()
 
     try:
-
-        url = httptools.downloadpage(urlparse.urljoin(host, item.url), follow_redirects=False).headers["location"]
+        headers = {"referer": host}
+        url = httptools.downloadpage(urlparse.urljoin(host, item.url), headers=headers,
+                                     follow_redirects=False).headers["location"]
         itemlist.append(item.clone(url=url, server=''))
         itemlist = servertools.get_servers_itemlist(itemlist)
 

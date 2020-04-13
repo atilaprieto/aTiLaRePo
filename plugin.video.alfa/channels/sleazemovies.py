@@ -12,7 +12,7 @@ from core import tmdb
 from core.item import Item
 from platformcode import config, logger
 
-host = 'http://www.eroti.ga/'
+host = 'http://www.eroti.ga/'   #'http://www.eroti.ga/'  'https://www.sleazemovies.com/'
 
 
 def mainlist(item):
@@ -44,15 +44,16 @@ def list_all(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)  # Eliminamos tabuladores, dobles espacios saltos de linea, etc...
 
-    patron = '<articleid="post-\d+".*?'
-    patron += '<h2 class="entry-title"><a href="([^"]+)".*?>(.*?) (?:watch|Watch).*?'
-    patron += '<img width="\d+" height="\d+" src="([^?]+).*?'
-    patron += '<p>([^<]+)</p>'
+
+    patron = '<div class="twp-image-section twp-image-hover">.*?'
+    patron += 'data-background="([^?]+).*?'
+    patron += '<h3 class="twp-post-title"><a href="([^"]+)".*?>(.*?) (?:watch|Watch)'
+    # patron += '<p>([^<]+)</p>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
-    for scrapedurl, scrapedtitle, img, year in matches:
+    for img, scrapedurl, scrapedtitle in matches:
         contentTitle = scrapertools.find_single_match(scrapedtitle, '([^\(]+)')
-        year = scrapertools.find_single_match(year, 'Year: (\d{4})')
+        year = scrapertools.find_single_match(scrapedtitle, '(\d{4})')
         if not year:
             year = scrapertools.find_single_match(scrapedtitle, '\((\d{4})\)')
         itemlist.append(Item(channel = item.channel,

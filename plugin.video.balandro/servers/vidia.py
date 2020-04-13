@@ -32,6 +32,6 @@ def get_video_url(page_url, url_referer=''):
             if platformtools.is_mpd_enabled():
                 video_urls.append([lbl, url, 0, '', True])
         else:
-            video_urls.append([lbl, url])
+            video_urls.append([lbl, url+'|Referer=https://vidia.tv/'])
 
     return video_urls

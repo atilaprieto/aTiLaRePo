@@ -91,7 +91,6 @@ def lista(item):
     next_page = scrapertools.find_single_match(data, '<li class="next">.*?<a href="([^"]+)"')
     if "#" in next_page:
         last_page= scrapertools.find_single_match(data,'>\s+(\d+)\s+</a>\s+</li>\s+<li class="next">')
-        logger.debug(last_page)
         page = scrapertools.find_single_match(item.url, "(.*?)/\d+")
         current_page = scrapertools.find_single_match(item.url, ".*?/(\d+)")
         if last_page:

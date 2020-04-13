@@ -83,7 +83,7 @@ def lista(item):
     if next_page =="":
         next_page = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)"')
     if next_page:
-        next_page = urlparse.urljoin(item.url,next_page)
+        next_page = urlparse.urljoin(item.url,next_page)+"/"
         itemlist.append( Item(channel=item.channel, action="lista", title=next_page, text_color="blue", 
                               url=next_page) )
     return itemlist

@@ -27,13 +27,13 @@ def mainlist(item):
     itemlist.append( Item(channel=item.channel, title="Mas vistas" , action="lista", url=host + "/most-viewed/"))
     itemlist.append( Item(channel=item.channel, title="Longitud" , action="lista", url=host + "/longest/"))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/channels/"))
-    # itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
 
 
 def search(item, texto):
     logger.info()
-    texto = texto.replace(" ", "+")
+    texto = texto.replace(" ", "-")
     item.url = "%s/search/videos/%s/page1.html" % (host, texto)
     try:
         return lista(item)

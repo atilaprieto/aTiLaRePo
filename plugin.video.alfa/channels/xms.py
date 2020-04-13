@@ -265,5 +265,4 @@ def decode_url(txt):
         else:
             rep = False
     url = scrapertools.find_single_match(b64_url, '<iframe src="([^"]+)"')
-    logger.debug (url)
     return url

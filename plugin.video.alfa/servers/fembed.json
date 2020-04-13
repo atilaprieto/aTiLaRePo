@@ -9,7 +9,7 @@
       },
       {
         "pattern": "(?:ilovefembed|feurl).(?:best|net|com)(/(?:f|v)/[A-z0-9_-]+)",
-        "url": "https://www.fembed.com\\1"
+        "url": "https://feurl.com\\1"
       }
     ]
   },

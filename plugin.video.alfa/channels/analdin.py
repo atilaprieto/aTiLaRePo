@@ -121,10 +121,9 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron  = 'video_url: \'([^\']+)\''
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl  in matches:
-        url = scrapedurl
-    itemlist.append(item.clone(action="play", title=url, url=url))
+    if "kt_player" in data:
+        url = item.url
+    itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
 

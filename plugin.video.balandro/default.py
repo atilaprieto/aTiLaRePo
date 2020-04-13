@@ -55,6 +55,7 @@ if tipo_channel != '':
             if hasattr(canal, item.action):
                 itemlist = canal.findvideos(item)
             else:
+                from core import servertools
                 itemlist = servertools.find_video_items(item)
 
             platformtools.play_from_itemlist(itemlist, item)

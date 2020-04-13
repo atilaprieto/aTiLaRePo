@@ -141,10 +141,11 @@ def findvideos(item):
             continue
         
         servidor = servertools.get_server_from_url(url)
-        if not servidor or servidor == 'directo': 
+        if not servidor or (servidor == 'directo' and 'storage.googleapis.com/' not in url): 
             logger.info('No detectado servidor, url: %s' % url)
             continue
         url = servertools.normalize_url(servidor, url)
+
         qlty = scrapertools.find_single_match(resto, '([^>]+)</div>$')
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,

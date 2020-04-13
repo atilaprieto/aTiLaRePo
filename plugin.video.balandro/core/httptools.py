@@ -102,6 +102,12 @@ def save_cookie(nombre, valor, dominio, ruta='/', tiempo=86400):
     cj.set_cookie(cookie)
     save_cookies()
 
+def get_cookies(domain):
+    domain_cookies = cj._cookies.get(domain, {}).get("/", {})
+    domain_cookies.update( cj._cookies.get("." + domain, {}).get("/", {}) )
+    domain_cookies.update( cj._cookies.get("www." + domain, {}).get("/", {}) )
+    return "; ".join(["%s=%s" % (c.name, c.value) for c in domain_cookies.values()])
+
 
 load_cookies()
 

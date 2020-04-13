@@ -51,11 +51,11 @@ def get_page(url):
 
 
 def get_page_url(url, page):
-    logger.debug("URL: %s to page %d" % (url, page))
+    # logger.debug("URL: %s to page %d" % (url, page))
     resultURL = re.sub("([&\?]p=)(?:\d+)", "\g<1>%d" % page, url)
     if resultURL == url:
         resultURL += ("&" if "?" in url else "?") + "p=%d" % (page)
-    logger.debug("Result: %s" % (resultURL))
+    # logger.debug("Result: %s" % (resultURL))
     return resultURL
 
 

@@ -71,7 +71,6 @@ def catalogo(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    logger.debug(data)
     patron = '<header class="clearfix" itemscope>.*?'
     patron += '<a href="([^"]+)".*?'
     patron += '<img src="([^"]+)" alt="([^"]+)"'

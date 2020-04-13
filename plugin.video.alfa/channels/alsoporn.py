@@ -85,7 +85,6 @@ def play(item):
     data = httptools.downloadpage(scrapedurl).data
     scrapedurl = scrapertools.find_single_match(data,'<iframe src="(.*?)"')
     scrapedurl = scrapedurl.replace("//www.playercdn.com/ec/i2.php?url=", "")
-    logger.debug(scrapedurl)
     scrapedurl = base64.b64decode(scrapedurl + "=")
     if "xhamster" in scrapedurl:
         data = httptools.downloadpage(scrapedurl).data

@@ -96,7 +96,6 @@ def play(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    logger.debug(data)
     url = scrapertools.find_single_match(data,'label:"\d+", file\:"([^"]+)"')
     itemlist.append(item.clone(action="play", server="directo", url=url ))
     return itemlist

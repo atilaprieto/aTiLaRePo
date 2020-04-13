@@ -49,7 +49,7 @@ def mainlist(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = "%ssearch.php?q=%s&language=en&search=Search" % (host, texto)
+    item.url = "%s/?s=%s" % (host, texto)
     try:
         return lista(item)
     except:
@@ -140,6 +140,5 @@ def decode_url(txt):
         n -= 1
     url = scrapertools.find_single_match(b64_url, '<iframe src="([^"]+)"')
     url = httptools.downloadpage(url).url
-    logger.debug (url)
     return url
 

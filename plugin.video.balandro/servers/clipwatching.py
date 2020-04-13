@@ -25,6 +25,11 @@ def get_video_url(page_url, url_referer=''):
                 if url.endswith('.srt'): continue
                 video_urls.append([lbl, url])
             return video_urls
+        else:
+            matches = scrapertools.find_multiple_matches(data, '"([^"]+\.mp4)"')
+            for url in matches:
+                video_urls.append(['mp4', url])
+            video_urls.reverse() # calidad increscendo
 
     try:
         packed = scrapertools.find_single_match(data, "text/javascript'>(.*?)\s*</script>")

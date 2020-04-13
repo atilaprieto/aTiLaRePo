@@ -8,6 +8,10 @@
     "ignore_urls": [],
     "patterns": [
       {
+        "pattern": "(https://storage.googleapis.com/.*?\\.mp4)",
+        "url": "\\1"
+      },
+      {
         "pattern": "(http://[a-zA-Z0-9]+\\.mysites\\.com\\/get_file\\/.*?\\.mp4)",
         "url": "\\1"
       },

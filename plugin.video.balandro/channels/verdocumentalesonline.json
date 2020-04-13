@@ -1,0 +1,15 @@
+{
+  "id": "verdocumentalesonline",
+  "name": "VerDocumentalesOnline",
+  "thumbnail": "verdocumentalesonline.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["documentary"],
+
+  "categories": ["documentary"],
+  "language": ["cast"],
+
+  "notes": "Canal de dailymotion especializado en documentales en castellano."
+}

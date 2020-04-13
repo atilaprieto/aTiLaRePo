@@ -16,23 +16,34 @@ from core import scrapertools
 from core.item import Item
 from platformcode import logger
 
+host = 'http://pornhub.com'
+
 
 def mainlist(item):
     logger.info()
     itemlist = []
     itemlist.append(Item(channel=item.channel, action="lista", title="Novedades", fanart=item.fanart,
-                         url="http://es.pornhub.com/video?o=cm"))
+                         url="%s/video?o=cm" %host))
+    itemlist.append(Item(channel=item.channel, action="lista", title="Mas visto", fanart=item.fanart,
+                         url="%s/video?o=mv" %host))
+    itemlist.append(Item(channel=item.channel, action="lista", title="Mejor valorado", fanart=item.fanart,
+                         url="%s/video?o=tr" %host))
+    itemlist.append(Item(channel=item.channel, action="lista", title="Mas largo", fanart=item.fanart,
+                         url="%s/video?o=lg" %host))
+    itemlist.append(Item(channel=item.channel, action="catalogo", title="Canal", fanart=item.fanart,
+                         url= "%s/channels?o=tr" % host))
+    itemlist.append(Item(channel=item.channel, action="catalogo", title="PornStar", fanart=item.fanart,
+                         url= "%s/pornstars?o=t" % host))
     itemlist.append(Item(channel=item.channel, action="categorias", title="Categorias", fanart=item.fanart,
-                         url="http://es.pornhub.com/categories"))
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar", fanart=item.fanart,
-                         url="http://es.pornhub.com/video/search?search=%s&o=mr"))
+                         url= "%s/categories" % host))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar", fanart=item.fanart))
     return itemlist
 
 
 def search(item, texto):
     logger.info()
 
-    item.url = item.url % texto
+    item.url = "%s/video/search?search=%s&o=mr" % (host, texto)
     try:
         return lista(item)
     except:
@@ -42,13 +53,50 @@ def search(item, texto):
         return []
 
 
+def catalogo(item):
+    logger.info()
+    itemlist = []
+    data = httptools.downloadpage(item.url).data
+    if "channels" in item.url:
+        patron = '<div class="channelsWrapper.*?'
+        patron += 'href="([^"]+)".*?'
+        patron += 'alt="([^"]+)".*?'
+        patron += 'data-thumb_url="([^"]+)".*?'
+        patron += 'Videos<span>([^<]+)<'
+    else:
+        patron = 'data-mxptype="Pornstar".*?'
+        patron += 'href="([^"]+)".*?'
+        patron += 'data-thumb_url="([^"]+)".*?'
+        patron += 'alt="([^"]+)".*?'
+        patron += '"videosNumber">(\d+) Videos'
+    matches = re.compile(patron, re.DOTALL).findall(data)
+    for scrapedurl, scrapedthumbnail, scrapedtitle, cantidad in matches:
+        if "channels" in scrapedurl:
+            scrapedthumbnail, scrapedtitle = scrapedtitle, scrapedthumbnail
+            url = urlparse.urljoin(item.url, scrapedurl + "/videos?o=da")
+        else:
+            url = urlparse.urljoin(item.url, scrapedurl + "/videos?o=cm")
+        scrapedtitle = "%s (%s)" % (scrapedtitle,cantidad)
+        itemlist.append(Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
+                             fanart=scrapedthumbnail, thumbnail=scrapedthumbnail))
+        # Paginador
+    if itemlist:
+        patron = '<li class="page_next"><a href="([^"]+)"'
+        matches = re.compile(patron, re.DOTALL).findall(data)
+        if matches:
+            url = urlparse.urljoin(item.url, matches[0].replace('&amp;', '&'))
+            itemlist.append(
+                Item(channel=item.channel, action="catalogo", title=">> Página siguiente", fanart=item.fanart, 
+                     url=url))
+    return itemlist
+
 def categorias(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = '<li class="cat_pic" data-category=".*?'
-    patron += '<a href="([^"]+)".*?'
-    patron += 'data-thumb_url="(.*?)".*?'
+    patron = '<div class="category-wrapper.*?'
+    patron += 'href="([^"]+)".*?'
+    patron += 'data-thumb_url="([^"]+)".*?'
     patron += 'alt="([^"]+)".*?'
     patron += '<var>(.*?)</var>'
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -60,7 +108,6 @@ def categorias(item):
         scrapedtitle = "%s (%s)" % (scrapedtitle,cantidad)
         itemlist.append(Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
                              fanart=scrapedthumbnail, thumbnail=scrapedthumbnail))
-    itemlist.sort(key=lambda x: x.title)
     return itemlist
 
 
@@ -68,12 +115,11 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    videodata = scrapertools.find_single_match(data, 'videos search-video-thumbs">(.*?)<div class="reset"></div>')
     patron = '<div class="phimage">.*?'
     patron += '<a href="([^"]+)" title="([^"]+).*?'
     patron += 'data-mediumthumb="([^"]+)".*?'
     patron += '<var class="duration">([^<]+)</var>(.*?)</div>'
-    matches = re.compile(patron, re.DOTALL).findall(videodata)
+    matches = re.compile(patron, re.DOTALL).findall(data)
     for url, scrapedtitle, thumbnail, duration, scrapedhd in matches:
         scrapedhd = scrapertools.find_single_match(scrapedhd, '<span class="hd-thumbnail">(.*?)</span>')
         if scrapedhd  == 'HD':
@@ -84,16 +130,16 @@ def lista(item):
         itemlist.append(
             Item(channel=item.channel, action="play", title=title, url=url, fanart=thumbnail, thumbnail=thumbnail))
     if itemlist:
-        # Paginador                  https://es.pornhub.com/video/search?search=big+tits&page=2
-                                   # http://es.pornhub.com/video/search?search=big+tits&o=mr&page=2  
+        # Paginador
         patron = '<li class="page_next"><a href="([^"]+)"'
         matches = re.compile(patron, re.DOTALL).findall(data)
         if matches:
             url = urlparse.urljoin(item.url, matches[0].replace('&amp;', '&'))
             itemlist.append(
-                Item(channel=item.channel, action="lista", title=url, fanart=item.fanart,       #">> Página siguiente"
+                Item(channel=item.channel, action="lista", title=">> Página siguiente", fanart=item.fanart, 
                      url=url))
     return itemlist
+
 
 def play(item):
     logger.info(item)

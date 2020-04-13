@@ -103,7 +103,8 @@ def play(item):
     itemlist = []
     if not "paidperview" in item.url:
         import base64
-        url = base64.b64decode(item.url)
+        url = item.url.replace("_", "/")
+        url = base64.b64decode(url)
         itemlist = servertools.find_video_items(item.clone(url = url, contentTitle = item.title))
     else:
         data = httptools.downloadpage(item.url).data

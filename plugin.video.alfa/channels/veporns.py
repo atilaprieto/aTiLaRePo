@@ -23,7 +23,7 @@ IDIOMAS = {'vo': 'VO'}
 list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['gounlimited']
-host = 'http://www.veporns.com'
+host = 'http://www.veporns.com'  #'https://watchpornfree.info'   'https://xxxparodyhd.net'  'http://streamporno.eu'
 
 
 def mainlist(item):
@@ -108,12 +108,12 @@ def lista2(item):
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<a class="active".*?<a class="" href="([^"]+)">')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
+        itemlist.append( Item(channel=item.channel, action="lista2", title="Página Siguiente >>", text_color="blue", 
                               url=next_page) )
     return itemlist
 

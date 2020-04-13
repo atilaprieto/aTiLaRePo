@@ -51,8 +51,6 @@ def porGenero(item):
 
         url = elem.a["href"]
         genero = elem.a.text
-        logger.debug(url)
-        logger.debug(genero)
         if genero == "Erótico" and config.get_setting("adult_mode") == 0:
             continue
         itemlist.append(Item(channel=item.channel, action="agregadas", title=genero, url=url))
@@ -82,10 +80,9 @@ def agregadas(item):
     matches = soup.find("div", class_="review-box-container")
 
     for elem in matches.find_all("div", class_="review-box"):
-        logger.debug(elem)
         url = elem.a["href"]
         title = elem.img["alt"]
-        thumbnail = elem.img["data-src"]
+        thumbnail = elem.img["src"]
         title = title.replace("Descargar y ver Online", "").replace("Gratis", "").strip()
         year = scrapertools.find_single_match(title, '\(([0-9]{4})')
         plot = elem.p.text
@@ -114,7 +111,6 @@ def findvideos(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = scrapertools.unescape(data)
-    logger.debug(data)
     patron = '#div_\d_\D.+?<img id=([^ ]+) .*?<span>.*?</span>.*?<span>(.*?)</span>.*?imgdes.*?imgdes/([^\.]+).*?<a href=([^\s]+)'  #Añado calidad
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedidioma, scrapedcalidad, scrapedserver, scrapedurl in matches:

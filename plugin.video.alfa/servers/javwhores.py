@@ -18,10 +18,6 @@ def test_video_exists(page_url):
        or "File was deleted" in response.data \
        or "is no longer available" in response.data:
         return False, "[javwhores] El fichero no existe o ha sido borrado"
-
-    # global video_url, license_code
-    # video_url = scrapertools.find_single_match(response.data, "video_url: '([^']+)'")
-    # license_code = scrapertools.find_single_match(response.data, "license_code: '([^']+)'")
     return True, ""
 
 
@@ -38,7 +34,5 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     matches = re.compile(patron,re.DOTALL).findall(data)
     for url,quality in matches:
         itemlist.append(['%s' %quality, url])
-    logger.debug(quality + " : " + url)
     
     return itemlist
-    # return [["[javwhores]", decode(video_url, license_code)]]

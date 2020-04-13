@@ -1,0 +1,15 @@
+{
+  "id": "seriemega",
+  "name": "SerieMega",
+  "thumbnail": "seriemega.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow"],
+  "language": ["cast", "lat", "vose"],
+
+  "notes": "Películas y Series en castellano."
+}

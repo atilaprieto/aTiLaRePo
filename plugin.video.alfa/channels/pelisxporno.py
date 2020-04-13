@@ -26,6 +26,7 @@ def mainlist(item):
     itemlist.append(item.clone(action="search", title="Buscar"))
     return itemlist
 
+
 def search(item, texto):
     logger.info("")
     texto = texto.replace(" ", "+")
@@ -38,17 +39,13 @@ def search(item, texto):
             logger.error("%s" % line)
         return []
         
-def search(item, texto):
-    logger.info()
-    item.url = item.url % texto
-    return lista(item)
 
 
 def categorias(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = '<li class="cat-item cat-item-.*?"><a href="(.*?)".*?>(.*?)<'
+    patron = '<li class="cat-item cat-item-.*?"><a href="([^"]+)".*?>([^<]+)<'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedtitle in matches:
         itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl))
@@ -59,7 +56,10 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = '<div class="video.".*?<a href="(.*?)" title="(.*?)">.*?<img src="(.*?)".*?\/>.*?duration.*?>(.*?)<'
+    patron = '<div class="video.*?'
+    patron += '<a href="([^"]+)" title="([^"]+)">.*?'
+    patron += '<img src="([^"]+)".*?'
+    patron += 'duration.*?>([^<]+)<'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedtitle, scrapedthumbnail, duration in matches:
         if duration:
@@ -68,7 +68,7 @@ def lista(item):
                                    fanart=scrapedthumbnail))
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink" rel="next" href="([^"]+)"')
     if next_page:
-        itemlist.append(item.clone(action="lista", title=">> Página Siguiente", url=next_page))
+        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
     return itemlist
 
 

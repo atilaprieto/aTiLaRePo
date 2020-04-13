@@ -24,7 +24,7 @@ list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['mangovideo']
 
-host = 'https://xxxparodyhd.net'
+host = 'https://xxxparodyhd.net'   #'https://watchpornfree.info'
 
 def mainlist(item):
     logger.info()
@@ -83,7 +83,7 @@ def lista(item):
     patron = '<div data-movie-id="\d+".*?'
     patron += '<a href="([^"]+)".*?'
     patron += 'oldtitle="([^"]+)".*?'
-    patron += '<img src="([^"]+)".*?rel="tag">(.*?)</a>'
+    patron += 'data-original="([^"]+)".*?rel="tag">(\d+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedyear in matches:
         scrapedplot = ""

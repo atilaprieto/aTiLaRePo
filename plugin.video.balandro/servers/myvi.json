@@ -1,0 +1,17 @@
+{
+  "id": "myvi",
+  "name": "MyVi",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "myvi.xyz/(?:embed/|embed-|)([A-z0-9]+)",
+        "url": "https://www.myvi.xyz/embed/\\1"
+      }
+    ]
+  }
+
+}

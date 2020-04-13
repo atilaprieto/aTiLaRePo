@@ -1,0 +1,15 @@
+{
+  "id": "cinemaclasic",
+  "name": "CinemaClasic",
+  "thumbnail": "cinemaclasic.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast", "vose"],
+
+  "notes": "Películas clásicas, por géneros, años, directores, actores."
+}

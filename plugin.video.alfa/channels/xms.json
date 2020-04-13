@@ -1,7 +1,7 @@
 {
   "id": "xms",
   "name": "XMS",
-  "active": true,
+  "active": false,
   "adult": true,
   "language": ["*"],
   "fanart": "https://raw.githubusercontent.com/Inter95/tvguia/master/thumbnails/adults/xthearebg.jpg",

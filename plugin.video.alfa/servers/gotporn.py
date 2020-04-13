@@ -20,7 +20,6 @@ def get_video_url(page_url, video_password):
     url = scrapertools.find_single_match(data,'<source (?:id="video_source_\d+" |)src="([^"]+)" type=(?:\'|")video/mp4(?:\'|")')
     host = scrapertools.find_single_match(page_url, '(https://.*?.com)')
     url += "|Referer=%s" % host
-    logger.debug(url)
     server = scrapertools.find_single_match(page_url, 'https://(?:www.|)([A-z0-9-]+).com')
     video_urls.append(["[%s]" %server, url])
     return video_urls

@@ -1,6 +1,7 @@
 {
 "id": "poseidonhd",
   "name": "PoseidonHD",
+  "force_unify": true,
   "active": true,
   "adult": false,
   "language": ["lat"],

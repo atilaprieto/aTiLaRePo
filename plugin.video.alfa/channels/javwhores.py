@@ -97,15 +97,9 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    if "video_url_text" in data:
-        patron = '(?:video_url|video_alt_url[0-9]*):\s*\'([^\']+)\'.*?'
-        patron += '(?:video_url_text|video_alt_url[0-9]*_text):\s*\'([^\']+)\''
-    else:
-        patron = '(?:video_url|video_alt_url[0-9]*):\s*\'([^\']+)\'.*?'
-        patron += 'postfix:\s*\'([^\']+)\''
-    matches = scrapertools.find_multiple_matches(data, patron)
-    for url,quality in matches:
-        itemlist.append(['%s' %quality, url])
+    if "kt_player" in data:
+        url = item.url
+    itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
-
 

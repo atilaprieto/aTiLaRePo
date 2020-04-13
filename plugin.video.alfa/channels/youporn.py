@@ -75,7 +75,6 @@ def categorias(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    logger.debug(data)
     if item.title == "Canal":
         data = scrapertools.find_single_match(data,'Most Popular Porn Channels </h1>(.*?)<footer data-espnode="footer">')
     if item.title == "Categorias":

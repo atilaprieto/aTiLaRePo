@@ -64,12 +64,13 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron  = '<div class="list__item_link"><a href="([^"]+)" title="([^"]+)">.*?'
+    patron  = '<div class="list__item_link">.*?'
+    patron  += 'href="([^"]+)".*?'
     patron  += 'data-original="([^"]+)".*?'
-    patron  += '<time>(.*?)</a>'
+    patron  += '<span>([^<]+)</span><time>(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-    for scrapedurl,scrapedtitle,scrapedthumbnail,duracion in matches:
+    for scrapedurl,scrapedthumbnail,scrapedtitle,duracion in matches:
         plot = ""
         time = scrapertools.find_single_match(duracion, '([^"]+)</time>')
         if not 'HD' in duracion :

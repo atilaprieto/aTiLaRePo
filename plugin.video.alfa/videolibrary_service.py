@@ -10,11 +10,11 @@ if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
 try:
     from platformcode import config
-    import xbmc, os
+    import xbmc, os, time
     librerias = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib'))
     sys.path.append(librerias)
 except:
-    import os
+    import os, time
     try:
         librerias = os.path.join(config.get_runtime_path(), 'lib')
         sys.path.append(librerias)
@@ -37,6 +37,8 @@ def update(path, p_dialog, i, t, serie, overwrite):
     from platformcode import platformtools
     from channels import videolibrary
     from lib import generictools
+    if config.is_xbmc():
+        from platformcode import xbmc_videolibrary
 
     insertados_total = 0
       
@@ -110,7 +112,8 @@ def update(path, p_dialog, i, t, serie, overwrite):
                 
             #Si el canal lo permite, se comienza el proceso de descarga de los nuevos episodios descargados
             serie.channel = generictools.verify_channel(serie.channel)
-            if insertados > 0  and config.get_setting('auto_download_new', serie.channel):
+            if insertados > 0  and config.get_setting('auto_download_new', serie.channel, default=False):
+                config.set_setting("search_new_content", 1, "videolibrary")     # Escaneamos a final todas la series
                 serie.sub_action = 'auto'
                 from channels import downloads
                 downloads.save_download(serie, silent=True)
@@ -120,8 +123,7 @@ def update(path, p_dialog, i, t, serie, overwrite):
 
     #Sincronizamos los episodios vistos desde la videoteca de Kodi con la de Alfa
     try:
-        if config.is_xbmc():                #Si es Kodi, lo hacemos
-            from platformcode import xbmc_videolibrary
+        if config.is_xbmc():                                                    #Si es Kodi, lo hacemos
             xbmc_videolibrary.mark_content_as_watched_on_alfa(path + '/tvshow.nfo')
     except:
         logger.error(traceback.format_exc())
@@ -137,6 +139,8 @@ def check_for_update(overwrite=True):
     from platformcode import platformtools
     from channels import videolibrary
     from lib import generictools
+    if config.is_xbmc():
+        from platformcode import xbmc_videolibrary
     
     p_dialog = None
     serie_actualizada = False
@@ -206,7 +210,6 @@ def check_for_update(overwrite=True):
                             #Sincronizamos los episodios vistos desde la videoteca de Kodi con la de Alfa, aunque la serie esté desactivada
                             try:
                                 if config.is_xbmc():                #Si es Kodi, lo hacemos
-                                    from platformcode import xbmc_videolibrary
                                     xbmc_videolibrary.mark_content_as_watched_on_alfa(path + '/tvshow.nfo')
                             except:
                                 logger.error(traceback.format_exc())
@@ -278,8 +281,8 @@ def check_for_update(overwrite=True):
                         if config.get_setting("search_new_content", "videolibrary") == 0:
                             # Actualizamos la videoteca de Kodi: Buscar contenido en la carpeta de la serie
                             if config.is_xbmc():
-                                from platformcode import xbmc_videolibrary
                                 xbmc_videolibrary.update(folder=filetools.basename(path))
+                                update_when_finished = True
                         else:
                             update_when_finished = True
                 except Exception as ex:
@@ -291,11 +294,11 @@ def check_for_update(overwrite=True):
 
             if estado_verify_playcount_series:                                  #Si se ha cambiado algún playcount, ...
                 estado = config.set_setting("verify_playcount", True, "videolibrary")   #... actualizamos la opción de Videolibrary
-            
-            if config.get_setting("search_new_content", "videolibrary") == 1 and update_when_finished:
+
+            #if config.get_setting("search_new_content", "videolibrary") == 1 and update_when_finished:
+            if update_when_finished:
                 # Actualizamos la videoteca de Kodi: Buscar contenido en todas las series
                 if config.is_xbmc():
-                    from platformcode import xbmc_videolibrary
                     xbmc_videolibrary.update()
 
             p_dialog.close()

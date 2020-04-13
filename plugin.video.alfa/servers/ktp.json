@@ -6,6 +6,18 @@
       {
         "pattern": "(https://(?:www.|)(?:0dayporn|submityourflicks|3movs).com/video(?:s|)/[0-9]+/[A-z0-9-]+/)",
         "url": "\\1"
+      },
+      {
+        "pattern": "(https://www.(?:javbangers|fapnado|xozilla|camwhoresbay|pornrewind).com/(?:video|videos)/[0-9]+/[A-z0-9-]+(?:/|))",
+        "url": "\\1"
+      },
+      {
+        "pattern": "(https://www.analdin.com/es/videos/[0-9]+/[A-z0-9-]+/)",
+        "url": "\\1"
+      },
+      {
+        "pattern": "(https://severeporn.com/embed/\\w+)",
+        "url": "\\1"
       }
     ]
   },

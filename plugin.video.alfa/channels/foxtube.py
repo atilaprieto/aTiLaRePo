@@ -96,14 +96,12 @@ def lista(item):
         data = httptools.downloadpage(item.url).data
         id = scrapertools.find_single_match(data,'<section id="contenedor".*?a href="https://www.foxtube.com/pu/(\d+)')
         canal = scrapertools.find_single_match(data,'path : \'([^\']+)\'')
-        logger.debug(canal)
         headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         post = {'path': '%s' %canal, 'order_vid': 'uv'} 
         item.url = "https://www.foxtube.com/users/get/%s/videos/1/" % id
         data = httptools.downloadpage(item.url, post=post, headers=headers).data
     if "users" in item.url:
         canal= item.canal
-        logger.debug(canal)
         headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         post = {'path': '%s' %canal, 'order_vid': 'uv'} 
         data = httptools.downloadpage(item.url, post=post, headers=headers).data

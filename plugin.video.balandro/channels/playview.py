@@ -111,7 +111,7 @@ def list_all(item):
         else:
             s_e = scrapertools.find_single_match(title, '<div class="info-series">(.*?)</div>')
             title = scrapertools.find_single_match(title, '(.*?)<br').strip()
-            title = title[:1].upper() + title[1:] # algunas seriesno tienen la mayúscula inicial
+            title = title[:1].upper() + title[1:] # algunas series no tienen la mayúscula inicial
             s_e = re.sub('<[^>]*>', '', s_e)
             season = scrapertools.find_single_match(s_e, 'Temporada (\d+)')
             if season == '':
@@ -224,6 +224,7 @@ def findvideos(item):
             servidor = servidor.split('.', 1)[0]
             if servidor == 'vev': servidor = 'vevio'
             elif servidor == 'ok': servidor = 'okru'
+            elif servidor == 'youtvgratis': servidor = 'fembed'
             calidad = calidad.replace('(', '').replace(')', '').strip()
             
             itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,

@@ -62,7 +62,7 @@ def lista(item):
         imagen = ""
         scrapedplot = match[1]
         tipo = match[1]
-        logger.debug("title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
+        # logger.debug("title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
         scrapedplot = "<" + scrapedplot
         scrapedplot = scrapedplot.replace("&gt;", ">")
         scrapedplot = scrapedplot.replace("&lt;", "<")

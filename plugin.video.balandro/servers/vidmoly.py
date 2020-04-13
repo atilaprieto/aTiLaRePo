@@ -14,23 +14,20 @@ def get_video_url(page_url, url_referer=''):
     if url_referer: headers['Referer'] = url_referer
 
     data = httptools.downloadpage(page_url, headers=headers).data
-    logger.debug(data)
+    # ~ logger.debug(data)
     
     packed = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
     if packed:
         data = jsunpack.unpack(packed)
-        logger.info(data)
+        # ~ logger.info(data)
 
-    data = scrapertools.find_single_match(data, 'sources:\s*\[(.*?)\]')
-    
-    matches = scrapertools.find_multiple_matches(data, 'file\s*:\s*"([^"]+)"\s*,\s*label\s*:\s*"([^"]+)')
-    for url, lbl in matches:
-        # ~ video_urls.append([lbl, url])
+    bloque = scrapertools.find_single_match(data, 'sources:\s*\[(.*?)\]')
+
+    matches = scrapertools.find_multiple_matches(bloque, '\{(.*?)\}')
+    for vid in matches:
+        url = scrapertools.find_single_match(vid, 'file:"([^"]+)')
+        lbl = scrapertools.find_single_match(vid, 'label:"([^"]+)')
+        if not lbl: lbl = url[-4:]
         video_urls.append([lbl, url+'|Referer=https://vidmoly.me/'])
-    
-    if not matches:
-        matches = scrapertools.find_multiple_matches(data, 'file\s*:\s*"([^"]+)"\}')
-        for url in matches:
-            video_urls.append([url[-4:], url+'|Referer=https://vidmoly.me/'])
 
     return video_urls

@@ -15,7 +15,7 @@ from core.item import Item
 from platformcode import config, logger
 from channelselector import get_thumb
 
-host = 'http://pelkex.net/'
+host = 'http://okpelis.net/'
 
 IDIOMAS = {'Latino': 'LAT'}
 list_language = IDIOMAS.values()

@@ -72,7 +72,6 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    logger.debug(data)
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
     patron = '<div class="item" style="width: 320px">.*?'
     patron += '<a href="([^"]+)".*?'

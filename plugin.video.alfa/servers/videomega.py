@@ -10,7 +10,8 @@ def get_video_url(page_url, video_password):
     video_urls = []
     data = httptools.downloadpage(page_url).data
     m= scrapertools.find_single_match(data, '<link href="(Br74.*?==.css)"')
-    url= "https://www.videomega.co/streamurl/JaV1laMGUzNzJjYzg2ZTZhYzg2NzdjNzNhYThlMTAwNTQxMTVzZWN1cmUZaoKJEa.css/"
+    n= scrapertools.find_single_match(data, '<link href="(JaV.*?.css)"')
+    url= "https://www.videomega.co/streamurl/%s.css/" % n
     post="myreason=%s&saveme=/videojs/crexcode/video-js.min.css" %m
     url = httptools.downloadpage(url, post=post).data
     url = url.replace(" ", "")

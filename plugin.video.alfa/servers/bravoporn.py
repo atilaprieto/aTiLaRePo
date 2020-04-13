@@ -22,6 +22,5 @@ def get_video_url(page_url, video_password):
     matches = scrapertools.find_multiple_matches(data, patron)
     for url,quality in matches:
         url += "|Referer=%s" % page_url
-        logger.debug(url)
         video_urls.append(["[%s] %s" %(server,quality), url])
     return video_urls

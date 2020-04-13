@@ -48,7 +48,7 @@ host_alt = ['https://zooqle.com/', 'https://zooqle1.unblocked.is/', 'https://zoo
 categoria = channel.capitalize()
 __modo_grafico__ = config.get_setting('modo_grafico', channel)
 modo_ultima_temp = config.get_setting('seleccionar_ult_temporadda_activa', channel)        #Actualización sólo últ. Temporada?
-timeout = config.get_setting('timeout_downloadpage', channel)
+timeout = 20
 
 
 def mainlist(item):
@@ -807,6 +807,7 @@ def play(item):                                 #Permite preparar la descarga de
                         ': ERROR 02: PLAY: No hay enlaces o ha cambiado la estructura de la Web.  ' 
                         + 'Verificar en la Web esto último y reportar el error con el log'))
         return itemlist
+    item.url_control = item.url
     item.url = urlparse.urljoin(host, scrapertools.find_single_match(data, patron))
     
     #buscamos subtítulos en español     ###     CÓDIGO HEREDADO DE RARBG.  LO DEJAMOS POR SI ES NECESARIO EN EL FUTURO

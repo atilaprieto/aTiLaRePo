@@ -225,15 +225,16 @@ def restart_error(item):
                             filetools.join(config.get_setting("downloadpath"), download_item.downloadFilename))
 
                     update_json(item.path,
-                                {"downloadStatus": STATUS_CODES.stoped, "downloadCompleted": 0, "downloadProgress": 0})
+                                {"downloadStatus": STATUS_CODES.stoped, "downloadCompleted": 0, "downloadProgress": 0, "downloadQueued": 0})
 
     platformtools.itemlist_refresh()
 
 
 def download_all(item):
     time.sleep(0.5)
+    second_pass = False
     for fichero in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
-        if fichero.endswith(".json"):
+        if fichero.endswith(".json") and filetools.exists(filetools.join(DOWNLOAD_LIST_PATH, fichero)):
             download_item = Item(path=filetools.join(DOWNLOAD_LIST_PATH, fichero)).fromjson(
                 filetools.read(filetools.join(DOWNLOAD_LIST_PATH, fichero)))
 
@@ -241,25 +242,58 @@ def download_all(item):
                             item.contentSerieName == download_item.contentSerieName and item.contentChannel == download_item.contentChannel):
                 if download_item.downloadStatus in [STATUS_CODES.stoped, STATUS_CODES.canceled] \
                             or (download_item.downloadStatus in [STATUS_CODES.completed, STATUS_CODES.auto, \
-                            STATUS_CODES.control] and download_item.downloadProgress == 0):
-                    res = start_download(download_item)
-                    platformtools.itemlist_refresh()
-                    # Si se ha cancelado paramos
-                    if res == STATUS_CODES.canceled: break
+                            STATUS_CODES.control] and (download_item.downloadProgress == 0 \
+                            or download_item.downloadQueued > 0)):
+                    
+                    if download_item.downloadQueued == 0:
+                        download_item.downloadQueued = 1
+                        res = filetools.write(filetools.join(DOWNLOAD_LIST_PATH, fichero), download_item.tojson())
+                        if res: second_pass = True
+                    elif not second_pass:
+                        res = start_download(download_item)
+                        platformtools.itemlist_refresh()
+                        # Si se ha cancelado paramos
+                        if res == STATUS_CODES.canceled: break
+    
+    if second_pass:
+        download_all(item)
                         
                         
 def download_auto(item):
     logger.info()
     
+    second_pass = False
+    move_to_remote = config.get_setting("move_to_remote", "downloads", default=[])
+    
     for fichero in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
         time.sleep(0.5)
-        if fichero.endswith(".json"):
+        if fichero.endswith(".json") and filetools.exists(filetools.join(DOWNLOAD_LIST_PATH, fichero)):
             download_item = Item(path=filetools.join(DOWNLOAD_LIST_PATH, fichero)).fromjson(
                 filetools.read(filetools.join(DOWNLOAD_LIST_PATH, fichero)))
 
             if download_item.downloadStatus in [STATUS_CODES.auto]:
-                res = start_download(download_item)
-                if res == STATUS_CODES.canceled: break
+                if download_item.downloadQueued == 0:
+                    download_item.downloadQueued = 1
+                    res = filetools.write(filetools.join(DOWNLOAD_LIST_PATH, fichero), download_item.tojson())
+                    if res: second_pass = True
+                    
+                    # Si el usuario desea descargar esta Serie en otro servidor Kodi, copia el fichero a la dirección aportada
+                    if res and move_to_remote:
+                        for serie, address in move_to_remote:
+                            if serie in download_item.strm_path:
+                                res = filetools.copy(filetools.join(DOWNLOAD_LIST_PATH, fichero), \
+                                                filetools.join(address, fichero), silent=True)
+                                if res:
+                                    res = filetools.remove(filetools.join(DOWNLOAD_LIST_PATH, fichero), silent=True)
+                                    if res: second_pass = False
+                                    break
+
+                elif not second_pass:
+                    res = start_download(download_item)
+                    if res == STATUS_CODES.canceled: break
+    
+    if second_pass:
+        download_auto(item)
 
 
 def menu(item):
@@ -268,6 +302,10 @@ def menu(item):
         servidor = item.downloadServer.get("server", "Auto")
     else:
         servidor = "Auto"
+        
+    if item.server == 'torrent' and item.path.endswith('.json'):
+        item = Item(path=filetools.join(DOWNLOAD_LIST_PATH, item.path)).fromjson(
+                filetools.read(filetools.join(DOWNLOAD_LIST_PATH, item.path)))
     # Opciones disponibles para el menu
     op = [config.get_localized_string(70225), config.get_localized_string(70226), config.get_localized_string(70227),
           "Modificar servidor: %s" % (servidor.capitalize()), config.get_localized_string(70221)]
@@ -275,18 +313,20 @@ def menu(item):
     opciones = []
 
     # Opciones para el menu
-    if item.downloadStatus in [0, 4]:  # Sin descargar o auto
+    if item.downloadStatus in [0]:  # Sin descargar
         opciones.append(op[0])  # Descargar
         if not item.server: opciones.append(op[3])  # Elegir Servidor
         opciones.append(op[1])  # Eliminar de la lista
+        opciones.append(op[4])  # Eliminar todo
 
     if item.downloadStatus == 1:  # descarga parcial
         opciones.append(op[0])  # Descargar
         if not item.server: opciones.append(op[3])  # Elegir Servidor
         opciones.append(op[2])  # Reiniciar descarga
         opciones.append(op[1])  # Eliminar de la lista
+        opciones.append(op[4])  # Eliminar todo
 
-    if item.downloadStatus in [2, 5]:  # descarga completada o archivo de control
+    if item.downloadStatus in [2 ,4, 5]:  # descarga completada o archivo de control o auto
         if item.downloadProgress == 0:
             opciones.append(op[0])  # Descargar
         opciones.append(op[2])  # Reiniciar descarga
@@ -296,6 +336,7 @@ def menu(item):
     if item.downloadStatus == 3:  # descarga con error
         opciones.append(op[2])  # Reiniciar descarga
         opciones.append(op[1])  # Eliminar de la lista
+        opciones.append(op[4])  # Eliminar todo
     
     # Mostramos el dialogo
     seleccion = platformtools.dialog_select(config.get_localized_string(30163), opciones)
@@ -311,26 +352,37 @@ def menu(item):
     # Opcion iniciar descarga
     if opciones[seleccion] == op[0]:
         if item.server == 'torrent':
-            item.downloadProgress = 1
-            update_json(item.path, {"downloadProgress": 1})
+            item.downloadProgress = 0
+            item.downloadQueued = 1
+            update_json(item.path, {"downloadProgress": 0, "downloadQueued": 1})
         res = start_download(item)
 
     # Elegir Servidor
     if opciones[seleccion] == op[3]:
         select_server(item)
 
-    # Reiniciar descarga
+    # Reiniciar descarga y Eliminar TODO
     if opciones[seleccion] == op[2] or opciones[seleccion] == op[4]:
+
         if item.server == 'torrent':
             delete_torrent_session(item)
         
-        elif filetools.isfile(filetools.join(config.get_setting("downloadpath"), item.downloadFilename)):
-            filetools.remove(filetools.join(config.get_setting("downloadpath"), item.downloadFilename))
+        else:
+            if filetools.isfile(filetools.join(config.get_setting("downloadpath"), item.downloadFilename)):
+                filetools.remove(filetools.join(config.get_setting("downloadpath"), item.downloadFilename), silent=True)
+                if filetools.isdir(filetools.join(config.get_setting("downloadpath"), \
+                            filetools.dirname(item.downloadFilename))) and len(filetools.listdir\
+                            (filetools.join(config.get_setting("downloadpath"), \
+                            filetools.dirname(item.downloadFilename)))) == 0:
+                    filetools.rmdirtree(filetools.join(config.get_setting("downloadpath"), \
+                            filetools.dirname(item.downloadFilename)), silent=True)
 
             update_json(item.path, {"downloadStatus": STATUS_CODES.stoped, "downloadCompleted": 0, "downloadProgress": 0,
-                                "downloadServer": {}})
+                                "downloadQueued": 0, "downloadServer": {}})
+        item.downloadProgress = 0
+        item.downloadQueued = 0
     
-    # Reiniciar descarga
+    # Eliminar TODO
     if opciones[seleccion] == op[4]:
         filetools.remove(filetools.join(DOWNLOAD_LIST_PATH, item.path), silent=True)
     
@@ -345,32 +397,42 @@ def delete_torrent_session(item):
     deamon_url = ''
     index = -1
     filebase = ''
+    folder_new = ''
     
     # Obtenemos los datos del gestor de torrents
     torrent_paths = torrent.torrent_dirs()
     torr_client = scrapertools.find_single_match(item.downloadFilename, '^\:(\w+)\:')
+    folder_new = filetools.dirname(scrapertools.find_single_match(item.downloadFilename, '^\:\w+\:\s*(.*?)$'))
     if item.torr_folder:
         folder = item.torr_folder
     else:
-        folder = filetools.dirname(scrapertools.find_single_match(item.downloadFilename, '^\:\w+\:\s*(.*?)$'))
-        folder = folder.replace('\\', '').replace('/', '')
+        folder = folder_new.replace('\\', '').replace('/', '')
+    if folder_new:
+        if folder_new.startswith('\\') or folder_new.startswith('/'):
+            folder_new = folder_new[1:]
+        if '\\' in folder_new:
+            folder_new = folder_new.split('\\')[0]
+        elif '/' in folder_new:
+            folder_new = folder_new.split('/')[0]
+        if folder_new:
+            folder_new = filetools.join(torrent_paths[torr_client.upper()], folder_new)
     
     # Actualiza el .json de control
     if item.downloadStatus in [5]:
         item.downloadStatus = 2                                                 # Pasa de foreground a background
-    update_json(item.path, {"downloadStatus": item.downloadStatus, "downloadProgress": 0,
+    update_json(item.path, {"downloadStatus": item.downloadStatus, "downloadProgress": 0, "downloadQueued": 0,
                                 "downloadServer": {}})
 
     # Detiene y borra la sesion de los clientes externos Quasar y Elementum
     if torr_client in ['QUASAR', 'ELEMENTUM']:
         torr_data, deamon_url, index = torrent.get_tclient_data(folder, torr_client.lower(), \
-                                torrent_paths['ELEMENTUM_port'], delete=True)
+                                torrent_paths['ELEMENTUM_port'], delete=True, folder_new=folder_new)
         
     # Detiene y borra la sesion de los clientes Internos
     if torr_client in ['BT', 'MCT']:
         if item.downloadServer and 'url' in str(item.downloadServer) and not item.downloadServer['url'].startswith('http'): 
             filebase = filetools.basename(item.downloadServer['url']).upper()
-        elif item.url and not item.url.startswith('http'):
+        elif item.url and not item.url.startswith('http') and not item.url.startswith('magnet:'):
             filebase = filetools.basename(item.url).upper()
         elif item.url_control and not item.url_control.startswith('http'):
             filebase = filetools.basename(item.url_control).upper()
@@ -378,16 +440,31 @@ def delete_torrent_session(item):
             file = filetools.join(torrent_paths[torr_client+'_torrents'], filebase)
             if filetools.exists(file):
                 filetools.remove(file, silent=True)
-    
-    #Espera a que el gestor termine de borrar la sesion (timing...)            
-    time.sleep(8)
-    # Vuelve a  actualiza el .json de control después de que el gestor de torrent termine su función (timing...)
-    update_json(item.path, {"downloadStatus": item.downloadStatus, "downloadProgress": 0,
-                                "downloadServer": {}})
         
-        #downloadFilename = filetools.dirname(scrapertools.find_single_match(item.downloadFilename, '\:\w+\:\s*(.*?)$'))
-        #filetools.rmdirtree(filetools.join(torrent_paths[torr_client], downloadFilename), silent=True)
+        #Espera a que el gestor termine de borrar la sesion (timing...)            
+            time.sleep(8)
+            
+        downloadFilename = scrapertools.find_single_match(item.downloadFilename, '\:\w+\:\s*(.*?)$')
+        if downloadFilename:
+            if downloadFilename.startswith('\\') or downloadFilename.startswith('/'):
+                downloadFilename = downloadFilename[1:]
+            downloadFolder = filetools.dirname(downloadFilename)
+            if '\\' in downloadFolder:
+                downloadFolder = downloadFolder.split('\\')[0]
+            elif '/' in downloadFolder:
+                downloadFolder = downloadFolder.split('/')[0]
+            if downloadFolder:
+                if filetools.isdir(filetools.join(torrent_paths[torr_client], downloadFolder)):
+                    filetools.rmdirtree(filetools.join(torrent_paths[torr_client], downloadFolder), silent=True)
+                else:
+                    filetools.remove(filetools.join(torrent_paths[torr_client], downloadFolder), silent=True)
+            elif downloadFilename:
+                filetools.remove(filetools.join(torrent_paths[torr_client], downloadFilename), silent=True)
 
+    # Vuelve a  actualiza el .json de control después de que el gestor de torrent termine su función (timing...)
+    update_json(item.path, {"downloadStatus": item.downloadStatus, "downloadProgress": 0, "downloadQueued": 0,
+                                "downloadServer": {}})
+    
     return torr_data, deamon_url, index
 
 
@@ -427,6 +504,7 @@ def move_to_libray(item):
 
 
 def update_json(path, params):
+    logger.info(path + str(params))
     if not path or not params: return
     path = filetools.join(config.get_setting("downloadlistpath"), path)
     if filetools.exists(path):
@@ -587,6 +665,7 @@ def download_from_url(url, item):
         save_server_statistics(item.server, 0, False)
         return {"downloadStatus": STATUS_CODES.error}
 
+    item.downloadQueued = 0
     # Obtenemos la ruta de descarga y el nombre del archivo
     item.downloadFilename = item.downloadFilename.replace('/','-')
     download_path = filetools.dirname(filetools.join(DOWNLOAD_PATH, item.downloadFilename))
@@ -603,7 +682,7 @@ def download_from_url(url, item):
                    block_size=2 ** (17 + int(config.get_setting("block_size", "downloads"))),
                    part_size=2 ** (20 + int(config.get_setting("part_size", "downloads"))),
                    max_buffer=2 * int(config.get_setting("max_buffer", "downloads")))
-    d.start_dialog(config.get_localized_string(60332))
+    d.start_dialog('%s: %s' % (config.get_localized_string(60332), item.server.capitalize()))
 
     # Descarga detenida. Obtenemos el estado:
     # Se ha producido un error en la descarga   
@@ -632,7 +711,7 @@ def download_from_url(url, item):
     if status == STATUS_CODES.completed:
         move_to_libray(item.clone(downloadFilename=file))
 
-    return {"downloadUrl": d.download_url, "downloadStatus": status, "downloadSize": d.size[0],
+    return {"downloadUrl": d.download_url, "downloadStatus": status, "downloadSize": d.size[0], "downloadQueued": 0, 
             "downloadProgress": d.progress, "downloadCompleted": d.downloaded[0], "downloadFilename": file}
 
 
@@ -649,9 +728,10 @@ def download_from_server(item, silent=False):
 
     if not silent: progreso = platformtools.dialog_progress(config.get_localized_string(30101), config.get_localized_string(70178) % item.server)
     channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
-    if hasattr(channel, "play") and not item.play_menu:
+    if hasattr(channel, "play") and not item.play_menu and not item.url.startswith('magnet:'):
 
         if not silent: progreso.update(50, config.get_localized_string(70178) % item.server, config.get_localized_string(60003) % item.contentChannel)
+        if item.server == 'torrent': item.url_control = item.url
         try:
             itemlist = getattr(channel, "play")(item.clone(channel=item.contentChannel, action=item.contentAction))
         except:
@@ -673,8 +753,10 @@ def download_from_server(item, silent=False):
         item.contentAction, item.contentChannel, item.server, item.url))
 
     if item.server == 'torrent':
+        torrent_paths = torrent.torrent_dirs()
         # Si es .torrent y ha dato error, se intenta usar las urls de emergencia.  Si no, se marca como no error y se pasa al siguiente
-        if config.get_videolibrary_path() not in item.url and not item.url.startswith('http') and not item.url.startswith('magnet:'):
+        if config.get_videolibrary_path() not in item.url and torrent_paths[torrent_paths['TORR_client'].upper()] \
+                        not in item.url and not item.url.startswith('http') and not item.url.startswith('magnet:'):
             item.url = filetools.join(PATH, item.url)
         if not item.url.startswith('http') and filetools.isfile(item.url):
             if not filetools.exists(item.url):
@@ -688,16 +770,19 @@ def download_from_server(item, silent=False):
                         item.url = item.torrent_alt
                     elif item.emergency_urls:
                         item.url = item.emergency_urls[0][0]
-                    if not filetools.exists(item.url):
+                    if config.get_videolibrary_path() not in item.url and torrent_paths[torrent_paths['TORR_client'].upper()] \
+                                not in item.url and not item.url.startswith('http') and not item.url.startswith('magnet:'):
+                        item.url = filetools.join(PATH, item.url)
+                    if not item.url.startswith('http') and not item.url.startswith('magnet:') and not filetools.exists(item.url):
                         PATH = ''
-                elif 'ERROR' in item.torrent_info and not item.url.startswith('http') \
-                            and not filetools.exists(item.url):
+                elif not filetools.exists(item.url):
                     PATH = ''
             except:
                 PATH = ''
                 logger.error(traceback.format_exc())
         if not PATH:
             result["downloadServer"] = {"url": item.url, "server": item.server}
+            result["downloadQueued"] = 0
             result["downloadProgress"] = 0
             result["downloadStatus"] = STATUS_CODES.error
             item.downloadStatus = result["downloadStatus"]
@@ -728,14 +813,17 @@ def download_from_server(item, silent=False):
 
         result["downloadServer"] = {"url": item.url, "server": item.server}
         result["downloadProgress"] = 1
-        if item.downloadStatus == STATUS_CODES.control:
-            result["downloadStatus"] = STATUS_CODES.control
-        else:
+        result["downloadQueued"] = 0
+        if item.downloadStatus == 0:
             result["downloadStatus"] = STATUS_CODES.completed
+        else:
+            result["downloadStatus"] = item.downloadStatus
+        item.downloadStatus = result["downloadStatus"]
         result["downloadCompleted"] = 0
         item.downloadCompleted = result["downloadCompleted"]
         item.downloadStatus = result["downloadStatus"]
         item.downloadProgress = result["downloadProgress"]
+        item.downloadQueued = result["downloadQueued"]
         item.downloadServer = result["downloadServer"]
         
         platformtools.play_torrent(item, xlistitem, item.url)
@@ -743,9 +831,9 @@ def download_from_server(item, silent=False):
         result["downloadCompleted"] = item.downloadCompleted
         result["downloadStatus"] = item.downloadStatus
         result["downloadProgress"] = item.downloadProgress
+        result["downloadQueued"] = item.downloadQueued
         result["downloadServer"] = item.downloadServer
-        
-        
+
         return result
     
     if not item.server or not item.url or not item.contentAction == "play" or item.server in unsupported_servers:
@@ -825,8 +913,10 @@ def download_from_best_server(item, silent=False):
             result["downloadStatus"] = STATUS_CODES.canceled
 
         # Tanto si se cancela la descarga como si se completa dejamos de probar mas opciones
-        if result["downloadStatus"] in [STATUS_CODES.canceled, STATUS_CODES.completed] and not play_item.url.startswith('magnet:'):
-            result["downloadServer"] = {"url": play_item.url, "server": play_item.server}
+        if result["downloadStatus"] in [STATUS_CODES.canceled, STATUS_CODES.completed, STATUS_CODES.auto, \
+                            STATUS_CODES.control]:
+            if not "downloadServer" in result:
+                result["downloadServer"] = {"url": play_item.url, "server": play_item.server}
             break
 
     return result
@@ -891,14 +981,16 @@ def start_download(item):
 def get_episodes(item):
     logger.info("contentAction: %s | contentChannel: %s | contentType: %s" % (
         item.contentAction, item.contentChannel, item.contentType))
-    
+
     sub_action = ["tvshow", "season", "unseen", "auto"]                         # Acciones especiales desde Findvideos
     SERIES = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_tvshows"))
     nfo_json = {}
     serie_path = ''
     episode_local = False
+    season = item.infoLabels['season']
+    sesxepi = []
     
-    if not item.nfo and not item.path.endswith('.json'):
+    if not item.nfo and item.path and not item.path.endswith('.json'):
         item.nfo = filetools.join(SERIES, item.path, 'tvshow.nfo')
     if item.nfo:
         head, nfo_json = videolibrarytools.read_nfo(item.nfo)                   #... tratamos de recuperar la info de la Serie
@@ -916,8 +1008,15 @@ def get_episodes(item):
         # Obtenemos el listado de episodios
         if item.sub_action in sub_action:                                       # Si viene de Play...
             if item.sub_action in ["unseen", "auto"] and config.is_xbmc() and item.nfo:
+                
                 from platformcode import xbmc_videolibrary
+                import xbmc
+                xbmc_videolibrary.update(folder='_scan_series')                 # Se escanea el directorio de series para catalogar en Kodi
+                while xbmc.getCondVisibility('Library.IsScanningVideo()'):      # Se espera a que acabe
+                    time.sleep(1)
                 xbmc_videolibrary.mark_content_as_watched_on_alfa(item.nfo)     # Sincronizamos los Vistos de Kodi con Alfa
+                
+                head, nfo_json = videolibrarytools.read_nfo(item.nfo)           #... tratamos de recuperar la info de la Serie
             if item.url_tvshow:
                 item.url = item.url_tvshow
             elif nfo_json:
@@ -1043,6 +1142,16 @@ def get_episodes(item):
             episode.contentAction = episode.action
             episode.contentChannel = episode.channel
 
+        # Si es una temporada, descartameos lo que sea de esa temporada
+        if item.contentType in ["season"] or item.sub_action in ["season"]:
+            if season and episode.infoLabels['season']:
+                if season != episode.infoLabels['season']:
+                    continue
+                sesxepi_now = '%sx%s' % (str(episode.infoLabels['season']), str(episode.infoLabels['episode']).zfill(2))
+                if sesxepi_now in str(sesxepi):
+                    continue
+                sesxepi += [sesxepi_now]
+
         # Si el resultado es una temporada, no nos vale, tenemos que descargar los episodios de cada temporada
         if episode.contentType == "season":
             itemlist.extend(get_episodes(episode))
@@ -1091,6 +1200,7 @@ def write_json(item):
         item.downloadStatus = STATUS_CODES.auto
     else:
         item.downloadStatus = STATUS_CODES.stoped
+    item.downloadQueued = 0
     item.downloadProgress = 0
     item.downloadSize = 0
     item.downloadCompleted = 0
@@ -1204,8 +1314,8 @@ def save_download_movie(item, silent=False):
 
 
 def save_download_tvshow(item, silent=False):
-    logger.info("contentAction: %s | contentChannel: %s | contentType: %s | contentSerieName: %s" % (
-        item.contentAction, item.contentChannel, item.contentType, item.contentSerieName))
+    logger.info("contentAction: %s | contentChannel: %s | contentType: %s | contentSerieName: %s | sub_action: %s" % (
+        item.contentAction, item.contentChannel, item.contentType, item.contentSerieName, item.sub_action))
 
     if not silent: progreso = platformtools.dialog_progress(config.get_localized_string(30101), config.get_localized_string(70188))
 
@@ -1221,11 +1331,14 @@ def save_download_tvshow(item, silent=False):
 
     if not silent: progreso.update(0, config.get_localized_string(70190), " ")
 
+    epi_saved = []
     for x, i in enumerate(episodes):
         if not silent: progreso.update(old_div(x * 100, len(episodes)),
                         "%dx%0.2d: %s" % (i.contentSeason, i.contentEpisodeNumber, i.contentTitle))
         write_json(i)
+        epi_saved += ['%sx%s' % (str(i.contentSeason), str(i.contentEpisodeNumber).zfill(2))]
     if not silent: progreso.close()
+    logger.info("Serie: %s | Total Saved: %s | Episodes: %s" % (item.contentSerieName, str(len(episodes)), str(sorted(epi_saved))))
 
     if not silent and not platformtools.dialog_yesno(config.get_localized_string(30101), config.get_localized_string(70189)):
         platformtools.dialog_ok(config.get_localized_string(30101),

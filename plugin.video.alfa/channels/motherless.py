@@ -49,10 +49,9 @@ def categorias(item):
     data = httptools.downloadpage(item.url).data
     if PY3 and isinstance(data, bytes):
         data = data.decode('utf-8')
-    data = scrapertools.find_single_match(data, '<div class="menu-categories-tab"  data-orientation="straight">(.*?)</div>')
-    logger.debug(data)
+    data = scrapertools.find_single_match(data, '<div class="menu-categories-tab"(.*?)<div class="menu-categories-tab"')
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|\\", "", data)
-    patron = '<a href="([^"]+)" class="plain">([^<]+)<'
+    patron = '<a href="([^"]+)" class="[^"]+">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle in matches:
         title = scrapedtitle 
@@ -71,13 +70,13 @@ def lista(item):
     if PY3 and isinstance(data, bytes):
         data = data.decode('utf-8')
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    patron = '<div class="thumb video.*?'
+    patron = '<div class="thumb.*?'
     patron += '<a href="([^"]+)".*?'
+    patron += '<span class="size">([^<]+)<.*?'
     patron += 'src="([^"]+)?from_helper".*?'
-    patron += 'alt="([^"]+)".*?'
-    patron += '<div class="caption left">([^<]+)<'
+    patron += 'alt="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedthumbnail,scrapedtitle,time in matches:
+    for scrapedurl,time,scrapedthumbnail,scrapedtitle in matches:
         title = "[COLOR yellow]%s[/COLOR] %s" % (time, scrapedtitle)
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)

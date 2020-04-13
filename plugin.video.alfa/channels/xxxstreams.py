@@ -108,7 +108,6 @@ def findvideos(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|amp;|\s{2}|&nbsp;", "", data)
-    logger.debug(data)
     patron = '<a href="([^"]+)" rel="nofollow[^>]+>(?:<strong>|)\s*(?:Streaming|Download)'
     matches = scrapertools.find_multiple_matches(data, patron)
     for url in matches:

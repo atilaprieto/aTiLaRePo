@@ -1340,9 +1340,17 @@ def play_torrent(item, xlistitem, mediaurl):
         # Si ya es local, lo usamos
         url = ''
         url_local = False
-        if scrapertoolsV2.find_single_match(item.url, '^\w\:\\') or item.url.startswith("\\") \
-                        or item.url.startswith("/") or item.url.startswith("magnet:"):
-            url_local = True
+        if '\\' in item.url or item.url.startswith("/") or item.url.startswith("magnet:"):
+            if videolibrary_path not in item.url and torrent_paths[torr_client.upper()+'_torrents'] \
+                            not in item.url and not item.url.startswith("magnet:"):
+                item.url = filetools.join(videolibrary_path, folder, item.url)
+            if item.url.startswith("magnet:"):
+                url_local = True
+            else:
+                url_local = filetools.exists(item.url)
+            if not url_local and item.torrent_alt:                          # Si hay error, se busca un .torrent alternativo
+                item.url = item.torrent_alt                                 # El .torrent alternativo puede estar en una url o en local
+        
         url_stat = False
         torrents_path = ''
         referer = None
@@ -1384,15 +1392,18 @@ def play_torrent(item, xlistitem, mediaurl):
             if url:
                 url_stat = True
                 item.url = url
+                url_local = filetools.exists(item.url)
                 if "torrentin" in torr_client:
                     item.url = 'file://' + item.url
 
-        if videolibrary_path and not videolibrary_path in item.url and not 'http' in item.url and not item.url.startswith("magnet:"):
+        if not url and not url_local and item.torrent_alt:              # Si hay error, se busca un .torrent alternativo
+            item.url = item.torrent_alt                                 # El .torrent alternativo puede estar en una url o en local
+        
+        if not url_local and videolibrary_path and not videolibrary_path in item.url and \
+                            not torrent_paths[torr_client.upper()+'_torrents'] in item.url and \
+                            not 'http' in item.url and not item.url.startswith("magnet:"):
             item.url = filetools.join(videolibrary_path, folder, item.url)
             url_local = filetools.exists(item.url)
-
-        if not url and not url_local and item.torrent_alt and videolibrary_path:    # Si hay error, se busca un .torrent alternativo
-            item.url = item.torrent_alt                                 # El .torrent alternativo puede estar en una url o en local
 
         # Si es un archivo .torrent local, actualizamos el path relativo a path absoluto
         if url_local and not url_stat and videolibrary_path:            # .torrent alternativo local
@@ -1519,6 +1530,8 @@ def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password,
                         rar_files, torr_client, password, size, rar_control)    # Esperamos mientras se descarga el TORRENT
     else:
         save_path_videos = 'Memory'
+    if 'size' in str(rar_control) and rar_control['size']:
+        size = rar_control['size']
 
     UNRAR = torrent_paths['TORR_unrar_path']
     RAR_UNPACK = torrent_paths['TORR_rar_unpack']
@@ -1567,11 +1580,8 @@ def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password,
                 log("##### erase_file_path: %s" % erase_file_path)
                 try:
                     torr_data, deamon_url, index = torrent.get_tclient_data(torr_folder, \
-                                        torr_client, torrent_paths['ELEMENTUM_port'], delete=True)
-                    if filetools.isdir(erase_file_path):
-                        filetools.rmdirtree(erase_file_path)
-                    elif filetools.exists(erase_file_path) and filetools.isfile(erase_file_path):
-                        filetools.remove(erase_file_path)
+                                        torr_client, torrent_paths['ELEMENTUM_port'], delete=True, \
+                                        folder_new=erase_file_path)
                 except:
                     logger.error(traceback.format_exc(1))
     

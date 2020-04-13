@@ -128,8 +128,10 @@ def findvideos(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data= scrapertools.find_single_match(data, '<div class="entry-content">(.*?)</div>')
-    patron = '<a href="([^"]+)" [^<]+>Streaming'
-    matches = re.compile(patron,re.DOTALL).findall(data)
+    matches = scrapertools.find_multiple_matches(data, '<a href="([^"]+)" [^<]+>Streaming')
+    matches = re.compile('<a href="([^"]+)" [^>]+>Streaming',re.DOTALL).findall(data)
+    if not matches:
+        matches = re.compile('<a href="([^"]+.mp4)',re.DOTALL).findall(data)
     for scrapedurl in matches:
         itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=scrapedurl))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())

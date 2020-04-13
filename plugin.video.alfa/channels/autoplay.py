@@ -100,6 +100,9 @@ def start(itemlist, item):
         #platformtools.dialog_notification('AutoPlay ERROR', 'Sólo disponible para XBMC/Kodi')
         return itemlist
 
+    if item.downloadFilename:
+        # Si viene de Descargas, salimos
+        return itemlist
 
     if not autoplay_node:
         # Obtiene el nodo AUTOPLAY desde el json

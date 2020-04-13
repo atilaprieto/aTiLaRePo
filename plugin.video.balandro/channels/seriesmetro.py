@@ -211,7 +211,7 @@ def play(item):
         data = httptools.downloadpage(url, headers={'Referer': host}, raise_weberror=False).data
         # ~ logger.debug(data)
         if '<div class="g-recaptcha"' in data or 'Solo los humanos pueden ver' in data:
-            headers = {'Referer': host, 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 10_2_1 like Mac OS X) AppleWebKit/602.4.6 (KHTML, like Gecko) Version/10.0 Mobile/14D27 Safari/602.1'}
+            headers = {'Referer': host, 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}
             data = httptools.downloadpage(url, headers=headers, raise_weberror=False).data
             # ~ logger.debug(data)
         

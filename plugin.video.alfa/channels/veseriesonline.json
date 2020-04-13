@@ -1,7 +1,7 @@
 {
   "id": "veseriesonline",
   "name": "VeSeriesOnline",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["cast", "lat"],
   "thumbnail": "http://www.veseriesonline.com/wp-content/themes/theme-fb4/images/logo.png",

@@ -59,7 +59,7 @@ def mainlist(item):
     
     autoplay.init(item.channel, list_servers, list_quality)
 
-    item.url_plus = "peliculas-16/"
+    item.url_plus = "peliculas-18/"
     itemlist.append(Item(channel=item.channel, title="Películas", action="categorias", 
                 url=host + item.url_plus, url_plus=item.url_plus, thumbnail=thumb_cartelera, 
                 extra="Películas"))
@@ -576,8 +576,10 @@ def findvideos(item):
 
     #Bajamos los datos de la página
     data = ''
-    patron = 'onclick="'
-    patron += "post\('(?P<url>[^']+',\s*{u:\s*'[^']+)'}\);"
+    patron = 'class="linktorrent[^"]*"\s*href="(http[^"]+)"'
+    patron1 = 'onclick="'
+    patron1 += "post\('(?P<url>[^']+',\s*{u:\s*'[^']+)'}\);"
+    
     if item.contentType == 'movie':                                                 #Es una peli
         try:
             data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)", "", httptools.downloadpage(item.url, timeout=timeout, headers=headers).data)
@@ -599,6 +601,9 @@ def findvideos(item):
                 else:
                     return itemlist                                         #si no hay más datos, algo no funciona, pintamos lo que tenemos
 
+        if not scrapertools.find_single_match(data, patron):                        # Buscar con patrón alternativo
+            patron = patron1
+        
         if not item.armagedon:                                                      #Si es un proceso normal, seguimos
             matches = re.compile(patron, re.DOTALL).findall(data)
         if not matches:                                                             #error

@@ -105,7 +105,6 @@ def lista(item):
     if "#" in next_page:
         next_page = scrapertools.find_single_match(data,'data-query="([^"]+)"><i class="mdi mdi-arrow-right">')
         next_page = next_page.replace(":", "=").replace(";", "&").replace("+from_albums", "")
-        logger.debug(item.url + " - " + next_page)
         if "&" in item.url:
             item.url = scrapertools.find_single_match(item.url, '(.*?)&')
         next_page = "%s&%s" % (item.url, next_page)
@@ -125,7 +124,6 @@ def play(item):
     info_b, info_a = scrapertools.find_single_match(data, patron)
     post = 'param=%s,%s' % (info_a, info_b)
     new_data = httptools.downloadpage(post_url, post=post, headers=headers).data
-    logger.debug(new_data)
     texto = scrapertools.find_single_match(new_data, 'video_url":"([^"]+)"')
 
     url = dec_url(texto)

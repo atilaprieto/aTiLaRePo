@@ -1,37 +1,14 @@
 {
-  "active": true,
+  "active": false,
   "find_videos": {
     "ignore_urls": [],
     "patterns": [
-      {
-        "pattern": "(https://www.javbangers.com/video/[0-9]+/[A-z0-9-]+/)",
-        "url": "\\1"
-      },
       {
         "pattern": "(https://www.fapnado.com/videos/[0-9]+/[A-z0-9-]+/)",
         "url": "\\1"
       },
       {
-        "pattern": "(https://www.xozilla.com/videos/[0-9]+/[A-z0-9-]+/)",
-        "url": "\\1"
-      },
-      {
-        "pattern": "(https://www.camwhoresbay.com/videos/[0-9]+/[A-z0-9-]+/)",
-        "url": "\\1"
-      },      {
-        "pattern": "(https://www.analdin.com/es/videos/[0-9]+/[A-z0-9-]+/)",
-        "url": "\\1"
-      },
-      {
         "pattern": "(https://www.javbangers.com/embed/\\w+)",
-        "url": "\\1"
-      },
-      {
-        "pattern": "(https://www.pornrewind.com/embed/\\w+)",
-        "url": "\\1"
-      },
-      {
-        "pattern": "(https://severeporn.com/embed/\\w+)",
         "url": "\\1"
       }
     ]

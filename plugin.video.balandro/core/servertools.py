@@ -99,7 +99,7 @@ def get_servers_itemlist(itemlist):
 
                 for item in itemlist:
                     if match.group() in item.url:
-                        # ~ logger.info('Found patern ' + pattern["pattern"])
+                        # ~ logger.info('Found pattern ' + pattern["pattern"])
                         item.server = serverid
                         if '|' in item.url:
                             item.url = url + '|' + item.url.split('|')[1]
@@ -368,13 +368,13 @@ def get_servers_list():
 # Normalizar nombre del servidor (para los canales que no lo obtienen de los patrones, y para evitar bucle more_ids en get_server_id())
 def corregir_servidor(servidor):
     servidor = servidor.strip().lower()
-    if servidor in ['waaw', 'waaw1', 'waav', 'netu', 'hqq', 'megavideo']: return 'netutv'
+    if servidor in ['waaw', 'waaw1', 'waav', 'netu', 'hqq', 'megavideo', 'megaplay']: return 'netutv'
     elif servidor in ['povwideo', 'powvldeo', 'powv1deo', 'povw1deo']: return 'powvideo'
     elif servidor in ['steamplay', 'streamp1ay']: return 'streamplay'
     elif servidor in ['jplayer', 'feurl']: return 'fembed'
     elif servidor == 'vidto': return 'vidtodo'
     elif servidor == 'vev': return 'vevio'
-    # ~ elif servidor == 'uptobox': return 'uptostream'
+    elif servidor in ['my', 'my.mail', 'my.mail.ru']: return 'mailru'
     elif servidor in ['ok', 'ok.ru', 'ok server']: return 'okru'
     elif servidor == 'youtu': return 'youtube'
     elif servidor == 'mp4up': return 'mp4upload'
@@ -385,6 +385,7 @@ def corregir_servidor(servidor):
     elif servidor == 'thevideo': return 'thevideome'
     elif servidor == 'onefichier': return '1fichier'
     elif servidor in ['uploaded', 'ul', 'ul.to']: return 'uploadedto'
+    # ~ elif servidor == 'uptobox': return 'uptostream'
     else: return servidor
 
 

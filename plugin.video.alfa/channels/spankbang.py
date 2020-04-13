@@ -99,7 +99,6 @@ def play(item):
     headers = {'Referer':item.url}
     url ="%s%s" % (host, "/api/videos/stream")
     data = httptools.downloadpage(url, post=post, headers=headers).data
-    logger.debug(data)
     patron = '"(\d+(?:p|k))":\["([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for quality,url in matches:

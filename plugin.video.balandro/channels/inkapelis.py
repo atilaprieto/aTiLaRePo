@@ -223,6 +223,8 @@ def corregir_servidor(servidor):
     elif servidor == 'descargar': return 'mega'
     elif servidor == 'vip': return 'directo'
     elif servidor == 'premium': return 'digiload'
+    elif servidor == 'goplay': return 'gounlimited'
+    elif servidor == 'meplay': return 'netutv'
     else: return servidor
 
 def findvideos(item):
@@ -324,30 +326,46 @@ def play(item):
             else:
                 vurl = url
 
-
     elif 'play.playerd.xyz/' in url:
         resp = httptools.downloadpage(url, headers={'Referer':item.referer}, follow_redirects=False)
         # ~ logger.debug(resp.data)
-
-        bloque = scrapertools.find_single_match(resp.data, 'sources:\s*\[(.*?)\]')
-        for enlace in scrapertools.find_multiple_matches(bloque, "\{(.*?)\}"):
-            v_url = scrapertools.find_single_match(enlace, 'file:\s*"([^"]+)')
-            if not v_url: continue
-            if v_url.startswith('/'): v_url = 'https://play.playerd.xyz' + v_url
-            # ~ v_url = httptools.downloadpage(v_url, follow_redirects=False, only_headers=True).headers.get("location", "")
-            v_lbl = scrapertools.find_single_match(enlace, 'label:\s*"([^"]+)')
-            if not v_lbl: v_lbl = scrapertools.find_single_match(enlace, 'type:\s*"([^"]+)')
-            if not v_lbl: v_lbl = 'mp4'
-            itemlist.append([v_lbl, v_url])
+        itemlist = get_sources(item, resp.data)
 
     elif url.startswith('http'):
         vurl = url
 
+
+    if vurl and 'player.php?id=' in vurl:
+        resp = httptools.downloadpage(vurl, headers={'Referer':url}, follow_redirects=False)
+        # ~ logger.debug(resp.data)
+        vurl = None
+        itemlist = get_sources(item, resp.data)
+
     if vurl:
+        # ~ logger.info(vurl)
         servidor = servertools.get_server_from_url(vurl)
         if servidor and servidor != 'directo':
             url = servertools.normalize_url(servidor, vurl)
             itemlist.append(item.clone( url=url, server=servidor ))
+
+    return itemlist
+
+def get_sources(item, data):
+    itemlist = []
+    bloque = scrapertools.find_single_match(data, '(?:"|)sources(?:"|):\s*\[(.*?)\]')
+    for enlace in scrapertools.find_multiple_matches(bloque, "\{(.*?)\}"):
+        v_url = scrapertools.find_single_match(enlace, '(?:"|)file(?:"|):\s*"([^"]+)')
+        if not v_url: continue
+        if v_url.startswith('/'): v_url = 'https://play.playerd.xyz' + v_url
+        # ~ v_url = httptools.downloadpage(v_url, follow_redirects=False, only_headers=True).headers.get("location", "")
+
+        v_type = scrapertools.find_single_match(enlace, '(?:"|)type(?:"|):\s*"([^"]+)')
+        if v_type == 'hls':
+            itemlist.append(item.clone(url = v_url, server = 'm3u8hls'))
+        else:
+            v_lbl = scrapertools.find_single_match(enlace, '(?:"|)label(?:"|):\s*"([^"]+)')
+            if not v_lbl: v_lbl = 'mp4'
+            itemlist.append([v_lbl, v_url])
 
     return itemlist
 

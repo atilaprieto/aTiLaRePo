@@ -26,7 +26,7 @@ list_servers = ['mangovideo']
 
 # https://playpornfree.org/    https://mangoporn.net/   https://watchfreexxx.net/   https://losporn.org/  https://xxxstreams.me/  https://speedporn.net/
 
-host = 'https://watchpornfree.info'
+host = 'https://watchpornfree.info'   #'https://xxxparodyhd.net'  'http://www.veporns.com'  'http://streamporno.eu'
 
 def mainlist(item):
     logger.info("")

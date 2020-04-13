@@ -3,13 +3,18 @@
   "more_ids": ["netu", "waaw", "hqq"],
   "name": "Netutv",
  
-  "active": true,
+  "active": false,
+  "notes": "Requiere recaptcha",
 
   "find_videos": {
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "megavideo.cam/watch_video.php\\?v=([a-zA-Z0-9]+)",
+        "pattern": "megavideo.cam/watch_video.php\\?v=([A-z0-9]+)",
+        "url": "http://netu.tv/watch_video.php?v=\\1"
+      },
+      {
+        "pattern": "megaplay.cc/player/embed_player.php\\?vid=([A-z0-9]+)",
         "url": "http://netu.tv/watch_video.php?v=\\1"
       },
       {
@@ -17,7 +22,11 @@
         "url": "http://netu.tv/watch_video.php?v=\\2"
       },
       {
-        "pattern": "(?:hqq|waaw|netu|waaw1)(?:\\.tv\\/|\\.watch\\/|\\.php\\?).*?(?:v=|vid=)([a-zA-Z0-9]+)",
+        "pattern": "(?:hqq|waaw|netu|waaw1)\\.(?:tv|watch)/(?:f/|e/)([A-z0-9]+)",
+        "url": "http://netu.tv/watch_video.php?v=\\1"
+      },
+      {
+        "pattern": "(?:hqq|waaw|netu|waaw1)\\.(?:tv|watch)/.*?(?:v=|vid=)([A-z0-9]+)",
         "url": "http://netu.tv/watch_video.php?v=\\1"
       },
       {

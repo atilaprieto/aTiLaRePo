@@ -67,7 +67,6 @@ def lista(item):
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=video_url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     last_page= scrapertools.find_single_match(data,'<a href=".*?/latest/(\d+)"><div style="display:inline">Last<')
-    logger.debug(last_page)
     page = scrapertools.find_single_match(item.url, "(.*?=)\d+")
     current_page = scrapertools.find_single_match(item.url, ".*?&page=(\d+)")
     if current_page:

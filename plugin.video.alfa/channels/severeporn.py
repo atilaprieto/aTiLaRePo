@@ -84,12 +84,6 @@ def categorias(item):
     return  sorted(itemlist, key=lambda i: i.title)
 
 
-# <li class="next"><a href="#search" data-action="ajax" data-container-id="list_videos_videos_list_search_result_pagination" 
-# data-block-id="list_videos_videos_list_search_result" 
-# data-parameters="q:big%20tits;category_ids:;sort_by:;from_videos+from_albums:2">Next</a></li>
-# https://severeporn.com/search/big-tits/?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&q=big+tits&category_ids=&sort_by=&from_videos=2&from_albums=2&_=1582840651693
-
-
 def lista(item):
     logger.info()
     itemlist = []
@@ -109,6 +103,10 @@ def lista(item):
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
+    if "#" in next_page:
+        next_page = scrapertools.find_single_match(data, 'data-parameters="([^"]+)">Next')
+        next_page = next_page.replace(":", "=").replace(";", "&").replace("+from_albums", "")
+        next_page = "?%s" % next_page
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 

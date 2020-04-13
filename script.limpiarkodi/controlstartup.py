@@ -38,7 +38,7 @@ if sys.version_info.major==2:
     from urlparse import parse_qs
 thumbnailPath = xbmc.translatePath('special://thumbnails');
 cachePath = os.path.join(xbmc.translatePath('special://home'), 'cache')
-cdmPath = os.path.join(xbmc.translatePath('special://home'), 'cdm')
+##cdmPath = os.path.join(xbmc.translatePath('special://home'), 'cdm')
 purgePath = os.path.join(xbmc.translatePath('special://home/addons'), 'packages')
 ltempPath = xbmc.translatePath('special://home/temp')
 torrentsdir = xbmc.translatePath(os.path.join('special://cache'))
@@ -134,25 +134,25 @@ def clearCache():
                         
             else:
                 pass
-    if os.path.exists(cdmPath)==True:    
-        for root, dirs, files in os.walk(cdmPath):
-            file_count = 0
-            file_count += len(files)
-            if file_count > 0:
-                    for f in files:
-                        try:
-                            if (f == "*.dmp" or f == "*.txt"): continue
-                            os.unlink(os.path.join(root, f))
-                        except:
-                            pass
-                    for d in dirs:
-                        try:
-                            shutil.rmtree(os.path.join(root, d))
-                        except:
-                            pass
-                        
-            else:
-                pass
+##    if os.path.exists(cdmPath)==True:    
+##        for root, dirs, files in os.walk(cdmPath):
+##            file_count = 0
+##            file_count += len(files)
+##            if file_count > 0:
+##                    for f in files:
+##                        try:
+##                            if (f == "*.dmp" or f == "*.txt"): continue
+##                            os.unlink(os.path.join(root, f))
+##                        except:
+##                            pass
+##                    for d in dirs:
+##                        try:
+##                            shutil.rmtree(os.path.join(root, d))
+##                        except:
+##                            pass
+##                        
+##            else:
+##                pass
     if os.path.exists(purgePath)==True:
         for root, dirs, files in os.walk(purgePath):
             file_count = 0
