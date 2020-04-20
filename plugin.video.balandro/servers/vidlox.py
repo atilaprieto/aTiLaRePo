@@ -8,7 +8,10 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
-    data = httptools.downloadpage(page_url).data
+    headers = {}
+    if url_referer: headers['Referer'] = url_referer
+        
+    data = httptools.downloadpage(page_url, headers=headers).data
     # ~ logger.debug(data)
 
     if "borrado" in data or "Deleted" in data:
@@ -17,7 +20,8 @@ def get_video_url(page_url, url_referer=''):
     if not 'sources' in data:
         ck = scrapertools.find_single_match(data, 'document\.cookie\s*=\s*"([^;]+)')
         if ck:
-            data = httptools.downloadpage(page_url, headers={'Cookie': ck}).data
+            headers['Cookie'] = ck
+            data = httptools.downloadpage(page_url, headers=headers).data
             # ~ logger.debug(data)
 
     bloque = scrapertools.find_single_match(data, 'sources:.\[.*?\]')

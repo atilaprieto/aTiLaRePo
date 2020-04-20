@@ -1,6 +1,10 @@
 Balandro changelog
 ==================
 
+1.4.11:
+    Canales modificados: Seriemega, Cinemaclasic, Areadocumental, Grantorrent, Inkapelis, Pelisvips. 
+    Servidores modificados: Archiveorg, Zembed, Easyload, Gounlimited, Vidlox.
+
 1.4.10:
     Canales modificados: Descargacineclasico, Inkapelis, Playview, Allpeliculas, 
     Torrentdivx, Verdocumentalesonline, Tucineclasico, Cinemaclasic, SerieMega. 

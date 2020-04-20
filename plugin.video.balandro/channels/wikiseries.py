@@ -121,6 +121,7 @@ def tracking_all_episodes(item):
 def episodios(item):
     logger.info()
     itemlist = []
+    color_lang = config.get_setting('list_languages_color', default='red')
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
@@ -147,7 +148,8 @@ def episodios(item):
         if item.contentSeason and item.contentSeason != int(season):
             continue
 
-        titulo = '%s %s [%s]' % (s_e, title, ', '.join([IDIOMAS.get(lang, lang) for lang in languages]))
+        titulo = '%s %s' % (s_e, title)
+        if languages: titulo += ' [COLOR %s][%s][/COLOR]' % (color_lang, ', '.join([IDIOMAS.get(lang, lang) for lang in languages]))
 
         itemlist.append(item.clone( action='findvideos', url=url, title=titulo, 
                                     contentType='episode', contentSeason=season, contentEpisodeNumber=episode ))
@@ -173,16 +175,18 @@ def findvideos(item):
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
     
-    matches = re.compile('<tr id=row\d+ data-type="1" data-lgn="([^"]+)" data-qa="([^"]+)" data-link="([^"]+)"', re.DOTALL).findall(data)
-    if not matches:
-        matches = re.compile('<tr id=row\d+ data-type=1 data-lgn=([^ ]+) data-qa=([^ ]+) data-link=([^ >]+)', re.DOTALL).findall(data)
-    for language, quality, url in matches:
-        calidad = calidades.get(quality, '?')
+    for tipo in ['1', '2']:
+        matches = re.compile('<tr id=row\d+ data-type="%s" data-lgn="([^"]+)" data-qa="([^"]+)" data-link="([^"]+)"' % tipo, re.DOTALL).findall(data)
+        if not matches:
+            matches = re.compile('<tr id=row\d+ data-type=%s data-lgn=([^ ]+) data-qa=([^ ]+) data-link=([^ >]+)' % tipo, re.DOTALL).findall(data)
+        for language, quality, url in matches:
+            calidad = calidades.get(quality, '?')
+            if url in [it.url for it in itemlist]: continue # evitar duplicados
 
-        itemlist.append(Item(channel = item.channel, action = 'play',
-                             title = '', url = url,
-                             language = idiomas.get(language, '?'), quality = calidad, quality_num = puntuar_calidad(calidad)
-                       ))
+            itemlist.append(Item(channel = item.channel, action = 'play',
+                                 title = '', url = url,
+                                 language = idiomas.get(language, '?'), quality = calidad, quality_num = puntuar_calidad(calidad)
+                           ))
 
     matches = re.compile('<a href="/(reproductor?[^"]+)', re.DOTALL).findall(data)
     for url in matches:
@@ -205,8 +209,9 @@ def findvideos(item):
 
         data2 = httptools.downloadpage(host+url).data
         # ~ logger.debug(data2)
-        iframe_src = scrapertools.find_multiple_matches(data2, '(?i)<iframe src="[^"]+')
+        iframe_src = scrapertools.find_multiple_matches(data2, '(?i)<iframe src="([^"]+)')
         for iframe in iframe_src:
+            # ~ logger.info(iframe)
             if iframe in [it.url for it in itemlist]: continue # evitar duplicados
             itemlist.append(Item(channel = item.channel, action = 'play',
                                  title = '', url = iframe,

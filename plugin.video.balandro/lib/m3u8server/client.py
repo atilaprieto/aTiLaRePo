@@ -28,7 +28,12 @@ class Client(object):
         self.file_local = None
 
         self._server = Server((self.ip, self.port), Handler, client=self)
-        self.add_url(url)
+
+        if url.startswith('http'): 
+            self.add_url(url)
+        else:
+            self.add_nourl(url)
+            
         if self.file_local: self.start()
 
     def start(self):
@@ -73,6 +78,21 @@ class Client(object):
         except:
             self.file_local = None
 
+    def add_nourl(self, url):
+        try:
+            data_local = ''
+            for lin in url.splitlines():
+                if lin.startswith('#'): 
+                    data_local += lin
+                elif lin.startswith('http'): 
+                    data_local += self.url_base + base64.b64encode(lin)
+                data_local += '\n'
+
+            self.file_local = os.path.join(config.get_data_path(), "m3u8hls.m3u8")
+            with open(self.file_local, 'wb') as f: f.write(data_local); f.close()
+        except:
+            self.file_local = None
+
     def _auto_shutdown(self):
         while self.running:
             time.sleep(1)
@@ -81,12 +101,14 @@ class Client(object):
                 self.last_connect = time.time()
 
             if self.auto_shutdown:
-                #shudown por haber cerrado el reproductor
+                #shutdown por haber cerrado el reproductor
                 if self.connected and self.last_connect and self.is_playing_fnc and not self.is_playing_fnc():
                     if time.time() - self.last_connect - 1 > self.timeout:
+                        # ~ logger.info("shutdown por haber cerrado el reproductor")
                         self.stop()
 
                 #shutdown por no realizar ninguna conexion
                 if self.start_time and self.wait_time and not self.connected:
                     if time.time() - self.start_time - 1 > self.wait_time:
+                        # ~ logger.info("shutdown por no realizar ninguna conexion")
                         self.stop()

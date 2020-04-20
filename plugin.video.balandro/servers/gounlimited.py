@@ -30,11 +30,14 @@ def get_embed(vid):
         # ~ logger.debug(data)
 
     mp4 = scrapertools.find_single_match(data, 'sources:\["([^"]+)')
+    if not mp4: mp4 = scrapertools.find_single_match(data, 'src:"([^"]+\.mp4)"')
+    if mp4 and descartable(mp4): return 'Servidor sobrecargado, no se puede reproducir'
     if mp4: 
         subtitulos = scrapertools.find_single_match(data, 'src:"([^"]+\.vtt)"')
         video_urls.append(["mp4", mp4, 0, subtitulos])
 
     return video_urls
+
 
 def get_download(vid):
     video_urls = []
@@ -49,7 +52,14 @@ def get_download(vid):
         # ~ logger.debug(data)
         
         url = scrapertools.find_single_match(data, ' href="([^"]+)">Direct Download Link</a>')
-        if url:
+        if url and not descartable(url):
             video_urls.append(["mp4", url])
 
     return video_urls
+
+# Descartar vídeos fake de "This server is extremely overloaded, unfortunately ..."
+def descartable(url):
+    # ~ https://gounlimited.to/videojs7/small3.mp4
+    # ~ https://xxx.gounlimited.to/xxx/SampleVideo_720x480_2mb.mp4
+    if 'small3.mp4' in url or 'SampleVideo_' in url: return True
+    else: return False

@@ -6,7 +6,8 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb
 
-host = 'https://grantorrent.eu/'
+# ~ host = 'https://grantorrent.eu/'
+host = 'https://grantorrentt.com/'
 
 
 def item_configurar_proxies(item):
@@ -21,7 +22,7 @@ def configurar_proxies(item):
 def do_downloadpage(url, post=None):
     ant_hosts = ['http://grantorrent.net/', 'https://grantorrent1.com/', 'https://grantorrent.one/', 
                  'https://grantorrent.tv/', 'https://grantorrent.la/', 'https://grantorrent.io/', 
-                 'https://grantorrent.cc/', 'https://grantorrent.li/']
+                 'https://grantorrent.cc/', 'https://grantorrent.li/', 'https://grantorrent.eu/']
     for ant in ant_hosts:
         url = url.replace(ant, host) # por si viene de enlaces guardados
 
@@ -119,11 +120,11 @@ def list_all(item):
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
     
-    patron = '<div class="imagen-post">\s*<a href="([^"]+)"><img src="([^"]+)"[^>]*>'
+    patron = '<div class="imagen-post">\s*<a href="([^"]+)"[^>]*>(?:>|)<img src="([^"]+)"[^>]*>'
     # ~ patron += '\s*</a>\s*<div class="bloque-superior">([^<]+)'
     patron += '.*?</a>\s*<div class="bloque-superior">([^<]+)'
-    patron += '<div class="imagen-idioma">\s*<img src="([^"]+)"'
-    patron += '>\s*</div>\s*</div>\s*<div class="bloque-inferior">([^<]+)'
+    patron += '<div class="imagen-idioma">\s*<img src="([^"]+)"[^>]*>'
+    patron += '\s*</div>\s*</div>\s*<div class="bloque-inferior">([^<]+)'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for url, thumb, quality, lang, title in matches:
@@ -172,7 +173,7 @@ def list_categ_search(item):
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.lower().replace(' ', '').replace('-', '')
-    orden = ['3d', 'screener', 'screener720p', 'hdscreener', 'brscreener', 'dvdrip', 'hdrip', 'bluray720p', 'microhd', 'microhd1080p', 'bluray1080p', 'bdremux1080p', '4k', 'full4k', '4kuhdrip', '4kfulluhd', '4kuhdremux', '4kuhdremux1080p', '4khdr']
+    orden = ['3d', 'screener', 'screener720p', 'hdscreener', 'brscreener', 'dvdrip', 'hdrip', 'bluray720p', 'microhd', 'microhd1080p', 'bluray1080p', 'fullbluray1080p', 'bdremux1080p', '4k', 'full4k', '4kuhdrip', '4kfulluhd', '4kuhdremux', '4kuhdremux1080p', '4khdr']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -186,16 +187,23 @@ def findvideos(item):
     # ~ patron = '<tr class="lol">\s*<td><img src="([^"]+)"[^>]*></td>\s*<td>([^<]+)</td>\s*<td>([^<]+)</td>\s*<td><a class="link" onclick="([^"]+)'
     patron = '<tr class="lol">\s*<td><img ([^>]*)>.*?</td>\s*<td>([^<]+)</td>\s*<td>([^<]+)</td>\s*<td><a class="link" onclick="([^"]+)'
     matches = re.compile(patron, re.DOTALL).findall(data)
+    if not matches:
+        patron = '<tr class="lol">\s*<td><img ([^>]*)>.*?</td>\s*<td>([^<]+)</td>\s*<td>([^<]+)</td>\s*<td><a class="link" href="([^"]+)'
+        matches = re.compile(patron, re.DOTALL).findall(data)
+
     for lang, quality, peso, onclick in matches:
         # ~ logger.debug('%s => %s' % (quality, puntuar_calidad(quality)))
 
-        post = scrapertools.find_single_match(onclick, "u:\s*'([^']+)")
-        if not post: continue
-        try:
-            url = base64.b64decode(post)
-            # ~ url = url.replace('grantorrent.la/', 'grantorrent.one/')
-        except:
-            continue
+        if onclick.startswith('http'):
+            url = onclick
+        else:
+            post = scrapertools.find_single_match(onclick, "u:\s*'([^']+)")
+            if not post: continue
+            try:
+                url = base64.b64decode(post)
+                # ~ url = url.replace('grantorrent.la/', 'grantorrent.one/')
+            except:
+                continue
 
         itemlist.append(Item( channel = item.channel, action = 'play',
                               title = '', url = url, server = 'torrent',

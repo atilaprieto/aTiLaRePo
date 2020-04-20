@@ -199,7 +199,7 @@ def findvideos(item):
     datos = scrapertools.find_multiple_matches(data, '<tr><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td></tr>')
     for servidor, calidad, idioma, enlace in datos:
         if servidor == 'Servidor': continue
-        server = scrapertools.find_single_match(servidor, 'domain=([a-z]+)')
+        server = scrapertools.find_single_match(servidor, 'domain=(?:www.|)([a-z]+)')
         server = servertools.corregir_servidor(server)
         url = scrapertools.find_single_match(enlace, " href='([^']+)'")
         if not url.startswith('http'): url = host + url[1:]

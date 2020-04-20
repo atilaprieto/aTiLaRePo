@@ -216,7 +216,6 @@ def last_seasons(item):
     return itemlist
 
 
-
 def corregir_servidor(servidor):
     servidor = servertools.corregir_servidor(servidor)
     if servidor == 'drive': return 'gvideo'
@@ -225,6 +224,8 @@ def corregir_servidor(servidor):
     elif servidor == 'premium': return 'digiload'
     elif servidor == 'goplay': return 'gounlimited'
     elif servidor == 'meplay': return 'netutv'
+    elif servidor == 'playerv': return 'directo' # storage.googleapis.com
+    elif servidor == 'stream': return 'mystream'
     else: return servidor
 
 def findvideos(item):
@@ -252,12 +253,14 @@ def findvideos(item):
         data2 = do_downloadpage(host + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':item.url})
         url = scrapertools.find_single_match(data2, "src='([^']+)")
         if not url: continue
+        # ~ logger.info(url)
 
         # ~ src='//playerd.xyz/play.php?v=//jplayer.club/v/11g5xij6ryq2-wr'
         if 'play.php?v=' in url:
             vurl = url.split('play.php?v=')[1]
             if vurl.startswith('//'): vurl = 'https:' + vurl
             servidor = servertools.get_server_from_url(vurl)
+            # ~ logger.info(servidor)
             if servidor and servidor != 'directo':
                 vurl = servertools.normalize_url(servidor, vurl)
                 itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
@@ -274,6 +277,7 @@ def findvideos(item):
                 lembed = scrapertools.find_single_match(lnk, 'data-embed="([^"]+)')
                 ltype = scrapertools.find_single_match(lnk, 'data-type="([^"]+)')
                 servidor = scrapertools.find_single_match(lnk, 'title="([^".]+)').lower()
+                # ~ logger.info(servidor)
             
                 itemlist.append(Item( channel = item.channel, action = 'play', server = corregir_servidor(servidor),
                                       title = '', lembed = lembed, ltype = ltype, referer = url, #other=servidor,
@@ -324,7 +328,17 @@ def play(item):
                 vurl = scrapertools.find_single_match(data, 'downloadurl = "([^"]+)')
                 # ~ if not vurl: logger.debug(data)
             else:
-                vurl = url
+                if url: 
+                    vurl = url
+                else: 
+                    gk_link = scrapertools.find_single_match(resp.data, 'config_player\.link = "([^"]+)')
+                    if gk_link:
+                        post = 'link=' + gk_link
+                        data = httptools.downloadpage('https://players.inkapelis.me/player/plugins/gkpluginsphp.php', post=post).data
+                        # ~ logger.debug(data)
+                        vurl = scrapertools.find_single_match(data, '"link":"([^"]+)').replace('\\/', '/')
+                    else:
+                        vurl = None
 
     elif 'play.playerd.xyz/' in url:
         resp = httptools.downloadpage(url, headers={'Referer':item.referer}, follow_redirects=False)
@@ -344,7 +358,7 @@ def play(item):
     if vurl:
         # ~ logger.info(vurl)
         servidor = servertools.get_server_from_url(vurl)
-        if servidor and servidor != 'directo':
+        if servidor and (servidor != 'directo' or 'googleapis.com' in vurl):
             url = servertools.normalize_url(servidor, vurl)
             itemlist.append(item.clone( url=url, server=servidor ))
 

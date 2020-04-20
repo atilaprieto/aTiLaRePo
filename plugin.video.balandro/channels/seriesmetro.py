@@ -220,6 +220,7 @@ def play(item):
             if url.endswith('.mpd'):
                 if platformtools.is_mpd_enabled():
                     itemlist.append(['mpd', url, 0, '', True])
+                itemlist.append(['m3u8', url.replace('/users/', 'hls/users/').replace('/manifest.mpd', '/index.m3u8')])
             else:
                 itemlist.append(['m3u8', url])
 

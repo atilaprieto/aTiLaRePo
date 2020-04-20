@@ -1,0 +1,15 @@
+{
+  "id": "pelisvips",
+  "name": "PelisVips",
+  "thumbnail": "pelisvips.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast", "lat", "vose"],
+
+  "notes": "Películas por idioma, por género, por calidad, Estrenos, Netflix."
+}

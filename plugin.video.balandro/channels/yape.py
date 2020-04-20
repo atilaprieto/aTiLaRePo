@@ -259,7 +259,7 @@ def list_all(item):
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.replace('Screnner', 'Screener')
-    orden = ['TS Screener', 'DVD Screener', 'BR Screener', 'HD Rip', 'HD 720', 'HD 1080p']
+    orden = ['TS Screener', 'TS Screener HQ', 'DVD Screener', 'BR Screener', 'HD Rip', 'HD 720', 'HD 1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

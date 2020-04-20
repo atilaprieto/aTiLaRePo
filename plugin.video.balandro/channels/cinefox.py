@@ -362,8 +362,8 @@ def findvideos(item):
     url = host + "/sources/list?id=%s&type=%s&order=%s" % (numid, extra, "streaming")
     itemlist=(get_enlaces(item, url, "Online"))
 
-    # ~ url = host + "/sources/list?id=%s&type=%s&order=%s" % (numid, extra, "download")
-    # ~ itemlist.extend(get_enlaces(item, url, "de Descarga"))
+    url = host + "/sources/list?id=%s&type=%s&order=%s" % (numid, extra, "download")
+    itemlist.extend(get_enlaces(item, url, "de Descarga"))
 
     return itemlist
 
@@ -376,7 +376,7 @@ def corregir_servidor(servidor):
 
 def get_enlaces(item, url, tipo_enlaces):
     itemlist = []
-    other = '' if tipo_enlaces == 'Online' else 'Descarga'
+    other = '' if tipo_enlaces == 'Online' else 'd'
 
     data = httptools.downloadpage(url, add_referer=True).data
     if tipo_enlaces == 'Online':

@@ -292,7 +292,8 @@ def findvideos(item):
                 pass
 
     for idioma, calidad, url, embed in matches:
-        if embed == 'd': continue # descartar descargas directas !?
+        # ~ logger.info('%s %s' % (embed, url))
+        if embed == 'd' and 'uptobox' not in url: continue # descartar descargas directas (menos Uptobox)
 
         calidad = unicode(calidad, 'utf8').upper().encode('utf8')
         idioma = idioma.capitalize() if idioma != 'ESPSUB' else 'VOSE'

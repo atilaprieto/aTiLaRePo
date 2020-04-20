@@ -160,20 +160,19 @@ def findvideos(item):
             # ~ logger.debug(enlace)
 
             url = scrapertools.find_single_match(enlace, " href='([^']+)")
-            if '.us.archive.org' in enlace:
-                servidor = 'directo'
+            if '.us.archive.org' in enlace: servidor = 'directo'
+            elif 'archive.org' in enlace: servidor = 'archiveorg'
             else:
                 servidor = corregir_servidor(scrapertools.find_single_match(enlace, "domain=([^'.]+)"))
             if not url or not servidor: continue
-            uploader = scrapertools.find_single_match(enlace, "author/[^/]+/'>([^<]+)</a>")
             tds = scrapertools.find_multiple_matches(enlace, '<td>(.*?)</td>')
             lang = tds[1].lower()
-            uploader += ', ' + tds[3]
-            # ~ uploader += ', ' + tipo
+            other = 'hace ' + tds[3]
+            # ~ other += ', ' + tipo
             
             itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, 
                                   title = '', url = url,
-                                  language = IDIOMAS.get(lang,lang), other = uploader
+                                  language = IDIOMAS.get(lang,lang), other = other
                            ))
 
     if len(itemlist) == 0:

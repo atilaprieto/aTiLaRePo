@@ -174,7 +174,7 @@ def findvideos(item):
 
     matches = re.compile('<tr class="odd">(.*?)</tr>', re.DOTALL).findall(data)
     for data_link in matches:
-        if ' data-tipo="descarga"' in data_link: continue # descartar descargas ?
+        if ' data-tipo="descarga"' in data_link and 'Uptobox' not in data_link: continue # descartar descargas (menos uptobox)
         
         age = scrapertools.find_single_match(data_link, '<span>([^<]+)').strip()[:10]  # quitar hora
         lang = scrapertools.find_single_match(data_link, 'images/language/([^.]+)\.png')

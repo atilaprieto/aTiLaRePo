@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.10" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.11" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -16,11 +16,8 @@
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Descargacineclasico, Inkapelis, Playview, Allpeliculas, 
-    Torrentdivx, Verdocumentalesonline, Tucineclasico, Cinemaclasic, SerieMega. 
-    Servidores modificados: Mega, Dailymotion, Netutv, Vidia, Mixdrop, Doodstream, 
-    Vidmoly, Vidlox, Supervideo, Youtube, Clipwatching, Myvi.
-    Limpieza de canales documentales.
+    Canales modificados: Seriemega, Cinemaclasic, Areadocumental, Grantorrent, Inkapelis, Pelisvips. 
+    Servidores modificados: Archiveorg, Zembed, Easyload, Gounlimited, Vidlox.
     </news>
 
     <assets>

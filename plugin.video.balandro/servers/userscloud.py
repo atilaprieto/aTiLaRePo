@@ -33,6 +33,8 @@ def get_video_url(page_url, url_referer=''):
         data = httptools.downloadpage(page_url, post).data
         # ~ logger.debug(data)
         media_url = scrapertools.find_single_match(data, '<div id="dl_link".*?<a href="([^"]+)"')
+        if not media_url: media_url = scrapertools.find_single_match(data, '<a href="([^"]+\.mp4)"')
+        if not media_url: media_url = scrapertools.find_single_match(data, '<a href="([^"]+\.m3u8)"')
 
     if not media_url: return []
 

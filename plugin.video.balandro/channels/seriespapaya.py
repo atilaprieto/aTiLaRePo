@@ -262,7 +262,7 @@ def findvideos(item):
 
     for lang, date, server, url, linkType, quality, uploader in links:
         linkTypeNum = 0 if linkType == "descargar" else 1
-        if linkTypeNum != 1 and server != 'Clicknupload': continue # descartar descargas directas (menos Clicknupload) ?
+        if linkTypeNum != 1 and server != 'Clicknupload' and server != 'Uptobox': continue # descartar descargas directas (menos Clicknupload y Uptobox)
 
         server = servertools.corregir_servidor(server)
         # ~ logger.debug('%s %s' % (server, url))

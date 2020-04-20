@@ -113,7 +113,7 @@ def get_servers_itemlist(itemlist):
     return itemlist
 
 
-def findvideos(data, skip=False):
+def findvideos(data, skip=False, disabled_servers=False):
     """
     Recorre la lista de servidores disponibles y ejecuta la funcion findvideosbyserver para cada uno de ellos
     :param data: Texto donde buscar los enlaces
@@ -129,10 +129,10 @@ def findvideos(data, skip=False):
 
     # Ejecuta el findvideos en cada servidor activo
     for serverid in servers_list:
-        if not is_server_enabled(serverid):
+        if not disabled_servers and not is_server_enabled(serverid):
             continue
 
-        devuelve.extend(findvideosbyserver(data, serverid))
+        devuelve.extend(findvideosbyserver(data, serverid, disabled_servers=disabled_servers))
         if skip and len(devuelve) >= skip:
             devuelve = devuelve[:skip]
             break
@@ -140,11 +140,11 @@ def findvideos(data, skip=False):
     return devuelve
 
 
-def findvideosbyserver(data, serverid):
+def findvideosbyserver(data, serverid, disabled_servers=False):
     devuelve = []
 
     serverid = get_server_id(serverid)
-    if not is_server_enabled(serverid):
+    if not disabled_servers and not is_server_enabled(serverid):
         return devuelve
 
     server_parameters = get_server_parameters(serverid)
@@ -169,14 +169,18 @@ def findvideosbyserver(data, serverid):
     return devuelve
 
 
-def get_server_from_url(url):
-    encontrado = findvideos(url, True)
+# Por defecto no se tienen en cuenta los servidores desactivados y se devuelve 'directo' si no se encuentra.
+# Con disabled_servers=True se detectan tb los desactivados y se devuelve None si no se encuentra.
+def get_server_from_url(url, disabled_servers=False):
+    encontrado = findvideos(url, skip=True, disabled_servers=disabled_servers)
     if len(encontrado) > 0:
-        devuelve = encontrado[0][2]
+        return encontrado[0][2]
     else:
-        devuelve = "directo" # No devuelve desconocido pq puede que sea un "conocido" que esté desactivado
+        if not disabled_servers:
+            return 'directo' # No devuelve desconocido pq puede que sea un "conocido" que esté desactivado
+        else:
+            return None
 
-    return devuelve
 
 
 # Para un servidor y una url, devuelve video_urls ([]), puede (True/False), motivo_no_puede
@@ -374,6 +378,7 @@ def corregir_servidor(servidor):
     elif servidor in ['jplayer', 'feurl']: return 'fembed'
     elif servidor == 'vidto': return 'vidtodo'
     elif servidor == 'vev': return 'vevio'
+    elif servidor == 'dood': return 'doodstream'
     elif servidor in ['my', 'my.mail', 'my.mail.ru']: return 'mailru'
     elif servidor in ['ok', 'ok.ru', 'ok server']: return 'okru'
     elif servidor == 'youtu': return 'youtube'

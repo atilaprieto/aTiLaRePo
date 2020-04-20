@@ -174,6 +174,7 @@ def tracking_all_episodes(item):
 def episodios(item):
     logger.info()
     itemlist = []
+    color_lang = config.get_setting('list_languages_color', default='red')
 
     data = do_downloadpage(item.url)
 
@@ -194,7 +195,7 @@ def episodios(item):
         # ~ languages = ', '.join([IDIOMAS.get(lang, 'VO') for lang in re.findall('img/language/([^\.]+)', epi_data)])
         languages = ', '.join([IDIOMAS.get(lang, 'VO') for lang in list(dict.fromkeys(re.findall('img/language/([^\.]+)', epi_data)))])
 
-        titulo = '%sx%s [%s]' % (season, episode, languages)
+        titulo = '%sx%s [COLOR %s][%s][/COLOR]' % (season, episode, color_lang, languages)
 
         itemlist.append(item.clone( action='findvideos', url=url, title=titulo, 
                                     contentType = 'episode', contentSeason = season, contentEpisodeNumber = episode ))

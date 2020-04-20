@@ -30,6 +30,9 @@ def get_video_url(page_url, url_referer=''):
             for url in matches:
                 video_urls.append(['mp4', url])
             video_urls.reverse() # calidad increscendo
+            if len(video_urls) == 2:
+                video_urls[0][0] = 'mp4 SD'
+                video_urls[1][0] = 'mp4 HD'
 
     try:
         packed = scrapertools.find_single_match(data, "text/javascript'>(.*?)\s*</script>")

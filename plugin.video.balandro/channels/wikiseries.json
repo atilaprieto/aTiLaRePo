@@ -3,7 +3,7 @@
   "name": "WikiSeries",
   "thumbnail": "wikiseries.jpg",
 
-  "active": false,
+  "active": true,
 
   "searchable": true,
   "search_types": ["tvshow"],

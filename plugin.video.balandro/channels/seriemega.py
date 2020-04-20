@@ -6,9 +6,10 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-host = 'https://seriemega.com/'
+host = 'https://seriemega.net/'
 
 def do_downloadpage(url, post=None):
+    url = url.replace('seriemega.com', 'seriemega.net') # por si viene de enlaces guardados
     data = httptools.downloadpage(url, post=post).data
     return data
 
@@ -29,7 +30,7 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone ( title = 'Últimas películas', action = 'list_all', url = host + 'peliculas-hd-2021/', search_type = 'movie' ))
+    itemlist.append(item.clone ( title = 'Últimas películas', action = 'list_all', url = host + 'peliculas/', search_type = 'movie' ))
 
     itemlist.append(item.clone ( title = 'Por género', action = 'generos', search_type = 'movie' ))
 
@@ -42,7 +43,7 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone ( title = 'Últimas series', action = 'list_all', url = host + 'serie-hd-2021/', search_type = 'tvshow' ))
+    itemlist.append(item.clone ( title = 'Últimas series', action = 'list_all', url = host + 'serie/', search_type = 'tvshow' ))
 
     itemlist.append(item.clone ( title = 'Por género', action = 'generos', search_type = 'tvshow' ))
 
@@ -89,7 +90,7 @@ def generos(item):
         opciones.remove(('suspense','Suspense'))
 
     for opc, tit in opciones:
-        itemlist.append(item.clone( title=tit, url=host + 'category/' + opc + '/', action='list_all' ))
+        itemlist.append(item.clone( title=tit, url=host + 'categoria/' + opc + '/', action='list_all' ))
 
     return itemlist
 
@@ -186,7 +187,7 @@ def episodios(item):
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.replace(' ', '').replace('-', '').lower()
-    orden = ['cam', 'tsscreener', 'brscreener', 'dvdrip', 'hdrip', 'hd720', 'hd1080']
+    orden = ['cam', 'tsscreener', 'brscreener', 'dvdrip', 'hdrip', 'hd720', 'hd720p', 'hd1080', 'hd1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

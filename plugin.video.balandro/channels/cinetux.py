@@ -75,7 +75,10 @@ def generos(item):
 
         itemlist.append(item.clone( action='peliculas', title=scrapedtitle.strip(), url=CHANNEL_HOST + scrapedurl ))
 
-    return itemlist
+    if 'genero/belica/' not in bloque:
+        itemlist.append(item.clone( action='peliculas', title='Bélica', url=CHANNEL_HOST + 'genero/belica/' ))
+
+    return sorted(itemlist, key=lambda it: it.title)
 
 
 # A partir de un título detectar si contiene una versión alternativa y devolver ambos
