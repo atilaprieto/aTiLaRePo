@@ -61,8 +61,7 @@ def categorias(item):
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="btn-pagination">Siguiente')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(Item(channel=item.channel, action="categorias", title="Página Siguiente >>", text_color="blue",
-                             url=next_page, thumbnail=""))
+        itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -80,12 +79,11 @@ def chicas(item):
         url = urlparse.urljoin(item.url, url)
         title = "%s (%s)" % (title, videos)
         itemlist.append(Item(channel=item.channel, action='videos', title=title, url=url, thumbnail=thumbnail, fanart=thumbnail))
-    # Paginador <a href="/pornstars/page2.html" class="btn-pagination">Siguiente
+    # Paginador 
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="btn-pagination">Siguiente')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(Item(channel=item.channel, action="chicas", title="Página Siguiente >>", text_color="blue",
-                             url=next_page, thumbnail=""))
+        itemlist.append(item.clone(action="chicas", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -103,13 +101,13 @@ def videos(item):
     for url, thumbnail, title,duration in matches:
         title = "[COLOR yellow]%s[/COLOR] %s" % (duration, title)
         url = urlparse.urljoin(item.url, url)
-        itemlist.append(Item(channel=item.channel, action='play', title=title, url=url, thumbnail=thumbnail, fanart=thumbnail))
-    # Paginador   "Página Siguiente >>"
+        itemlist.append(Item(channel=item.channel, action='play', title=title, contentTitle = title, url=url, 
+                             thumbnail=thumbnail, fanart=thumbnail))
+    # Paginador
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="btn-pagination">Siguiente')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(Item(channel=item.channel, action="videos", title="Página Siguiente >>", text_color="blue",
-                             url=next_page, thumbnail=""))
+        itemlist.append(item.clone(action="videos", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

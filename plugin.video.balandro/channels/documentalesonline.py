@@ -32,6 +32,7 @@ def generos(item):
     patron = ' href="([^"]+)">([^<]+)'
     matches = scrapertools.find_multiple_matches(bloque, patron)
     for url, title in matches:
+        if url.startswith('/'): url = HOST + url
 
         itemlist.append(item.clone( action='list_all', title=title, url=url ))
 

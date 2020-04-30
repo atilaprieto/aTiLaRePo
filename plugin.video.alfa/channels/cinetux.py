@@ -254,7 +254,6 @@ def findvideos(item):
     itemlist=[]
     qual_fix = ''
     data = httptools.downloadpage(item.url).data
-    
     patron = "<a class='optn' href='([^']+)'.*?<img alt='([^']+)'.*?<img src='.*?>([^<]+)<.*?<img src='.*?>([^<]+)<"
     matches = scrapertools.find_multiple_matches(data, patron)
     for url, iserver, quality, language in matches:
@@ -283,11 +282,11 @@ def findvideos(item):
                             action='play', quality=quality, text_color="",
                             language=lang, infoLabels=item.infoLabels, server=server))
 
-    patron  = 'tooltipctx.*?data-type="([^"]+).*?'
-    patron += 'data-post="(\d+)".*?'
-    patron += 'data-nume="(\d+).*?'
-    patron += '</noscript> (.*?)</.*?'
-    patron += 'assets/img/(.*?)"/>'
+    patron  = "tooltipctx.*?data-type='([^']+)'.*?"
+    patron += "data-post='(\d+)'.*?"
+    patron += "data-nume='(\d+).*?"
+    patron += "</noscript> (.*?)</.*?"
+    patron += "assets/img/(.*?)'/>"
     matches = scrapertools.find_multiple_matches(data, patron)
     for tp, pt, nm, language, iserver in matches:
         language = language.strip()

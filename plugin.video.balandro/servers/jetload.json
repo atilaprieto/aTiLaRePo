@@ -3,7 +3,7 @@
   "name": "JetLoad",
  
   "active": false,
-  "notes": "Requiere recaptcha",
+  "notes": "Desactivado por defecto pq requiere pairing desde navegador web, pero se puede activar manualmente",
 
   "find_videos": {
     "ignore_urls": [],

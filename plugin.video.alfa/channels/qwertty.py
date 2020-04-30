@@ -75,14 +75,14 @@ def lista(item):
         if thumbnail == "":
             thumbnail = scrapertools.find_single_match(scrapedthumbnail, "data-thumbs='(.*?jpg)")
         title = "[COLOR yellow]%s[/COLOR] %s" % (duracion,scrapedtitle)
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl,
+        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=scrapedurl,
                               fanart=thumbnail, thumbnail=thumbnail, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<li><a href="([^"]+)">Next</a>')
     if next_page=="":
         next_page = scrapertools.find_single_match(data,'<li><a class="current">.*?<li><a href="([^"]+)" class="inactive">')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

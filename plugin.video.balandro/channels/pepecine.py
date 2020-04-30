@@ -155,7 +155,8 @@ def sub_search(item):
         if element['is_series'] and item.search_type == 'movie': continue
         if not element['is_series'] and item.search_type == 'tvshow': continue
         
-        new_item = item.clone( title = element['name'], thumbnail = element['poster'],
+        thumb = element['poster'] if element['poster'] else item.thumbnail
+        new_item = item.clone( title = element['name'], thumbnail = thumb,
                                infoLabels = {'year':element['year'], 'plot': element['description']})
 
         # ~ new_item.url = host + '/titles/' + str(element['id'])
@@ -201,7 +202,8 @@ def list_all(item):
     if 'pagination' not in dict_data: return itemlist
 
     for element in dict_data['pagination']['data']:
-        new_item = item.clone( title = element['name'], thumbnail = element['poster'],
+        thumb = element['poster'] if element['poster'] else item.thumbnail
+        new_item = item.clone( title = element['name'], thumbnail = thumb,
                                infoLabels = {'year':element['year'], 'plot': element['description']})
 
         # ~ new_item.url = host + '/titles/' + str(element['id'])

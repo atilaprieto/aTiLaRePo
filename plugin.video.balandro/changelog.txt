@@ -1,8 +1,14 @@
 Balandro changelog
 ==================
 
+1.4.12:
+    Canales modificados: Seriemega, Seriez, Seriesmetro, Inkapelis, Cinemaclasic, 
+    Wikiseries, Cuevana3, Seriesflv.
+    Servidores modificados: Videobb, Thevideobee, Userscloud, Easyload, Gounlimited, 
+    Mailru, M3u8hls, Streamz, Vshare, Jetload, Vsmobi, Embedy.
+
 1.4.11:
-    Canales modificados: Seriemega, Cinemaclasic, Areadocumental, Grantorrent, Inkapelis, Pelisvips. 
+    Canales modificados: Seriemega, Cinemaclasic, Areadocumental, Grantorrent, Inkapelis, Pelisvips.
     Servidores modificados: Archiveorg, Zembed, Easyload, Gounlimited, Vidlox.
 
 1.4.10:

@@ -62,14 +62,13 @@ def lista(item):
         url = scrapedurl
         thumbnail = scrapedthumbnail.replace(" ", "%20")
         itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
-                             fanart=thumbnail))
+                             fanart=thumbnail, contentTitle = title))
     current_page = int(scrapertools.find_single_match(item.url,'.*?=(\d+)'))
     page = scrapertools.find_single_match(item.url, "(.*?)=\d+")
     if ">Load more...<" in data or ">Next<" in data:
         current_page = current_page + 1
         next_page = "%s=%s" %(page,current_page)
-        itemlist.append(Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue",
-                             url=next_page))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist  
 
 

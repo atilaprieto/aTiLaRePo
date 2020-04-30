@@ -2,18 +2,18 @@
 # --------------------------------------------------------
 # Conector mydaddy By Alfa development Group
 # --------------------------------------------------------
+
 from core import httptools
 from core import scrapertools
 from platformcode import logger
 
 def test_video_exists(page_url):
 
-    response = httptools.downloadpage(page_url)
-
-    if not response.sucess or \
-       "Not Found" in response.data \
-       or "File was deleted" in response.data \
-       or "is no longer available" in response.data:
+    data = httptools.downloadpage(page_url)
+    logger.debug(data)
+    if "Not Found" in data \
+       or "File was deleted" in data \
+       or "is no longer available" in data:
         return False, "[mydaddy] El fichero no existe o ha sido borrado"
     return True, ""
 

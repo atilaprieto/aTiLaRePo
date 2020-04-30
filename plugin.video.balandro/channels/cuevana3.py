@@ -224,7 +224,7 @@ def findvideos(item):
             # ~ logger.info(url)
             url = url.replace('#Synchronization+Service', '')
             itemlist.append(Item( channel = item.channel, action = 'play', other = option,
-                                  title = '', url = url,
+                                  title = '', url = url, referer = item.url,
                                   language = IDIOMAS.get(language, language), quality = quality, quality_num = puntuar_calidad(quality)
                            ))
 
@@ -287,7 +287,6 @@ def play(item):
             if url:
                 itemlist.append(item.clone(url=url))
             
-
         elif 'h=' in item.url:
             fid = scrapertools.find_single_match(item.url, "h=([^&]+)")
             resp = httptools.downloadpage('https://api.cuevana3.io/rr/gotogd.php?h=%s' % fid, follow_redirects=False)
@@ -298,7 +297,11 @@ def play(item):
                     itemlist.append(['m3u8', url])
 
     elif 'openloadpremium.com/' in item.url and '/player.php?id=' in item.url:
-        itemlist.append(item.clone(url = item.url.replace('/player.php?id=', '/m3u8/index_') + '.m3u8'))
+        # ~ itemlist.append(item.clone(url = item.url.replace('/player.php?id=', '/m3u8/index_') + '.m3u8'))
+        data = httptools.downloadpage(item.url, headers={'Referer': item.referer}).data
+        url = scrapertools.find_single_match(data, '"file": "([^"]+)')
+        if url:
+            itemlist.append(item.clone(url = url))
 
     else:
         itemlist.append(item.clone())

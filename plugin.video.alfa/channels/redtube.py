@@ -65,7 +65,7 @@ def catalogo(item):
     next_page_url = scrapertools.find_single_match(data,'<a id="wp_navNext".*?href="([^"]+)">')
     if next_page_url!="":
         next_page_url = urlparse.urljoin(item.url,next_page_url)
-        itemlist.append(item.clone(action="catalogo", title="Página Siguiente >>", text_color="blue", url=next_page_url) )
+        itemlist.append(item.clone(action="catalogo", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page_url) )
     return itemlist
 
 
@@ -93,7 +93,7 @@ def categorias(item):
     next_page_url = scrapertools.find_single_match(data,'<a id="wp_navNext".*?href="([^"]+)">')
     if next_page_url!="":
         next_page_url = urlparse.urljoin(item.url,next_page_url)
-        itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page_url) )
+        itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page_url) )
     return itemlist
 
 
@@ -103,18 +103,17 @@ def lista(item):
     data = httptools.downloadpage(item.url).data
     data = scrapertools.find_single_match(data,'<em class="premium_tab_icon rt_icon rt_Menu_Star">(.*?)<div class="footer">')
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron = 'data-src="([^"]+)".*?'
+    patron = '<div class="video_block_wrapper js_mediaBookBounds ">.*?'
+    patron += 'data-src="([^"]+)"(.*?)'
     patron += '<span class="duration">(.*?)</a>.*?'
-    patron += '<a title="([^"]+)".*?href="(/\d+)"' #purga los premium y yourporn
+    patron += '<a title="([^"]+)".*?href="(/\d+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedthumbnail,duration,scrapedtitle,scrapedurl in matches:
+    for scrapedthumbnail,scrapedhd,duration,scrapedtitle,scrapedurl in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
-        scrapedhd = scrapertools.find_single_match(duration, '<span class=".*?">([^<]+)</span>')
-        if scrapedhd:
-            duration = scrapertools.find_single_match(duration, '</span>([^<]+)</span>').strip()
-            title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (duration, scrapedhd ,scrapedtitle)
+        duration = scrapertools.find_single_match(duration, '(\d+:\d+)')
+        if "hd-video" in scrapedhd:
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (duration,scrapedtitle)
         else:
-            duration = scrapertools.find_single_match(duration, '([^<]+)</span>').strip()
             title = "[COLOR yellow]%s[/COLOR] %s" % (duration, scrapedtitle)
         scrapedthumbnail = scrapedthumbnail.replace("{index}.", "1.")
         plot = ""
@@ -123,7 +122,7 @@ def lista(item):
     next_page_url = scrapertools.find_single_match(data,'<a id="wp_navNext".*?href="([^"]+)">').replace("amp;", "")
     if next_page_url!="":
         next_page_url = urlparse.urljoin(item.url,next_page_url)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page_url) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page_url) )
     return itemlist
 
 

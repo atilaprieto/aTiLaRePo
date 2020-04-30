@@ -31,15 +31,15 @@ from core.jsontools import to_utf8
 from platformcode import config, logger
 from platformcode.logger import WebErrorException
 
-
 #Dominios que necesitan Cloudscraper.  AÑADIR dominios de canales sólo si es necesario
-global DOMAIN_CS
-DOMAIN_CS = ["animeflv.ru", "www.divxtotal.la", "gnula.nu", "mejortorrent1.net", \
-             'zooqle.com', 'zooqle1.unblocked.is', 'zooqle.unblocked.win', \
-             'zooqle-com.prox2.info', 'blazing.network', 'www.cinetux.to', 'hdfull.io', \
-             'vidtodo.com', 'seriesdanko.net', 'sexgalaxy.net', 'grantorrent.eu', \
-             'dontorrent.org', 'animeflv.net', 'seriesf.lv', 'fullxxxmovies.net', \
-             'repelisgo.net', 'www.rexpelis.com', 'animebum.net', 'pepecine.tv', 'hitokin.net']
+
+global CF_LIST
+CF_LIST = list()
+CF_LIST_PATH = os.path.join(config.get_runtime_path(), "resources", "CF_Domains.txt")
+
+if os.path.exists(CF_LIST_PATH):
+    with open(CF_LIST_PATH, "rb") as CF_File:
+        CF_LIST = CF_File.read().splitlines()
 
 ## Obtiene la versión del addon
 __version = config.get_addon_version()
@@ -481,7 +481,7 @@ def downloadpage(url, **opt):
 
         domain = urlparse.urlparse(url)[1]
         global CS_stat
-        if domain in DOMAIN_CS or opt.get('CF', False):                         #Está en la lista de CF o viene en la llamada
+        if domain in CF_LIST or opt.get('CF', False):                         #Está en la lista de CF o viene en la llamada
             from lib import cloudscraper
             session = cloudscraper.create_scraper()                             #El dominio necesita CloudScraper
             session.verify = True
@@ -587,6 +587,15 @@ def downloadpage(url, **opt):
             return type('HTTPResponse', (), response)
         
         response_code = req.status_code
+
+        if req.headers.get('Server', '').startswith('cloudflare') and response_code in [429, 503, 403] and not opt.get('CF', False):
+            domain = urlparse.urlparse(url)[1]
+            if domain not in CF_LIST:
+                opt["CF"] = True
+                with open(CF_LIST_PATH, "a") as CF_File:
+                    CF_File.write("%s\n" % domain)
+                logger.debug("CF retry... for domain: %s" % domain)
+                return downloadpage(url, **opt)
 
         response['data'] = req.content
         try:

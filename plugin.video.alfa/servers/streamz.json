@@ -4,7 +4,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(https://streamz.cc/[A-z0-9]+)",
+        "pattern": "(https://streamz.(?:cc|bz)/[A-z0-9]+)",
         "url": "\\1"
       }
     ]
@@ -38,5 +38,5 @@
       "visible": false
     }
   ],
-  "thumbnail": ""
+  "thumbnail": "https://cache.hollywood.to/streamz.cc/400dpiLogoCropped.png"
 }

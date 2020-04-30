@@ -18,6 +18,11 @@
       {
         "pattern": "(?:hqq|waaw|netu)(?:\\.tv\\/|\\.watch\\/|\\.php\\?).*hash=([A-z0-9]+)",
         "url": "http://hqq.tv/player/hash.php?hash=\\1"
+      },
+
+      {
+        "pattern": "(?:hqq|waaw|netu)(?:\\.tv\\/|\\.watch\\/|\\.php\\?)e/([A-z0-9]+)",
+        "url": "http://hqq.tv/player/hash.php?hash=\\1"
       }
     ]
   },

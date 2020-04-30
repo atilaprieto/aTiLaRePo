@@ -10,6 +10,7 @@ else:
 
 import re
 
+from core.item import Item
 from core import httptools
 from core import servertools
 from core import scrapertools
@@ -45,6 +46,22 @@ def search(item, texto):
     return lista(item)
 
 
+def categorias(item):
+    logger.info()
+    itemlist = []
+    data = httptools.downloadpage("https://www.nuvid.com/categories").data
+    bloques = scrapertools.find_multiple_matches(data, '<h2 class="c-mt-output title2">.*?>([^<]+)</h2>(.*?)</div>')
+    for cat, b in bloques:
+        cat = cat.replace("Straight", "Hetero")
+        itemlist.append(item.clone(action="", title=cat, text_color="gold"))
+        matches = scrapertools.find_multiple_matches(b, '<li>.*?href="([^"]+)" >(.*?)</span>')
+        for scrapedurl, scrapedtitle in matches:
+            scrapedtitle = "   %s" % scrapedtitle.replace("<span>", "")
+            scrapedurl = urlparse.urljoin(host, scrapedurl)
+            itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl))
+    return itemlist
+
+
 def lista(item):
     logger.info()
     itemlist = []
@@ -65,35 +82,24 @@ def lista(item):
     for scrapedurl, scrapedtitle, scrapedthumbnail, quality, duration in matches:
         scrapedurl = urlparse.urljoin(host, scrapedurl)
         if duration:
-            scrapedtitle = "%s - %s" % (duration, scrapedtitle)
+            title = "[COLOR yellow]%s[/COLOR] %s" % (duration, scrapedtitle)
         if item.calidad == "0" and 'class="hd"' in quality:
-            scrapedtitle += "  [COLOR red][HD][/COLOR]"
+            title = "[COLOR yellow]%s[/COLOR] [COLOR red][HD][/COLOR] %s" % (duration, scrapedtitle)
         if not scrapedthumbnail.startswith("https"):
             scrapedthumbnail = "https:%s" % scrapedthumbnail
-
-        itemlist.append(
-            item.clone(action="play", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail, folder=False))
+        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=scrapedurl,
+                              thumbnail=scrapedthumbnail, fanart=scrapedthumbnail))
     next_page = scrapertools.find_single_match(data, '<li class="next1">.*?href="([^"]+)"')
     if next_page:
         next_page = urlparse.urljoin(host, next_page)
-        itemlist.append(item.clone(action="lista", title=">> Página Siguiente", url=next_page))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
 
     return itemlist
 
 
-def categorias(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage("https://www.nuvid.com/categories").data
-    bloques = scrapertools.find_multiple_matches(data, '<h2 class="c-mt-output title2">.*?>([^<]+)</h2>(.*?)</div>')
-    for cat, b in bloques:
-        cat = cat.replace("Straight", "Hetero")
-        itemlist.append(item.clone(action="", title=cat, text_color="gold"))
-        matches = scrapertools.find_multiple_matches(b, '<li>.*?href="([^"]+)" >(.*?)</span>')
-        for scrapedurl, scrapedtitle in matches:
-            scrapedtitle = "   %s" % scrapedtitle.replace("<span>", "")
-            scrapedurl = urlparse.urljoin(host, scrapedurl)
-            itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl))
+def findvideos(item):
+    logger.info(item)
+    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     return itemlist
 
 

@@ -53,11 +53,11 @@ def lista(item):
     for scrapedurl,scrapedtitle,duration,scrapedthumbnail in matches:
         title = "[COLOR yellow]%s[/COLOR] %s" % (duration, scrapedtitle)
         itemlist.append(Item(channel=item.channel, action="play", title=title, url=scrapedurl, 
-                        fanart=scrapedthumbnail, thumbnail=scrapedthumbnail))
+                             fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, contentTitle = title))
     next_page = scrapertools.find_single_match(data,'<a rel=\'next\' title=\'Next\' href=\'([^\']+)\'')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

@@ -17,7 +17,7 @@ from channels import filtertools
 
 
 
-host = 'https://www.cinemahd.co/'
+host = 'https://www.cinepelis24.me/'
 
 IDIOMAS = {'Latino': 'LAT'}
 list_language = IDIOMAS.values()

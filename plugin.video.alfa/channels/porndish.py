@@ -26,6 +26,8 @@ list_quality = ['default']
 list_servers = ['gounlimited']
 
 host = 'https://www.porndish.com'
+# falta https://dood.watch/e/n6i8ur4lesbybmvrp0y0zefpyeup0k0f
+
 
 def mainlist(item):
     logger.info()
@@ -112,14 +114,13 @@ def lista(item):
         title = "[COLOR yellow]%s[/COLOR] %s" % (stime,stitle)
         plot = ""
         itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=url,
-                              fanart=thumbnail, thumbnail=thumbnail, plot=plot, contentTitle = title))
+                              fanart=thumbnail, thumbnail=thumbnail, plot=plot,))
     try:
         next_page = soup.find('a', class_='g1-delta g1-delta-1st next')['href']
     except:
         next_page = None
     if next_page:
-        itemlist.append(Item(channel=item.channel, action="lista", title='Página Siguiente >>',
-                             text_color="blue", url=next_page.strip()))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page.strip()))
     return itemlist
 
 

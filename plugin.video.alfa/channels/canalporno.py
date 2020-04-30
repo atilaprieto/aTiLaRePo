@@ -11,6 +11,7 @@ else:
 import re
 
 from core import httptools
+from core.item import Item
 from core import scrapertools
 from platformcode import logger
 
@@ -20,12 +21,11 @@ host = "http://www.canalporno.com"
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append(item.clone(action="lista", title="Útimos videos", url=host + "/ajax/homepage/?page=1"))
-    itemlist.append(item.clone(action="categorias", title="Canal", url=host + "/ajax/list_producers/?page=1"))
-    itemlist.append(item.clone(action="categorias", title="PornStar", url=host + "/ajax/list_pornstars/?page=1"))
-    itemlist.append(item.clone(action="categorias", title="Categorias",
-                               url=host + "/categorias"))
-    itemlist.append(item.clone(action="search", title="Buscar"))
+    itemlist.append(Item(channel=item.channel, action="lista", title="Útimos videos", url=host + "/ajax/homepage/?page=1"))
+    itemlist.append(Item(channel=item.channel, action="categorias", title="Canal", url=host + "/ajax/list_producers/?page=1"))
+    itemlist.append(Item(channel=item.channel, action="categorias", title="PornStar", url=host + "/ajax/list_pornstars/?page=1"))
+    itemlist.append(Item(channel=item.channel, action="categorias", title="Categorias", url=host + "/categorias"))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar"))
     return itemlist
 
 
@@ -68,7 +68,7 @@ def categorias(item):
         next_page = "?page=%s" % str(num)
         if next_page!="":
             next_page = urlparse.urljoin(item.url,next_page)
-            itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page) )
+            itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -82,14 +82,15 @@ def lista(item):
     for scrapedthumbnail, scrapedtitle, scrapedurl, duration in matches:
         title = "[COLOR yellow] %s  [/COLOR] %s" % (duration, scrapedtitle)
         url = host + scrapedurl
-        itemlist.append(item.clone(action="play", title=title, url=url, thumbnail=scrapedthumbnail))
+        itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, contentTitle=title,
+                                   fanart=scrapedthumbnail, thumbnail=scrapedthumbnail))
     last=scrapertools.find_single_match(item.url,'(.*?)page=\d+')
     num= int(scrapertools.find_single_match(item.url,".*?/?page=(\d+)"))
     num += 1
     next_page = "page=%s" % str(num)
     if next_page!="":
         next_page = last + next_page
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

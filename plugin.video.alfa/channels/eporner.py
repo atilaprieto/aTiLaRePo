@@ -23,8 +23,7 @@ def mainlist(item):
     itemlist.append(item.clone(title="Últimos videos", action="videos", url=host + "/0/"))
     itemlist.append(item.clone(title="Más visto", action="videos", url=host + "/most-viewed/"))
     itemlist.append(item.clone(title="Mejor valorado", action="videos", url=host + "/top-rated/"))
-    itemlist.append(item.clone(title="Pornstars", action="pornstars", url=host + "/pornstars/"))
-    itemlist.append(item.clone(title="      Alfabetico", action="pornstars_list", url=host + "/pornstars/"))
+    itemlist.append(item.clone(title="Pornstars", action="pornstars_list"))
     itemlist.append(item.clone(title="Categorias", action="categorias", url=host + "/categories/"))
     itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
@@ -46,6 +45,7 @@ def search(item, texto):
 def pornstars_list(item):
     logger.info()
     itemlist = []
+    itemlist.append(item.clone(title="Mas Populares", action="pornstars", url=host + "/pornstars/"))
     for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
         itemlist.append(item.clone(title=letra, url=urlparse.urljoin(item.url, letra), action="pornstars"))
     return itemlist
@@ -68,7 +68,7 @@ def pornstars(item):
     next_page = scrapertools.find_single_match(data,"<a href='([^']+)' class='nmnext' title='Next page'>")
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="pornstars", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="pornstars", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -108,7 +108,7 @@ def videos(item):
     next_page = scrapertools.find_single_match(data,"<a href='([^']+)' class='nmnext' title='Next page'>")
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="videos", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="videos", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

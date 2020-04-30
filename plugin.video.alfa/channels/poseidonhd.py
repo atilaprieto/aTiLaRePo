@@ -181,7 +181,7 @@ def seasons(item):
     infoLabels = item.infoLabels
 
     for elem in matches:
-        season = elem.find("span", class_="se-t se-o").text
+        season = elem.find("span", class_="se-t").text
         title = "Temporada %s" % season
         infoLabels["season"] = season
 
@@ -220,7 +220,7 @@ def episodesxseasons(item):
     season = infoLabels["season"]
 
     for elem in matches:
-        if elem.find("span", class_="se-t se-o").text != str(season):
+        if elem.find("span", class_="se-t").text != str(season):
             continue
 
         epi_list = elem.find("ul", class_="episodios")

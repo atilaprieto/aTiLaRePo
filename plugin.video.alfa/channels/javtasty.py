@@ -8,6 +8,7 @@ if PY3:
 else:
     import urlparse                                             # Usamos el nativo de PY2 que es más rápido
 
+from core.item import Item
 from core import httptools
 from core import scrapertools
 from platformcode import config, logger
@@ -83,8 +84,8 @@ def lista(item):
             title = "[COLOR yellow]%s[/COLOR] %s" % (duration.strip(), scrapedtitle)
         else:
             title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (duration.strip(), scrapedtitle)
-        itemlist.append(item.clone(action=action, title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
-                                   fanart=scrapedthumbnail))
+        itemlist.append(Item(channel=item.channel, action=action, title=title, contentTitle = title, url=scrapedurl,
+                                   fanart=scrapedthumbnail, thumbnail=scrapedthumbnail))
     # Extrae la marca de siguiente página
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
     if "#" in next_page:
@@ -93,7 +94,7 @@ def lista(item):
         next_page = "?%s" % next_page
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page ) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page ) )
     return itemlist
 
 

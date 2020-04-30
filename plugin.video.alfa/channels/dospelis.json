@@ -2,9 +2,10 @@
 "id": "dospelis",
   "name": "DosPelis",
   "active": true,
+  "force_unify": true,
   "adult": false,
   "language": ["lat", "cast"],
-  "thumbnail": "https://www.dospelis.net/wp-content/uploads/2019/02/logodospelisamor.png",
+  "thumbnail": "https://www.dospelis.online/wp-content/uploads/2017/12/dospelislogo.png",
   "banner": "",
   "categories": [
     "movie",
@@ -65,15 +66,6 @@
       "default": false,
       "enabled": true,
       "visible": true
-    },
-    {
-      "id": "comprueba_enlaces_num",
-      "type": "list",
-      "label": "Número de enlaces a verificar",
-      "default": 1,
-      "enabled": true,
-      "visible": "eq(-1,true)",
-      "lvalues": [ "5", "10", "15", "20" ]
     }
   ]
 }

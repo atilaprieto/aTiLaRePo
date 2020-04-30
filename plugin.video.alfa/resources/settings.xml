@@ -11,7 +11,7 @@
         <setting id="channel_language" type="labelenum" values="all|cast|lat" label="30019" default="all"/>
         <setting id="trakt_sync" type="bool" label="70109" default="false"/>
         <setting id="forceview" type="bool" label="30043" default="false"/>
-        <setting id="faster_item_serialization" type="bool" label="30300" default="false"/>
+<!--        <setting id="faster_item_serialization" type="bool" label="30300" default="false"/>-->
         <setting id="debug" type="bool" label="30003" default="false"/>
         <setting label="70169" type="lsep"/>
         <setting id="resolve_priority" type="enum" label="70110" lvalues="70164|70165|70166" default="0"/>

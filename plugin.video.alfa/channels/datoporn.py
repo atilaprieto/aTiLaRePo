@@ -10,6 +10,7 @@ else:
 
 import re
 
+from core.item import Item
 from core import httptools
 from core import scrapertools
 from core import servertools
@@ -71,8 +72,8 @@ def lista(item):
         title = '[COLOR yellow] %s [/COLOR] %s' % (duration , scrapedtitle)
         if "HD" in quality:
             title = '[COLOR yellow] %s [/COLOR] [COLOR red] HD [/COLOR] %s' % (duration , scrapedtitle)
-        itemlist.append(item.clone(action="play", title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
-                                   fanart=scrapedthumbnail.replace("_t.jpg", ".jpg"), plot = ""))
+        itemlist.append(Item(channel=item.channel, action="play", title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
+                             fanart=scrapedthumbnail.replace("_t.jpg", ".jpg"), contentTitle=title, plot = ""))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
     if "#" in next_page:
         next_page = scrapertools.find_single_match(data, 'data-parameters="([^"]+)">Next')
@@ -80,11 +81,14 @@ def lista(item):
         next_page = "?%s" % next_page
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
 def play(item):
-    logger.info(item)
-    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
+    logger.info()
+    itemlist = []
+    itemlist.append(item.clone(action="play", title= "%s", contentTitle = item.title, url=item.url))
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
+

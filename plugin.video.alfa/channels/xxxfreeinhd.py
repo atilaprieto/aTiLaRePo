@@ -89,7 +89,7 @@ def lista(item):
         title = scrapedtitle
         thumbnail = scrapedthumbnail + "|https://watchxxxfreeinhd.com/" 
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl,
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, contentTitle = title, url=scrapedurl,
                               thumbnail=thumbnail, plot=plot, fanart=scrapedthumbnail ))
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)">Next')
     if next_page:
@@ -97,8 +97,7 @@ def lista(item):
         if "?filtre=date&cat=0" in item.url: next_page += "?filtre=date&cat=0"
         elif "?display=tube&filtre=views" in item.url: next_page += "?display=tube&filtre=views"
         elif "?display=tube&filtre=rate" in item.url: next_page += "?display=tube&filtre=rate"
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

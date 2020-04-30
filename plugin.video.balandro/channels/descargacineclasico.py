@@ -39,10 +39,10 @@ def generos(item):
     data = httptools.downloadpage(host).data
     bloque = scrapertools.find_single_match(data, '<h3>Géneros(.*?)</ul>')
 
-    patron = '<li[^>]*><a href=([^ ]+) title="[^"]*">([^<]+)</a></li>'
+    patron = '<li[^>]*><a href="([^"]+)" title="[^"]*">([^<]+)</a></li>'
     matches = scrapertools.find_multiple_matches(bloque, patron)
     if not matches:
-        patron = '<li[^>]*><a href="([^"]+)" title="[^"]*">([^<]+)</a></li>'
+        patron = '<li[^>]*><a href=([^ ]+) title="[^"]*">([^<]+)</a></li>'
         matches = scrapertools.find_multiple_matches(bloque, patron)
 
     for url, titulo in matches:
@@ -60,13 +60,13 @@ def list_all(item):
     # ~ logger.debug(data)
     
     # descartados idiomas pq los VO y VOSE no se acostrumbran a cumplir
-    patron = '<div class=post-thumbnail>\s*<a href=([^ ]+) title="([^"]+)">'
-    patron += '.*? data-src=([^ ]+)'
+    patron = '<div class="post-thumbnail">\s*<a href="([^"]+)" title="([^"]+)">\s*'
+    patron += '<img width="[^"]*" height="[^"]*" style="[^"]*" src="([^"]+)"'
     patron += '.*?<p>(.*?)</p>'
     matches = scrapertools.find_multiple_matches(data, patron)
     if not matches:
-        patron = '<div class="post-thumbnail">\s*<a href="([^"]+)" title="([^"]+)">\s*'
-        patron += '<img width="[^"]*" height="[^"]*" style="[^"]*" src="([^"]+)"'
+        patron = '<div class=post-thumbnail>\s*<a href=([^ ]+) title="([^"]+)">'
+        patron += '.*? data-src=([^ ]+)'
         patron += '.*?<p>(.*?)</p>'
         matches = scrapertools.find_multiple_matches(data, patron)
 
@@ -102,22 +102,22 @@ def findvideos(item):
     
     if '<h2>Ver online' in data: data = data.split('<h2>Ver online')[1]
     
-    patron = '<a href=#(div_\d+_v) class=MO>\s*'
+    patron = '<a href="#(div_\d+_v)" class="MO">\s*'
     patron += '<span>(.*?)</span>\s*'
     patron += '<span>.*?</span>\s*'
     patron += '<span>(.*?)</span>\s*'
     patron += '<span>.*?</span>\s*'
     patron += '<span>.*?</span>\s*'
-    patron += '</a>.*?<div id=([^ ]+) [^>]*>\s*<a href=([^ ]+)'
+    patron += '</a>.*?<div id="([^"]+)"[^>]*>\s*<a href=([^ ]+)'
     matches = scrapertools.find_multiple_matches(data, patron)
     if not matches:
-        patron = '<a href="#(div_\d+_v)" class="MO">\s*'
+        patron = '<a href=#(div_\d+_v) class=MO>\s*'
         patron += '<span>(.*?)</span>\s*'
         patron += '<span>.*?</span>\s*'
         patron += '<span>(.*?)</span>\s*'
         patron += '<span>.*?</span>\s*'
         patron += '<span>.*?</span>\s*'
-        patron += '</a>.*?<div id="([^"]+)"[^>]*>\s*<a href=([^ ]+)'
+        patron += '</a>.*?<div id=([^ ]+) [^>]*>\s*<a href=([^ ]+)'
         matches = scrapertools.find_multiple_matches(data, patron)
 
     # ~ logger.debug(matches)

@@ -70,7 +70,7 @@ def categorias(item):
     Actual = int(scrapertools.find_single_match(item.url, '&page=([0-9]+)'))
     if JSONData["pages"] - 1 > Actual:
         scrapedurl = item.url.replace("&page=" + str(Actual), "&page=" + str(Actual + 1))
-        itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=scrapedurl))
+        itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=scrapedurl))
     return itemlist
 
 
@@ -94,7 +94,7 @@ def catalogo(item):
     Actual = int(scrapertools.find_single_match(item.url, '&page=([0-9]+)'))
     if JSONData["pages"] - 1 > Actual:
         scrapedurl = item.url.replace("&page=" + str(Actual), "&page=" + str(Actual + 1))
-        itemlist.append(item.clone(action="catalogo", title="Página Siguiente >>", text_color="blue", url=scrapedurl))
+        itemlist.append(item.clone(action="catalogo", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=scrapedurl))
     return itemlist
 
 
@@ -126,12 +126,12 @@ def lista(item):
         thumbnail = thumbnail.replace("\/", "/").replace("{index}", "2")
         url = url.replace("\/", "/")
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,
-                              fanart=thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=url,
+                              fanart=thumbnail, thumbnail=thumbnail, plot=plot))
     Actual = int(scrapertools.find_single_match(item.url, '&page=([0-9]+)'))
     if JSONData["pages"] - 1 > Actual:
         scrapedurl = item.url.replace("&page=" + str(Actual), "&page=" + str(Actual + 1))
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=scrapedurl))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=scrapedurl))
     return itemlist
 
 

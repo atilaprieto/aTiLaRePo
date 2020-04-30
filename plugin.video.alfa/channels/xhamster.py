@@ -25,7 +25,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="votados", title="Lo mejor"))
     itemlist.append(Item(channel=item.channel, action="vistos", title="Los mas vistos"))
     itemlist.append(Item(channel=item.channel, action="videos", title="Recomendados",
-                         url=urlparse.urljoin(HOST, "/videos/recommended")))
+                         url=urlparse.urljoin(HOST, "videos/recommended")))
     itemlist.append(Item(channel=item.channel, action="categorias", title="Categorías", url=HOST))
     itemlist.append(
         Item(channel=item.channel, action="search", title="Buscar", url=urlparse.urljoin(HOST, "/search?q=%s")))
@@ -51,46 +51,33 @@ def search(item, texto):
         return []
 
 
-# SECCION ENCARGADA DE BUSCAR
-
-
 def videos(item):
     logger.info()
     data = httptools.downloadpage(item.url).data
     itemlist = []
-
     data = scrapertools.find_single_match(data, '<article.+?>(.*?)</article>')
-
     patron = '(?s)<div class="thumb-list__item.*?'
     patron += 'href="([^"]+)".*?'
     patron += '<i class="([^"]+)">.*?'
     patron += 'src="([^"]+)".*?'
     patron += 'alt="([^"]+)">.*?'
-    patron += '<div class="thumb-image-container__duration">(.+?)</div>'
+    patron += '<div class="thumb-image-container__duration">([^<]+)<'
     matches = re.compile(patron, re.DOTALL).findall(data)
-
     for scrapedurl, quality, scrapedthumbnail, scrapedtitle, duration in matches:
         if "uhd" in quality: quality = "4K"
         if "hd" in quality: quality = "HD"
         else:  quality = ""
         title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (duration,quality, scrapedtitle.strip())
-        itemlist.append(
-            Item(channel=item.channel, action="play", title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
-                 folder=True))
-
+        itemlist.append(Item(channel=item.channel, action="play", title=title, contentTitle=title, url=scrapedurl,
+                             fanart=scrapedthumbnail, thumbnail=scrapedthumbnail,folder=True))
     # Paginador
     patron = '(?s)<div class="pager-container".*?<li class="next">.*?href="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     if len(matches) > 0:
         url=matches[0].replace("&#x3D;", "=")
-        itemlist.append(
-            Item(channel=item.channel, action="videos", title="Página Siguiente >>", url=url, thumbnail="",
-                 folder=True, viewmode="movie"))
-
+        itemlist.append(item.clone(action="videos", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=url,
+                                   thumbnail="", folder=True, viewmode="movie"))
     return itemlist
-
-
-# SECCION ENCARGADA DE VOLCAR EL LISTADO DE CATEGORIAS CON EL LINK CORRESPONDIENTE A CADA PAGINA
 
 
 def categorias(item):

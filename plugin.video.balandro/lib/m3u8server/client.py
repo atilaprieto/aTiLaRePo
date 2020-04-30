@@ -58,7 +58,12 @@ class Client(object):
         dom_path = '/'.join(url.split('/')[:-1])
 
         try:
-            data = httptools.downloadpage(url).data
+            # ~ data = httptools.downloadpage(url).data
+            if 'player.openloadpremium.com/m3u8/index_' in url:
+                headers = {'Referer': url.replace('/m3u8/index_', '/player.php?id=').replace('.m3u8', '')}
+            else:
+                headers = {}
+            data = httptools.downloadpage(url, headers=headers).data
             # ~ logger.debug(data)
         
             data_local = ''

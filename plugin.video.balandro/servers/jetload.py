@@ -1,57 +1,28 @@
 # -*- coding: utf-8 -*-
 
-from core import httptools, scrapertools
-from platformcode import logger, platformtools
-
+from core import httptools, scrapertools, jsontools
+from platformcode import logger
 
 def get_video_url(page_url, url_referer=''):
     logger.info("url=" + page_url)
     video_urls = []
 
-    data = httptools.downloadpage(page_url).data
+    vid = scrapertools.find_single_match(page_url, 'jetload.net/(?:e|p|#!/v|#!/d)/([A-z0-9]+)')
+    if not vid: return video_urls
+
+    url = 'https://jetload.net/api/fetch/' + vid
+    data = httptools.downloadpage(url, headers={'Referer': page_url}).data
     # ~ logger.debug(data)
 
-    if "file can't be found" in data:
-        return 'El fichero no existe o ha sido borrado'
-    
-    srv = scrapertools.find_single_match(data, 'id="srv" value="([^"]+)"')
-    srv_id = scrapertools.find_single_match(data, 'id="srv_id" value="([^"]+)"')
-    file_name = scrapertools.find_single_match(data, 'id="file_name" value="([^"]+)"')
-
-    if not file_name:
-        url = scrapertools.find_single_match(data, 'swarmId: "([^"]+)"')
-        if not url or 'http' not in url: url = scrapertools.find_single_match(data, "vsource = '([^']+)")
-        if not url or 'http' not in url: url = scrapertools.find_single_match(data, 'src: "([^"]+)')
-        if url and 'http' in url:
-            if url.endswith('.m3u8'): return 'El fichero no se puede reproducir' # Invalid framerate !?
-            video_urls.append(['mp4', url])
-            return video_urls
-        
-        return 'El fichero no se encuentra'
-
-    if srv_id:
-        post = 'file_name=%s.mp4&srv=%s' % (file_name, srv_id)
-        url = httptools.downloadpage('https://jetload.net/api/download', post=post).data
-        if url.startswith('http'):
-            video_urls.append(['mp4', url])
-
-    elif srv:
-        archive = scrapertools.find_single_match(data, 'id="archive" value="([^"]+)"')
-        
-        if archive == '1': url = srv + '/v2/schema/archive/' + file_name
-        else: url = srv + '/v2/schema/' + file_name
-
-        data = httptools.downloadpage(url + '/master.m3u8').data
-        matches = scrapertools.find_multiple_matches(data, 'RESOLUTION=\d+x(\d+)\s*(\w+\.m3u8)')
-        if matches:
-            for res, nom in matches:
-                video_urls.append([res+'p', url + '/' + nom])
-        else:
-            video_urls.append(['Low', url + '/low.m3u8'])
-
-    # ~ if video_urls:
-        # ~ file_id = scrapertools.find_single_match(data, 'id="file_id" value="([^"]+)"')
-        # ~ data = httptools.downloadpage('https://jetload.net/api/get/subtitles/' + file_id).data
-        # ~ logger.debug(data)
+    if 'client_not_paired' in data:
+        return 'Este servidor solamente funciona si se hace "pairing" desde un navegador web. Visita https://JLPair.NET y pulsa "Pair Now!". Durante 3 horas y desde la misma IP podrás acceder a los enlaces de Jetload desde Kodi.'
+    else:
+        try:
+            data_json = jsontools.load(data)
+            if 'src' in data_json and 'src' in data_json['src']:
+                lbl = data_json['src']['type'] if 'type' in data_json['src'] and data_json['src']['type'] else 'mp4'
+                video_urls.append([lbl, data_json['src']['src']])
+        except:
+            pass
 
     return video_urls

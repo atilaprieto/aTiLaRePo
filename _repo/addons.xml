@@ -125,9 +125,8 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.0.8" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.1.0" provider-name="Alfa Addon">
   <requires>
-    <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.requests"/>
     <import addon="script.module.beautifulsoup4" version="4.5.3"/>
     <import addon="script.module.html5lib" version="0.999.0"/>
@@ -148,17 +147,18 @@ You can clone the project and host it in your own server.
       <news>[B]Estos son los cambios para esta versión:[/B]
 
       [COLOR green][B]Arreglos[/B][/COLOR]
-      ¤ DivxTotal                           ¤ Grantorrent                   ¤ Anilegends
-      ¤ Dangotoons                     ¤ Danimados                    ¤ BlogHorror
-      ¤ CineCalidad                      ¤ HomeCine                      ¤ PoseidonHD
-      ¤ SeoDiv                               ¤ SeriesMetro                   ¤ PoseidonHD
-      ¤ Simpsons-latino               ¤ +18
+      ¤ Grantorrent                        ¤ Seriespapaya                     ¤ SeriesFLV
+      ¤ Pelkex                                 ¤ PelisPlus                             ¤ DescargaCineclasico
+      ¤ PoseidonHD                       ¤ CineTux                              ¤ PeliculonHD
+      ¤ serieslan                             ¤ Veseriesonline
+      ¤ Descargas: gestión integral de canales Torrent          ¤ +18
 
       [COLOR green][B]Novedades[/B][/COLOR]
-      ¤ Descargas: gestión integral de canales Torrent
-      ¤ Aniyet                               ¤ CineClasicoOnLine         ¤ CineIS
-      ¤ SerieMega                       ¤ TuCineClasico
-      ¤ +18: compatibilidad total Kodi 19
+      ¤ Peliculasdisneylatino        ¤ 123Pelis                              ¤ SeriesFlix
+      ¤ Anavids                              ¤ Doodstream                      ¤ Stream.Wiki
+      ¤ +18
+
+      Agradecimiento a @mac12m99 por su colaboración en esta versión
 
     </news>
     <description lang="es">Navega con Kodi por páginas web para ver sus videos de manera fácil.</description>
@@ -176,7 +176,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.2.5" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.2.7" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -206,7 +206,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.11" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.12" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -223,8 +223,10 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Seriemega, Cinemaclasic, Areadocumental, Grantorrent, Inkapelis, Pelisvips.
-    Servidores modificados: Archiveorg, Zembed, Easyload, Gounlimited, Vidlox.
+    Canales modificados: Seriemega, Seriez, Seriesmetro, Inkapelis, Cinemaclasic,
+    Wikiseries, Cuevana3, Seriesflv.
+    Servidores modificados: Videobb, Thevideobee, Userscloud, Easyload, Gounlimited,
+    Mailru, M3u8hls, Streamz, Vshare, Jetload, Vsmobi, Embedy.
     </news>
 
     <assets>
@@ -594,7 +596,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.youtube" name="YouTube" version="6.7.0" provider-name="anxdpanic, bromix">
+<addon id="plugin.video.youtube" name="YouTube" version="6.8.0" provider-name="anxdpanic, bromix">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
         <import addon="script.module.six" version="1.11.0"/>
@@ -608,19 +610,15 @@ v.2.1.5
     <extension point="xbmc.python.module" library="resources/lib/"/>
     <extension point="xbmc.addon.metadata">
         <news>
-[add] send PlaybackInit, PlaybackStarted, PlaybackStopped notifications containing video id, channel id, and the status of the playing video
-[fix] allow playback regardless of API status
-    - fixes playback for strm, playlists, other add-ons, and sharing videos from devices
-[fix] finding player config, allow playback to continue when not found if possible
-[fix] fix possible loop due to invalid keys and login information
-[fix] fix playback of mpeg-dash streams if HTTP Server - Listen on IP is blank
-[upd] use a dialog to notify users of API key requirements with link to wiki
-    - https://ytaddon.page.link/keys
-[rem] remove provided api keys
+[add] support for video comments, Comments in the More... dialog |contrib: doko-desuka|
+[add] simulate deprecated recommended home API |contrib: hedleyroos|
+[fix] error caused by timestamp formatting
+[fix] fix Premiere's exiting after 5 seconds |contrib: jpfox156|
+[fix] playlists over json-rpc |contrib: JasperE84|
 [lang] de_de strings |contrib: tweimer|
 [lang] el_gr strings |contrib: twilight0|
-[lang] hu_hu strings |contrib: thelacesz|
-[lang] pl_pl strings |contrib: drrak|
+[lang] es_es strings |contrib: roliverosc|
+[lang] pt_pt strings |contrib: daniel3x|
         </news>
         <assets>
             <icon>icon.png</icon>
@@ -638,7 +636,7 @@ v.2.1.5
         <summary lang="hu_HU">YouTube kiegészítő</summary>
         <description lang="hu_HU">A YouTube világ egyik legnagyobb videómegosztó weboldala.</description>
         <summary lang="es_ES">Plugin para YouTube</summary>
-        <description lang="es_ES">YouTube es uno de los sitios web para compartir videos más grande del mundo.</description>
+        <description lang="es_ES">YouTube es uno de los sitios web más grande del mundo para compartir vídeos.</description>
         <disclaimer lang="es_ES">Este add-on no está respaldado por Google</disclaimer>
         <summary lang="es_MX">Plugin para YouTube</summary>
         <description lang="es_MX">YouTube es uno de los más grandes sitios web de intercambio de videos del mundo.</description>
@@ -669,7 +667,7 @@ v.2.1.5
         <disclaimer lang="tr_TR">Bu eklenti Google tarafından üretilmemiştir</disclaimer>
         <platform>all</platform>
         <license>GPL-2.0-only</license>
-        <forum>https://forum.kodi.tv/showthread.php?tid=348464</forum>
+        <forum>https://ytaddon.page.link/forum</forum>
         <website>https://www.youtube.com</website>
         <email>ytplugin at datanet dot ws</email>
         <source>https://github.com/jdf76/plugin.video.youtube</source>

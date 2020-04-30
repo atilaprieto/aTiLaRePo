@@ -93,17 +93,20 @@ def lista(item):
     patron += 'src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
-        title = scrapedtitle
+        if "0p" in scrapedtitle:
+            quality = scrapertools.find_single_match(scrapedtitle, '(\d+p)')
+            title = scrapertools.find_single_match(scrapedtitle, '([^"]+)(?:-| )\d+p')
+            title = "[COLOR red]%s[/COLOR] %s" % (quality,title)
+        else:
+            title = scrapedtitle
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl, thumbnail=thumbnail,
-                              fanart=thumbnail, plot=plot,))
-                              
+        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=scrapedurl,
+                              fanart=thumbnail, thumbnail=thumbnail, plot=plot,))
     next_page = scrapertools.find_single_match(data, '<li><a class="current">.*?<a href="([^"]+)" class="inactive">')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

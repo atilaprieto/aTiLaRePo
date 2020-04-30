@@ -2,9 +2,17 @@
 
 from core import httptools, scrapertools, jsontools
 from platformcode import logger
-
+import re, time
 
 def get_video_url(page_url, url_referer=''):
+    logger.info("(page_url='%s')" % (page_url))
+    if re.match('https://my.mail.ru/video/embed/([A-z0-9]+)', page_url):
+        return get_video_url_embed(page_url, url_referer)
+    else:
+        return get_video_url_orig(page_url, url_referer)
+
+
+def get_video_url_orig(page_url, url_referer=''):
     logger.info("(page_url='%s')" % (page_url))
     video_urls = []
 
@@ -37,5 +45,36 @@ def get_video_url(page_url, url_referer=''):
         video_urls.sort(key=lambda video_urls: int(video_urls[0].rsplit(" ", 2)[1][:-1]))
     except:
         pass
+
+    return video_urls
+
+
+def get_video_url_embed(page_url, url_referer=''):
+    logger.info("url=" + page_url)
+    video_urls = []
+
+    vid = scrapertools.find_single_match(page_url, "my.mail.ru/video/embed/([A-z0-9]+)")
+    if not vid: return video_urls
+    ts = int(time.time()*1000)
+    url = 'https://my.mail.ru/+/video/meta/%s?xemail=&ajax_call=1&func_name=&mna=&mnb=&ext=1&_=%s' % (vid, ts)
+
+    resp = httptools.downloadpage(url, headers={'Referer': page_url})
+    # ~ logger.debug(resp.data)
+
+    if not 'set-cookie' in resp.headers: return video_urls
+    ck = scrapertools.find_single_match(resp.headers['set-cookie'], '(video_key=[^;]+)')
+    if not ck: return video_urls
+
+    bloque = scrapertools.find_single_match(resp.data, '"videos":\[(.*?\})\]')
+    # ~ logger.debug(bloque)
+
+    matches = scrapertools.find_multiple_matches(bloque, '\{(.*?)\}')
+    for vid in matches:
+        url = scrapertools.find_single_match(vid, '"url":"([^"]+)')
+        if not url: continue
+        if url.startswith('//'): url = 'https:' + url
+        lbl = scrapertools.find_single_match(vid, '"key":"([^"]+)')
+        if not lbl: lbl = 'mp4'
+        video_urls.append([lbl, url+'|Referer=https://my.mail.ru/&Cookie='+ck])
 
     return video_urls

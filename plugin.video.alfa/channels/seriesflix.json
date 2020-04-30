@@ -1,0 +1,42 @@
+{
+"id": "seriesflix",
+  "name": "SeriesFlix",
+  "active": true,
+  "adult": false,
+  "language": ["lat"],
+  "thumbnail": "https://seriesflix.co/wp-content/uploads/2019/12/cropped-seriesflix-logo-1.png?x64271",
+  "banner": "",
+  "categories": [
+    "tvshow"
+  ],
+  "settings": [
+    {
+      "id": "include_in_global_search",
+      "type": "bool",
+      "label": "Incluir en busqueda global",
+      "default": true,
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "id": "filter_languages",
+      "type": "list",
+      "label": "Mostrar enlaces en idioma...",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "No filtrar",
+        "Latino"
+      ]
+    },
+    {
+      "id": "include_in_newest_peliculas",
+      "type": "bool",
+      "label": "Incluir en Novedades - Peliculas",
+      "default": true,
+      "enabled": true,
+      "visible": true
+    }
+  ]
+}

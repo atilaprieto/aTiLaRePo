@@ -17,7 +17,7 @@ def test_video_exists(page_url):
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
     if "File was deleted" in data\
        or "Page Not Found" in data\
-       or data and "videojs7" in data:
+       or data and "|videojs7|" in data:
         return False, "[gounlimited] El video ha sido borrado o no existe"
     return True, ""
 

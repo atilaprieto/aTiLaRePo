@@ -3,6 +3,7 @@
   "name": "ZippyShare",
 
   "active": true,
+  "notes": "Web no disponible en España",
 
   "find_videos": {
     "ignore_urls": [],

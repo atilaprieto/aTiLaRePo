@@ -87,12 +87,12 @@ def lista(item):
         scrapedplot = ""
         calidad = calidad.replace(" Full HD JAV", "")
         title = "[COLOR red]%s[/COLOR] %s" % (calidad, scrapedtitle)
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl,
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, contentTitle=title, url=scrapedurl,
                               thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<li class=\'current\'>.*?<a rel=\'nofollow\' href=\'([^\']+)\' class=\'inactive\'>')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
 
     return itemlist
 
@@ -109,7 +109,7 @@ def findvideos(item):
         if "http://stream.yuuk.net/embeds.php" in url:
             data = httptools.downloadpage(url).data
             url = scrapertools.find_single_match(data,'"file": "([^"]+)"')
-        itemlist.append( Item(channel=item.channel, action="play", title = "%s", url=url ))
+        itemlist.append( Item(channel=item.channel, action="play", title = "%s", contentTitle=item.contentTitle, url=url ))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)

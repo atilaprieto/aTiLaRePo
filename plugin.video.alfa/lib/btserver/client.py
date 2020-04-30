@@ -118,7 +118,7 @@ class Client(object):
         self.file = None
         self.files = None
         self._th = None
-        self.seleccion = 0
+        self.seleccion = -999
         self.index = 0
 
         # Sesion
@@ -224,7 +224,7 @@ class Client(object):
         # Seleccionamos el archivo que vamos a servir
         fmap = self.meta.map_file(f.index, 0, 1)
         self.file = File(f.path, self.temp_path, f.index, f.size, fmap, self.meta.piece_length(), self)
-        if self.seleccion < 0:                                                  ### ALFA
+        if self.seleccion < 0 and self.seleccion > -10:                         ### ALFA
             self.file.first_piece = 0                                           ### ALFA
             self.file.last_piece = self.meta.num_pieces()                       ### ALFA
             self.file.size = self.total_size                                    ### ALFA
@@ -427,7 +427,7 @@ class Client(object):
 
             # Tamaño del archivo
             s.file_name = ''                                                    ### ALFA
-            s.seleccion = ''                                                    ### ALFA
+            s.seleccion = -999                                                  ### ALFA
 
             if self.file:
                 s.seleccion = self.seleccion                                    ### ALFA

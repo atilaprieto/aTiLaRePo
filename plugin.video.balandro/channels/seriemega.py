@@ -52,7 +52,6 @@ def mainlist_series(item):
     return itemlist
 
 
-
 def generos(item):
     logger.info()
     itemlist = []
@@ -74,6 +73,7 @@ def generos(item):
         ('kids','Infantil'), 
         ('misterio','Misterio'), 
         ('musica','Música'), 
+        ('pelicula-de-tv','Película de TV'), 
         ('reality','Reality'), 
         ('romance','Romance'), 
         ('sci-fi-fantasy','Sci-Fi & Fantasy'), 
@@ -105,7 +105,7 @@ def list_all(item):
     for article in matches:
         url = scrapertools.find_single_match(article, ' href="([^"]+)"')
         title = scrapertools.find_single_match(article, '<h3 class="Title">(.*?)</h3>')
-        if not url or not title: continue
+        if not url or not title or '/pagina-ejemplo/' in url: continue
         thumb = scrapertools.find_single_match(article, ' data-lazy-src="([^"]+)"')
         if not thumb: thumb = scrapertools.find_single_match(article, ' src="([^"]+)"') # search
         year = scrapertools.find_single_match(article, '<span class="Year">(\d+)</span>')

@@ -1,0 +1,13 @@
+{
+  "id": "peliculasdisneylatino",
+  "name": "peliculas Disney Latino",
+  "force_unify": true,
+  "active": true,
+  "adult": false,
+  "language": ["lat"],
+  "thumbnail": "http://i.imgur.com/s6CBxlw.png",
+  "banner": "http://i.imgur.com/c1YTgNT.png",
+  "categories": [
+    "movie"
+  ]
+}

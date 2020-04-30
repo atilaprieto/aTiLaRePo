@@ -19,6 +19,8 @@ from core import httptools
 
 host = 'https://pornvibe.org'
 
+# no se ven HD, falla pagina?
+
 def mainlist(item):
     logger.info()
     itemlist = []
@@ -78,12 +80,11 @@ def lista(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
-                              thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
+                              thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle=title))
     next_page = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)"')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

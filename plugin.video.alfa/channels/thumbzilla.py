@@ -20,7 +20,7 @@ from channelselector import get_thumb
 
 __channel__ = "thumbzilla"
 
-host = 'https://www.thumbzilla.com'
+host = 'https://thumbzilla.com'
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
     __perfil__ = int(config.get_setting('perfil', __channel__))
@@ -124,12 +124,12 @@ def videos(item):
         if ">HD<" in scrapedtime:
             title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (time, scrapedtitle)
         itemlist.append(Item(channel=item.channel, action='play', title=title, thumbnail=scrapedthumbnail,
-                             url=host + scrapedurl, contentTile=title, fanart=scrapedthumbnail))
+                             url=host + scrapedurl, contentTitle=title, fanart=scrapedthumbnail))
     paginacion = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)" />').replace('amp;', '')
     if paginacion:
         itemlist.append(Item(channel=item.channel, action="videos",
                              thumbnail=thumbnail % 'rarrow',
-                             title="Siguiente >>>", url=paginacion))
+                             title="[COLOR blue]Página Siguiente >>[/COLOR]", url=paginacion))
     return itemlist
 
 
@@ -149,7 +149,7 @@ def catalogo(item):
     if paginacion:
         itemlist.append(Item(channel=item.channel, action="catalogo",
                              thumbnail=thumbnail % 'rarrow',
-                             title="Siguiente >>>", url=paginacion))
+                             title="[COLOR blue]Página Siguiente >>[/COLOR]", url=paginacion))
     return itemlist
 
 
@@ -159,7 +159,6 @@ def categorias(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     data = scrapertools.find_single_match(data, '<p>Categories</p>(.*?)</nav>')
-    # logger.info(data)
     patron = '<a href="([^"]+)".*?'  # url
     patron += '<span class="wrapper">([^<]+)<span class="count">([^<]+)</span>'  # title, vids
     matches = re.compile(patron, re.DOTALL).findall(data)

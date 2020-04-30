@@ -8,7 +8,11 @@
         "url": "\\1"
       },
       {
-        "pattern": "(https://www.(?:javbangers|fapnado|xozilla|camwhoresbay|pornrewind).com/(?:video|videos)/[0-9]+/[A-z0-9-]+(?:/|))",
+        "pattern": "(https://(?:www.|)(?:javbangers|fapnado|xozilla|camwhoresbay|pornrewind|dato.porn)(?:.com|)/(?:video|videos)/[0-9]+/[A-z0-9-]+(?:/|))",
+        "url": "\\1"
+      },
+      {
+        "pattern": "(https://www.vipporns.com/videos/[A-z0-9-]+/)",
         "url": "\\1"
       },
       {

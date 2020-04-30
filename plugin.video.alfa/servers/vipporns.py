@@ -27,4 +27,8 @@ def test_video_exists(page_url):
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info()
+    d = video_url.split("/")[1:]
+    logger.debug(d)
+    
+    
     return [["[vipporns]", decode(video_url, license_code)]]

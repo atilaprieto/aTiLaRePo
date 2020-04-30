@@ -87,12 +87,12 @@ def videos(item):
         title = "[COLOR yellow]%s[/COLOR] %s - %s" %( duration, canal, title)
 
         itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail, 
-                             fanart=thumbnail, plot="", folder=True, contentType="movie"))
+                             fanart=thumbnail, plot="",contentTitle=title, contentType="movie"))
     # Paginador
     Actual = int(scrapertools.find_single_match(item.url, '/([0-9]+)/pc'))
     if JSONData["pages"] - 1 > Actual:
         next_page = item.url.replace("/" + str(Actual) + "/", "/" + str(Actual + 1) + "/")
-        itemlist.append(item.clone(action="videos", title="Página Siguiente >>", text_color="blue", url=next_page))
+        itemlist.append(item.clone(action="videos", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist
 
 

@@ -95,12 +95,12 @@ def lista(item):
         elif '1080' in scrapedtitle : title= "[COLOR red]1080p[/COLOR] %s" % scrapedtitle
         else: title = scrapedtitle
         if not "MANYVIDS" in title or not "UBIQFILE" in title:
-            itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl,
+            itemlist.append( Item(channel=item.channel, action="findvideos", title=title, contentTitle=title, url=scrapedurl,
                                fanart=scrapedthumbnail, thumbnail=scrapedthumbnail,plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<a class="next page-numbers" href="([^"]+)">Next &rarr;</a>')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista" , title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

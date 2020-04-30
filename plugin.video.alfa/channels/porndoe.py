@@ -73,8 +73,7 @@ def categorias(item):
     next_page = scrapertools.find_single_match(data, '<li class="page page-mobile current">.*?href="([^"]+)"')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="categorias", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -84,37 +83,39 @@ def lista(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
     patron = 'data-title="([^"]+)".*?'
-    patron += 'href="([^"]+)".*?'
+    patron += 'ng-preview="([^"]+)-preview.mp4".*?'
     patron += 'data-src="([^"]+)".*?'
     patron += '<span class="txt">([^<]+)<(.*?)<\/span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedtitle,scrapedurl,scrapedthumbnail,time,quality in matches:
         time = time.strip()
         title = "[COLOR yellow]%s[/COLOR] %s" % (time, scrapedtitle)
-        if "ico-hd" in quality:
+        if "icon-hd" in quality or "icon-vr" in quality:
             title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (time, scrapedtitle)
         thumbnail = scrapedthumbnail
-        url = urlparse.urljoin(item.url,scrapedurl)
+        url = scrapedurl
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<li class="page page-mobile current">.*?href="([^"]+)"').replace("amp;", "")
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
 def play(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data, 'videos":(.*?)"preview":')
-    patron = '"(\d+)":.*?"(https://.*?.mp4)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for quality,url in matches:
-        itemlist.append(['.mp4 %s' %quality, url])
+    for i in ["240p-400.mp4","360p-750.mp4","480p-1000.mp4","720p-hd-2500.mp4"]:
+        url = "%s-%s" %(item.url, i)
+        if "240p" in url: quality="240p"
+        if "360p" in url: quality="360p"
+        if "480p" in url: quality="480p"
+        if "720p" in url: quality="720p"
+        if "HD" in item.title and not "360p" in url:
+            itemlist.append(['.mp4 %s' %quality, url])
+        if not "HD" in item.title and not "480p" in url and not "720p" in url:
+            itemlist.append(['.mp4 %s' %quality, url])
     return itemlist
-
 

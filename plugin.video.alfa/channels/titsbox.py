@@ -66,12 +66,12 @@ def lista(item):
         url= url.get('480', domain)
         url = url.replace("/\n/", "/")
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
-                              fanart=thumbnail, plot=plot,))
+        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=url,
+                              fanart=thumbnail, thumbnail=thumbnail, plot=plot))
     Actual = int(scrapertools.find_single_match(item.url, '&page=([0-9]+)'))
     if JSONData["pagesLeft"] - 1 > Actual:
         scrapedurl = item.url.replace("&page=" + str(Actual), "&page=" + str(Actual + 1))
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=scrapedurl))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=scrapedurl))
     return itemlist
 
 

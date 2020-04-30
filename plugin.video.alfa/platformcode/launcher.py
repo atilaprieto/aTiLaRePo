@@ -46,7 +46,13 @@ def run(item=None):
     if not item:
         # Extract item from sys.argv
         if sys.argv[2]:
-            item = Item().fromurl(sys.argv[2])
+            sp = sys.argv[2].split('&')
+            url = sp[0]
+            item = Item().fromurl(url)
+            if len(sp) > 1:
+                for e in sp[1:]:
+                    key, val = e.split('=')
+                    item.__setattr__(key, val)
 
         # If no item, this is mainlist
         else:
@@ -521,4 +527,3 @@ def play_from_library(item):
             nextep.run(it)
             sleep(0.5)
             p_dialog.close()
-

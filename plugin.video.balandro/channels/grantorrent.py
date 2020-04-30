@@ -150,8 +150,7 @@ def list_categ_search(item):
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
     
-    patron = '<div class="imagen-post">\s*<a href="([^"]+)"><img src="([^"]+)"[^>]+>'
-    # ~ patron += '\s*</a>\s*<div class="bloque-inferior">([^<]+)'
+    patron = '<div class="imagen-post">\s*<a href="([^"]+)".*?<img src="([^"]+)"'
     patron += '.*?</a>\s*<div class="bloque-inferior">([^<]+)'
     matches = re.compile(patron, re.DOTALL).findall(data)
 

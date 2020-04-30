@@ -10,6 +10,9 @@ def get_video_url(page_url, url_referer=''):
 
     try:
         nid = scrapertools.find_single_match(page_url, 'videobb.(?:ru|site)/v/([A-z0-9_-]+)')
+        if not nid: nid = scrapertools.find_single_match(page_url, '/api/source/([A-z0-9_-]+)')
+        if not nid: return video_urls
+
         page_url = 'https://videobb.ru/api/source/' + nid
 
         resp = httptools.downloadpage(page_url, post='r=&d=videobb.ru')

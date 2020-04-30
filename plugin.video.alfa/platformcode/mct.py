@@ -28,6 +28,7 @@ import re
 import tempfile
 import platform
 import traceback
+import time
 
 try:
     import xbmc
@@ -77,7 +78,9 @@ if DOWNLOAD_LIMIT:
         DOWNLOAD_LIMIT = 0
 else:
     DOWNLOAD_LIMIT = 0
-UPLOAD_LIMIT = 100 * 1024
+UPLOAD_LIMIT = 0
+if DOWNLOAD_LIMIT > 0:
+    UPLOAD_LIMIT = DOWNLOAD_LIMIT / 35
 msg_header = 'Alfa MCT Cliente Torrent'
 
 
@@ -299,9 +302,11 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
     log("##### _video_file ## %s ##" % str(_video_file))
     log("##### _video_file_ext ## %s ##" % _video_file_ext)
 
-    if url.startswith('magnet:'):
+    if url.startswith('magnet:') or _index > 0:
         item.downloadFilename = ':%s: %s' % ('MCT', video_file)
-        torr.update_control(item)
+    item.downloadQueued = 0
+    time.sleep(1)
+    torr.update_control(item)
 
     dp_cerrado = True
     rar = False
@@ -345,7 +350,6 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
 
     h.force_reannounce()
     h.force_dht_announce()
-    h.set_upload_limit(UPLOAD_LIMIT)
 
     # -- Inicio de variables para 'pause' automático cuando el  -
     # -- el vídeo se acerca a una pieza sin completar           -
@@ -407,7 +411,8 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
         # Si se ha borrado el .torrent es porque se quiere cancelar la sesión
         #log("##### x: %s" % str(x))
         #log("##### exists: %s" % str(filetools.exists(torrent_file)))
-        if download > 1 and (str(x).endswith('0') or str(x).endswith('5')) and not filetools.exists(torrent_file):
+        if ((download > 1 and (str(x).endswith('0') or str(x).endswith('5'))) \
+                        or (download == 0 and x > 30)) and not filetools.exists(torrent_file):
             bkg_user = False
             item.downloadProgress = 0
             remove_files( 1, '', video_file, ses, h, ren_video_file, item )
@@ -517,7 +522,9 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
             bkg_auto = True
             log("##### PLAY %s" % (h.status().num_pieces))
             if item: torr.mark_auto_as_watched(item)
-            if ses_lt: h.set_download_limit(DOWNLOAD_LIMIT)
+            if ses_lt:
+                h.set_download_limit(DOWNLOAD_LIMIT)
+                h.set_upload_limit(UPLOAD_LIMIT)
             while player.isPlaying():
 
                 # -- Impedir que kodi haga 'resume' al inicio ---
@@ -729,7 +736,7 @@ def getProgress(h, video_file, _pf={}):
     msg_file = video_file
 
     if len(msg_file) > 50:
-        msg_file = msg_file.replace( video_file, os.path.splitext(video_file)[0][:40] + "... " + os.path.splitext(video_file)[1] )
+        msg_file = msg_file.replace( video_file, os.path.splitext(video_file)[0][:50] + "... " + os.path.splitext(video_file)[1] )
     msg_file = msg_file + "[CR]" + "%.2f MB" % (s.total_wanted/1048576.0) + " - " + _pf_msg
 
     return (message, porcent, msg_file, s, download)

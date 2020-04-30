@@ -136,6 +136,53 @@ def list_all(item):
     return itemlist
 
 
+def extraer_mycinedesiempre(data):
+    itemlist = []
+    bloque = scrapertools.find_single_match(data, "<div class='post bar hentry'>(.*?)<strong>Share this article</strong>")
+
+    # Enlaces
+    matches = scrapertools.find_multiple_matches(bloque, ' href="([^"]+)[^>]*>(.*?)</a>')
+    for url, txt in matches:
+        if url.startswith('/') or 'filmaffinity.com' in url or 'blogspot.com' in url: continue
+        if 'facebook.com' in url or 'twitter.com' in url or 'google.com' in url: continue
+        if 'film/reviews/' in url or 'filmreviews/' in url: continue
+        # ~ logger.info('%s %s' % (url, txt))
+        
+        txt = txt.lower()
+        if 'vose' in txt or 'v.o.s.e' in txt: lang = 'VOSE'
+        elif 'castellano' in txt: lang = 'Esp'
+        else: lang = ''
+        
+        if '.us.archive.org' in url: servidor = 'directo'
+        else: servidor = ''
+
+        itemlist.append(Item( channel = 'cinemaclasic', action = 'play', server = servidor, 
+                              title = '', url = url, language = lang ))
+
+    # Embeds
+    itemlist.extend(extraer_embeds(bloque))
+
+    return itemlist
+
+#Extraer enlaces de <iframe src="... y <source type="video/mp4" src="...
+def extraer_embeds(data):
+    itemlist = []
+
+    for tipo in ['iframe', 'source']:
+        matches = scrapertools.find_multiple_matches(data, '<%s.*? src="([^"]+)' % tipo)
+        for url in matches:
+            if 'facebook.com' in url or 'twitter.com' in url or 'google.com' in url: continue
+            if '.us.archive.org' in url: servidor = 'directo'
+            elif 'archive.org' in url: servidor = 'archiveorg'
+            elif 'mail.ru' in url: servidor = 'mailru'
+            elif 'youtube.com' in url: servidor = 'youtube'
+            else: servidor = ''
+
+            if url.startswith('//'): url = 'https:' + url
+            itemlist.append(Item( channel = 'cinemaclasic', action = 'play', server = servidor, 
+                                  title = '', url = url ))
+
+    return itemlist
 
 def corregir_servidor(servidor):
     servidor = servertools.corregir_servidor(servidor)
@@ -150,7 +197,8 @@ def findvideos(item):
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
 
-    # Ver en línea
+    # Ver en línea / descargas
+    done_mycinedesiempre = False
     for tipo in ['videos', 'download']:
         bloque = scrapertools.find_single_match(data, "<div id='%s'(.*?)</table>" % tipo)
         # ~ logger.debug(bloque)
@@ -160,31 +208,44 @@ def findvideos(item):
             # ~ logger.debug(enlace)
 
             url = scrapertools.find_single_match(enlace, " href='([^']+)")
+            if not url: continue
             if '.us.archive.org' in enlace: servidor = 'directo'
             elif 'archive.org' in enlace: servidor = 'archiveorg'
             else:
                 servidor = corregir_servidor(scrapertools.find_single_match(enlace, "domain=([^'.]+)"))
-            if not url or not servidor: continue
+            if not servidor: continue
+
+            if servidor == 'mycinedesiempre':
+                if done_mycinedesiempre: continue # No repetir acceso a mycinedesiempre
+                data2 = httptools.downloadpage(url).data
+                url = scrapertools.find_single_match(data2, '<a id="link" rel="nofollow" href="([^"]+)')
+                if url:
+                    done_mycinedesiempre = True
+                    data2 = httptools.downloadpage(url).data
+                    itemlist.extend(extraer_mycinedesiempre(data2))
+                continue
+                
             tds = scrapertools.find_multiple_matches(enlace, '<td>(.*?)</td>')
             lang = tds[1].lower()
             other = 'hace ' + tds[3]
             # ~ other += ', ' + tipo
-            
+
             itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, 
                                   title = '', url = url,
                                   language = IDIOMAS.get(lang,lang), other = other
                            ))
 
-    if len(itemlist) == 0:
-        url = scrapertools.find_single_match(data, '<iframe.*?src="([^"]+)')
-        if url:
-            servidor = servertools.get_server_from_url(url)
-            if servidor and servidor != 'directo': 
-                url = servertools.normalize_url(servidor, url)
-                itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, 
-                                      title = '', url = url
-                               ))
-        
+    # Embeds (iframes / sources)
+    itemlist.extend(extraer_embeds(data))
+
+    # Obtener servers pendientes de asignar
+    if len(itemlist) > 0: itemlist = servertools.get_servers_itemlist(itemlist)
+
+    # Descartar enlaces de youtube (coloquios, trailers, ...) y vsmobi, embedy (pq suelen fallar) a menos que no haya otros enlaces
+    # tb videos (videos.2000peliculassigloxx.com)
+    validos = len([it for it in itemlist if it.server not in ['desconocido', 'youtube', 'vsmobi', 'embedy', 'videos']])
+    if validos > 0: itemlist = filter(lambda it: it.server not in ['youtube', 'vsmobi', 'embedy'], itemlist) # mantener desconocido, videos para listarse en servers_todo
+
     return itemlist
 
 def play(item):

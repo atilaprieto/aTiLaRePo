@@ -47,13 +47,15 @@ list_servers = ['torrent']
 #host = 'https://grantorrent.la/'
 #host = 'https://grantorrent.li/'
 #host = 'https://grantorrent.cc/'
-host = 'https://grantorrent.eu/'
+#host = 'https://grantorrent.eu/'
+host = 'https://grantorrentt.com/'
 channel = "grantorrent"
-domain = 'grantorrent.eu'
-sufix = '.eu'
-#domain_files = 'files.grantorrent.one'
-domain_files = domain
-sufix_alt = '.eu'
+domain = 'grantorrentt.com'
+sufix = '.com'
+domain_files = 'files.grantorrent.la'
+domain_files_old = 'files.grantorrent.eu'
+#domain_files = domain
+sufix_alt = '.com'
 series_sufix = 'series/'
 
 dict_url_seasons = dict()
@@ -84,10 +86,10 @@ def mainlist(item):
     #Buscar películas
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar en Películas >>", url=host, extra="peliculas", thumbnail=thumb_buscar))
     
-    itemlist.append(Item(channel=item.channel, action="submenu", title="Series", url=host, extra="series", thumbnail=thumb_series))
+    #itemlist.append(Item(channel=item.channel, action="submenu", title="Series", url=host, extra="series", thumbnail=thumb_series))
 
     #Buscar series
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar en Series >>", url=host + series_sufix, extra="series", thumbnail=thumb_buscar))
+    #itemlist.append(Item(channel=item.channel, action="search", title="Buscar en Series >>", url=host + series_sufix, extra="series", thumbnail=thumb_buscar))
         
     itemlist.append(Item(channel=item.channel, url=host, title="[COLOR yellow]Configuración:[/COLOR]", folder=False, thumbnail=thumb_separador))
     
@@ -252,6 +254,9 @@ def listado(item):
             data = re.sub(r"\n|\r|\t|(<!--.*?-->)", "", httptools.downloadpage(item.post, timeout=timeout_search).data)
             data = js2py_conversion(data, item.post, timeout=timeout_search)
             video_section = scrapertools.find_single_match(data, '<div class="contenedor-home">(?:\s*<div class="titulo-inicial">\s*Últi.*?Añadi...\s*<\/div>)?\s*<div class="contenedor-imagen">\s*(<div class="imagen-post">.*?<\/div><\/div>)<\/div>')
+            if not video_section:
+                video_section = scrapertools.find_single_match(data, '<div class="contenedor-home">(?:\s*<div class="titulo-inicial">.*?<\/div>)?\s*<div class="contenedor-imagen">\s*(<div class="imagen-post">.*?<\/div><\/div>)<\/div>')
+            logger.error(video_section)
         except:
             pass
             
@@ -300,7 +305,7 @@ def listado(item):
             cnt_next = 99       #No hay más páginas.  Salir del bucle después de procesar ésta
 
         # Preparamos un patron que pretende recoger todos los datos significativos del video
-        patron = '<div class="imagen-post">\s*<a href="(?P<url>[^"]+)"><img.*?src="(?P<thumb>[^"]+)".*?'
+        patron = '<div class="imagen-post">\s*<a href="(?P<url>[^"]+)".*?><img.*?src="(?P<thumb>[^"]+)".*?'
         if "categoria" in item.url or item.media == "search":     #Patron distinto para páginas de Categorías o Búsquedas
             patron += 'class="attachment-(?P<quality>.*?)-(?P<lang>[^\s]+)\s.*?'
         else:
@@ -516,7 +521,7 @@ def findvideos(item):
     #logger.debug(item)
 
     timeout_find = timeout
-    follow_redirects=False
+    follow_redirects=True
     if item.videolibray_emergency_urls:                 #Si se están cacheando enlaces aumentamos el timeout
         timeout_find = timeout * 2
     elif item.emergency_urls:                           #Si se llama desde la Videoteca con enlaces cacheados... 
@@ -551,9 +556,9 @@ def findvideos(item):
     #patron = '\/icono_.*?png"\s*(?:title|alt)="(?P<lang>[^"]+)?"[^>]+><\/td><td>'
     patron = '\/icono_.*?png"\s*(?:title|alt)="(?P<lang>[^"]+)?"[^>]+>.*?<\/td><td>'
     patron += '(?P<temp_epi>.*?)?<?\/td>.*?<td>(?P<quality>.*?)?<\/td><td><a\s*'
-    #patron += 'class="link"\s*href="(?P<url>[^"]+)?"'
-    patron += 'class="link"\s*onclick="'
-    patron += "post\('(?P<url>[^']+)',\s*{u:\s*'(?P<key>[^']+)'}\);"
+    patron += 'class="link"\s*href="(?P<url>[^"]+)?"'
+    #patron += 'class="link"\s*onclick="'
+    #patron += "post\('(?P<url>[^']+)',\s*{u:\s*'(?P<key>[^']+)'}\);"
     if not item.armagedon:                                                      #Si es un proceso normal, seguimos
         matches = re.compile(patron, re.DOTALL).findall(data)
     if not matches:                                                             #error
@@ -584,11 +589,16 @@ def findvideos(item):
         emergency_torrents = []
         emergency_urls = []
     i = -1
-    for lang, quality, size, scrapedurl_la, scrapedkey in matches:
+    scrapedkey = ''
+    for lang, quality, size, scrapedurl_la in matches:
+    #for lang, quality, size, scrapedurl_la, scrapedkey in matches:
         i += 1
         temp_epi = ''
-        scrapedurl = '%s?u=%s' % (urlparse.urljoin(host, scrapedurl_la).replace(sufix, sufix_alt)\
+        if scrapedkey:
+            scrapedurl = '%s?u=%s' % (urlparse.urljoin(host, scrapedurl_la).replace(sufix, sufix_alt)\
                     .replace('download/torrent.php', 'download_tt.php'), scrapedkey)
+        else:
+            scrapedurl = scrapedurl_la.replace(domain_files_old, domain_files)
         if scrapertools.find_single_match(quality, '\([C|c]ontrase[^>]+>(.*?)<\/[^>]+>.'):
             password = scrapertools.find_single_match(quality, '\([C|c]ontrase[^>]+>(.*?)<\/[^>]+>.')
             quality = re.sub(r'\([C|c]ontrase[^>]+>(.*?)<\/[^>]+>.', '', quality)

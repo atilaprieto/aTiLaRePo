@@ -26,7 +26,7 @@ list_servers = ['fembed', 'verystream','directo','rapidvideo',
 
 __channel__='rexpelis'
 
-host = "https://www.rexpelis.com"
+host = "https://www.rexpelis.me"
 headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:67.0) Gecko/20100101 Firefox/67.0'}
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)

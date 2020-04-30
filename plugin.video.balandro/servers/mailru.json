@@ -13,7 +13,7 @@
       },
       {
         "pattern": "my.mail.ru/(?:videos|video)/embed/(?!mail|inbox)([\\w]+)",
-        "url": "http://my.mail.ru/+/video/meta/\\1"
+        "url": "https://my.mail.ru/video/embed/\\1"
       }
     ]
   }

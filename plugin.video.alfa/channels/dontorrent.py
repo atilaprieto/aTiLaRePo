@@ -537,7 +537,7 @@ def listado(item):                                                              
             if item_local.contentType == "tvshow":
                 title = scrapertools.find_single_match(title, '(^.*?)\s*(?:$|\(|\[|-)')
 
-            title = re.sub(r'(?i)TV|Online|(4k-hdr)|(fullbluray)|4k| - 4k|(3d)', '', title).strip()
+            title = re.sub(r'(?i)TV|Online|(4k-hdr)|(fullbluray)|4k| - 4k|(3d)|miniserie', '', title).strip()
             item_local.quality = re.sub(r'(?i)proper|unrated|directors|cut|repack|internal|real|extended|masted|docu|super|duper|amzn|uncensored|hulu', 
                         '', item_local.quality).strip()
 

@@ -33,8 +33,8 @@ def mainlist(item):
 
 def search(item, texto):
     logger.info()
-    item.url = "%s/search/%s/" % (host, texto.replace("+", "-"))
-    item.extra = texto
+    texto = texto.replace("+", "-")
+    item.url = "%s/search/%s/" % (host, texto)
     try:
         return lista(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -82,30 +82,15 @@ def lista(item):
         scrapedthumbnail += "|Referer=%s" % item.url
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=scrapedthumbnail,
-                              fanart=scrapedthumbnail, plot=plot))
-    if item.extra:
-       next_page = scrapertools.find_single_match(data, '<li class="next">.*?from_videos\+from_albums:(\d+)')
-       if next_page:
-           if "from_videos=" in item.url:
-               next_page = re.sub(r'&from_videos=(\d+)', '&from_videos=%s' % next_page, item.url)
-           else:
-               next_page = "%s?mode=async&function=get_block&block_id=list_videos_videos_list_search_result" \
-                           "&q=%s&category_ids=&sort_by=post_date&from_videos=%s" % (item.url, item.extra, next_page)
-           itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
-    else:
-        next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
-        if next_page and not next_page.startswith("#"):
-            next_page = urlparse.urljoin(item.url,next_page)
-            itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
-        else:
-            next_page = scrapertools.find_single_match(data, '<li class="next">.*?from:(\d+)')
-            if next_page:
-                if "from" in item.url:
-                    next_page = re.sub(r'&from=(\d+)', '&from=%s' % next_page, item.url)
-                else:
-                    next_page = "%s?mode=async&function=get_block&block_id=list_videos_common_videos_list&sort_by=post_date&from=%s" % (
-                         item.url, next_page)
-                itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
+                              fanart=scrapedthumbnail, contentTitle=title, plot=plot))
+    next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
+    if "#" in next_page:
+        next_page = scrapertools.find_single_match(data, 'data-parameters="([^"]+)">Next')
+        next_page = next_page.replace(":", "=").replace(";", "&").replace("+from_albums", "")
+        next_page = "?%s" % next_page
+    if next_page:
+        next_page = urlparse.urljoin(item.url,next_page)
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

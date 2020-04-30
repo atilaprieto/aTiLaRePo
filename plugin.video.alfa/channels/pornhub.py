@@ -86,8 +86,8 @@ def catalogo(item):
         if matches:
             url = urlparse.urljoin(item.url, matches[0].replace('&amp;', '&'))
             itemlist.append(
-                Item(channel=item.channel, action="catalogo", title=">> Página siguiente", fanart=item.fanart, 
-                     url=url))
+                Item(channel=item.channel, action="catalogo", title="[COLOR blue]Página Siguiente >>[/COLOR]",
+                     fanart=item.fanart, url=url))
     return itemlist
 
 def categorias(item):
@@ -127,8 +127,8 @@ def lista(item):
         else:
             title = "[COLOR yellow]%s[/COLOR] %s" % (duration,scrapedtitle)
         url = urlparse.urljoin(item.url, url)
-        itemlist.append(
-            Item(channel=item.channel, action="play", title=title, url=url, fanart=thumbnail, thumbnail=thumbnail))
+        itemlist.append(Item(channel=item.channel, action="play", title=title, contentTitle = title, url=url,
+                             fanart=thumbnail, thumbnail=thumbnail))
     if itemlist:
         # Paginador
         patron = '<li class="page_next"><a href="([^"]+)"'
@@ -136,8 +136,8 @@ def lista(item):
         if matches:
             url = urlparse.urljoin(item.url, matches[0].replace('&amp;', '&'))
             itemlist.append(
-                Item(channel=item.channel, action="lista", title=">> Página siguiente", fanart=item.fanart, 
-                     url=url))
+                Item(channel=item.channel, action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]",
+                     fanart=item.fanart, url=url))
     return itemlist
 
 

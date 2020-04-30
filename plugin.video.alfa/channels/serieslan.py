@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import re
+import string
 
 from channels import renumbertools
+from bs4 import BeautifulSoup
 from channelselector import get_thumb
 from core import httptools
 from core import scrapertools
@@ -16,42 +18,73 @@ from lib import gktools
 
 IDIOMAS = {'latino': 'Latino'}
 list_language = IDIOMAS.values()
-list_servers = ['openload'
-                ]
+list_servers = []
 list_quality = ['default']
 
 
 host = "https://serieslan.com"
 
+def create_soup(url, referer=None, unescape=False):
+    logger.info()
+
+    if referer:
+        data = httptools.downloadpage(url, headers={'Referer': referer}).data
+    else:
+        data = httptools.downloadpage(url).data
+
+    if unescape:
+        data = scrapertools.unescape(data)
+    soup = BeautifulSoup(data, "html5lib", from_encoding="utf-8")
+
+    return soup
 
 def mainlist(item):
     logger.info()
-    thumb_series = get_thumb("channels_tvshow.png")
+    thumb_series = get_thumb("tvshows", auto=True)
     autoplay.init(item.channel, list_servers, list_quality)
 
     itemlist = list()
 
     itemlist.append(
-        Item(channel=item.channel, action="lista", title="Series",
-             tipo="series", url=host, thumbnail=thumb_series,
-             page=0, plot="Tus series animadas de la infancia"))
+        Item(channel=item.channel, action="lista", title="Novedades",
+            url=host, thumbnail=thumb_series, category="series",
+            page=0, plot="Tus series animadas de la infancia"))
+
     itemlist.append(
-        Item(channel=item.channel, action="lista", title="Live Action",
-             url=host+"/liveaction", thumbnail=thumb_series, page=0,
-             plot="Series LiveAction de los 90s y 2000"))
-    #21/09/2019 Fallo con BD
-    #itemlist.append(
-    #    Item(channel=item.channel, action="peliculas", title="Películas", contentSerieName="Películas", url=host+"/peliculas", thumbnail=thumb_series, page=0))
+        Item(channel=item.channel, action="letters", title="Listado alfabético",
+            url=host+"/lista.php?or=abc", thumbnail=get_thumb("alphabet", auto=True), page=0,
+            plot="Tus series animadas de la infancia"))
+
+    itemlist.append(
+        Item(channel=item.channel, action="lista", title="Series Live Action",
+            url=host+"/liveaction", thumbnail=thumb_series, page=0, category="liveaction",
+            plot="Series LiveAction de los 90s y 2000"))
+    
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
-                         thumbnail=thumb_series))
+            thumbnail=get_thumb("search", auto=True)))
+
     itemlist = renumbertools.show_option(item.channel, itemlist)
     autoplay.show_option(item.channel, itemlist)
     return itemlist
 
+def letters(item):
+    logger.info()
+    itemlist = []
+    
+    itemlist.append(
+        Item(channel=item.channel, action="list_all", title="0-9", character = "0",
+            url=item.url, thumbnail=item.thumbnail, page=0))
+
+    for letter in list(string.ascii_lowercase):
+        itemlist.append(item.clone(action="list_all", title=letter.upper(), character = letter,
+        url=item.url))
+
+    return itemlist
+
 def search(item, texto):
     logger.info()
-    #texto = texto.replace(" ", "+")
-    item.url = host +"/buscar.php"
+    texto = texto.replace(" ", "+")
+    item.url = host +"/b.php"
     item.texto = texto
     if texto != '':
         return sub_search(item)
@@ -63,10 +96,11 @@ def sub_search(item):
     itemlist = []
     post = "k=" + item.texto
     results = httptools.downloadpage(item.url, post=post).json
+    
     if not results:
         return itemlist
-    for result in results:
-        scrapedthumbnail = host + "/tb/" + result[0] + ".jpg"
+    for result in results["dt"]:
+        scrapedthumbnail = "{}/tb/{}.jpg".format(host,result[0])
         scrapedtitle = result[1]
         scrapedurl = host + "/" + result[2]
 
@@ -78,12 +112,13 @@ def sub_search(item):
         except:
             scrapedyear = ''
         filtro_tmdb = {"first_air_date": scrapedyear}.items()
-        itemlist.append(item.clone(action = "episodios",
+        itemlist.append(item.clone(action = "seasons",
                                    title = scrapedtitle,
                                    thumbnail = scrapedthumbnail,
                                    url = scrapedurl,
                                    context=context,
                                    contentSerieName = scrapedtitle,
+                                   page=0,
                                    infoLabels={'filtro':filtro_tmdb}
                         ))
     tmdb.set_infoLabels(itemlist, seekTmdb=True)
@@ -91,145 +126,149 @@ def sub_search(item):
 
 def lista(item):
     logger.info()
-
     itemlist = []
-
-    data = httptools.downloadpage(item.url).data
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-    next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="sa fr">')
-    patron = '<a href="([^"]+)" '
-    if item.tipo == "series":
-        patron += 'class="(?:link|min-la)">.+?<img src="([^"]+)".*?'
-    else:
-        patron += 'class="(?:link|min-la)"><img src="([^"]+)".*?'
-    patron += 'title="([^"]+)">'
-
-    matches = scrapertools.find_multiple_matches(data, patron)
-
-    # Paginacion (mejora)
+    
+    soup = create_soup(item.url)
+    classitems = "link" if item.category == "series" else "min-la"
+    matches = soup.find_all("a", class_= classitems )
+    
+    next_page = soup.find("a", class_="sa fr")
     num_items_x_pagina = 25
     min = item.page
     max = item.page + num_items_x_pagina
     f_page = item.page + num_items_x_pagina
 
-    for link, img, name in matches[min:max]:
+    for elem in matches[min:max]:
+        scrapedurl = elem["href"]
+        scrapedthumbnail = elem.find("img")["src"]
+        scrapedtitle = elem.find("h3").text if item.category == "series" else elem.find("div").text
+        
+        title = scrapedtitle.replace(" y "," & ") if " y " in scrapedtitle else scrapedtitle
+        url = host + scrapedurl
+        thumbnail = host + scrapedthumbnail
 
-        if " y " in name:
-            title=name.replace(" y "," & ")
-        else:
-            title = name
-        url = host + link
-        scrapedthumbnail = host + img
         context = renumbertools.context(item)
         context2 = autoplay.context
         context.extend(context2)
-        
+
         itemlist.append(Item(channel=item.channel, title=title, url=url,
-                             action="episodios", thumbnail=scrapedthumbnail, 
-                             contentSerieName=title, context=context))
-    
+            action="seasons", thumbnail=thumbnail, contentSerieName=title, context=context))
+
     if f_page < len(matches):
-        itemlist.append(item.clone(title="[COLOR cyan]Página Siguiente >>[/COLOR]",
-                                    page=f_page, plot=""))
-       
-    elif next_page: 
-        next_page = '%s/%s' % (host, next_page) 
+        itemlist.append(item.clone(title="[COLOR cyan]Página Siguiente >>[/COLOR]", page=f_page))
+
+    elif next_page:
+        next_page = "{}/{}".format(host, next_page) 
         itemlist.append(
-             Item(channel=item.channel, url=next_page, action="lista",
-                  title="[COLOR cyan]Página Siguiente >>[/COLOR]",
-                  page=0, tipo=item.tipo))
+            Item(channel=item.channel, url=next_page, action="lista",
+                title="[COLOR cyan]Página Siguiente >>[/COLOR]",
+                page=0, tipo=item.tipo))
 
     tmdb.set_infoLabels(itemlist)
     return itemlist
 
-def peliculas(item):
+def list_all(item):
     logger.info()
-
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-    patron = '<div class="pel play" dt="(.+?)" .+?><img src="(.+?)" .+? title="(.*?)"><span class=".+?">(.+?)<\/span><a href="(.+?)" class.+?>'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    # Paginacion
-    num_items_x_pagina = 30
-    min = item.page * num_items_x_pagina
-    min=min-item.page
-    max = min + num_items_x_pagina - 1
-    b=0
-    for scrapedplot,scrapedthumbnail, scrapedtitle, scrapedyear, scrapedurl in matches[min:max]:
-        b=b+1
-        url = host + scrapedurl
-        thumbnail = host +scrapedthumbnail
-        #context = renumbertools.context(item)
-        context = autoplay.context
-        #context.extend(context2)
-        title = "%s [COLOR darkgrey](%s)[/COLOR]" % (scrapedtitle, scrapedyear)
-        
-        itemlist.append(Item(channel=item.channel, title=title, url=url, action="findvideos",
-                             thumbnail=thumbnail, plot=scrapedplot, contentTitle=scrapedtitle,
-                             context=context, infoLabels={'year': scrapedyear}))
-    if b<29:
-        pass
-    else:    
-        itemlist.append(
-             Item(channel=item.channel, title="[COLOR cyan]Página Siguiente >>[/COLOR]",
-                  url=item.url, action="peliculas", page=item.page + 1))
+    soup = create_soup(item.url)
+    letter = [str(d) for d in range(10)] + ['¡'] + ['¿'] if item.character == '0' else item.character.lower()
+    
+    matches = soup.find_all("div", class_="el")
 
-    tmdb.set_infoLabels(itemlist)
+    for elem in matches:
+        if elem.find("h2").text[0].lower() in letter:
+            scrapedtitle = elem.find("h2").text
+            scrapedthumbnail = elem.find("img")['data-original']
+            scrapedurl = elem.find("a")["href"]
+            
+            title = scrapedtitle.replace(" y "," & ") if " y " in scrapedtitle else scrapedtitle
+            url = host + "/" + scrapedurl
+            thumbnail = host + scrapedthumbnail
+            
+            context = renumbertools.context(item)
+            context2 = autoplay.context
+            context.extend(context2)
+            
+            itemlist.append(Item(channel=item.channel, title=title, url=url,
+                action="seasons", thumbnail=thumbnail, contentSerieName=title, context=context))
+    
+    #if f_page < len(matches) and len(itemlist)>30:
+    #    itemlist.append(item.clone(title="[COLOR cyan]Página Siguiente >>[/COLOR]", page=f_page))
+
+    return itemlist
+
+def seasons(item):
+    logger.info()
+    itemlist = []
+    soup = create_soup(item.url)
+    match = soup.find("div", class_="box lista")
+    matches = match.find_all("h3", class_="colapse")
+    infoLabels = item.infoLabels
+    for i, elem in enumerate(matches):
+        title = elem.text
+        dt = elem['dt']
+        season = title.split(" ")[1] if "temporada" in title.lower() else 0
+        if not "temporada" in title.lower():
+            season = i+1 if not [int(s) for s in title if s.isdigit()] else [int(s) for s in title if s.isdigit()][0]
+        infoLabels['season'] = season
+        itemlist.append(Item(channel=item.channel, title=title, contentSerieName=item.tile,
+                url=item.url, plot=item.plot, thumbnail=item.thumbnail, dt = dt,
+                action="episodesxseason", context=item.context, infoLabels=infoLabels))
+    if config.get_videolibrary_support() and len(itemlist) > 0 and not item.extra:
+        itemlist.append(Item(channel=item.channel, url=item.url, action="add_serie_to_library",
+                        extra="episodios", contentSerieName=item.contentSerieName,
+                        title='[COLOR yellow]Añadir esta serie a la videoteca[/COLOR]'))
+    return itemlist
+
+def episodesxseason(item):
+    logger.info()
+    itemlist = []
+    
+    soup = create_soup(item.url)
+    episodes = soup.find("div", {"id": item.dt})
+
+    total_episode = 0
+
+    infoLabels = item.infoLabels
+    for episode in episodes.find_all("a"):
+        scrapedurl = "/"+episode["href"]
+        scrapedtitle = episode.find("li").text
+        infoLabels['episode'] = scrapedtitle.split(" -")[0].split(" ")[1]
+
+        pat = "/" if not "KND" in item.title else "-"
+        name = scrapedtitle.split(" -")[1]
+        
+        title = ''
+        if len(name.split(pat)) > 1:
+            for j, pos in enumerate(name.split(pat)):
+                total_episode += 1
+                season, episode_numb = renumbertools.numbered_for_tratk(item.channel, 
+                    item.contentSerieName, infoLabels['season'], total_episode)
+                if len(name.split(pat)) == j+1:
+                    title += "{}x{:02d}".format(season, episode_numb)
+                else:
+                    title += "{}x{:02d}_".format(season, episode_numb)
+        else:
+            total_episode += 1
+            season, episode_numb = renumbertools.numbered_for_tratk(item.channel,
+                item.contentSerieName, infoLabels['season'], total_episode)
+            title += "{}x{:02d}".format(season, episode_numb)
+        title = "{} - {}".format(title,scrapedtitle.split(" -")[1])
+
+        itemlist.append(Item(channel=item.channel, title=title, contentSerieName=item.title,
+                url=host + scrapedurl, plot=item.plot, thumbnail=item.thumbnail,
+                action="findvideos", context=item.context, infoLabels=infoLabels))
+    
+    tmdb.set_infoLabels_itemlist(itemlist, True)
     return itemlist
 
 def episodios(item):
     logger.info()
-
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    # obtener el numero total de episodios
-    total_episode = 0
-
-    patron_caps = '<a href="([^>]+)"><li><span><strong>Capitulo <\/strong>(\d+).*? -<\/span>(.+?)<\/li><\/a>'
-    matches = scrapertools.find_multiple_matches(data, patron_caps)
-    patron_info = '<img src="([^"]+)">.+?</span>(.*?)</p>.*?<h2>Reseña:</h2><p>(.*?)</p>'
-    scrapedthumbnail, show, scrapedplot = scrapertools.find_single_match(data, patron_info)
-    scrapedthumbnail = host + scrapedthumbnail
-    
-    for link,cap, name in matches:
-
-        title = ""
-        pat = "/"
-        if "Mike, Lu & Og"==item.title:
-            pat="&/"
-        if "KND" in item.title:
-            pat="-"
-        # varios episodios en un enlace
-        if len(name.split(pat)) > 1:
-            i = 0
-            for pos in name.split(pat):
-                i = i + 1
-                total_episode += 1
-                season, episode = renumbertools.numbered_for_tratk(item.channel, item.contentSerieName, 1, total_episode)
-                if len(name.split(pat)) == i:
-                    title += "%sx%s " % (season, str(episode).zfill(2))
-                else:
-                    title += "%sx%s_" % (season, str(episode).zfill(2))
-        else:
-            total_episode += 1
-            season, episode = renumbertools.numbered_for_tratk(item.channel,item.contentSerieName, 1, total_episode)
-
-            title += "%sx%s " % (season, str(episode).zfill(2))
-
-        url = host + "/" + link
-        
-        if "disponible" in link:
-            title += "No Disponible aún"
-        else:
-            title += name
-            itemlist.append(
-                item.clone(action="findvideos", title=title, url=url, plot=scrapedplot))
-
-    if config.get_videolibrary_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=item.channel, title="[COLOR yellow]Añadir esta serie a la videoteca[/COLOR]", url=item.url,
-                             action="add_serie_to_library", extra="episodios", show=show))
+    itemlist = list()
+    templist = seasons(item)
+    for tempitem in templist:
+        itemlist += episodesxseason(tempitem)
 
     return itemlist
 

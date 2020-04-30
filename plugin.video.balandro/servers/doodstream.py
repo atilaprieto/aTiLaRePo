@@ -9,6 +9,7 @@ def get_video_url(page_url, url_referer=''):
     video_urls = []
     
     page_url = page_url.replace('/d/','/e/')
+    # ~ page_url = page_url.replace('doodstream.com/','dood.watch/')
 
     data = httptools.downloadpage(page_url).data
     # ~ logger.debug(data)
@@ -17,6 +18,7 @@ def get_video_url(page_url, url_referer=''):
     if url:
         headers = {'Referer': page_url}
         if url.startswith('/'): url = 'https://doodstream.com' + url
+        # ~ if url.startswith('/'): url = 'https://dood.watch' + url
         data2 = httptools.downloadpage(url, headers=headers).data
         # ~ logger.debug(data2)
         if not data2: return itemlist
@@ -35,5 +37,6 @@ def get_video_url(page_url, url_referer=''):
         url = data2 + a
         # ~ video_urls.append(['mp4', data2 + a])
         video_urls.append(['mp4', data2 + a +'|Referer=https://doodstream.com/'])
+        # ~ video_urls.append(['mp4', data2 + a +'|Referer=https://dood.watch/'])
 
     return video_urls

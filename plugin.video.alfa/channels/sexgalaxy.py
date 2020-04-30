@@ -25,6 +25,8 @@ list_servers = ['gounlimited']
 
 host = 'http://sexgalaxy.net'
 
+# UBIQFILE  falta jetload
+
 def mainlist(item):
     logger.info()
     itemlist = []
@@ -91,7 +93,7 @@ def lista(item):
                              fanart=scrapedthumbnail, url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
     next_page = scrapertools.find_single_match(data, '"page-numbers current">.*?href="([^"]+)">')
     if next_page != "":
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist
 
 # https://jetload.net/p/1RyPRu5MQx5y/20v9e2rpnlne.mp4

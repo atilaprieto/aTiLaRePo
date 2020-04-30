@@ -13,6 +13,9 @@ def get_video_url(page_url, url_referer=''):
 
     bloque = scrapertools.find_single_match(data, 'sources:\s*\[(.*?)\]')
     url = scrapertools.find_single_match(bloque, '\{file:"([^"]+)"')
+    # ~ if url:
+        # ~ video_urls.append(['m3u8', url+'|Referer=https://vidfast.co/'])
+        # ~ return video_urls
     if url:
         data = httptools.downloadpage(url, headers={'Referer': 'https://vidfast.co/'}).data
         # ~ logger.debug(data)

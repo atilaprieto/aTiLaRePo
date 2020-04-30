@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import re, urllib
+import re
 
 from platformcode import config, logger
 from core.item import Item
@@ -142,7 +142,7 @@ def list_all(item):
     else:
         post = {'tipo': item.tipo, 'pagina': item.pagina}
         if item.adicional: post['adicional'] = item.adicional
-        data = do_downloadpage(host+'frm/cargar-mas.php', post=urllib.urlencode(post))
+        data = do_downloadpage(host+'frm/cargar-mas.php', post=post)
     # ~ logger.debug(data)
 
     matches = re.compile('<article class="contenido-p">(.*?)</article>', re.DOTALL).findall(data)
@@ -235,7 +235,7 @@ def list_episodes(item):
     color_lang = config.get_setting('list_languages_color', default='red')
 
     post = {'tipo': item.tipo, 'pagina': item.pagina}
-    data = do_downloadpage(host+'frm/cargar-mas.php', post=urllib.urlencode(post))
+    data = do_downloadpage(host+'frm/cargar-mas.php', post=post)
 
     matches = re.compile('<article class="contenido-p">(.*?)</article>', re.DOTALL).findall(data)
     for article in matches:
@@ -274,7 +274,7 @@ def findvideos(item):
             data = do_downloadpage(item.url)
             item.id_pelicula = scrapertools.find_single_match(data, 'Idpelicula\s*=\s*"([^"]+)')
 
-        data = do_downloadpage(host + 'frm/obtener-enlaces-pelicula.php', post=urllib.urlencode({'pelicula': item.id_pelicula}))
+        data = do_downloadpage(host + 'frm/obtener-enlaces-pelicula.php', post={'pelicula': item.id_pelicula})
         # ~ logger.debug(data)
         enlaces = jsontools.load(data)
         for lang in enlaces:

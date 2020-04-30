@@ -20,6 +20,8 @@ from core import httptools
 
 host = 'https://hqporner.com'
 
+# falla thumbnail
+
 def mainlist(item):
     logger.info()
     itemlist = []
@@ -75,16 +77,17 @@ def lista(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedtime in matches:
         title = '[COLOR yellow]%s[/COLOR] %s' % (scrapedtime , scrapedtitle)
-        thumbnail = "https:" + scrapedthumbnail
+        if not scrapedthumbnail.startswith("https"):
+            thumbnail = "http:%s" % scrapedthumbnail
+        thumbnail += "|Referer=%s/" % host
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
-                              thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
+        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=url,
+                              thumbnail=thumbnail, fanart=thumbnail, plot=plot))
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="button mobile-pagi pagi-btn">Next')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

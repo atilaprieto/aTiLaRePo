@@ -10,6 +10,7 @@ else:
 
 import re
 
+from core.item import Item
 from platformcode import config, logger
 from core import httptools
 from core import scrapertools
@@ -64,11 +65,11 @@ def lista(item):
     for scrapedurl, scrapedtitle, scrapedthumbnail, duration in matches:
         if duration:
             scrapedtitle = "[COLOR yellow]%s[/COLOR] %s" % (duration,scrapedtitle)
-        itemlist.append(item.clone(action="play", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail,
-                                   fanart=scrapedthumbnail))
+        itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle, contentTitle=scrapedtitle, url=scrapedurl,
+                                   fanart=scrapedthumbnail, thumbnail=scrapedthumbnail))
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink" rel="next" href="([^"]+)"')
     if next_page:
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist
 
 
