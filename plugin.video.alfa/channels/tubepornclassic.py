@@ -109,31 +109,9 @@ def lista(item):
 
 
 def play(item):
-    headers = {'Referer': item.url}
-    post_url = host+'/sn4diyux.php'
-    data = httptools.downloadpage(item.url).data
-    
-    patron = 'pC3:\'([^\']+)\',.*?'
-    patron += '"video_id": (\d+),'
-    info_b, info_a = scrapertools.find_single_match(data, patron)
-    post = 'param=%s,%s' % (info_a, info_b)
-    new_data = httptools.downloadpage(post_url, post=post, headers=headers).data
-    texto = scrapertools.find_single_match(new_data, 'video_url":"([^"]+)"')
-
-    url = dec_url(texto)
-    item.url = httptools.downloadpage(url, only_headers=True).url
-    
-    return [item]
-
-
-def dec_url(txt):
-    #truco del mendrugo
-    if not PY3:
-        txt = txt.decode('unicode-escape').encode('utf8')
-    else:
-        txt = txt.encode('utf8').decode('unicode-escape')
-    txt = txt.replace('А', 'A').replace('В', 'B').replace('С', 'C').replace('Е', 'E').replace('М', 'M').replace('~', '=').replace(',','/')
-    import base64
-    url = base64.b64decode(txt)
-    return url
+    logger.info()
+    itemlist = []
+    itemlist.append(item.clone(action="play", title= "%s", contentTitle = item.title, url=item.url))
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
+    return itemlist
 

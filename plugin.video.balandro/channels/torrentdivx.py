@@ -6,9 +6,16 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-HOST = 'https://www.torrentdivx.com/'
+# ~ HOST = 'https://www.torrentdivx.com/'
+HOST = 'https://www.esdivx.nl/'
 
 perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (5x8=40) para que la subpaginación interna no se descompense
+
+def do_downloadpage(url, post=None, headers=None):
+    url = url.replace('https://www.torrentdivx.com/', 'https://www.esdivx.nl/') # por si viene de enlaces guardados
+    data = httptools.downloadpage(url, post=post, headers=headers).data
+    return data
+
 
 
 def mainlist(item):
@@ -59,7 +66,7 @@ def generos(item):
     logger.info()
     itemlist = []
     
-    data = httptools.downloadpage(HOST).data
+    data = do_downloadpage(HOST)
     
     bloque = scrapertools.find_single_match(data, 'Generos</a>\s*<ul class="sub-menu">(.*?)</ul>')
     
@@ -79,7 +86,7 @@ def list_all(item):
 
     if not item.page: item.page = 0
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     
     tit = '<h1>Series de TV</h1>' if item.search_type == 'tvshow' else '<h1>Películas</h1>'
     if tit in data: data = data.split(tit)[1]
@@ -136,7 +143,7 @@ def temporadas(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     
     matches = re.compile("<span class='title'>Temporada (\d+)", re.DOTALL).findall(data)
     for numtempo in matches:
@@ -155,7 +162,7 @@ def episodios(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     if item.contentSeason: # reducir datos a la temporada pedida
@@ -195,7 +202,7 @@ def findvideos(item):
     
     IDIOMAS = {'Castellano':'Esp', 'Latino':'Lat', 'V.O. Subtitulado':'VOSE', 'Version Original':'VO', 'Version Original +Sub':'VOS', 'Latino - Varios':'Varios'}
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     bloque = scrapertools.find_single_match(data, '<div class="box_links">(.*?)</table>')
@@ -228,8 +235,8 @@ def play(item):
 
     if item.url.startswith(HOST) and '/links/' in item.url:
         #TODO!? linkwz=true variable !?
-        data = httptools.downloadpage(item.url, post='linkwz=true').data
-        logger.debug(data)
+        data = do_downloadpage(item.url, post='linkwz=true')
+        # ~ logger.debug(data)
 
         url = scrapertools.find_single_match(data, '<a id="link" rel="nofollow" href="([^"]+)')
         if url:
@@ -247,7 +254,7 @@ def list_search(item):
 
     if not item.page: item.page = 0
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     matches = re.compile('<div class="result-item">(.*?)</article>', re.DOTALL).findall(data)
     if item.search_type == 'movie': matches = filter(lambda x: not '/tvshows/' in x, matches) # descartar series

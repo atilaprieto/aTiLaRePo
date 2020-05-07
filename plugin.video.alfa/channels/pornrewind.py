@@ -17,7 +17,7 @@ def mainlist(item):
     itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/videos/?sort_by=post_date"))
     itemlist.append( Item(channel=item.channel, title="Mejor valorados" , action="lista", url=host + "/videos/?sort_by=rating"))
     itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "/videos/?sort_by=video_viewed"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/"))
+    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
     return itemlist
 
@@ -39,11 +39,13 @@ def categorias(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron  = '<a class="thumb-categories" href="([^"]+)" title="([^"]+)">.*?'
-    patron  += '<img class="lazyload" data-src="([^"]+)"'
+    patron  = '<div class="swiper-slide">.*?'
+    patron  += '<a href="([^"]+)".*?'
+    patron  += 'data-src="([^"]+)".*?'
+    patron  += '<span class="cats-title">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-    for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
+    for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         scrapedplot = ""
         itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )

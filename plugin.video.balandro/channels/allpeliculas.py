@@ -8,7 +8,7 @@ from core import httptools, scrapertools, tmdb, servertools
 
 HOST = 'https://allpeliculas.tv/'
 
-perpage = 30 # preferiblemente un múltiplo de los elementos que salen en la web (6x10=60) para que la subpaginación interna no se descompense
+perpage = 18 # preferiblemente un múltiplo de los elementos que salen en la web (6x6=36) para que la subpaginación interna no se descompense
 
 
 def mainlist(item):
@@ -20,6 +20,7 @@ def mainlist_pelis(item):
     
     itemlist.append(item.clone( title='Últimas actualizadas', action='list_all', url=HOST ))
     itemlist.append(item.clone( title='Estrenos', action='list_all', url=HOST + 'genero/estrenos/' ))
+    # ~ itemlist.append(item.clone( title='Netflix', action='list_all', url=HOST + 'genero/netflix/' ))
 
     itemlist.append(item.clone( title='Castellano', action='list_all', url=HOST + 'pelicula/tag/espanol/' ))
     itemlist.append(item.clone( title='Latino', action='list_all', url=HOST + 'pelicula/tag/latino/' ))
@@ -39,13 +40,18 @@ def generos(item):
 
     data = httptools.downloadpage(HOST).data
 
-    bloque = scrapertools.find_single_match(data, 'Categorías</h3> <ul>(.*?)</ul>')
+    bloque = scrapertools.find_single_match(data, 'Géneros</a>\s*<ul(.*?)</ul>')
     
-    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)')
+    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)')
     for url, title in matches:
-        if 'genero/estrenos/' in url: continue
+        if 'genero/estrenos/' in url or 'genero/netflix/' in url: continue
         itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
+    itemlist.append(item.clone( action = 'list_all', title = 'Bélica', url = HOST + 'genero/belica/' ))
+    itemlist.append(item.clone( action = 'list_all', title = 'Biografía', url = HOST + 'genero/biografia/' ))
+    itemlist.append(item.clone( action = 'list_all', title = 'Historia', url = HOST + 'genero/historia/' ))
+    itemlist.append(item.clone( action = 'list_all', title = 'Western', url = HOST + 'genero/western/' ))
+    
     return sorted(itemlist, key=lambda it: it.title)
 
 def anios(item):
@@ -61,47 +67,58 @@ def anios(item):
     return itemlist
 
 
+
 def list_all(item): 
     logger.info()
     itemlist = []
 
     if not item.page: item.page = 0
 
-    data = httptools.downloadpage(item.url).data
+    post_q = '{"posts_per_page":%s, "comments_per_page":0}' % perpage
+    if '/genero/' in item.url:
+        aux = scrapertools.find_single_match(item.url, '/genero/([^/]+)')
+        post_q = post_q.replace('}', ',"category_name":"%s"}' % aux)
+    elif '/year_relase/' in item.url:
+        aux = scrapertools.find_single_match(item.url, '/year_relase/([^/]+)')
+        post_q = post_q.replace('}', ',"year_relase":"%s"}' % aux)
+    elif '/tag/' in item.url:
+        aux = scrapertools.find_single_match(item.url, '/tag/([^/]+)')
+        post_q = post_q.replace('}', ',"tag":"%s"}' % aux)
+    elif '/search/' in item.url:
+        aux = scrapertools.find_single_match(item.url, '/search/([^/]+)')
+        post_q = post_q.replace('}', ',"s":"%s"}' % aux)
+
+    post = {'action':'loadmore', 'page':item.page, 'query':post_q}
+    data = httptools.downloadpage(HOST+'wp-admin/admin-ajax.php', post=post).data
+    # ~ logger.debug(data)
 
     matches = re.compile('<div class="col-mt-5 postsh">\s*<div class="poster-media-card">\s*<a(.*?)</a>', re.DOTALL).findall(data)
     num_matches = len(matches)
 
-    for article in matches[item.page * perpage:]:
+    for article in matches:
         url = scrapertools.find_single_match(article, ' href="([^"]+)')
         title = scrapertools.find_single_match(article, ' title="([^"]+)')
         if not url or not title: continue
-        thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
-        year = scrapertools.find_single_match(article, '<span class="_2Spas">(\d+)</span>')
+        thumb = scrapertools.find_single_match(article, ' loading="lazy".*? src="([^"]+)"')
+        year = scrapertools.find_single_match(article, 'data-year="(\d{4})')
+        if not year: year = scrapertools.find_single_match(title, '\((\d{4})\)')
         if year:
             title = title.replace('(%s)' % year, '').strip()
         else:
             year = '-'
 
-        itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
-                                    contentType='movie', contentTitle=title, infoLabels={'year': year} ))
+        langs = []
+        if ' alt="Castellano"' in article: langs.append('Esp')
+        if ' alt="Latino"' in article: langs.append('Lat')
+        if ' alt="Subtitulado"' in article: langs.append('VOSE')
 
-        if len(itemlist) >= perpage: break
+        itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, languages=','.join(langs),
+                                    contentType='movie', contentTitle=title, infoLabels={'year': year} ))
 
     tmdb.set_infoLabels(itemlist)
 
-    # Subpaginación interna y/o paginación de la web
-    buscar_next = True
-    if num_matches > perpage: # subpaginación interna dentro de la página si hay demasiados items
-        hasta = (item.page * perpage) + perpage
-        if hasta < num_matches:
-            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_all' ))
-            buscar_next = False
-
-    if buscar_next:
-        next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"><i class="glyphicon glyphicon-chevron-right')
-        if next_page:
-           itemlist.append(item.clone (url = next_page, page = 0, title = '>> Página siguiente', action = 'list_all'))
+    if num_matches >= perpage:
+        itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_all' ))
 
     return itemlist
 
@@ -127,7 +144,9 @@ def findvideos(item):
     patron = '<a href="#embed\d+" data-src="([^"]+)" class="([^"]+)"(.*?)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for urlcod, lang, resto in matches:
-        cod = urlcod.replace('https://allpeliculas.tv/replayer/', '').split('RRRRR')[0]
+        if urlcod.startswith('//'): urlcod = 'https:' + urlcod
+        elif urlcod.startswith('/'): urlcod = HOST + urlcod[1:]
+        cod = urlcod.replace(HOST + 'replayer/', '').split('RRRRR')[0]
         # ~ logger.info('%s %s' % (cod, urlcod))
         numpad = len(cod) % 4
         if numpad > 0: cod += 'R' * (4 - numpad)
@@ -174,38 +193,11 @@ def findvideos(item):
 
 
 
-def list_search(item):
-    logger.info()
-    itemlist = []
-
-    data = httptools.downloadpage(item.url).data
-
-    matches = re.compile('<li class="col-md-12 itemlist">(.*?)</li>', re.DOTALL).findall(data)
-
-    for article in matches:
-        url = scrapertools.find_single_match(article, ' href="([^"]+)')
-        title = scrapertools.find_single_match(article, ' title="([^"]+)')
-        if not url or not title: continue
-        thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
-        year = scrapertools.find_single_match(article, '<p class="main-info-list">Película de (\d{4})')
-        if year:
-            title = title.replace('(%s)' % year, '').strip()
-        else:
-            year = '-'
-        plot = scrapertools.find_single_match(article, '<p class="text-list">(.*?)</p>')
-
-        itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
-                                    contentType='movie', contentTitle=title, infoLabels={'year': year, 'plot': plot} ))
-
-    tmdb.set_infoLabels(itemlist)
-
-    return itemlist
-
 def search(item, texto):
     logger.info("texto: %s" % texto)
     try:
-        item.url = HOST + '/search/' + texto.replace(" ", "+")
-        return list_search(item)
+        item.url = HOST + 'search/' + texto.replace(" ", "+")
+        return list_all(item)
     except:
         import sys
         for line in sys.exc_info():

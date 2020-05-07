@@ -23,7 +23,7 @@ IDIOMAS = {'vo': 'VO'}
 list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['gounlimited']
-host = 'http://www.veporns.com'  #'https://watchpornfree.info'   'https://xxxparodyhd.net'  'http://streamporno.eu'
+host = 'http://www.veporns.com'  #'https://watchpornfree.info'   'https://xxxparodyhd.net'  'http://streamporno.eu' 'https://xmoviesforyou.video'
 
 
 def mainlist(item):

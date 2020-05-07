@@ -254,11 +254,11 @@ def render_items(itemlist, parent_item):
             item.thumbnail = unify.thumbnail_type(item)
         # if cloudflare, cookies are needed to display images taken from site
         # before checking domain (time consuming), checking if tmdb failed (so, images scraped from website are used)
-        if not isinstance(item.url, dict):
+        try:
             domain_cs = scrapertoolsV2.get_domain_from_url(item.url)
-        else:
-            domain_cs = '##is_dict'
-            logger.error('URL is DICT: %s' % str(item.url))
+        except:
+            domain_cs = '##is_dict/list'
+            logger.error('URL is DICT/LIST: %s' % str(item.url))
         if item.action in ['findvideos'] and not item.infoLabels['tmdb_id'] and domain_cs in httptools.CF_LIST:
             item.thumbnail = httptools.get_url_headers(item.thumbnail)
             item.fanart = httptools.get_url_headers(item.fanart)
@@ -1568,13 +1568,15 @@ def play_torrent(item, xlistitem, mediaurl):
 
             # Si es un archivo RAR, monitorizamos el cliente Torrent hasta que haya descargado el archivo,
             # y después lo extraemos, incluso con RAR's anidados y con contraseña
-            #rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password, size, rar_control)
+            rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password, size, rar_control)
+            """
             try:
                 threading.Thread(target=rar_control_mng, args=(item, xlistitem, mediaurl, \
                         rar_files, torr_client, password, size, rar_control)).start()       # Creamos un Thread independiente por .torrent
                 time.sleep(3)                                                   # Dejamos terminar la inicialización...
             except:                                                             # Si hay problemas de threading, salimos
                 logger.error(traceback.format_exc())
+            """
 
 
 def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password, size, rar_control={}):

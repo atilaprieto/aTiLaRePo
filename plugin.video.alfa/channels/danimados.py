@@ -227,13 +227,15 @@ def create_soup(url, referer=None, unescape=False):
 
 def findvideos(item):
     logger.info()
-    srv_list = {'OpRu': 'okru', 'NeoPen-O-GD': 'netutv', 'mp4': 'mp4upload', 'CloudVid': 'gounlimited',}
+    srv_list = {'opru': 'okru', 'neopen-o-gd': 'netutv', 'mp4': 'mp4upload','streamnormal': 'netutv',
+                'cloudvid': 'gounlimited', 'streamonly': 'uqload', 'uploadyour': 'yourupload',
+                'embedfe': 'fembed', 'loadjet': 'jetload', 'loaduq': 'uqload', 'unlimitedgo': 'gounlimited'}
     itemlist = list()
     soup = create_soup(item.url).find("ul", class_="new-servers").find_all("li")    
     infoLabels = item.infoLabels
     for btn in soup:
         opt = btn["data-sv"]
-        srv = srv_list.get(opt, 'directo')
+        srv = srv_list.get(opt.lower(), 'directo').capitalize()
         id_opt = btn["id"]
         itemlist.append(Item(channel=item.channel, url=item.url, action='play', server=srv, id_opt=id_opt, language='LAT',
                         title=srv, infoLabels=infoLabels))

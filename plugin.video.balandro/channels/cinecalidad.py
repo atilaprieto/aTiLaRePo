@@ -186,27 +186,24 @@ def findvideos(item):
 
     dec_value = scrapertools.find_single_match(data, 'String\.fromCharCode\(parseInt\(str\[i\]\)-(\d+)\)')
 
-    # Enlaces Online https://www.cinecalidad.is/wp-content/themes/gridthemeresponsive/scripts.min.js?v=4.75
-    server_url = {'YourUpload': 'http://www.yourupload.com/embed/%s',
-                  'Openload': 'https://openload.co/embed/%s',
-                  'Streamango': 'https://streamango.com/embed/%s',
-                  'RapidVideo': 'https://www.rapidvideo.com/e/%s',
-                  'Fembed': 'https://www.fembed.com/v/%s',
-                  'OkRu': 'http://ok.ru/videoembed/%s',
-                  'YourUpload': 'http://www.yourupload.com/embed/%s',
-                  'Verystream': 'https://verystream.com/e/%s',
-                  'Gounlimited': 'https://gounlimited.to/embed-%s.html',
-                  'Netu': 'https://netu.tv/watch_video.php?v=%s',
-                  'Vidcloud': 'https://vidcloud.co/embed/%s',
-                  'Vidoza': 'https://vidoza.net/embed-%s.html',
-                  'Clipwatching': 'https://clipwatching.com/embed-%s.html',
-                  'Mega': 'https://mega.nz/embed#!%s',
-                  'Openplay': 'https://player.openplay.vip/player.php?id=%s',
-                  'Jetload': 'https://jetload.net/e/%s'}
+    # Enlaces Online
+    server_url = {
+        'UpToBox': 'https://uptobox.com/iframe/%s',
+        'YourUpload': 'http://www.yourupload.com/embed/%s',
+        'UsersCloud': 'https://userscloud.com/%s',
+        'OkRu': 'http://ok.ru/videoembed/%s',
+        'Mega': 'https://mega.nz/embed#!%s',
+        'Fembed': 'https://www.fembed.com/v/%s',
+        'Gounlimited': 'https://gounlimited.to/embed-%s.html',
+        'Clipwatching': 'https://clipwatching.com/embed-%s.html',
+        'Vidoza': 'https://vidoza.net/embed-%s.html',
+        'Jetload': 'https://jetload.net/e/%s',
+        'Openplay': 'https://player.openplay.vip/player.php?id=%s'
+    }
 
-    # ~ patron = ' target="_blank" class="link onlinelink" service="Online([^"]+)" data="([^"]+)'
-    patron = ' target=_blank class="link onlinelink" service=Online([^ ]+) data="([^"]+)'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    matches = re.compile(' target=_blank class="link onlinelink" service=Online([^ ]+) data="([^"]+)', re.DOTALL).findall(data)
+    if not matches:
+        matches = re.compile(' target="_blank" class="link onlinelink" service="Online([^"]+)" data="([^"]+)', re.DOTALL).findall(data)
     for srv, encoded in matches:
         if srv in server_url:
             url = server_url[srv] % dec(encoded, dec_value)
@@ -223,8 +220,9 @@ def findvideos(item):
     if 'audio castellano' in idio: lang = 'Esp'
     elif 'audio latino' in idio: lang = 'Lat'
     else: lang = 'VOSE'
-    patron = ' href="([^"]+)" target=_blank class=link rel=nofollow service=BitTorrent'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    matches = re.compile(' href="([^"]+)" target=_blank class=link rel=nofollow service=BitTorrent', re.DOTALL).findall(data)
+    if not matches:
+        matches = re.compile(' href="([^"]+)" target="_blank" class="link" rel="nofollow" service="BitTorrent', re.DOTALL).findall(data)
     for url in matches:
         itemlist.append(Item(channel = item.channel, action = 'play', server = 'torrent',
                              title = '', url = host_by_lang('Lat')+url[1:],

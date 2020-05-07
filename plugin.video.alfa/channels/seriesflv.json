@@ -1,6 +1,7 @@
 {
   "id": "seriesflv",
   "name": "SeriesFLV",
+  "force_unify": true,
   "active": true,
   "adult": false,
   "language": ["cast", "lat"],

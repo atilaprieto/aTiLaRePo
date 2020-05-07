@@ -8,7 +8,15 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "archive.org/embed/(.*)",
+        "pattern": "archive.org/(?:embed|details)/(.*)",
+        "url": "https://archive.org/embed/\\1"
+      },
+      {
+        "pattern": "archive.org/download/(.*)",
+        "url": "https://archive.org/download/\\1"
+      },
+      {
+        "pattern": "archive.org/compress/([^/]+)",
         "url": "https://archive.org/embed/\\1"
       }
     ]

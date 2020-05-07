@@ -80,7 +80,7 @@ def list_all(item):
         info_2 = elem.find("div", class_="data")
 
         thumb = info_1.img["src"]
-        title = info_1.img["alt"]
+        title = info_1.img["alt"].split("-")[0].strip() if "-" in info_1.img["alt"] else info_1.img["alt"]
         title = re.sub("VOSE", "", title)
         url = info_1.a["href"]
         try:
@@ -143,7 +143,6 @@ def findvideos(item):
 
     for elem in matches.find_all("tr", id=re.compile(r"link-\d+")):
         links = elem.find_all("td")
-        logger.debug(links)
         url = links[0].a["href"]
         lang = links[1].text
         server = scrapertools.find_single_match(links[0].img["src"], r"domain=([^\.]+)\.")
@@ -192,6 +191,7 @@ def search_results(item):
         url = elem.a["href"]
         thumb = elem.img["src"]
         title = elem.img["alt"]
+        title = elem.img["alt"].split("-")[0].strip() if "-" in elem.img["alt"] else elem.img["alt"]
         year = elem.find("span", class_="year").text
 
         itemlist.append(Item(channel=item.channel, title=title, contentTitle=title, url=url, thumbnail=thumb,

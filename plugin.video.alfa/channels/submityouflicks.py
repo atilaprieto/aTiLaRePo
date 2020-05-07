@@ -50,7 +50,7 @@ def lista(item):
     data = httptools.downloadpage(item.url).data
     patron = '<div class="item thumb">.*?'
     patron += '<a href="([^"]+)" title="([^"]+)".*?'
-    patron += 'data-original="([^"]+)".*?'
+    patron += 'data-src="([^"]+)".*?'
     patron += '<div class="sticky">(.*?)<div class="tools">'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedtime in matches:

@@ -380,6 +380,7 @@ def corregir_servidor(servidor):
     elif servidor == 'vev': return 'vevio'
     elif servidor == 'v-s': return 'vsmobi'
     elif servidor == 'dood': return 'doodstream'
+    elif servidor == 'archive': return 'archiveorg'
     elif servidor in ['my', 'my.mail', 'my.mail.ru']: return 'mailru'
     elif servidor in ['ok', 'ok.ru', 'ok server']: return 'okru'
     elif servidor == 'youtu': return 'youtube'

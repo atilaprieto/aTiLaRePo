@@ -307,7 +307,7 @@ def listado(item):                                                              
     if not item.extra2:                                                         # Si viene de Catálogo o de Alfabeto
         item.extra2 = ''
         
-    post = ''
+    post = None
     if item.post:                                                               # Rescatamos el Post, si lo hay
         post = item.post
     
@@ -380,8 +380,8 @@ def listado(item):                                                              
 
         #Buscamos la próxima página
         if item.extra2 != 'novedades':
-            if item.extra == 'peliculas' and item.extra2 == 'alfabeto' or item.extra2 == 'anno' \
-                            or item.extra2 == 'genero':                         # Películas con Alfabeto y similares
+            if item.extra == 'peliculas' and (item.extra2 == 'alfabeto' or item.extra2 == 'anno' \
+                            or item.extra2 == 'genero'):                        # Películas con Alfabeto y similares
                 post = re.sub(r'pagina=(\d+)', 'pagina=%s' % str(curr_page), post)
             else:                                                               # Resto
                 next_page_url = re.sub(r'page\/(\d+)', 'page/%s' % str(curr_page), item.url)
@@ -389,8 +389,8 @@ def listado(item):                                                              
         
         #Buscamos la última página
         if last_page == 99999:                                                  #Si es el valor inicial, buscamos
-            if item.extra == 'peliculas' and item.extra2 == 'alfabeto' or item.extra2 == 'anno' \
-                            or item.extra2 == 'genero':                         # Películas con Alfabeto y similares
+            if item.extra == 'peliculas' and (item.extra2 == 'alfabeto' or item.extra2 == 'anno' \
+                            or item.extra2 == 'genero'):                        # Películas con Alfabeto y similares
                 patron_last = '<option value="(\d+)"[^<]+<\/option><\/select>'
                 try:
                     last_page = int(scrapertools.find_single_match(data, patron_last))
@@ -607,6 +607,9 @@ def findvideos(item):
     itemlist = []
     itemlist_t = []                                                             #Itemlist total de enlaces
     itemlist_f = []                                                             #Itemlist de enlaces filtrados
+    matches = []
+    data = ''
+    code = 0
     
     #logger.debug(item)
 
@@ -622,11 +625,12 @@ def findvideos(item):
         patron += '(?:<\/td><td\s*style=[^<]+<\/td><td\s*style=[^>]+><a\s*data-toggle='
         patron += '"popover"\s*title="Contraseña del Torrent.*?data-clave="([^"]+)">)?'
     
-    data, success, code, item, itemlist = generictools.downloadpage(item.url, timeout=timeout, 
+    if not item.matches:
+        data, success, code, item, itemlist = generictools.downloadpage(item.url, timeout=timeout, 
                                           s2=False, patron=patron, item=item, itemlist=[])      # Descargamos la página)
     
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
-    if not data or code == 999:
+    if (not data and not item.matches) or code == 999:
         if item.emergency_urls and not item.videolibray_emergency_urls:         #Hay urls de emergencia?
             matches = item.emergency_urls[1]                                    #Restauramos matches de vídeos
             item.armagedon = True                                               #Marcamos la situación como catastrófica 
@@ -637,14 +641,18 @@ def findvideos(item):
                 return itemlist                                     #si no hay más datos, algo no funciona, pintamos lo que tenemos
 
     if not item.armagedon:
-        matches = re.compile(patron, re.DOTALL).findall(data)
+        if not item.matches:
+            matches = re.compile(patron, re.DOTALL).findall(data)
+        else:
+            matches = item.matches
+            del item.matches
     
-    if not matches:                                                             #error
-        return itemlist
-
     #logger.debug("PATRON: " + patron)
     #logger.debug(matches)
     #logger.debug(data)
+    
+    if not matches:                                                             #error
+        return itemlist
     
     #Si es un lookup para cargar las urls de emergencia en la Videoteca...
     if item.videolibray_emergency_urls:
@@ -707,6 +715,8 @@ def findvideos(item):
             size = size.replace('GB', 'G·B').replace('Gb', 'G·b').replace('MB', 'M·B')\
                         .replace('Mb', 'M·b').replace('.', ',')
             item_local.torrent_info = '%s, ' % size                             #Agregamos size
+        if item_local.url.startswith('magnet:'):
+            item_local.torrent_info += ' Magnet'
         if item_local.torrent_info:
             item_local.torrent_info = item_local.torrent_info.strip().strip(',')
             item.torrent_info = item_local.torrent_info
@@ -869,6 +879,7 @@ def episodios(item):
         #logger.debug(data)
 
         # Recorremos todos los episodios generando un Item local por cada uno en Itemlist
+        x = 0
         for episode_num, epi_url, scrapedpassword in matches:
             item_local = item.clone()
             item_local.action = "findvideos"
@@ -894,11 +905,13 @@ def episodios(item):
 
             item_local.url = url                                                # Usamos las url de la temporada, no hay de episodio
             item_local.title = ''
+            #item.matches = [matches[x]]                                         # Salvado Matches de cada episodio
+            x += 1
             item_local.context = "['buscar_trailer']"
             title = episode_num
             if not item_local.infoLabels['poster_path']:
                 item_local.thumbnail = item_local.infoLabels['thumbnail']
-            
+
             # Extraemos números de temporada y episodio
             epi_rango = False
             alt_epi = 0

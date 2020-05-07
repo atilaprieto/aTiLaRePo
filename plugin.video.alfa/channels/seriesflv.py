@@ -8,7 +8,6 @@ from channels import filtertools
 from bs4 import BeautifulSoup
 from core import httptools
 from core import scrapertools
-from core import servertools
 from core.item import Item
 from core import tmdb
 from channels import autoplay
@@ -28,7 +27,7 @@ else:
     import urlparse
 
 
-host = 'https://seriesf.lv/'
+host = 'https://seriesflv.org/'
 IDIOMAS = {'es': 'CAST', 'esp': 'CAST', 'la': 'LAT', 'lat': 'LAT', 'sub': 'VOSE', 'espsub': 'VOSE', 'en': 'VO',
            'eng': 'VO', 'engsub': 'VOS'}
 list_idiomas = IDIOMAS.values()
@@ -40,7 +39,7 @@ def create_soup(url, referer=None, unescape=False):
     logger.info()
 
     if referer:
-        data = httptools.downloadpage(url, headers={'Referer':referer}).data
+        data = httptools.downloadpage(url, headers={'Referer': referer}).data
     else:
         data = httptools.downloadpage(url).data
 
@@ -65,7 +64,7 @@ def mainlist(item):
                          thumbnail=get_thumb("more_watched", auto=True)))
     itemlist.append(Item(channel=item.channel, title="Listado Alfabético", action="section", url=host,
                          thumbnail=get_thumb("alphabet", auto=True)))
-    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=host + "a/search",
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=host + "?s=",
                          thumbnail=get_thumb("search", auto=True)))
 
     itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, list_quality)
@@ -93,7 +92,7 @@ def novedades(item):
 
     itemlist = list()
 
-    soup = create_soup(item.url).find("div", class_="body bg4 over")
+    soup = create_soup(item.url).find("div", class_="body bg4")
 
     for elem in soup.find_all("a", class_="item-one"):
         if elem["lang"] != item.lang_type:
@@ -106,21 +105,7 @@ def novedades(item):
         itemlist.append(Item(channel=item.channel, title=title, url=url, action="findvideos",
                              contentSerieName=c_title, language=lang))
 
-    if item.first:
-        first = item.first
-    else:
-        first = 0
-    last = first + 30
-    if last >= len(itemlist):
-        last = len(itemlist)
 
-    itemlist = itemlist[first:last]
-
-    tmdb.set_infoLabels_itemlist(itemlist, True)
-    first = last
-
-    itemlist.append(Item(channel=item.channel, title="Siguiente >>", url=item.url, action='novedades',
-                         first=first, lang_type=item.lang_type))
     return itemlist
 
 
@@ -132,7 +117,6 @@ def latest(item):
     soup = create_soup(item.url).find("div", class_="body bg4")
 
     for elem in soup.find_all("article"):
-
         url = elem.a["href"]
         title = elem.find("div", class_="tit over txtc").text
 
@@ -140,6 +124,16 @@ def latest(item):
                         context=filtertools.context(item, list_idiomas, list_quality)))
 
     tmdb.set_infoLabels_itemlist(itemlist, True)
+
+    # Paginación
+
+    try:
+        next_page = soup.find("a", class_="next")["href"]
+
+        if next_page:
+            itemlist.append(Item(channel=item.channel, title="Siguiente >>", url=next_page, action='latest'))
+    except:
+        pass
 
     return itemlist
 
@@ -158,7 +152,7 @@ def section(item):
 
     for elem in value:
 
-        action = "alpha_list"
+        action = "latest"
         if "Alfabético" not in item.title:
             elem_data = elem.find_all("a")
             elem = elem_data[0] if len(elem_data) == 1 else elem_data[1]
@@ -182,54 +176,17 @@ def section(item):
     return itemlist
 
 
-def alpha_list(item):
-    logger.info()
-
-    itemlist = list()
-
-    soup = create_soup(item.url).find_all("div", class_="row form-group")
-
-    for elem in soup:
-        info = elem.h4
-
-        if not info:
-            continue
-
-        thumb = elem.img["src"]
-        url = elem.h4.a["href"]
-        title = elem.h4.a.text
-
-        itemlist.append(Item(channel=item.channel, title=title, url=url, thumbnail=thumb, contentSerieName=title,
-                             action='seasons', context=filtertools.context(item, list_idiomas, list_quality)))
-
-    if item.first:
-        first = item.first
-    else:
-        first = 0
-    last = first + 30
-    if last >= len(itemlist):
-        last = len(itemlist)
-
-    itemlist = itemlist[first:last]
-
-    tmdb.set_infoLabels_itemlist(itemlist, True)
-    first = last
-
-    itemlist.append(Item(channel=item.channel, title="Siguiente >>", url=item.url, action='alpha_list',
-                         first=first))
-
-    return itemlist
-
-
 def seasons(item):
     logger.info()
 
     itemlist = list()
 
-    soup = create_soup(item.url).find("div", class_="temporadas")
+    soup = create_soup(item.url).find("div", id="capitulos")
+
     infoLabels = item.infoLabels
-    for elem in soup.find_all("a"):
-        title = elem.text
+
+    for elem in soup.find_all("h4"):
+        title = elem.a.text.strip()
         season = scrapertools.find_single_match(title, "(\d+)")
         infoLabels["season"] = season
         itemlist.append(Item(channel=item.channel, title=title, url=item.url, action='episodesxseason',
@@ -254,8 +211,8 @@ def episodios(item):
 
     itemlist = list()
     templist = seasons(item)
+
     for tempitem in templist:
-        logger.debug(tempitem)
         itemlist += episodesxseason(tempitem)
 
     return itemlist
@@ -295,11 +252,12 @@ def findvideos(item):
     soup = create_soup(item.url, referer=host).find("table", class_="table table-hover").find("tbody")
 
     for elem in soup.find_all("tr"):
-        url = elem.a["href"]
-        server = elem.find("td", class_="e_server").text.lower().strip()
+        link_data = elem.find("td", class_="linkComent")
+        url = link_data.a["data-enlace"]
+        server = link_data.a["data-server"]
         if server == "vidabc":
             server = "clipwatching"
-        lang = scrapertools.find_single_match(elem.img["src"], "(\w+).%s" % "png")
+        lang = link_data.a["data-language"]
 
         itemlist.append(Item(channel=item.channel, url=url, title=server, server=server, action="play",
                              language=IDIOMAS.get(lang, lang)))
@@ -315,22 +273,22 @@ def findvideos(item):
     return itemlist
 
 
-def play(item):
-    logger.info()
-
-    itemlist = list()
-
-    try:
-        headers = {"referer": host}
-        url = httptools.downloadpage(urlparse.urljoin(host, item.url), headers=headers,
-                                     follow_redirects=False).headers["location"]
-        itemlist.append(item.clone(url=url, server=''))
-        itemlist = servertools.get_servers_itemlist(itemlist)
-
-        return itemlist
-
-    except:
-        return
+# def play(item):
+#     logger.info()
+#
+#     itemlist = list()
+#
+#     try:
+#         headers = {"referer": host}
+#         url = httptools.downloadpage(urlparse.urljoin(host, item.url), headers=headers,
+#                                      follow_redirects=False).headers["location"]
+#         itemlist.append(item.clone(url=url, server=''))
+#         itemlist = servertools.get_servers_itemlist(itemlist)
+#
+#         return itemlist
+#
+#     except:
+#         return
 
 
 def languages_from_flags(lang_data, ext):
@@ -341,40 +299,24 @@ def languages_from_flags(lang_data, ext):
     lang_list = lang_data.find_all("img")
 
     for lang in lang_list:
-        lang = scrapertools.find_single_match(lang["src"], "(\w+).%s" % ext)
+        lang = scrapertools.find_single_match(lang["data-src"], "(\w+).%s" % ext)
         language.append(IDIOMAS.get(lang, "VOSE"))
 
     return language
 
 
-def search_results(item):
-    logger.info()
-
-    itemlist = list()
-
-    json_data = httptools.downloadpage(item.url, post=item.post).json
-
-    for elem in json_data:
-
-        url = elem["permalink"]
-        title = elem["title"]
-        thumb = elem["image"]
-        imdb_id = elem["imdb_id"]
-
-        itemlist.append(Item(channel=item.channel, title=title, url=url, action="seasons", thumbnail=thumb,
-                             contentSerieName=title, context=filtertools.context(item, list_idiomas, list_quality),
-                             infoLabels={"imdb_id": imdb_id}))
-
-    tmdb.set_infoLabels_itemlist(itemlist, True)
-
-    return itemlist
-
-
 def search(item, texto):
     logger.info()
-    texto = texto.replace(" ", "+")
-    item.post = {'q': texto}
-    if texto != '':
-        return search_results(item)
-    else:
+    try:
+        texto = texto.replace(" ", "+")
+        item.url = item.url + texto
+        item.first = 0
+        if texto != '':
+            return latest(item)
+        else:
+            return []
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        for line in sys.exc_info():
+            logger.error("%s" % line)
         return []

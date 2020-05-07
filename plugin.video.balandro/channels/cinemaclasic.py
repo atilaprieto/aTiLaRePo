@@ -243,7 +243,7 @@ def findvideos(item):
 
     # Descartar enlaces de youtube (coloquios, trailers, ...) y vsmobi, embedy (pq suelen fallar) a menos que no haya otros enlaces
     # tb videos (videos.2000peliculassigloxx.com)
-    validos = len([it for it in itemlist if it.server not in ['desconocido', 'youtube', 'vsmobi', 'embedy', 'videos']])
+    validos = len([it for it in itemlist if it.server not in ['desconocido', 'youtube', 'vsmobi', 'embedy', 'videos'] and servertools.is_server_enabled(it.server)])
     if validos > 0: itemlist = filter(lambda it: it.server not in ['youtube', 'vsmobi', 'embedy'], itemlist) # mantener desconocido, videos para listarse en servers_todo
 
     return itemlist

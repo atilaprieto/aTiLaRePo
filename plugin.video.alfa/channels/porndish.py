@@ -26,8 +26,6 @@ list_quality = ['default']
 list_servers = ['gounlimited']
 
 host = 'https://www.porndish.com'
-# falta https://dood.watch/e/n6i8ur4lesbybmvrp0y0zefpyeup0k0f
-
 
 def mainlist(item):
     logger.info()

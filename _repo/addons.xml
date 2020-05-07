@@ -125,7 +125,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.1.0" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.1.1" provider-name="Alfa Addon">
   <requires>
     <import addon="script.module.requests"/>
     <import addon="script.module.beautifulsoup4" version="4.5.3"/>
@@ -147,15 +147,14 @@ You can clone the project and host it in your own server.
       <news>[B]Estos son los cambios para esta versión:[/B]
 
       [COLOR green][B]Arreglos[/B][/COLOR]
-      ¤ Grantorrent                        ¤ Seriespapaya                     ¤ SeriesFLV
-      ¤ Pelkex                                 ¤ PelisPlus                             ¤ DescargaCineclasico
-      ¤ PoseidonHD                       ¤ CineTux                              ¤ PeliculonHD
-      ¤ serieslan                             ¤ Veseriesonline
-      ¤ Descargas: gestión integral de canales Torrent          ¤ +18
+      ¤ Poseidonhd                        ¤ Cinemahd                               ¤ Dospelis
+      ¤ Rexpelis                              ¤ Seriemega                              ¤ Vidfast
+      ¤ Crunchyroll                         ¤ Cineclasicoonline                   ¤ Seriemega
+      ¤ Seriesflv                              ¤ Danimados                             ¤ Grantorrent
+      ¤ +18
 
       [COLOR green][B]Novedades[/B][/COLOR]
-      ¤ Peliculasdisneylatino        ¤ 123Pelis                              ¤ SeriesFlix
-      ¤ Anavids                              ¤ Doodstream                      ¤ Stream.Wiki
+      ¤ Mejoras de rendimiento en Menús Contextuales            ¤ Cinetorrent (Latino)
       ¤ +18
 
       Agradecimiento a @mac12m99 por su colaboración en esta versión
@@ -176,7 +175,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.2.7" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.2.8" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -206,7 +205,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.12" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.13" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -223,10 +222,9 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Seriemega, Seriez, Seriesmetro, Inkapelis, Cinemaclasic,
-    Wikiseries, Cuevana3, Seriesflv.
-    Servidores modificados: Videobb, Thevideobee, Userscloud, Easyload, Gounlimited,
-    Mailru, M3u8hls, Streamz, Vshare, Jetload, Vsmobi, Embedy.
+    Canales modificados: Allpeliculas, Documentalesonline, Descargacineclasico, Cinefox,
+    Grantorrent, Torrentdivx, Wikiseries, Zoowoman.
+    Servidores modificados: Streamz, Archiveorg, Peertube, Streamtape.
     </news>
 
     <assets>
@@ -422,7 +420,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.mitele" name="MITELE" version="1.1.6" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.mitele" name="MITELE" version="1.1.7" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -1050,7 +1048,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="script.module.resolveurl" name="ResolveURL" version="5.0.38" provider-name="jsergio">
+<addon id="script.module.resolveurl" name="ResolveURL" version="5.0.45" provider-name="jsergio, gujal">
     <requires>
         <import addon="xbmc.python" version="2.1.0" />
         <import addon="plugin.video.youtube" optional="true" />

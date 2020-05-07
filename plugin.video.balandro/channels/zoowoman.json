@@ -1,0 +1,15 @@
+{
+  "id": "zoowoman",
+  "name": "Zoowoman",
+  "thumbnail": "zoowoman.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast", "lat", "vose"],
+
+  "notes": "Películas clásicas y cine independiente, por géneros, subgéneros, años, directores."
+}

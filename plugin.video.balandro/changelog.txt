@@ -1,6 +1,11 @@
 Balandro changelog
 ==================
 
+1.4.13:
+    Canales modificados: Allpeliculas, Documentalesonline, Descargacineclasico, Cinefox, 
+    Grantorrent, Torrentdivx, Wikiseries, Zoowoman.
+    Servidores modificados: Streamz, Archiveorg, Peertube, Streamtape.
+
 1.4.12:
     Canales modificados: Seriemega, Seriez, Seriesmetro, Inkapelis, Cinemaclasic, 
     Wikiseries, Cuevana3, Seriesflv.

@@ -59,7 +59,7 @@ def mainlist(item):
     
     autoplay.init(item.channel, list_servers, list_quality)
 
-    item.url_plus = "peliculas-18/"
+    item.url_plus = "peliculas-19/"
     itemlist.append(Item(channel=item.channel, title="Películas", action="categorias", 
                 url=host + item.url_plus, url_plus=item.url_plus, thumbnail=thumb_cartelera, 
                 extra="Películas"))

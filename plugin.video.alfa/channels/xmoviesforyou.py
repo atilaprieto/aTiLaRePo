@@ -24,7 +24,7 @@ list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['gounlimited']
 
-host = 'https://xmoviesforyou.video'
+host = 'https://xmoviesforyou.video' # 'http://www.veporns.com'  'https://watchpornfree.info'   'https://xxxparodyhd.net'  'http://streamporno.eu'
 
 def mainlist(item):
     logger.info()

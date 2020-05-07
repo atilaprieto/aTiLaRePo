@@ -24,7 +24,7 @@ if PY3:
 else:
     import urlparse
 
-host = 'https://seriemega.com/'
+host = 'https://seriemega.net/'
 IDIOMAS = {"Latino": "LAT", "Castellano": "CAST", "Subtitulado": "VOSE"}
 list_language = IDIOMAS.values()
 list_servers = ['directo', 'jawclowd']
@@ -232,7 +232,7 @@ def findvideos(item):
             elem = BeautifulSoup(elem.text, "html5lib", from_encoding="utf-8")
             new_url = elem.iframe["src"]
         else:
-            new_url = elem.iframe["data-lazy-src"]
+            new_url = elem.iframe["src"]
         new_url = create_soup(new_url).find("div", class_="Video").iframe["src"]
 
         if "seriemega" in new_url:

@@ -1,0 +1,15 @@
+{
+  "id": "porngo",
+  "name": "porngo",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "porngo.png",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+  ]
+}
+

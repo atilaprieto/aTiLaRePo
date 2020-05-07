@@ -8,19 +8,25 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
+    if 'archive.org/download/' in page_url:
+        url = httptools.downloadpage(page_url, follow_redirects=False, only_headers=True).headers.get('location', '')
+        if url: video_urls.append(['mp4', url])
+        return video_urls
+
+
     data = httptools.downloadpage(page_url).data
     # ~ logger.debug(data)
 
     subtitles = ''
-    try:
-        bloque = scrapertools.find_single_match(data, '"tracks":(\[.*?\])')
-        if bloque:
-            data_json = jsontools.load(bloque)
-            if 'file' in data_json[0]:
-                subtitles = data_json[0]['file']
-                if subtitles.startswith('/'): subtitles = 'https://archive.org' + subtitles
-    except:
-        pass
+    # ~ try:
+        # ~ bloque = scrapertools.find_single_match(data, '"tracks":(\[.*?\])')
+        # ~ if bloque:
+            # ~ data_json = jsontools.load(bloque)
+            # ~ if 'file' in data_json[0]:
+                # ~ subtitles = data_json[0]['file']
+                # ~ if subtitles.startswith('/'): subtitles = 'https://archive.org' + subtitles
+    # ~ except:
+        # ~ pass
 
     try:
         bloque = scrapertools.find_single_match(data, '"sources":(\[.*?\])')

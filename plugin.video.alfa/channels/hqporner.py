@@ -78,8 +78,8 @@ def lista(item):
     for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedtime in matches:
         title = '[COLOR yellow]%s[/COLOR] %s' % (scrapedtime , scrapedtitle)
         if not scrapedthumbnail.startswith("https"):
-            thumbnail = "http:%s" % scrapedthumbnail
-        thumbnail += "|Referer=%s/" % host
+            scrapedthumbnail = "https:%s" % scrapedthumbnail
+        thumbnail = scrapedthumbnail + "|verifypeer=false"
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
         itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=url,

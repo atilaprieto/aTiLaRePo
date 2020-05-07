@@ -1,7 +1,7 @@
 {
   "id": "severeporn",
   "name": "severeporn",
-  "active": true,
+  "active": false,
   "adult": true,
   "language": ["*"],
   "thumbnail": "https://severeporn.com/static/images/logo.png",

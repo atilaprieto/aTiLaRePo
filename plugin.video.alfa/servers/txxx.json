@@ -4,7 +4,15 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(https://(?:www.|)txxx.com/(?:embed|videos)/[0-9]+)",
+        "pattern": "(https://(?:www.|)txxx.com/embed/[0-9]+)",
+        "url": "\\1"
+      },
+      {
+        "pattern": "(?:video|)(txxx.com/videos/[0-9]+/[A-z0-9-]+/)",
+        "url": "https://\\1"
+      },
+      {
+        "pattern": "(https://hclips.com/embed/[0-9]+)",
         "url": "\\1"
       }
     ]

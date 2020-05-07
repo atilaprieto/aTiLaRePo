@@ -68,6 +68,7 @@ def list_all(item):
     for elem in matches[first:last]:
         url = host + elem.a["href"]
         title = elem.a["title"]
+        if title.lower() == "promo": continue
         thumb = host + elem.a.img["src"]
 
         itemlist.append(Item(channel=item.channel, title=title, url=url, thumbnail=thumb, action="episodios",

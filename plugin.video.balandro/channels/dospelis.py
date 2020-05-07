@@ -33,6 +33,7 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone( title = 'Castellano', action = 'list_all', url = host + 'genre/castellano/', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Latino', action = 'list_all', url = host + 'genre/latino/', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Por productora', action = 'productoras', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Por año', action = 'anios', search_type = 'movie' ))
@@ -54,11 +55,29 @@ def mainlist_series(item):
     return itemlist
 
 
+def productoras(item):
+    logger.info()
+    itemlist = []
+
+    opciones = [
+        ('dc','DC'), 
+        ('disney','Disney'), 
+        ('dreamworks-animation','Dreamworks'), 
+        ('marvel','Marvel'), 
+        # ~ ('netflix','Netflix'), 
+        ('youtube-peliculas','Youtube'), 
+    ]
+    for opc, tit in opciones:
+        itemlist.append(item.clone( title=tit, url=host + 'genre/' + opc + '/', action='list_all' ))
+
+    return itemlist
+
 def generos(item):
     logger.info()
     itemlist = []
     
-    descartes = ['estrenos', 'destacadas', 'castellano', 'latino']
+    descartes = ['estrenos', 'destacadas', 'castellano', 'latino', 'proximos-estrenos', 
+                 'dc','disney','dreamworks-animation','marvel','netflix','youtube-peliculas']
 
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
 

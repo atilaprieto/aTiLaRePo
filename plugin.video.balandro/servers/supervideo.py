@@ -4,20 +4,31 @@ from core import httptools, scrapertools
 from platformcode import logger
 from lib import jsunpack
 
+
 def get_video_url(page_url, url_referer=''):
-    # ~ return get_video_url_embed(page_url, url_referer='')
-    return get_video_url_download(page_url, url_referer='')
-    
-# ~ https://supervideo.tv/e/mr1z5663c92q
+    logger.info("(page_url='%s')" % page_url)
+    video_urls = []
+
+    video_urls = get_video_url_embed(page_url, url_referer)
+    if not type(video_urls) == list: return video_urls
+
+    if len(video_urls) == 0:
+        video_urls = get_video_url_download(page_url, url_referer)
+        
+    return video_urls
+
+
 def get_video_url_embed(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
+    page_url = page_url.replace('supervideo.tv/emb.html?','supervideo.tv/e/')
     if 'supervideo.tv/e/' not in page_url:
         page_url = page_url.replace('supervideo.tv/','supervideo.tv/e/')
 
     data = httptools.downloadpage(page_url).data
     # ~ logger.debug(data)
+    if '<title>404 Not Found</title>' in data: return 'El vídeo ya no está disponible'
 
     packed = scrapertools.find_multiple_matches(data, "(?s)eval(.*?)\s*</script>")
     for pack in packed:
@@ -33,20 +44,29 @@ def get_video_url_embed(page_url, url_referer=''):
     matches = scrapertools.find_multiple_matches(bloque, '\{(.*?)\}')
     for vid in matches:
         url = scrapertools.find_single_match(vid, 'file:"([^"]+)')
+        if not url: continue
         lbl = scrapertools.find_single_match(vid, 'label:"([^"]+)')
         if not lbl: lbl = url[-4:]
         video_urls.append([lbl, url+'|Referer=https://supervideo.tv/'])
 
-    video_urls.reverse() # calidad increscendo
+    try: # calidad increscendo y m3u8 al principio
+        video_urls = sorted(video_urls, key=lambda x: 0 if x[0] == 'm3u8' else int(x[0].replace('p','')) )
+    except:
+        pass
     return video_urls
 
 
 def get_video_url_download(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
+    # ~ page_url = 'https://supervideo.tv/dfjkjjhg'
+
+    if 'supervideo.tv/e/' in page_url:
+        page_url = page_url.replace('supervideo.tv/e/','supervideo.tv/')
 
     data = httptools.downloadpage(page_url).data
     # ~ logger.debug(data)
+    if '<title>404 Not Found</title>' in data: return 'El vídeo ya no está disponible'
 
     if 'download_video(' not in data:
         post = {

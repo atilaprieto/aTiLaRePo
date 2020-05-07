@@ -462,7 +462,9 @@ def delete_torrent_session(item):
     # Obtenemos los datos del gestor de torrents
     torrent_paths = torrent.torrent_dirs()
     torr_client = scrapertools.find_single_match(item.downloadFilename, '^\:(\w+)\:')
-    folder_new = filetools.dirname(scrapertools.find_single_match(item.downloadFilename, '^\:\w+\:\s*(.*?)$'))
+    folder_new = scrapertools.find_single_match(item.downloadFilename, '^\:\w+\:\s*(.*?)$')
+    if filetools.dirname(folder_new):
+        folder_new = filetools.dirname(folder_new)
     if item.torr_folder:
         folder = item.torr_folder
     else:

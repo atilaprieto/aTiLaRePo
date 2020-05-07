@@ -67,6 +67,7 @@ def generos(item):
 
 def series(item):
     logger.info()
+    itemlist = []
 
     data = re.sub(r"\n|\r|\t|\s{2}", "", httptools.downloadpage(item.url).data)
 
@@ -78,7 +79,6 @@ def series(item):
 
     pattern = '<a href="([^"]+)".*?<img src="([^"]+)" title="([^"]+)"'
     matches = re.compile(pattern, re.DOTALL).findall(data)
-    itemlist = []
 
     if item.extra == "novedades":
         action = "findvideos"
@@ -86,11 +86,10 @@ def series(item):
         action = "episodios"
 
     for url, thumbnail, title in matches:
-        contentTitle = title
         show = title
         # logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=item.channel, action=action, title=title, url=url, thumbnail=thumbnail,
-                             show=show, fanart=thumbnail, folder=True))
+        itemlist.append(Item(channel=item.channel, action=action, title=title, contentTitle = title, url=url,
+                             show=show, thumbnail=thumbnail, fanart=thumbnail, folder=True))
 
     if pagination:
         page = scrapertools.find_single_match(pagination, '>(?:Page|Página)\s*(\d+)\s*(?:of|de)\s*\d+<')
@@ -121,7 +120,7 @@ def episodios(item):
         plot = item.plot
 
         # logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
+        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, contentTitle = title, url=url,
                              thumbnail=thumbnail, plot=plot,
                              fanart=thumbnail))
 
