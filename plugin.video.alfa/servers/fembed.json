@@ -8,7 +8,7 @@
         "url": "https://www.\\1"
       },
       {
-        "pattern": "(?:ilovefembed|feurl).(?:best|net|com)(/(?:f|v)/[A-z0-9_-]+)",
+        "pattern": "(?:ilovefembed|feurl|youtvgratis).(?:best|net|com)(/(?:f|v)/[A-z0-9_-]+)",
         "url": "https://feurl.com\\1"
       }
     ]

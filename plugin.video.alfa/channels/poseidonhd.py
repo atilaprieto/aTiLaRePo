@@ -47,7 +47,7 @@ def mainlist(item):
 
     itemlist.append(Item(channel=item.channel, title='Peliculas', action='menu_movies',
                          thumbnail=get_thumb('movies', auto=True)))
-    itemlist.append(Item(channel=item.channel, title='Series', url=host + 'tvshows', action='list_all', type='tvshows',
+    itemlist.append(Item(channel=item.channel, title='Series', url=host + 'tvshows/', action='list_all', type='tvshows',
                          thumbnail=get_thumb('tvshows', auto=True)))
     itemlist.append(
         item.clone(title="Buscar...", action="search", url=host + '?s=', thumbnail=get_thumb("search", auto=True),
@@ -64,7 +64,7 @@ def menu_movies(item):
 
     itemlist = list()
 
-    itemlist.append(Item(channel=item.channel, title='Todas', url=host + 'movies', action='list_all',
+    itemlist.append(Item(channel=item.channel, title='Todas', url=host + 'movies/', action='list_all',
                          thumbnail=get_thumb('all', auto=True), type='movies'))
     itemlist.append(Item(channel=item.channel, title='Generos', action='section',
                          thumbnail=get_thumb('genres', auto=True), type='movies'))
@@ -244,23 +244,25 @@ def findvideos(item):
     logger.info()
 
     itemlist = list()
-
+    servers = {'google': 'gvideo', 'ea': 'easyload'}
     soup = create_soup(item.url).find("div", class_="playex")
 
     matches = soup.find_all("div", id=re.compile(r"option-\d+"))
-
     for elem in matches:
         hidden = "https:%s" % elem.iframe["src"]
         lang = hidden[-2:]
         opts = create_soup(hidden).find("ul", class_="menuPlayer")
         for opt in opts.find_all("li", class_="option"):
+            logger.debug(opt)
             url = opt["data-playerid"]
             sub = scrapertools.find_single_match(url, r"sub=([^$]+)")
             sub = urllib.unquote(sub)
             url = scrapertools.find_single_match(url, r"url=([^&]+)")
             srv = opt["data-player"]
-            if srv.lower() == "google":
-                srv = "gvideo"
+            if srv.lower() in ["wa", "pr"]:
+                continue
+            if srv.lower() in servers:
+                srv = servers[srv.lower()]
 
             itemlist.append(Item(channel=item.channel, title=srv, url=url, action="play", infoLabels=item.infoLabels,
                                  language=IDIOMAS.get(lang, lang), server=srv, subtitle=sub))

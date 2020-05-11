@@ -3,6 +3,7 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 import re
+import sys
 from core import tmdb
 from core import httptools
 from core.item import Item
@@ -138,18 +139,35 @@ def findvideos(item):
 
     itemlist = list()
 
-    soup = create_soup(item.url)
+    soup = create_soup(item.url).find("div", id="videos")
     matches = soup.find("div", class_="links_table")
-
+    added = list()
     for elem in matches.find_all("tr", id=re.compile(r"link-\d+")):
         links = elem.find_all("td")
+
         url = links[0].a["href"]
         lang = links[1].text
         server = scrapertools.find_single_match(links[0].img["src"], r"domain=([^\.]+)\.")
+        if server == "my":
+            server = "mailru"
+        if server == "mycinedesiempre":
+            new_url = create_soup(url).find("a", class_="btn")["href"]
+            data = httptools.downloadpage(new_url).data
+            data = re.sub(r"\n|\r|\t|\(.*?\)|\s{2}|&nbsp;", "", data)
+            data = scrapertools.find_single_match(data, "</ul></dd>(.*?)tags")
+            v_data = re.compile(r'<a href="([^"]+)".*?<br', re.DOTALL).findall(data)
+            for v_url in v_data:
+                url = v_url
+                srv = servertools.get_server_from_url(url)
+                if url not in added:
+                    itemlist.append(Item(channel=item.channel, title='%s', action='play', url=url, server=srv,
+                                         infoLabels=item.infoLabels))
+                    added.append(url)
+        else:
+            itemlist.append(Item(channel=item.channel, title='%s', action='play', url=url, server=server,
+                                 language=IDIOMAS.get(lang, "VOSE"), infoLabels=item.infoLabels))
 
-        itemlist.append(Item(channel=item.channel, title='%s', action='play', url=url, server=server,
-                             language=IDIOMAS.get(lang, "VOSE"), infoLabels=item.infoLabels))
-
+    itemlist = servertools.get_servers_itemlist(itemlist)
 
     # Requerido para FilterTools
 
@@ -172,10 +190,13 @@ def play(item):
 
     itemlist = list()
 
-    url = create_soup(item.url).find("a", id="link")["href"]
-
-    itemlist.append(item.clone(url=url))
-
+    item.server = ""
+    if host in item.url:
+        url = create_soup(item.url).find("a", id="link")["href"]
+        itemlist.append(item.clone(url=url))
+    else:
+        itemlist.append(item)
+    itemlist = servertools.get_servers_itemlist(itemlist)
     return itemlist
 
 

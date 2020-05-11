@@ -21,7 +21,7 @@
       },
 
       {
-        "pattern": "(?:hqq|waaw|netu)(?:\\.tv\\/|\\.watch\\/|\\.php\\?)e/([A-z0-9]+)",
+        "pattern": "(?:hqq|waaw|netu)(?:\\.tv\\/|\\.watch\\/|\\.php\\?)(e/|f/)([A-z0-9]+)",
         "url": "http://hqq.tv/player/hash.php?hash=\\1"
       }
     ]

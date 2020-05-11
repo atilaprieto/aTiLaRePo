@@ -31,13 +31,13 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Estrenos",
                          action="list_all",
                          thumbnail=get_thumb('premieres', auto=True),
-                         url=host + '/genre/estreno/', first=0
+                         url=host + '/genre/estrenos-ultra-hd/', first=0
                          ))
 
     itemlist.append(Item(channel=item.channel, title="Actualizadas",
                          action="list_all",
                          thumbnail=get_thumb('updated', auto=True),
-                         url=host + '/movies/', first=0
+                         url=host + '/pelicula/', first=0
                          ))
 
     itemlist.append(Item(channel=item.channel, title="Destacadas",

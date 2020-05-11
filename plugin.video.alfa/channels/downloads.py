@@ -425,7 +425,9 @@ def menu(item):
     if opciones[seleccion] == op[2] or opciones[seleccion] == op[4]:
 
         if item.server == 'torrent':
-            delete_torrent_session(item)
+            delete_RAR = True
+            if opciones[seleccion] == op[2]: delete_RAR = False
+            delete_torrent_session(item, delete_RAR)
         
         else:
             if filetools.isfile(filetools.join(config.get_setting("downloadpath"), item.downloadFilename)):
@@ -449,16 +451,18 @@ def menu(item):
     platformtools.itemlist_refresh()
 
 
-def delete_torrent_session(item):
-    logger.info()
-    
+def delete_torrent_session(item, delete_RAR=True):
+    if not delete_RAR and 'RAR-' not in item.torr_info:
+        delete_RAR = True
+    logger.info('delete_RAR: %s' % str(delete_RAR))
+
     # Detiene y borra la descarga de forma específica al gestor de torrent en uso
     torr_data = ''
     deamon_url = ''
     index = -1
     filebase = ''
     folder_new = ''
-    
+
     # Obtenemos los datos del gestor de torrents
     torrent_paths = torrent.torrent_dirs()
     torr_client = scrapertools.find_single_match(item.downloadFilename, '^\:(\w+)\:')
@@ -487,6 +491,7 @@ def delete_torrent_session(item):
 
     # Detiene y borra la sesion de los clientes externos Quasar y Elementum
     if torr_client in ['QUASAR', 'ELEMENTUM']:
+        if not delete_RAR: folder_new = ''
         torr_data, deamon_url, index = torrent.get_tclient_data(folder, torr_client.lower(), \
                                 torrent_paths['ELEMENTUM_port'], delete=True, folder_new=folder_new)
         
@@ -507,7 +512,7 @@ def delete_torrent_session(item):
                 time.sleep(8)
             
         downloadFilename = scrapertools.find_single_match(item.downloadFilename, '\:\w+\:\s*(.*?)$')
-        if downloadFilename:
+        if downloadFilename and delete_RAR:
             if downloadFilename.startswith('\\') or downloadFilename.startswith('/'):
                 downloadFilename = downloadFilename[1:]
             downloadFolder = filetools.dirname(downloadFilename)
@@ -1441,9 +1446,14 @@ def save_download_tvshow(item, silent=False):
             i.downloadQueued = 1
             update_json(i.path, {"downloadCompleted": i.downloadCompleted, "downloadQueued": i.downloadQueued})
         for i in episodes:
-            res = start_download(i)
-            if res == STATUS_CODES.canceled:
-                break
+            time.sleep(0.5)
+            if filetools.exists(filetools.join(DOWNLOAD_LIST_PATH, i.path)):
+                res = start_download(i)
+                if res == STATUS_CODES.canceled:
+                    break
+            else:
+                logger.info("Episodio BORRADO: Serie: %s | Episode: %sx%s | Archivo: %s" % \
+                            (i.contentSerieName, str(i.contentSeason), str(i.contentEpisodeNumber).zfill(2), i.path))
 
 
 def set_movie_title(item):

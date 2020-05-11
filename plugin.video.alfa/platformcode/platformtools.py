@@ -1426,6 +1426,7 @@ def play_torrent(item, xlistitem, mediaurl):
             if "torrentin" in torrent_options[seleccion][0]:            # Si es Torrentin, hay que añadir un prefijo
                 item.url = 'file://' + item.url
 
+        if not item.torr_info: item.torr_info = size
         mediaurl = item.url
 
     if seleccion >= 0:
@@ -1479,7 +1480,7 @@ def play_torrent(item, xlistitem, mediaurl):
                         item.downloadFilename = filetools.join(':%s: ' % torr_client.upper(), short_video_path, video_name)
                         if 'path_control' in str(rar_control) and filetools.exists(filetools.join(DOWNLOAD_LIST_PATH, \
                                         rar_control['path_control'])):
-                            if item.path:
+                            if item.path and item.path != rar_control['path_control']:
                                 filetools.remove(filetools.join(DOWNLOAD_LIST_PATH, item.path))
                             item.path = rar_control['path_control']
                         torrent.update_control(item)
@@ -1568,15 +1569,13 @@ def play_torrent(item, xlistitem, mediaurl):
 
             # Si es un archivo RAR, monitorizamos el cliente Torrent hasta que haya descargado el archivo,
             # y después lo extraemos, incluso con RAR's anidados y con contraseña
-            rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password, size, rar_control)
-            """
+            #rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password, size, rar_control)
             try:
                 threading.Thread(target=rar_control_mng, args=(item, xlistitem, mediaurl, \
                         rar_files, torr_client, password, size, rar_control)).start()       # Creamos un Thread independiente por .torrent
                 time.sleep(3)                                                   # Dejamos terminar la inicialización...
             except:                                                             # Si hay problemas de threading, salimos
                 logger.error(traceback.format_exc())
-            """
 
 
 def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password, size, rar_control={}):
@@ -1631,9 +1630,7 @@ def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password,
         item.downloadProgress = 100
     else:
         if torrent_paths[torr_client.upper()+'_web']:                           # Es un cliente monitorizable?
-            logger.error(item)
-            item.downloadProgress = 0                                           # lo dejamos preparado para el reinicio
-            item.downloadServer = {}
+            item.downloadProgress = 1                                           # lo dejamos preparado para el reinicio, o borrado auto
         else:
             item.downloadProgress = 100                                         # ... si no, se da por terminada la monitorización
     item.downloadQueued = 0

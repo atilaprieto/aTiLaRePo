@@ -778,12 +778,20 @@ def get_tclient_data(folder, torr_client, elementum_port=65220, delete=False, fo
         return '', '', 0
     
     try:
-        data = httptools.downloadpage(local_host[torr_client], timeout=5, alfa_s=True).data
-        if not data:
-            log('##### Servicio de %s no disponible: %s' % (torr_client, local_host[torr_client]))
+        for z in range(10): 
+            res = httptools.downloadpage(local_host[torr_client], timeout=10, alfa_s=True)
+            if not res.data:
+                log('##### Servicio de %s TEMPORALMENTE no disponible: %s - ERROR Code: %s' % \
+                                    (torr_client, local_host[torr_client], str(res.code)))
+                time.sleep(5)
+                continue
+            break
+        else:
+            log('##### Servicio de %s DEFINITIVAMENTE no disponible: %s - ERROR Code: %s' % \
+                                    (torr_client, local_host[torr_client], str(res.code)))
             return '', local_host[torr_client], 0
 
-        data = jsontools.load(data)
+        data = jsontools.load(res.data)
         data = data['items']
         for x, torr in enumerate(data):
             if not folder in torr['label']:
@@ -795,12 +803,18 @@ def get_tclient_data(folder, torr_client, elementum_port=65220, delete=False, fo
             else:
                 y = x
             if delete:
-                res = httptools.downloadpage('%sdelete/%s' % (local_host[torr_client], y), timeout=5,
+                for z in range(10): 
+                    res = httptools.downloadpage('%sdelete/%s' % (local_host[torr_client], y), timeout=10,
                                               alfa_s=True, ignore_response_code=True)
+                    if not res.sucess:
+                        time.sleep(1)
+                        continue
+                    else:
+                        break
                 if res.sucess:
                     log('##### Descarga BORRADA de %s: %s' % (str(torr_client).upper(), str(y)))
                 else:
-                    log('##### ERROR en BORRADO de %s: %s' % (str(torr_client).upper(), str(y)))
+                    log('##### ERROR en BORRADO de %s: %s - ERROR Code: %s' % (str(torr_client).upper(), str(y), str(res.code)))
                 time.sleep(1)
                 if folder_new:
                     for x in range(10):
@@ -1006,6 +1020,7 @@ def update_control(item):
             item_control.downloadProgress = item.downloadProgress
             item_control.downloadFilename = item.downloadFilename
             item_control.torr_folder = item.torr_folder
+            item_control.torr_info = item.torr_info
             if not item.url.startswith('magnet:') and item.contentAction == 'play' and item.server and item.downloadProgress:
                 item.downloadServer = {"url": item.url, "server": item.server}
             item_control.downloadServer = item.downloadServer
@@ -1030,7 +1045,7 @@ def mark_torrent_as_watched():
         from channels import downloads
         item_dummy = Item()
         threading.Thread(target=downloads.download_auto, args=(item_dummy, True)).start()   # Encolamos las descargas automáticas
-        time.sleep(3)                                                           # Dejamos terminar la inicialización...
+        time.sleep(5)                                                           # Dejamos terminar la inicialización...
     except:                                                                     # Si hay problemas de threading, salimos
         logger.error(traceback.format_exc())
 
@@ -1086,9 +1101,8 @@ def restart_unfinished_downloads():
             LISTDIR = sorted(filetools.listdir(DOWNLOAD_LIST_PATH))
             
             for fichero in LISTDIR:
-                if not filetools.exists(filetools.join(DOWNLOAD_LIST_PATH, fichero)):
-                    continue
-                if fichero.endswith(".json"):
+                
+                if fichero.endswith(".json") and filetools.exists(filetools.join(DOWNLOAD_LIST_PATH, fichero)):
                     item = Item(path=filetools.join(DOWNLOAD_LIST_PATH, fichero)).fromjson(
                         filetools.read(filetools.join(DOWNLOAD_LIST_PATH, fichero)))
                     torr_client = torrent_paths['TORR_client'].upper()
@@ -1517,9 +1531,9 @@ def wait_for_download(item, mediaurl, rar_files, torr_client, password='', size=
     # Plan A: usar el monitor del cliente torrent para ver el status de la descarga
     if torrent_paths[torr_client.upper()+'_web']:                               # Tiene web para monitorizar?
     
-        loop = 3600                                                             # Loop de 10 horas hasta crear archivo
-        wait_time = 10
-        time.sleep(wait_time)
+        loop = 3600                                                             # Loop de 20 horas hasta crear archivo
+        wait_time = 60
+        time.sleep(wait_time/6)
         fast = False
         if config.get_platform(True)['num_version'] >= 14:
             monitor = xbmc.Monitor()                                            # For Kodi >= 14
@@ -1540,17 +1554,22 @@ def wait_for_download(item, mediaurl, rar_files, torr_client, password='', size=
                 logger.error('%s session aborted: %s' % (str(torr_client).upper(), str(folder)))
                 return ('', '', folder, rar_control)                            # Volvemos
 
-            if (torr_client in ['quasar'] or torr_client in ['elementum']) and not \
-                            torr_data['label'].startswith('0.00%') and not fast and rar_file:
+            torr_data_status = scrapertools.find_single_match(torr_data['label'], '%\s*-\s*\[COLOR\s*\w+\](\w+)\[\/COLOR')
+            if torr_client in ['quasar', 'elementum'] and not torr_data['label'].startswith('0.00%') and not fast and rar_file:
                 platformtools.dialog_notification("Descarga RAR en curso", "Puedes realizar otras tareas. " + \
                         "Te iremos guiando...", time=10000)
+                wait_time = wait_time / 3
+                fast = True
+            elif torr_client in ['quasar', 'elementum'] and not torr_data['label'].startswith('0.00%') and not fast:
+                wait_time = wait_time / 3
                 fast = True
             
             if not torr_data['label'].startswith('100.00%'):
                 if not ret and rar_file:
                     ret = filetools.write(filetools.join(rar_control['download_path'], \
                                     '_rar_control.json'), jsontools.dump(rar_control))
-                log("##### Descargado: %s, ID: %s" % (scrapertools.find_single_match(torr_data['label'], '(^.*?\%)'), index))
+                log("##### Descargado: %s, ID: %s, Status: %s" % (scrapertools.find_single_match(torr_data['label'], \
+                                    '(^.*?\%)'), index, torr_data_status))
                 time.sleep(wait_time)
                 continue
 
@@ -1903,8 +1922,8 @@ def extract_files(rar_file, save_path_videos, password, dp, item=None, \
                     log("##### Archivo extraído: %s" % video_list[0])
                     platformtools.dialog_notification("Archivo extraído...", video_list[0], time=10000)
                     log("##### Archivo remove: %s" % file_path)
-                    rar_control = update_rar_control(erase_file_path, status='DONE')
-                    #ret = filetools.remove(filetools.join(erase_file_path, '_rar_control.json'), silent=True)
+                    #rar_control = update_rar_control(erase_file_path, status='DONE')
+                    ret = filetools.remove(filetools.join(erase_file_path, '_rar_control.json'), silent=True)
                     return str(video_list[0]), True, save_path_videos, erase_file_path
 
 
@@ -2033,15 +2052,16 @@ def shorten_rar_path(item):
     video_path = ''
     
     if item.contentType == 'movie':
-        video_path = '%s-%s' % (item.contentTitle, item.infoLabels['tmdb_id'])
+        video_path = '%s-%s' % (item.contentTitle.strip(), item.infoLabels['tmdb_id'])
     else:
-        video_path = '%s-%sx%s-%s' % (item.contentSerieName, item.contentSeason, \
+        video_path = '%s-%sx%s-%s' % (item.contentSerieName.strip(), item.contentSeason, \
                             item.contentEpisodeNumber, item.infoLabels['tmdb_id'])
-    
+
     video_path = video_path.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o")\
                            .replace("ú", "u").replace("ü", "u").replace("ñ", "n")\
                            .replace("Á", "A").replace("É", "E").replace("Í", "I").replace("Ó", "O")\
-                           .replace("Ú", "U").replace("Ü", "U").replace("Ñ", "N")
+                           .replace("Ú", "U").replace("Ü", "U").replace("Ñ", "N")\
+                           .replace(":", "").replace(";", "").replace("|", "")
                                
     return video_path
 
