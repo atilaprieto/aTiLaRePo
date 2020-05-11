@@ -12,15 +12,18 @@ import ntpath
 
 
 USER_AGENT = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
-base = 'http://Miweb.com' 
-ADDON = xbmcaddon.Addon(id='plugin.program.wizardtila')
-dialog = xbmcgui.Dialog()    
-VERSION = "1.0"
-PATH = "aTiLa"            
+base='aTiLa'
+ADDON=xbmcaddon.Addon(id='plugin.program.WiZaRTiLa')
+    
+    
+VERSION = "1.3"
+
+
+PATH = "WiZaRTiLa"            
 
 dp           =  xbmcgui.DialogProgress()
 dialog       =  xbmcgui.Dialog()
-EXCLUDES     = ['plugin.program.wizardtila', 'Database']
+EXCLUDES     = ['plugin.program.WiZaRTiLa', 'Database']
 HOME         =  xbmc.translatePath('special://home/')
 
     
@@ -31,7 +34,7 @@ def CATEGORIES():
         addDir(name,url,1,iconimage,fanart,description)
     setView('movies', 'MAIN')
 	
-    addDir('BORRAR DATOS DE KODI','url',6,'','','')
+    addDir('FRESH START','url',6,'','','')
         
     
 def OPEN_URL(url):
@@ -46,7 +49,7 @@ def OPEN_URL(url):
 def wizard(name,url,description):
     path = xbmc.translatePath(os.path.join('special://home/addons','packages'))
     dp = xbmcgui.DialogProgress()
-    dp.create("WizarDTiLa","Descargando ",'', 'Por favor, espere')
+    dp.create("WiZaRTiLa","Descargando ",'', 'Por favor, espere')
     lib=os.path.join(path, name+'.zip')
     try:
        os.remove(lib)
@@ -247,7 +250,7 @@ def killxbmc():
 
 def FRESHSTART(params):
 
-    choice2 = xbmcgui.Dialog().yesno("Borrar todo el contenido?", '[COLOR=red]Estas seguro de borrar todo el contenido?[/COLOR]', 'Se borrara todo [B]menos[/B] el addon [COLOR=orange][B]WiZarDTiLa[/B][/COLOR]', yeslabel='Si',nolabel='No')
+    choice2 = xbmcgui.Dialog().yesno("Borrar todo el contenido?", '[COLOR=red]Estas seguro de borrar todo el contenido?[/COLOR]', 'Se borrara todo [B]menos[/B] el addon [COLOR=orange][B]WiZaRTiLa[/B][/COLOR] y tu [COLOR=lime][B]Videoteca[/B][/COLOR]', yeslabel='Si',nolabel='No')
     if choice2 == 0:
         return
     elif choice2 == 1:

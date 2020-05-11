@@ -78,10 +78,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.program.wizardtila"
-	   name="WIZARDTILA"
-	   version="1.0"
-	   provider-name="aTiLa">
+<addon id="plugin.program.WiZaRTiLa" name="WiZaRTiLa" version="1.3" provider-name="aTiLa">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
@@ -89,8 +86,9 @@ You can clone the project and host it in your own server.
         <provides>executable</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>WizarDTiLa</summary>
-    <description>Instalador de WinzarDTiLa para Kodi 18</description>
+    <summary lang="en">WiZaRTiLa</summary>
+    <description lang="en">Instalador WiZaRTiLa
+</description>
     <platform>all</platform>
   </extension>
 </addon>

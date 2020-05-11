@@ -21,7 +21,7 @@ def download(url, dest, null):
 
 		if not 'dp' in globals():
 			dp = xbmcgui.DialogProgress()
-			dp.create("WizarDTiLa"," Iniciando Descarga",' ', ' ')
+			dp.create("WiZaRTiLa"," Iniciando Descarga",' ', ' ')
 		dp.update(0)
 		urllib.urlretrieve(url,dest,lambda nb, bs, fs, url=url: _pbhook(nb,bs,fs))
 
@@ -30,7 +30,7 @@ def download(url, dest, null):
 	
 		if not 'dp' in globals():
 			dp = xbmcgui.DialogProgress()
-			dp.create("WizarDTiLa"," Iniciando Descarga",' ', ' ')
+			dp.create("WiZaRTiLa"," Iniciando Descarga",' ', ' ')
 		dp.update(0)
 		aresdownload().retrieve(url,dest,lambda nb, bs, fs, url=url: _pbhook(nb,bs,fs))
 		
