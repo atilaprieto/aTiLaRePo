@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.WiZaRTiLa" name="WiZaRTiLa" version="1.3" provider-name="aTiLa">
+<addon id="plugin.program.WiZaRTiLa" name="WiZaRTiLa" version="1.0.1" provider-name="aTiLa">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
-        <provides>executable</provides>
+    <provides>executable</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary lang="en">WiZaRTiLa</summary>
-    <description lang="en">Instalador WiZaRTiLa
-</description>
+    <description lang="en">Wizard para Kodi 18
+    </description>
     <platform>all</platform>
   </extension>
 </addon>
