@@ -250,7 +250,7 @@ def buildMenu():
 					if not SHOWADULT == 'true' and adult.lower() == 'yes': continue
 					if not DEVELOPER == 'true' and wiz.strTest(name): continue
 					menu = createMenu('install', '', name)
-					addDir('[%s] %s (v%s)' % (float(kodi), name, version), 'viewbuild', name, description=description, fanart=fanart,icon=icon, menu=menu, themeit=THEME2)
+					addDir(' %s (v%s)' % (name, version), 'viewbuild', name, description=description, fanart=fanart,icon=icon, menu=menu, themeit=THEME2)
 			else:
 				if count18 > 0:
 					state = '+' if SHOW18 == 'false' else '-'
@@ -262,7 +262,7 @@ def buildMenu():
 							kodiv = int(float(kodi))
 							if kodiv == 18:
 								menu = createMenu('install', '', name)
-								addDir('[%s] %s (v%s)' % (float(kodi), name, version), 'viewbuild', name, description=description, fanart=fanart,icon=icon, menu=menu, themeit=THEME2)
+								addDir(' %s (v%s)' % (name, version), 'viewbuild', name, description=description, fanart=fanart,icon=icon, menu=menu, themeit=THEME2)
 				if count16 > 0:
 					state = '+' if SHOW16 == 'false' else '-'
 					addFile('[B]%s -_Proximamente_- (%s)[/B]' % (state, count16), 'togglesetting',  'show16', themeit=THEME3)
@@ -285,7 +285,7 @@ def buildMenu():
 							kodiv = int(float(kodi))
 							if kodiv <= 15:
 								menu = createMenu('install', '', name)
-								addDir('[%s] %s (v%s)' % (float(kodi), name, version), 'viewbuild', name, description=description, fanart=fanart,icon=icon, menu=menu, themeit=THEME2)
+								addDir(' %s (v%s)' % (name, version), 'viewbuild', name, description=description, fanart=fanart,icon=icon, menu=menu, themeit=THEME2)
 				if count17 > 0:
 					state = '+' if SHOW17 == 'false' else '-'
 					addFile('[B]%s Base y Parches para Kodi 17 Krypton (%s)[/B]' % (state, count17), 'togglesetting',  'show17', themeit=THEME3)
@@ -296,7 +296,7 @@ def buildMenu():
 							kodiv = int(float(kodi))
 							if kodiv == 17:
 								menu = createMenu('install', '', name)
-								addDir('[%s] %s (v%s)' % (float(kodi), name, version), 'viewbuild', name, description=description, fanart=fanart,icon=icon, menu=menu, themeit=THEME2)
+								addDir(' %s (v%s)' % (name, version), 'viewbuild', name, description=description, fanart=fanart,icon=icon, menu=menu, themeit=THEME2)
 		elif hidden > 0: 
 			if adultcount > 0:
 				addFile('There is currently only Adult builds', '', icon=ICONBUILDS, themeit=THEME3)
@@ -334,10 +334,10 @@ def viewBuild(name):
             else: warning = True
         else: warning = False
         if warning == True:
-            addFile('(%s) [I]Comprueba que esta Base/Parche es para tu version de Kodi: %s)[/I]' % (str(kodi), str(KODIV)), '', fanart=fanart, icon=icon, themeit=THEME3)
+            addFile(' [I]Comprueba que esta Base/Parche es para tu version de Kodi: %s [/I]' % (str(KODIV)), '', fanart=fanart, icon=icon, themeit=THEME3)
         addFile(wiz.sep('INSTALACION'), '', fanart=fanart, icon=icon, themeit=THEME3)
-        addFile('[COLOR lime][B]INSTALAR CON RESET DE DATOS[/B][/COLOR]'   , 'install', name, 'fresh'  , description=description, fanart=fanart, icon=icon, themeit=THEME1)
-        addFile('[COLOR yellow][B]INSTALAR (SOLO INSTALACION) [/B][/COLOR]', 'install', name, 'normal' , description=description, fanart=fanart, icon=icon, themeit=THEME1)
+        addFile('[COLOR red][B]INSTALAR CON RESET DE DATOS[/B][/COLOR]'   , 'install', name, 'fresh'  , description=description, fanart=fanart, icon=icon, themeit=THEME1)
+        addFile('[COLOR royalblue][B]INSTALAR (SOLO INSTALACION) [/B][/COLOR]', 'install', name, 'normal' , description=description, fanart=fanart, icon=icon, themeit=THEME1)
         if not gui == 'http://': addFile('Apply guiFix'    , 'install', name, 'gui'     , description=description, fanart=fanart, icon=icon, themeit=THEME1)
         if not themefile == 'http://':
             themecheck = wiz.textCache(themefile)
@@ -746,7 +746,7 @@ def youtubeMenu(name=None, url=None):
     setView('files', 'viewType')
 
 def maintMenu(view=None):
-    on = '[B][COLOR springgreen]ON[/COLOR][/B]'; off = '[B][COLOR red]OFF[/COLOR][/B]'
+    on = '[B][COLOR black]ON[/COLOR][/B]'; off = '[B][COLOR red]OFF[/COLOR][/B]'
     autoclean   = 'true' if AUTOCLEANUP    == 'true' else 'false'
     cache       = 'true' if AUTOCACHE      == 'true' else 'false'
     packages    = 'true' if AUTOPACKAGES   == 'true' else 'false'
@@ -755,7 +755,7 @@ def maintMenu(view=None):
     thirdparty  = 'true' if THIRDPARTY     == 'true' else 'false'
     errors = int(errorChecking(count=True))
     errorsfound = str(errors) + ' Errore(s) Encontrados' if errors > 0 else 'No hay'
-    wizlogsize = ': [COLOR red]No hay[/COLOR]' if not os.path.exists(WIZLOG) else ": [COLOR springgreen]%s[/COLOR]" % wiz.convertSize(os.path.getsize(WIZLOG))
+    wizlogsize = ': [COLOR red]No hay[/COLOR]' if not os.path.exists(WIZLOG) else ": [COLOR black]%s[/COLOR]" % wiz.convertSize(os.path.getsize(WIZLOG))
     sizepack   = wiz.getSize(PACKAGES)
     sizethumb  = wiz.getSize(THUMBS)
     archive    = wiz.getSize(ARCHIVE_CACHE)
@@ -764,11 +764,11 @@ def maintMenu(view=None):
     feq        = ['Siempre', 'Cada dia', 'Cada 3 dias', 'Semanalmente']
     addDir ('[B]Herramientas de Limpieza[/B]'       ,'maint', 'clean',  icon=ICONMAINT, themeit=THEME1)
     if view == "clean" or SHOWMAINT == 'true':
-        addFile('Limpieza total: [COLOR springgreen][B]%s[/B][/COLOR]' % wiz.convertSize(totalsize),    'fullclean',       icon=ICONMAINT, themeit=THEME3)
-        addFile('Limpiar Cache: [COLOR springgreen][B]%s[/B][/COLOR]' % wiz.convertSize(sizecache),       'clearcache',      icon=ICONMAINT, themeit=THEME3)
-        addFile('Limpiar paquetes: [COLOR springgreen][B]%s[/B][/COLOR]' % wiz.convertSize(sizepack),     'clearpackages',   icon=ICONMAINT, themeit=THEME3)
-        addFile('Limpiar imagenes: [COLOR springgreen][B]%s[/B][/COLOR]' % wiz.convertSize(sizethumb),  'clearthumb',      icon=ICONMAINT, themeit=THEME3)
-        if os.path.exists(ARCHIVE_CACHE): addFile('Limpiar Cache de Archivos: [COLOR springgreen][B]%s[/B][/COLOR]' % wiz.convertSize(archive), 'cleararchive',    icon=ICONMAINT, themeit=THEME3)
+        addFile('Limpieza total: [COLOR black][B]%s[/B][/COLOR]' % wiz.convertSize(totalsize),    'fullclean',       icon=ICONMAINT, themeit=THEME3)
+        addFile('Limpiar Cache: [COLOR black][B]%s[/B][/COLOR]' % wiz.convertSize(sizecache),       'clearcache',      icon=ICONMAINT, themeit=THEME3)
+        addFile('Limpiar paquetes: [COLOR black][B]%s[/B][/COLOR]' % wiz.convertSize(sizepack),     'clearpackages',   icon=ICONMAINT, themeit=THEME3)
+        addFile('Limpiar imagenes: [COLOR black][B]%s[/B][/COLOR]' % wiz.convertSize(sizethumb),  'clearthumb',      icon=ICONMAINT, themeit=THEME3)
+        if os.path.exists(ARCHIVE_CACHE): addFile('Limpiar Cache de Archivos: [COLOR black][B]%s[/B][/COLOR]' % wiz.convertSize(archive), 'cleararchive',    icon=ICONMAINT, themeit=THEME3)
         addFile('Limpiar imagenes antiguas', 'oldThumbs',      icon=ICONMAINT, themeit=THEME3)
         addFile('Limpiar Crash Logs',               'clearcrash',      icon=ICONMAINT, themeit=THEME3)
         addFile('Purgar Base de Datos',                'purgedb',         icon=ICONMAINT, themeit=THEME3)
@@ -778,7 +778,6 @@ def maintMenu(view=None):
         addFile('Borrrar Addons',                  'removeaddons',    icon=ICONMAINT, themeit=THEME3)
         addDir ('Borrar Addon_data',              'removeaddondata', icon=ICONMAINT, themeit=THEME3)
         addDir ('Activar/Desactivar Addons',          'enableaddons',    icon=ICONMAINT, themeit=THEME3)
-        addFile('Activar/Desactivar Adddons porno',    'toggleadult',     icon=ICONMAINT, themeit=THEME3)
         addFile('Forzar Actualizacion de Addons',            'forceupdate',     icon=ICONMAINT, themeit=THEME3)
     addDir ('[B]Otras Herramientas[/B]'     ,'maint', 'misc',   icon=ICONMAINT, themeit=THEME1)
     if view == "misc" or SHOWMAINT == 'true':
@@ -786,12 +785,13 @@ def maintMenu(view=None):
         addFile('Escanear Repositorios rotos',   'checkrepos',      icon=ICONMAINT, themeit=THEME3)
         addFile('Forzar cierre de Kodi',               'forceclose',      icon=ICONMAINT, themeit=THEME3)
         addFile('Ver errores en el log: %s' % (errorsfound), 'viewerrorlog', icon=ICONMAINT, themeit=THEME3)
-        if errors > 0: addFile('View Last Error In Log', 'viewerrorlast', icon=ICONMAINT, themeit=THEME3)
+        if errors > 0: addFile('Ver ultimo error en el Log', 'viewerrorlast', icon=ICONMAINT, themeit=THEME3)
         addFile('Ver el Log',                  'viewlog',         icon=ICONMAINT, themeit=THEME3)
         addFile('Ver el Log del wizard',           'viewwizlog',      icon=ICONMAINT, themeit=THEME3)
         addFile('Limpiar Log%s del wizard' % wizlogsize,'clearwizlog',     icon=ICONMAINT, themeit=THEME3)
     addDir ('[B]Forzar cierre de Kodi[/B]',               'forceclose',      icon=ICONMAINT, themeit=THEME3)
-    
+    addFile('[B]Fresh Start (Borrar Todos los datos de Kodi)[/B]',                    'freshstart',      icon=ICONMAINT, themeit=THEME3)
+
 
 
 #########################################NET TOOLS#############################################
@@ -1250,7 +1250,7 @@ def removeAddonDataMenu():
             replace = {'audio.':'[COLOR orange][AUDIO] [/COLOR]', 'metadata.':'[COLOR cyan][METADATA] [/COLOR]', 'module.':'[COLOR orange][MODULE] [/COLOR]', 'plugin.':'[COLOR blue][PLUGIN] [/COLOR]', 'program.':'[COLOR orange][PROGRAM] [/COLOR]', 'repository.':'[COLOR gold][REPO] [/COLOR]', 'script.':'[COLOR springgreen][SCRIPT] [/COLOR]', 'service.':'[COLOR springgreen][SERVICE] [/COLOR]', 'skin.':'[COLOR dodgerblue][SKIN] [/COLOR]', 'video.':'[COLOR orange][VIDEO] [/COLOR]', 'weather.':'[COLOR yellow][WEATHER] [/COLOR]'}
             for rep in replace:
                 folderdisplay = folderdisplay.replace(rep, replace[rep])
-            if foldername in EXCLUDES: folderdisplay = '[COLOR springgreen][B][BLOQUEADO][/B][/COLOR] %s' % folderdisplay
+            if foldername in EXCLUDES: folderdisplay = '[COLOR black][B][BLOQUEADO][/B][/COLOR] %s' % folderdisplay
             else: folderdisplay = '[COLOR red][B][BORRAR][/B][/COLOR] %s' % folderdisplay
             addFile(' %s' % folderdisplay, 'removedata', foldername, icon=icon, fanart=fanart, themeit=THEME2)
     else:
@@ -1643,9 +1643,7 @@ def createMenu(type, add, name):
         menu_items.append((THEME2 % name,                                'RunAddon(%s, ?mode=viewbuild&name=%s)'  % (ADDON_ID, name2)))
         menu_items.append((THEME3 % 'Fresh Install',                     'RunPlugin(plugin://%s/?mode=install&name=%s&url=fresh)'  % (ADDON_ID, name2)))
         menu_items.append((THEME3 % 'Normal Install',                    'RunPlugin(plugin://%s/?mode=install&name=%s&url=normal)' % (ADDON_ID, name2)))
-        menu_items.append((THEME3 % 'Apply guiFix',                      'RunPlugin(plugin://%s/?mode=install&name=%s&url=gui)'    % (ADDON_ID, name2)))
         menu_items.append((THEME3 % 'Build Information',                 'RunPlugin(plugin://%s/?mode=buildinfo&name=%s)'  % (ADDON_ID, name2)))
-    menu_items.append((THEME2 % '%s Settings' % ADDONTITLE,              'RunPlugin(plugin://%s/?mode=settings)' % ADDON_ID))
     return menu_items
 
 def toggleCache(state):
@@ -1933,14 +1931,14 @@ def buildInfo(name):
                 msg += "[COLOR %s]Repositories:[/COLOR] [COLOR %s]%s[/COLOR][CR][CR]" % (COLOR2, COLOR1, repos)
                 msg += "[COLOR %s]Scripts:[/COLOR] [COLOR %s]%s[/COLOR]" % (COLOR2, COLOR1, scripts)
             else:
-                msg  = "[COLOR %s]Build Name:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, name)
-                msg += "[COLOR %s]Build Version:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, version)
+                msg  = "[COLOR %s]Nombre de la Build:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, name)
+                msg += "[COLOR %s]Version de la Build:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, version)
                 if not theme == "http://":
                     themecount = wiz.themeCount(name, False)
                     msg += "[COLOR %s]Build Theme(s):[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, ', '.join(themecount))
-                msg += "[COLOR %s]Kodi Version:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, kodi)
-                msg += "[COLOR %s]Adult Content:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, adult)
-                msg += "[COLOR %s]Description:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, description)
+                msg += "[COLOR %s]Version Kodi:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, kodi)
+                msg += "[COLOR %s]Contenido de adulto:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, adult)
+                msg += "[COLOR %s]Descripcion:[/COLOR] [COLOR %s]%s[/COLOR][CR]" % (COLOR2, COLOR1, description)
 
             wiz.TextBox(ADDONTITLE, msg)
         else: wiz.log("Invalid Build Name!")
