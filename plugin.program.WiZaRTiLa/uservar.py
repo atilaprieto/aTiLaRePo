@@ -122,5 +122,5 @@ HEADERIMAGE    = 'http://'
 # Font for Notification Window
 FONTSETTINGS   = 'Font13'
 # Background for Notification Window
-BACKGROUND     = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizardtila/fanart.jpg'
+BACKGROUND     = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizartila/fanart.jpg'
 #########################################################
