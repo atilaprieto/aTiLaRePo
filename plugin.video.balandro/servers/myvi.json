@@ -8,8 +8,12 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "myvi.xyz/(?:embed/|embed-|)([A-z0-9]+)",
+        "pattern": "myvi.(?:xyz|tv)/(?:embed/|embed-|)([A-z0-9]+)",
         "url": "https://www.myvi.xyz/embed/\\1"
+      },
+      {
+        "pattern": "(http(?:s|)://(?:www.|)(?:myvi|netvi).ru/player/embed/html/[A-z0-9_\\-]+)",
+        "url": "\\1"
       }
     ]
   }

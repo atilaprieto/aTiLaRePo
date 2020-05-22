@@ -466,12 +466,12 @@ def acciones_peli(item):
             platformtools.dialog_ok(config.__addon_name, 'No hay otras listas dónde mover el enlace.', 'Puedes crearlas desde el menú Gestionar listas.')
             return False
 
-        ret = platformtools.dialog_select('Seleccionar lista destino', opciones)
-        if ret == -1: 
+        ret2 = platformtools.dialog_select('Seleccionar lista destino', opciones)
+        if ret2 == -1: 
             db.close()
             return False # pedido cancel
 
-        dbname_destino = opciones[ret]
+        dbname_destino = opciones[ret2]
         filename_destino = filetools.join(trackingtools.get_tracking_path(), dbname_destino + '.sqlite')
         
         db.cur.execute('ATTACH DATABASE ? AS db_destino', (filename_destino,))
@@ -679,12 +679,12 @@ def acciones_serie(item):
             platformtools.dialog_ok(config.__addon_name, 'No hay otras listas dónde mover el enlace.', 'Puedes crearlas desde el menú Gestionar listas.')
             return False
 
-        ret = platformtools.dialog_select('Seleccionar lista destino', opciones)
-        if ret == -1: 
+        ret2 = platformtools.dialog_select('Seleccionar lista destino', opciones)
+        if ret2 == -1: 
             db.close()
             return False # pedido cancel
 
-        dbname_destino = opciones[ret]
+        dbname_destino = opciones[ret2]
         filename_destino = filetools.join(trackingtools.get_tracking_path(), dbname_destino + '.sqlite')
         
         db.cur.execute('ATTACH DATABASE ? AS db_destino', (filename_destino,))

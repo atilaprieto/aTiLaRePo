@@ -12,7 +12,7 @@
         "url": "http://videoapi.my.mail.ru/videos/embed/\\1/\\2/_myvideo/\\3.html"
       },
       {
-        "pattern": "my.mail.ru/(?:videos|video)/embed/(?!mail|inbox)([\\w]+)",
+        "pattern": "my.mail.ru/(?:videos|video)/embed/(?!mail|inbox)([A-z0-9\\-]+)",
         "url": "https://my.mail.ru/video/embed/\\1"
       }
     ]

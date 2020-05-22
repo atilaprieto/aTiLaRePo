@@ -45,6 +45,7 @@ def generos(item):
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)')
     for url, title in matches:
         if 'genero/estrenos/' in url or 'genero/netflix/' in url: continue
+        if url.startswith('/'): url = HOST + url[1:]
         itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
     itemlist.append(item.clone( action = 'list_all', title = 'Bélica', url = HOST + 'genero/belica/' ))
@@ -182,6 +183,7 @@ def findvideos(item):
         servidor = scrapertools.find_single_match(tds[1], '<span>(.*?)</span>')
         lang = tds[2]
         qlty = tds[3]
+        if '/link/?go=' in url: url = url.split('/link/?go=')[1]
         if not url or not servidor: continue
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = servertools.corregir_servidor(servidor),

@@ -203,7 +203,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.13" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.14" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -220,9 +220,9 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Allpeliculas, Documentalesonline, Descargacineclasico, Cinefox,
-    Grantorrent, Torrentdivx, Wikiseries, Zoowoman.
-    Servidores modificados: Streamz, Archiveorg, Peertube, Streamtape.
+    Canales modificados: Allpeliculas, Cuevana3, Retroseriestv, Cliver, Gnula.
+    Servidores modificados: Supervideo, Clipwatching, Mystream, Fembed, Vidtodo, Embedy,
+    Myvi, Mailru, Peertube.
     </news>
 
     <assets>
@@ -241,7 +241,7 @@ You can clone the project and host it in your own server.
 
 </addon>
 
-<addon id="plugin.video.canalsur" name="CANAL SUR" version="1.0.0" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.canalsur" name="CANAL SUR" version="1.0.1" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />

@@ -18,34 +18,50 @@ def get_video_url(page_url, url_referer=''):
         return 'El archivo ya no está presente en el servidor'
 
     if 'sources: [' in data:
-        matches = scrapertools.find_multiple_matches(data, 'src\s*:\s*"([^"]+)",.*?label\s*:\s*"([^"]+)"')
-        if matches:
-            # ~ for url, lbl in matches:
-            for url, lbl in sorted(matches, key=lambda x: int(x[1])):
-                if url.endswith('.srt'): continue
-                video_urls.append([lbl, url])
-            return video_urls
+        video_urls = extract_sources(data)
+    else:
+        try:
+            packed = scrapertools.find_single_match(data, "text/javascript'>(.*?)\s*</script>")
+            if packed:
+                unpacked = jsunpack.unpack(packed)
+                # ~ logger.debug(unpacked)
+                video_urls = extract_sources(unpacked)
+        except:
+            pass
+
+    return video_urls
+
+
+def extract_sources(data):
+    video_urls = []
+
+    bloque = scrapertools.find_single_match(data, 'sources: \[(.*?\})\]')
+    
+    matches = scrapertools.find_multiple_matches(bloque, '\{(.*?)\}')
+    for vid in matches:
+        url = scrapertools.find_single_match(vid, 'src:\s*"([^"]+)')
+        if not url: url = scrapertools.find_single_match(vid, 'file:\s*"([^"]+)')
+        if not url: continue
+        if url.startswith('//'): url = 'https:' + url
+
+        if url.endswith('.m3u8'):
+            video_urls.append(['m3u8', url])
+
+            aux = httptools.downloadpage(url).data
+            # ~ logger.debug(aux)
+            
+            matches2 = scrapertools.find_multiple_matches(aux, 'RESOLUTION=\d+x(\d+).*?(http.*?\.m3u8)')
+            if matches2:
+                for res2, url2 in sorted(matches2, key=lambda x: int(x[0])):
+                    if '/iframes' in url2: continue
+                    if '/index-v1-a1.m3u8' not in url2: continue
+                    url2 = url2.replace('/hls/', '/').replace('/index-v1-a1.m3u8', '/v.mp4')
+                    video_urls.append(['mp4 '+res2+'p', url2])
+
         else:
-            matches = scrapertools.find_multiple_matches(data, '"([^"]+\.mp4)"')
-            for url in matches:
-                video_urls.append(['mp4', url])
-            video_urls.reverse() # calidad increscendo
-            if len(video_urls) == 2:
-                video_urls[0][0] = 'mp4 SD'
-                video_urls[1][0] = 'mp4 HD'
-
-    try:
-        packed = scrapertools.find_single_match(data, "text/javascript'>(.*?)\s*</script>")
-        if packed:
-            unpacked = jsunpack.unpack(packed)
-            # ~ logger.debug(unpacked)
-            videos = scrapertools.find_multiple_matches(unpacked, 'file:"([^"]+).*?label:"([^"]+)')
-            for video, label in videos:
-                if ".jpg" not in video:
-                    video_urls.append([label, video])
-
-            video_urls.sort(key=lambda it: int(it[0].replace('p','')))
-    except:
-        pass
+            lbl = scrapertools.find_single_match(vid, 'label:\s*"([^"]+)')
+            if not lbl: lbl = scrapertools.find_single_match(vid, 'type:\s*"([^"]+)')
+            if not lbl: lbl = url[-4:] #'mp4'
+            video_urls.append([lbl, url])
 
     return video_urls

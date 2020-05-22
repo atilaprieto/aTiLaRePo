@@ -65,7 +65,8 @@ class Client(object):
                 headers = {}
             data = httptools.downloadpage(url, headers=headers).data
             # ~ logger.debug(data)
-        
+            if not data or data == 'error html': raise()
+
             data_local = ''
             for lin in data.splitlines():
                 if lin.startswith('#'): 

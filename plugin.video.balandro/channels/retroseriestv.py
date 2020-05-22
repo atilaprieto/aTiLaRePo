@@ -189,6 +189,7 @@ def play(item):
     if url: 
         servidor = servertools.get_server_from_url(url)
         if servidor and servidor != 'directo': # si no encuentra el server o está desactivado
+            url = servertools.normalize_url(servidor, url)
             itemlist.append(item.clone(url = url, server = servidor))
 
     return itemlist

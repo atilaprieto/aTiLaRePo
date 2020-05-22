@@ -8,12 +8,12 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "peertube.librelabucm.org/videos/(?:watch|embed)/([A-z0-9\\-]+)",
-        "url": "https://peertube.librelabucm.org/videos/watch/\\1"
+        "pattern": "(http(?:s|)://[^/]+)/videos/(?:watch|embed)/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+        "url": "\\1/videos/watch/\\2"
       },
       {
-        "pattern": "peertube.librelabucm.org/download/videos/(.*)",
-        "url": "https://peertube.librelabucm.org/download/videos/\\1"
+        "pattern": "(http(?:s|)://[^/]+)/download/videos/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*)",
+        "url": "\\1/download/videos/\\2"
       }
     ]
   }

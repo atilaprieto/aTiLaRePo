@@ -9,6 +9,8 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
+    page_url = page_url.replace('supervideo.tv/emb.html?','supervideo.tv/e/')
+
     video_urls = get_video_url_embed(page_url, url_referer)
     if not type(video_urls) == list: return video_urls
 
@@ -22,7 +24,6 @@ def get_video_url_embed(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
-    page_url = page_url.replace('supervideo.tv/emb.html?','supervideo.tv/e/')
     if 'supervideo.tv/e/' not in page_url:
         page_url = page_url.replace('supervideo.tv/','supervideo.tv/e/')
 
@@ -59,7 +60,6 @@ def get_video_url_embed(page_url, url_referer=''):
 def get_video_url_download(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
-    # ~ page_url = 'https://supervideo.tv/dfjkjjhg'
 
     if 'supervideo.tv/e/' in page_url:
         page_url = page_url.replace('supervideo.tv/e/','supervideo.tv/')

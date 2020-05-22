@@ -136,7 +136,7 @@ def list_all(item):
 
     next_page_link = scrapertools.find_single_match(data, ' rel="next" href="([^"]+)"')
     if next_page_link == '':
-        next_page_link = scrapertools.find_single_match(data, ' href=([^ >]+) class="next')
+        next_page_link = scrapertools.find_single_match(data, '\s*href=([^ >]+) class="next')
     if next_page_link:
         if not item.filtro:
             itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_all' ))
@@ -145,7 +145,6 @@ def list_all(item):
             itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_all', page=pagina ))
     
     return itemlist
-
 
 
 def temporadas(item):
@@ -296,8 +295,7 @@ def play(item):
                     url = resp.headers['location'].replace('public/dist/index.html?id=', 'hls/') + '/' + fid + '.playlist.m3u8'
                     itemlist.append(['m3u8', url])
 
-    elif 'openloadpremium.com/' in item.url and '/player.php?id=' in item.url:
-        # ~ itemlist.append(item.clone(url = item.url.replace('/player.php?id=', '/m3u8/index_') + '.m3u8'))
+    elif 'openloadpremium.com/' in item.url and '/player.php?' in item.url:
         data = httptools.downloadpage(item.url, headers={'Referer': item.referer}).data
         url = scrapertools.find_single_match(data, '"file": "([^"]+)')
         if url:

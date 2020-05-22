@@ -192,6 +192,7 @@ def puntuar_calidad(txt):
     else: return orden.index(txt) + 1
 
 def normalize_server(server):
+    if '.' in server: server = server.split('.')[0]
     server = servertools.corregir_servidor(server)
     if server == 'embed': server = 'mystream'
     elif 'opción' in server: server = ''

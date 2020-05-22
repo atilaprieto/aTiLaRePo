@@ -8,7 +8,6 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
     
-    page_url = page_url.replace('/embed#', '/#')
     try:
         from lib.megaserver import Client
         c = Client(url=page_url, is_playing_fnc=platformtools.is_playing)

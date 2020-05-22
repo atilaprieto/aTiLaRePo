@@ -2,7 +2,8 @@
   "id": "vidtodo",
   "name": "Vidtodo",
  
-  "active": true,
+  "active": false,
+  "notes": "Requiere recaptcha",
 
   "find_videos": {
     "ignore_urls": [],

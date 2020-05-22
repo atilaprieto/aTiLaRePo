@@ -533,6 +533,13 @@ def developer_mode_check_findvideos(itemlist, parent_item):
         dev_log = os.path.join(config.get_data_path(), 'qualities_todo.log')
         with open(dev_log, 'a') as f: f.write(txt_log_qualities); f.close()
 
+    if os.path.isfile(os.path.join(config.get_runtime_path(), 'core', 'developertools.py')):
+        try:
+            from core import developertools
+            developertools.developer_mode_check_findvideos(itemlist, parent_item)
+        except:
+            pass
+
 
 # Reproducción
 # ============

@@ -6,7 +6,7 @@ import re, time
 
 def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % (page_url))
-    if re.match('https://my.mail.ru/video/embed/([A-z0-9]+)', page_url):
+    if re.match('https://my.mail.ru/video/embed/([A-z0-9\-]+)', page_url):
         return get_video_url_embed(page_url, url_referer)
     else:
         return get_video_url_orig(page_url, url_referer)
@@ -53,7 +53,7 @@ def get_video_url_embed(page_url, url_referer=''):
     logger.info("url=" + page_url)
     video_urls = []
 
-    vid = scrapertools.find_single_match(page_url, "my.mail.ru/video/embed/([A-z0-9]+)")
+    vid = scrapertools.find_single_match(page_url, "my.mail.ru/video/embed/([A-z0-9\-]+)")
     if not vid: return video_urls
     ts = int(time.time()*1000)
     url = 'https://my.mail.ru/+/video/meta/%s?xemail=&ajax_call=1&func_name=&mna=&mnb=&ext=1&_=%s' % (vid, ts)
@@ -76,5 +76,10 @@ def get_video_url_embed(page_url, url_referer=''):
         lbl = scrapertools.find_single_match(vid, '"key":"([^"]+)')
         if not lbl: lbl = 'mp4'
         video_urls.append([lbl, url+'|Referer=https://my.mail.ru/&Cookie='+ck])
+
+    try:
+        video_urls.sort(key=lambda video_urls: int(video_urls[0].replace('p', '')) if video_urls[0].endswith('p') else 0)
+    except:
+        pass
 
     return video_urls

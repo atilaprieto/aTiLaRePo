@@ -8,10 +8,12 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
-    page_url = page_url.replace('www.feurl.com','www.fembed.com')
-    page_url = page_url.replace('/v/','/api/source/').replace('/f/','/api/source/')
+    dom = 'https://feurl.com'
+    vid = scrapertools.find_single_match(page_url, "/(?:v|f)/([A-z0-9_-]+)")
+    if not vid: return video_urls
 
-    data = httptools.downloadpage(page_url, post={}).data
+    post = {'r':'', 'd': dom.replace('https://', '')}
+    data = httptools.downloadpage(dom+'/api/source/'+vid, post=post).data
     
     try:
         # ~ logger.debug(data)
@@ -23,15 +25,15 @@ def get_video_url(page_url, url_referer=''):
 
         for videos in data['data']:
             if 'file' in videos:
-                url = videos['file'] if videos['file'].startswith('http') else 'https://www.fembed.com' + videos['file']
+                url = videos['file'] if videos['file'].startswith('http') else dom + videos['file']
                 
                 if '/redirector?' in url:
                     resp = httptools.downloadpage(url, follow_redirects=False)
                     if 'location' in resp.headers:
                         url = resp.headers['location']
                 
-                video_urls.append([videos['label'], url])
-                # ~ video_urls.append([videos['label'], url+'|Referer='+page_url.split('api/source/')[0]])
+                lbl = videos['label'] if 'label' in videos and videos['label'] else 'mp4'
+                video_urls.append([lbl, url])
     except:
         pass
 

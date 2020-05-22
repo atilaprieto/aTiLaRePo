@@ -21,6 +21,20 @@ def configurar_proxies(item):
 def do_downloadpage(url, post=None, headers=None):
     # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
     data = httptools.downloadpage_proxy('cliver', url, post=post, headers=headers).data
+
+    if '<title>You are being redirected...</title>' in data:
+        try:
+            from lib import balandroresolver
+            ck_name, ck_value = balandroresolver.get_sucuri_cookie(data)
+            if ck_name and ck_value:
+                # ~ logger.debug('Cookies: %s %s' % (ck_name, ck_value))
+                httptools.save_cookie(ck_name, ck_value, host.replace('https://', '')[:-1])
+                # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
+                data = httptools.downloadpage_proxy('cliver', url, post=post, headers=headers).data
+                # ~ logger.debug(data)
+        except:
+            pass
+
     return data
 
 

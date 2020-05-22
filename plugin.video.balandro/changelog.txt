@@ -1,6 +1,11 @@
 Balandro changelog
 ==================
 
+1.4.14:
+    Canales modificados: Allpeliculas, Cuevana3, Retroseriestv, Cliver, Gnula.
+    Servidores modificados: Supervideo, Clipwatching, Mystream, Fembed, Vidtodo, Embedy, 
+    Myvi, Mailru, Peertube.
+
 1.4.13:
     Canales modificados: Allpeliculas, Documentalesonline, Descargacineclasico, Cinefox, 
     Grantorrent, Torrentdivx, Wikiseries, Zoowoman.
