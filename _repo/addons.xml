@@ -173,11 +173,10 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.3.0" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.3.3" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
-		<import addon="script.module.urlresolver" />
 		<import addon="script.module.resolveurl" />
 		<import addon="plugin.video.f4mTester" />
 		<import addon="script.video.F4mProxy" />
@@ -698,14 +697,14 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="repository.alfa-addon" name="[COLOR red]Alfa-Addon[/COLOR] Repo" version="1.0.5" provider-name="Alfa Addon">
+<addon id="repository.alfa-addon" name="[COLOR red]Alfa-Addon[/COLOR] Repo" version="1.0.6" provider-name="Alfa Addon">
     <requires>
         <import addon="xbmc.addon" version="12.0.0"/>
     </requires>
     <extension point="xbmc.addon.repository" name="Alfa-Addon Repo">
-        <info>https://bitbucket.org/alfa_addon/alfa-repo/raw/master/addons.xml</info>
-        <checksum>https://bitbucket.org/alfa_addon/alfa-repo/raw/master/addons.xml.md5</checksum>
-        <datadir zip="true">https://bitbucket.org/alfa_addon/alfa-repo/raw/master/</datadir>
+        <info>https://github.com/alfa-addon/alfa-repo/raw/master/addons.xml</info>
+        <checksum>https://github.com/alfa-addon/alfa-repo/raw/master/addons.xml.md5</checksum>
+        <datadir zip="true">https://github.com/alfa-addon/alfa-repo/raw/master</datadir>
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary>Repositorio para Alfa-Addon</summary>
