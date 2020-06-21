@@ -86,10 +86,10 @@ def list_all(item):
     itemlist = []
 
     data = httptools.downloadpage(item.url).data
-    
+
     if '</main>' in data: data = data.split('</main>')[0]
     elif '<aside class="sidebar"' in data: data = data.split('<aside class="sidebar"')[0]
-    
+
     matches = re.compile('<article(.*?)</article>', re.DOTALL).findall(data)
     for article in matches:
         url = scrapertools.find_single_match(article, ' href="([^"]+)" class="lnk-blk"')
@@ -119,7 +119,7 @@ def temporadas(item):
     itemlist = []
 
     data = httptools.downloadpage(item.url).data
-    
+
     dobject = scrapertools.find_single_match(data, 'data-object\s*=\s*"([^"]+)')
     if not dobject: return itemlist
 
@@ -162,7 +162,7 @@ def episodios(item):
             # ~ logger.debug(data)
         else:
             break
-        
+
     tmdb.set_infoLabels(itemlist)
 
     return itemlist
@@ -212,15 +212,20 @@ def play(item):
         # ~ logger.debug(data)
         if '<div class="g-recaptcha"' in data or 'Solo los humanos pueden ver' in data:
             headers = {'Referer': host, 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}
-            data = httptools.downloadpage(url, headers=headers, raise_weberror=False).data
+            data = httptools.downloadpage(item.url, headers=headers, raise_weberror=False).data
             # ~ logger.debug(data)
-        
+            new_url = scrapertools.find_single_match(data, '<div id="option-players".*?src="([^"]+)"')
+            if new_url:
+                new_url = new_url.replace('/cinemaupload.com/', '/embed.cload.video/')
+                data = httptools.downloadpage(new_url, raise_weberror=False).data
+                # ~ logger.debug(data)
+
         url = scrapertools.find_single_match(data, 'file:\s*"([^"]+)')
         if url:
-            if url.endswith('.mpd'):
+            if '/manifest.mpd' in url:
                 if platformtools.is_mpd_enabled():
                     itemlist.append(['mpd', url, 0, '', True])
-                itemlist.append(['m3u8', url.replace('/users/', 'hls/users/').replace('/manifest.mpd', '/index.m3u8')])
+                itemlist.append(['m3u8', url.replace('/users/', 'hls/users/', 1).replace('/manifest.mpd', '/index.m3u8')])
             else:
                 itemlist.append(['m3u8', url])
 
@@ -233,7 +238,6 @@ def play(item):
             itemlist.append(item.clone( url=url, server=servidor ))
 
     return itemlist
-
 
 
 def search(item, texto):

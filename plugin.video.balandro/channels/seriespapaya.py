@@ -9,7 +9,7 @@ from core import httptools, scrapertools, servertools, jsontools, tmdb
 
 # ~ HOST = "http://www.seriespapaya.com"
 # ~ HOST = "https://www.seriespapaya.net"
-HOST = "https://www.seriespapaya.nu"
+HOST = "https://www2.seriespapaya.nu/"
 
 IDIOMAS = {'es': 'Esp', 'lat': 'Lat', 'in': 'Eng', 'ca': 'Cat', 'sub': 'VOSE', 
            'Español Latino':'Lat', 'Español Castellano':'Esp', 'Sub Español':'VOSE'}
@@ -28,6 +28,7 @@ def do_downloadpage(url, post=None, headers=None):
     url = url.replace('http://', 'https://') # por si viene de enlaces guardados
     url = url.replace('seriespapaya.com', 'seriespapaya.net') # por si viene de enlaces guardados
     url = url.replace('seriespapaya.net', 'seriespapaya.nu') # por si viene de enlaces guardados
+    url = url.replace('https://www.', 'https://www2.') # por si viene de enlaces guardados
     # ~ data = httptools.downloadpage(url, post=post).data
     data = httptools.downloadpage_proxy('seriespapaya', url, post=post).data
     return data
@@ -285,9 +286,9 @@ def play(item):
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
     new_url = scrapertools.find_single_match(data, "location.href='([^']+)")
-
-    itemlist.append(item.clone(server='', url=new_url))
-    itemlist = servertools.get_servers_itemlist(itemlist)
+    if new_url:
+        itemlist.append(item.clone(server='', url=new_url))
+        itemlist = servertools.get_servers_itemlist(itemlist)
 
     return itemlist
 

@@ -4,7 +4,7 @@ import re, urllib
 
 from platformcode import config, logger, platformtools
 from core.item import Item
-from core import httptools, scrapertools, tmdb
+from core import httptools, scrapertools, tmdb, servertools
 
 host = 'https://www.yape.nu/'
 host_catalogue = host + 'catalogue'
@@ -270,13 +270,17 @@ def findvideos(item):
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
     
-    patron = '<a href="#" class="[^"]*" data-link="([^"]+)".*?/languajes/([^.]+).png.*?<span class="[^"]*">([^<]+)'
+    # ~ patron = '<a href="#" class="[^"]*" data-link="([^"]+)".*?/languajes/([^.]+).png.*?<span class="[^"]*">([^<]+)'
+    patron = '<a href="#" class="[^"]*" data-link="([^"]+)".*?\?domain=([^."]+).*?/languajes/([^.]+).png.*?<span class="[^"]*">([^<]+)'
     matches = re.compile(patron, re.DOTALL).findall(data)
-    for url, language, quality in matches:
-        if '/download?' in url: continue # descartar descargas directas !?
-
-        server = scrapertools.find_single_match(url, '/servers/([^.]+)')
-        # ~ logger.debug('%s %s %s %s' % (url, language, quality, server))
+    for url, servidor, language, quality in matches:
+        if '/download?' in url:
+            server = servertools.corregir_servidor(servidor)
+            if server not in ['uptobox']: continue # limitar a ciertos servidores
+        else:
+            server = scrapertools.find_single_match(url, '/servers/([^.]+)')
+            # ~ logger.debug('%s %s %s %s' % (url, language, quality, server))
+            server = servertools.corregir_servidor(server)
         quality = quality.strip()
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = server,
@@ -295,6 +299,12 @@ def play(item):
     # ~ logger.debug(data)
     
     url = scrapertools.find_single_match(data, 'iframe class="" src="([^"]+)')
+    if not url: url = scrapertools.find_single_match(data, 'a href="([^"]+)" target="_blank" class="player"')
+    if not url:
+        action = scrapertools.find_single_match(data, ' action="([^"]+)')
+        token = scrapertools.find_single_match(data, ' name="token" value="([^"]+)')
+        if action and token: url = host + action + '?token=' + token
+
     if host in url:
         url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
 

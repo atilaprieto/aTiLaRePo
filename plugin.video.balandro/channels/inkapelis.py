@@ -70,7 +70,8 @@ def generos(item):
     
     bloque = scrapertools.find_single_match(data, '<ul class="genres scrolling">(.*?)</ul>')
     
-    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)</a>\s*<i>([^<]+)')
+    # ~ matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)</a>\s*<i>([^<]+)')
+    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)<i>([^<]+)')
     for url, title, num in matches:
         if num == '0': continue
         if '/cine/' in url or '/destacadas/' in url or '/estrenos-hd/' in url: continue # ya están en el listado principal y no son géneros

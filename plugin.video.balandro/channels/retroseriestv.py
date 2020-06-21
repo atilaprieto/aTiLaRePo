@@ -173,8 +173,11 @@ def play(item):
 
     post = urllib.urlencode( {'action': 'doo_player_ajax', 'post': item.dpost, 'nume': item.dnume, 'type': item.dtype} )
     data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':item.url}).data
+    # ~ logger.debug(data)
 
-    url = scrapertools.find_single_match(data, "src='([^']+)'")
+    url = scrapertools.find_single_match(data, "src='([^']+)")
+    if not url: url = scrapertools.find_single_match(data, '"embed_url":"([^"]+)')
+    url = url.replace('\\/', '/')
 
     if url.startswith(host):
         locationurl = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')

@@ -199,7 +199,7 @@ def findvideos(item):
     datos = scrapertools.find_multiple_matches(data, '<tr><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td></tr>')
     for servidor, calidad, idioma, enlace in datos:
         if servidor == 'Servidor': continue
-        server = scrapertools.find_single_match(servidor, 'domain=(?:www.|)([a-z]+)')
+        server = scrapertools.find_single_match(servidor, 'domain=(?:www.|dl.|)([a-z0-9]+)')
         server = servertools.corregir_servidor(server)
         url = scrapertools.find_single_match(enlace, " href='([^']+)'")
         if not url.startswith('http'): url = host + url[1:]
@@ -225,8 +225,9 @@ def play(item):
         if wopen:
             url = scrapertools.find_single_match(data, "%s\s*=\s*'([^']+)" % wopen)
         else:
-            url = scrapertools.find_single_match(data, '<a id="link-redirect".*? href="([^"]+)')
-
+            url = scrapertools.find_single_match(data, "enlaceeee\s*=\s*'([^']+)")
+            if not url: url = scrapertools.find_multiple_matches(data, '<a id="link-redirect".*? href="([^"]+)')[-1]
+        # ~ logger.debug(url)
         if url:
             servidor = servertools.get_server_from_url(url)
             if servidor and servidor != 'directo':

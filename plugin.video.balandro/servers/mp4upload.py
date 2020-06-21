@@ -22,10 +22,9 @@ def get_video_url(page_url, url_referer=''):
             unpacked = jsunpack.unpack(packed)
             # ~ logger.debug(unpacked)
             url = scrapertools.find_single_match(unpacked, 'player\.src\("([^"]+)')
+            if not url: url = scrapertools.find_single_match(unpacked, 'src:"([^"]+)')
 
     if url:
-        # ~ video_urls.append(['mp4', url])
-        # ~ ERROR: CCurlFile::Stat - Failed: Peer certificate cannot be authenticated with given CA certificates(60)
-        video_urls.append(['mp4', url+'|verifypeer=false'])
+        video_urls.append(['mp4', url])
 
     return video_urls

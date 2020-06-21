@@ -135,11 +135,12 @@ def extract_from_player_response(params, youtube_page_data=''):
         # ~ logger.debug(pr['streamingData']['formats'])
         for vid in sorted(pr['streamingData']['formats'], key=lambda x: (x['height'], x['mimeType'])):
             # ~ logger.debug(vid)
-            if not 'url' in vid and not 'cipher' in vid: continue
+            if not 'url' in vid and not 'cipher' in vid and not 'signatureCipher' in vid: continue
             if not 'url' in vid:
                 if not youtube_page_data: continue
-                v_url = urllib.unquote(scrapertools.find_single_match(vid['cipher'], 'url=([^&]+)'))
-                v_sig = urllib.unquote(scrapertools.find_single_match(vid['cipher'], 's=([^&]+)'))
+                aux = vid['cipher'] if 'cipher' in vid else vid['signatureCipher']
+                v_url = urllib.unquote(scrapertools.find_single_match(aux, 'url=([^&]+)'))
+                v_sig = urllib.unquote(scrapertools.find_single_match(aux, 's=([^&]+)'))
                 if not js_signature and not js_signature_checked:
                     obtener_js_signature(youtube_page_data)
                 if not js_signature: continue

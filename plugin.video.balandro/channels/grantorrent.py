@@ -6,8 +6,9 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb
 
-# ~ host = 'https://grantorrent.eu/'
-host = 'https://grantorrentt.com/'
+host = 'https://grantorrent.eu/'
+# ~ host = 'https://grantorrentt.com/'
+# ~ host = 'https://grantorrent.online/'
 
 
 def item_configurar_proxies(item):
@@ -22,7 +23,8 @@ def configurar_proxies(item):
 def do_downloadpage(url, post=None):
     ant_hosts = ['http://grantorrent.net/', 'https://grantorrent1.com/', 'https://grantorrent.one/', 
                  'https://grantorrent.tv/', 'https://grantorrent.la/', 'https://grantorrent.io/', 
-                 'https://grantorrent.cc/', 'https://grantorrent.li/', 'https://grantorrent.eu/']
+                 # ~ 'https://grantorrent.cc/', 'https://grantorrent.li/', 'https://grantorrent.eu/', 'https://grantorrentt.com/']
+                 'https://grantorrent.cc/', 'https://grantorrent.li/', 'https://grantorrent.online/', 'https://grantorrentt.com/']
     for ant in ant_hosts:
         url = url.replace(ant, host) # por si viene de enlaces guardados
 
@@ -107,7 +109,6 @@ def calidades(item):
     return itemlist
 
 
-
 def detectar_idioma(img):
     if 'icono_espaniol.png' in img: return 'Esp'
     else: return 'VO' # !?
@@ -120,18 +121,20 @@ def list_all(item):
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
     
-    patron = '<div class="imagen-post">\s*<a href="([^"]+)"[^>]*>(?:>|)<img src="([^"]+)"[^>]*>'
-    # ~ patron += '\s*</a>\s*<div class="bloque-superior">([^<]+)'
-    patron += '.*?</a>\s*<div class="bloque-superior">([^<]+)'
-    patron += '<div class="imagen-idioma">\s*<img src="([^"]+)"[^>]*>'
-    patron += '\s*</div>\s*</div>\s*<div class="bloque-inferior">([^<]+)'
+    patron = '<div class="imagen-post">(.*?)<div class="bloque-superior">(.*?)<div class="bloque-inferior">(.*?)</div>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
-    for url, thumb, quality, lang, title in matches:
-        title = title.strip()
-        
+    for b_main, b_sup, b_inf in matches:
+
+        url = scrapertools.find_single_match(b_main, ' href="([^"]+)')
+        title = b_inf.strip()
+        if not url or not title: continue
+        thumb = scrapertools.find_single_match(b_main, ' src="(http[^"]+)')
+        lang = detectar_idioma(b_sup)
+        qlty = scrapertools.find_single_match(b_sup, '^([^<]*)').strip()
+
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
-                                    languages=detectar_idioma(lang), qualities=quality.strip(),
+                                    languages=lang, qualities=qlty,
                                     contentType='movie', contentTitle=title, infoLabels={'year': '-'} ))
 
     tmdb.set_infoLabels(itemlist)

@@ -3,7 +3,8 @@
   "more_ids": ["biter"],
   "name": "Byter",
 
-  "active": true,
+  "active": false,
+  "notes": "Cerrado en junio 2020",
 
   "find_videos": {
     "ignore_urls": [],

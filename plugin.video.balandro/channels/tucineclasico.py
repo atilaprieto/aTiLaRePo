@@ -30,7 +30,7 @@ def mainlist_pelis(item):
     return itemlist
 
 
-def generos(item):
+def generos_ant(item):
     logger.info()
     itemlist = []
     
@@ -43,6 +43,21 @@ def generos(item):
         if num == '0': continue
         if 'genero/version-original-subtitulada' in url: continue
         itemlist.append(item.clone( action='list_all', title=title + ' ('+num+')', url=url ))
+
+    return itemlist
+
+def generos(item):
+    logger.info()
+    itemlist = []
+    
+    data = httptools.downloadpage(host).data
+    
+    bloque = scrapertools.find_single_match(data, '<ul id="menu-generos" class="menu">(.*?)</ul>')
+    
+    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)')
+    for url, title in matches:
+        if 'genero/version-original-subtitulada' in url: continue
+        itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
     return itemlist
 
@@ -122,18 +137,19 @@ def findvideos(item):
     # ~ logger.debug(data)
 
     # Fuentes de vídeo
-    bloque = scrapertools.find_single_match(data, "<ul id='playeroptionsul'>(.*?)</ul>")
+    bloque = scrapertools.find_single_match(data, "<ul id='playeroptionsul'(.*?)</ul>")
 
-    matches = scrapertools.find_multiple_matches(bloque, "<li id='player-option-\d+'(.*?)</li>")
-    for enlace in matches:
+    matches = scrapertools.find_multiple_matches(bloque, "<li id='player-option-(\d+)'(.*?)</li>")
+    for optnum, enlace in matches:
         # ~ logger.debug(enlace)
+        url = scrapertools.find_single_match(data, "<div id='source-player-%s' class='source-box'><div class='pframe'><iframe src=\"([^\"]+)" % optnum)
+        if not url:
+            dtype = scrapertools.find_single_match(enlace, "data-type='([^']+)")
+            dpost = scrapertools.find_single_match(enlace, "data-post='([^']+)")
+            dnume = scrapertools.find_single_match(enlace, "data-nume='([^']+)")
+            if not dtype or not dpost or not dnume or dnume == 'trailer': continue
+            url = get_url(dpost, dnume, dtype, item.url)
 
-        dtype = scrapertools.find_single_match(enlace, "data-type='([^']+)")
-        dpost = scrapertools.find_single_match(enlace, "data-post='([^']+)")
-        dnume = scrapertools.find_single_match(enlace, "data-nume='([^']+)")
-        if not dtype or not dpost or not dnume or dnume == 'trailer': continue
-
-        url = get_url(dpost, dnume, dtype, item.url)
         if not url: continue
         servidor = servertools.get_server_from_url(url)
         if not servidor or servidor == 'directo': continue

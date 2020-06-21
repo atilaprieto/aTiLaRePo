@@ -73,15 +73,15 @@ def findvideos(item):
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
 
-    url = scrapertools.find_single_match(data, '<iframe.*?src="(http[^"]+)')
-    if url:
+    matches = scrapertools.find_multiple_matches(data, '<iframe.*?src="(http[^"]+)')
+    for url in matches:
+        if 'amazon-adsystem.com' in url: continue
+
         servidor = servertools.get_server_from_url(url)
         if servidor and servidor != 'directo':
             itemlist.append(Item( channel = item.channel, action = 'play', server=servidor, 
                                   title = servidor.capitalize(), url = url, language = 'Esp'
                            ))
-    # ~ else:
-        # ~ logger.debug(data)
 
     return itemlist
 

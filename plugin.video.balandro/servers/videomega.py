@@ -20,7 +20,8 @@ def get_video_url(page_url, url_referer=''):
     if not bb: bb = scrapertools.find_single_match(data, 'bigbangass\s*=\s*document\.getElementById\("([^"]+)')
     fo = scrapertools.find_single_match(data, "fuckoff\s*=\s*document\.getElementById\('([^']+)")
     if not fo: fo = scrapertools.find_single_match(data, 'fuckoff\s*=\s*document\.getElementById\("([^"]+)')
-    if not tn or not bb or not fo: return video_urls
+    # ~ if not tn or not bb or not fo: return video_urls
+    if not tn or not bb or not fo: return get_video_url_embed(page_url)
 
     tn = scrapertools.find_single_match(data, 'href="([^"]+)" id="%s"' % tn)
     bb = scrapertools.find_single_match(data, 'href="([^"]+)" id="%s"' % bb)
@@ -31,14 +32,39 @@ def get_video_url(page_url, url_referer=''):
     post = 'myreason=' + tn + '&saveme=' + fo
     headers = {'Referer': page_url, 'Content-Type': 'application/x-www-form-urlencoded'}
     url2 = httptools.downloadpage(url, post=post, headers=headers).data.strip()
-    # ~ logger.debug(data)
+    # ~ logger.debug(url2)
     if url2.startswith('http'):
         headers = {'Referer': url}
         data = httptools.downloadpage(url2, headers=headers).data
-        # ~ logger.debug(data)
+        logger.debug(data)
         
         src = scrapertools.find_single_match(data, '<source src="([^"]+)')
         if src:
             video_urls.append(['mp4', src])
+
+    return video_urls
+
+
+def get_video_url_embed(page_url, url_referer=''):
+    logger.info("url=" + page_url)
+    video_urls = []
+
+    page_url = page_url.replace('videomega.co/d/', 'videomega.co/e/')
+
+    data = httptools.downloadpage(page_url).data
+    # ~ logger.debug(data)
+    
+    token = scrapertools.find_single_match(data, 'token="([^"]+)"')
+    crsf = scrapertools.find_single_match(data, 'crsf="([^"]+)"')
+    if not token or not crsf: return video_urls
+
+    post = {'gone': token, 'oujda': crsf}
+    url = 'https://www.videomega.co/vid/'
+    headers = {'Referer': page_url, 'Content-Type': 'application/x-www-form-urlencoded'}
+
+    url2 = httptools.downloadpage(url, post=post, headers=headers).data.strip()
+    # ~ logger.debug(url2)
+    if url2.startswith('http'):
+        video_urls.append(['mp4', url2])
 
     return video_urls

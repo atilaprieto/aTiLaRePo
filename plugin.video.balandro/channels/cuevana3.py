@@ -227,6 +227,18 @@ def findvideos(item):
                                   language = IDIOMAS.get(language, language), quality = quality, quality_num = puntuar_calidad(quality)
                            ))
 
+    # Enlaces de descarga (sólo uptobox)
+    patron = 'Uptobox</td><td>([^<]*)</td><td><span>([^<]*)</span></td><td><a\s*rel=nofollow target=_blank href="([^"]+)" class="Button STPb">Descargar</a>'
+    matches = re.compile(patron, re.DOTALL).findall(data)
+    for language, quality, url in matches:
+        # ~ logger.debug('%s %s %s' % (language, quality, url))
+        if url.startswith('/'): url = 'https:' + url
+        itemlist.append(Item( channel = item.channel, action = 'play', other = 'D', server = 'uptobox',
+                              title = '', url = url, referer = item.url,
+                              language = IDIOMAS.get(language, language), quality = quality, quality_num = puntuar_calidad(quality)
+                       ))
+
+
     itemlist = servertools.get_servers_itemlist(itemlist)
 
     # Dejar desconocidos como directos para resolverse en el play
@@ -278,9 +290,10 @@ def play(item):
                 
             itemlist.sort(key=lambda it: int(it[0].replace('p','')) if it[0].endswith('p') else it[0])
 
-        elif 'fembed/?h=' in item.url:
+        elif 'fembed/?h=' in item.url or 'uptobox/goto.php?h=' in item.url:
             fid = scrapertools.find_single_match(item.url, "h=([^&]+)")
-            data = httptools.downloadpage('https://api.cuevana3.io/fembed/api.php', post=urllib.urlencode({'h': fid})).data.replace('\\/', '/')
+            serv = 'fembed' if 'fembed/?h=' in item.url else 'uptobox'
+            data = httptools.downloadpage('https://api.cuevana3.io/'+serv+'/api.php', post=urllib.urlencode({'h': fid})).data.replace('\\/', '/')
             # ~ logger.debug(data)
             url = scrapertools.find_single_match(data, '"url":"([^"]+)')
             if url:
@@ -299,7 +312,11 @@ def play(item):
         data = httptools.downloadpage(item.url, headers={'Referer': item.referer}).data
         url = scrapertools.find_single_match(data, '"file": "([^"]+)')
         if url:
-            itemlist.append(item.clone(url = url))
+            # ~ itemlist.append(item.clone(url = url))
+            if 'openloadpremium.com/mp4/' in url and 'hash=' in url: 
+                itemlist.append(item.clone(url = url+'|Referer='+item.url, server='directo'))
+            else:
+                itemlist.append(item.clone(url = url))
 
     else:
         itemlist.append(item.clone())

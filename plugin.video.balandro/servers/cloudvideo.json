@@ -12,6 +12,10 @@
         "url": "https://cloudvideo.tv/embed-\\1.html"
       },
       {
+        "pattern": "https://cloudvideo.tv/emb\\.html\\?([a-z0-9]+)",
+        "url": "https://cloudvideo.tv/embed-\\1.html"
+      },
+      {
         "pattern": "https://cloudvideo.tv/([a-z0-9]+)",
         "url": "https://cloudvideo.tv/embed-\\1.html"
       }

@@ -7,7 +7,8 @@ from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
 
-CHANNEL_HOST = "https://www.cinetux.to/"
+# ~ CHANNEL_HOST = "https://www.cinetux.to/"
+CHANNEL_HOST = "https://www.cinetux.nu/"
 
 IDIOMAS = {'Latino': 'Lat', 'Subtitulado': 'VOSE', 'Español': 'Esp', 'Espa%C3%B1ol':'Esp', 'SUB': 'VO' }
 
@@ -23,6 +24,7 @@ def configurar_proxies(item):
 
 def do_downloadpage(url, post=None, headers=None):
     url = url.replace('http://', 'https://')
+    url = url.replace('www.cinetux.to/', 'www.cinetux.nu/')
     # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
     data = httptools.downloadpage_proxy('cinetux', url, post=post, headers=headers).data
     return data
@@ -178,7 +180,7 @@ def findvideos(item):
             lang = scrapertools.find_single_match(enlace, "<td>([^<]+)")
 
         if not servidor: continue
-        if 'Descargar</a>' in enlace and servidor not in ['mega', 'gvideo']: continue # descartar descargas directas menos Mega y Gvideo
+        if 'Descargar</a>' in enlace and servidor not in ['mega', 'gvideo', 'uptobox']: continue # descartar descargas directas menos Mega y Gvideo
         # ~ logger.debug('%s %s %s %s' % (servidor, quality, lang, enlace))
         
         itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, 
@@ -194,12 +196,13 @@ def findvideos(item):
         matches = scrapertools.find_multiple_matches(data, "<li id='player-option-\d+'(.*?)</li>")
         entrecomillado = "'([^']+)"
     for enlace in matches:
-        # ~ logger.debug(enlace)
+        logger.debug(enlace)
 
         dtype = scrapertools.find_single_match(enlace, 'data-type=%s' % entrecomillado)
         dpost = scrapertools.find_single_match(enlace, 'data-post=%s' % entrecomillado)
         dnume = scrapertools.find_single_match(enlace, 'data-nume=%s' % entrecomillado)
         tds = scrapertools.find_multiple_matches(enlace, 'data-lazy-src=".*?/assets/img/([^\.]+)')
+        if not tds: tds = scrapertools.find_multiple_matches(enlace, " src='.*?/assets/img/([^\.]+)")
         if len(tds) != 2 or not dtype or not dpost or not dnume: continue
         lang = tds[0].replace('3', '')
         servidor = tds[1]
@@ -256,6 +259,7 @@ def play(item):
         data = do_downloadpage(CHANNEL_HOST + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':item.referer})
         # ~ logger.debug(data)
         new_url = scrapertools.find_single_match(data, "src='([^']+)'")
+        if not new_url: new_url = scrapertools.find_single_match(data, 'src="([^"]+)"')
         if new_url: 
             if 'cinetux.me' in new_url:
                 data = do_downloadpage(new_url)
@@ -265,7 +269,6 @@ def play(item):
                 itemlist.append(item.clone( url=new_url, server=servertools.get_server_from_url(new_url) ))
 
     return itemlist
-
 
 
 def busqueda(item):

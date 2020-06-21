@@ -3,7 +3,7 @@
   "name": "Tv-Vip",
   "thumbnail": "tvvip.png",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["movie", "tvshow"],

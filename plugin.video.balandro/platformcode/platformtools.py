@@ -745,6 +745,12 @@ def play_video(item, parent_item, autoplay=False):
         if item.server == 'torrent':
             return play_torrent(mediaurl, parent_item)
         
+        # ~ Para evitar ERROR: CCurlFile::Stat - Failed: Peer certificate cannot be authenticated with given CA certificates(60)
+        if item.server not in ['m3u8hls', 'zembed']:
+            if 'verifypeer=false' not in mediaurl: 
+                mediaurl += '|' if '|' not in mediaurl else '&'
+                mediaurl += 'verifypeer=false'
+
         xlistitem = xbmcgui.ListItem(path=mediaurl)
         set_infolabels(xlistitem, parent_item, True)
 

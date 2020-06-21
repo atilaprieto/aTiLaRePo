@@ -7,6 +7,7 @@ import urllib, base64, time
 
 def normalizar_url(page_url):
     try:
+        page_url = page_url.replace('&amp;', '&')
         oid, nid = scrapertools.find_single_match(page_url, "oid=(\d+)&id=(\d+)")
         return 'https://vk.com/video%s_%s' % (oid, nid)
     except:
@@ -29,14 +30,18 @@ def get_video_url(page_url, url_referer=''):
     p_id = scrapertools.find_single_match(bloque, 'id: "([^"]+)')
     p_server = scrapertools.find_single_match(bloque, 'server: "([^"]+)')
     p_token = scrapertools.find_single_match(bloque, 'token: "([^"]+)')
-    p_sig = scrapertools.find_single_match(bloque, 'sig: "([^"]+)')
+    # ~ p_sig = scrapertools.find_single_match(bloque, 'sig: "([^"]+)')
+    p_credentials = scrapertools.find_single_match(bloque, 'credentials: "([^"]+)')
     p_c_key = scrapertools.find_single_match(bloque, 'c_key: "([^"]+)')
     p_e_key = scrapertools.find_single_match(bloque, 'e_key: "([^"]+)')
     p_i_key = scrapertools.find_single_match(bloque, 'i_key: "([^"]+)')
     if not p_id or not p_server or not p_token: return video_urls
 
-    url = 'https://%s/method/video.sig?callback=jQuery1_1&token=%s&videos=%s&extra_key=%s&ckey=%s&sig=%s&_=%s' % \
-        (base64.b64decode(p_server[::-1]), p_token, p_id, p_e_key, p_c_key, p_sig, int(time.time()))
+    # ~ url = 'https://%s/method/video.sig?callback=jQuery1_1&token=%s&videos=%s&extra_key=%s&ckey=%s&sig=%s&_=%s' % \
+        # ~ (base64.b64decode(p_server[::-1]), p_token, p_id, p_e_key, p_c_key, p_sig, int(time.time()))
+
+    url = 'https://%s/method/video.get?credentials=%s&token=%s&videos=%s&extra_key=%s&ckey=%s' % \
+        (base64.b64decode(p_server[::-1]), p_credentials, p_token, p_id, p_e_key, p_c_key)
 
     data = httptools.downloadpage(url, headers={'Referer': url_savevk}).data.replace('\\/', '/')
     # ~ logger.debug(data)

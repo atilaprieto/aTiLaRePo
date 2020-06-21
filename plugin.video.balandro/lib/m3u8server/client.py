@@ -59,12 +59,11 @@ class Client(object):
 
         try:
             # ~ data = httptools.downloadpage(url).data
-            if 'player.openloadpremium.com/m3u8/index_' in url:
+            if '/m3u8/index_' in url:
                 headers = {'Referer': url.replace('/m3u8/index_', '/player.php?id=').replace('.m3u8', '')}
             else:
                 headers = {}
             data = httptools.downloadpage(url, headers=headers).data
-            # ~ logger.debug(data)
             if not data or data == 'error html': raise()
 
             data_local = ''
