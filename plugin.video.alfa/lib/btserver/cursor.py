@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from builtins import range
+from builtins import object
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 from threading import Lock, Event
 
 
@@ -22,7 +28,7 @@ class Cursor(object):
                 if p < first: del self.cache[p]
 
         self.event.clear()
-        for i in xrange(first, first + self.cache_size):
+        for i in range(first, first + self.cache_size):
             if i <= self._file.last_piece:
                 self._file._client.prioritize_piece(i, i - first)
 

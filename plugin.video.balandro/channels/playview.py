@@ -4,7 +4,7 @@ import re
 
 from platformcode import config, logger
 from core.item import Item
-from core import httptools, scrapertools, tmdb
+from core import httptools, scrapertools, tmdb, servertools
 
 
 host = 'https://playview.io/'
@@ -217,9 +217,10 @@ def findvideos(item):
         data = httptools.downloadpage(host + 'playview', post=post).data
         # ~ logger.debug(data)
         
-        enlaces = scrapertools.find_multiple_matches(data, 'data-id="([^"]+)">\s*<h4>([^<]+)</h4>\s*<small><img src="https://www\.google\.com/s2/favicons\?domain=([^"]+)')
+        # ~ enlaces = scrapertools.find_multiple_matches(data, 'data-id="([^"]+)">\s*<h4>([^<]+)</h4>\s*<small><img src="https://www\.google\.com/s2/favicons\?domain=([^"]+)')
+        enlaces = scrapertools.find_multiple_matches(data, 'data-id="([^"]+)">\s*<h4>([^<]+)</h4>\s*<small><img src="https://www\.google\.com/s2/favicons\?domain=([^"]*)')
         for linkid, lang, servidor in enlaces:
-            # ~ logger.debug('%s %s %s' % (linkid, lang, servidor))
+            # ~ logger.debug('%s %s %s %s' % (calidad, linkid, lang, servidor))
             servidor = servidor.replace('https://', '').replace('http://', '').replace('www.', '').lower()
             servidor = servidor.split('.', 1)[0]
             if servidor == 'vev': servidor = 'vevio'
@@ -260,7 +261,13 @@ def play(item):
             else: url = None
 
     if url:
-        itemlist.append(item.clone(url = url))
+        if not item.servidor:
+            servidor = servertools.get_server_from_url(url)
+            if servidor and servidor != 'directo':
+                url = servertools.normalize_url(servidor, url)
+                itemlist.append(item.clone( url=url, server=servidor ))
+        else:   
+            itemlist.append(item.clone(url = url))
 
     return itemlist
 

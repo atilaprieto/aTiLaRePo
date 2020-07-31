@@ -26,13 +26,9 @@ def mainlist(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(
-        item.clone(action="lista", title="Nuevos Vídeos", url="https://www.nuvid.com/search/videos/_empty_/"))
-    itemlist.append(
-        item.clone(action="lista", title="Mejor Valorados", url="https://www.nuvid.com/search/videos/_empty_/",
-                   extra="rt"))
-    itemlist.append(
-        item.clone(action="lista", title="Solo HD", url="https://www.nuvid.com/search/videos/hd", calidad="1"))
+    itemlist.append(item.clone(action="lista", title="Nuevos Vídeos", url="https://www.nuvid.com/search/videos/_empty_/"))
+    itemlist.append(item.clone(action="lista", title="Mejor Valorados", url="https://www.nuvid.com/search/videos/_empty_/", extra="rt"))
+    itemlist.append(item.clone(action="lista", title="Solo HD", url="https://www.nuvid.com/search/videos/hd", calidad="1"))
     itemlist.append(item.clone(action="categorias", title="Categorías", url=host))
     itemlist.append(item.clone(title="Buscar...", action="search"))
     return itemlist
@@ -87,19 +83,12 @@ def lista(item):
             title = "[COLOR yellow]%s[/COLOR] [COLOR red][HD][/COLOR] %s" % (duration, scrapedtitle)
         if not scrapedthumbnail.startswith("https"):
             scrapedthumbnail = "https:%s" % scrapedthumbnail
-        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=scrapedurl,
+        itemlist.append(item.clone(action="play", title=title, contentTitle = title, url=scrapedurl,
                               thumbnail=scrapedthumbnail, fanart=scrapedthumbnail))
     next_page = scrapertools.find_single_match(data, '<li class="next1">.*?href="([^"]+)"')
     if next_page:
         next_page = urlparse.urljoin(host, next_page)
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
-
-    return itemlist
-
-
-def findvideos(item):
-    logger.info(item)
-    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     return itemlist
 
 

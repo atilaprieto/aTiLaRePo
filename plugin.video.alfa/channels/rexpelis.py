@@ -20,13 +20,12 @@ from platformcode import config, logger, platformtools
 
 list_language = ['LAT']
 list_quality = []
-list_servers = ['fembed', 'verystream','directo','rapidvideo',
-                'streamango', 'fastplay', 'openload']
+list_servers = ['fembed', 'verystream','directo', 'fastplay', 'digiloaded']
 
 
 __channel__='rexpelis'
 
-host = "https://www.rexpelis.me"
+host = "https://rexpelis.org"
 headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:67.0) Gecko/20100101 Firefox/67.0'}
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
@@ -181,7 +180,7 @@ def peliculas(item):
     headers.update({'X-Requested-With': 'XMLHttpRequest'})
     
     token = scrapertools.find_single_match(data, 'csrf-token" content="([^"]+)')
-    post = "page=%s&type=%s&_token=%s&slug=%s" %(item.page, item.type, token, item.slug)
+    post = "page=%s&type=%s&_token=%s" %(item.page, item.type, token)
     if item.slug:
         post += "&slug=%s" %item.slug
     

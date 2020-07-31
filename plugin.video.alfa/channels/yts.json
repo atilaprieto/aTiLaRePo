@@ -4,7 +4,7 @@
     "active": true,
     "adult": false,
     "language": ["*"],
-    "thumbnail": "yts.jpg",
+    "thumbnail": "https://i.postimg.cc/mtCM3TZp/yts.jpg",
     "categories": [
     "movie",
     "torrent",

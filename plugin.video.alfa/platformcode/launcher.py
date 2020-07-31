@@ -250,7 +250,8 @@ def run(item=None):
                 tecleado = platformtools.dialog_input(last_search)
 
                 if tecleado is not None:
-                    channeltools.set_channel_setting('Last_searched', tecleado, 'search')
+                    if "http" not in tecleado:
+                        channeltools.set_channel_setting('Last_searched', tecleado, 'search')
                     itemlist = channel.search(item, tecleado)
                 else:
                     return

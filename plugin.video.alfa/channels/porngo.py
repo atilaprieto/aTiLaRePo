@@ -22,12 +22,12 @@ host = 'https://www.porngo.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/latest-updates/"))
-    itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "/most-popular/month/"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorado" , action="lista", url=host + "/top-rated/month/"))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="catalogo", url=host + "/sites/"))
-    itemlist.append( Item(channel=item.channel, title="PornStar" , action="pornstar", url=host + "/models/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host + "/latest-updates/"))
+    itemlist.append(item.clone(title="Mas vistos" , action="lista", url=host + "/most-popular/month/"))
+    itemlist.append(item.clone(title="Mejor valorado" , action="lista", url=host + "/top-rated/month/"))
+    itemlist.append(item.clone(title="Canal" , action="catalogo", url=host + "/sites/"))
+    itemlist.append(item.clone(title="PornStar" , action="pornstar", url=host + "/models/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -56,7 +56,7 @@ def catalogo(item):
         title = "%s (%s)" %(scrapedtitle,cantidad)
         thumbnail = ""
         url = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     next_page = scrapertools.find_single_match(data, '<a class="pagination__link" href="([^"]+)">Next')
     if next_page:
@@ -78,7 +78,7 @@ def pornstar(item):
         title = "%s (%s)" %(scrapedtitle,cantidad)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         url = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     next_page = scrapertools.find_single_match(data, '<a class="pagination__link" href="([^"]+)">Next')
     if next_page:
@@ -104,8 +104,8 @@ def lista(item):
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
-                              thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
+        itemlist.append(item.clone(action="play", title=title, contentTitle = title, url=url,
+                              thumbnail=thumbnail, fanart=thumbnail, plot=plot))
     next_page = scrapertools.find_single_match(data, '<a class="pagination__link" href="([^"]+)">Next')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
@@ -121,7 +121,6 @@ def play(item):
     patron = '<source src=\'([^\']+)\' type=\'video/mp4\' label="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for url, quality in matches:
-        logger.debug(url)
         itemlist.append(['.mp4 %s' % quality, url])
     return itemlist
 

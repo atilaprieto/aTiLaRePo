@@ -19,7 +19,7 @@ def mainlist_pelis(item):
     itemlist = []
     
     itemlist.append(item.clone( title='Últimas actualizadas', action='list_all', url=HOST ))
-    itemlist.append(item.clone( title='Estrenos', action='list_all', url=HOST + 'genero/estrenos/' ))
+    # ~ itemlist.append(item.clone( title='Estrenos', action='list_all', url=HOST + 'genero/estrenos/' ))
     # ~ itemlist.append(item.clone( title='Netflix', action='list_all', url=HOST + 'genero/netflix/' ))
 
     itemlist.append(item.clone( title='Castellano', action='list_all', url=HOST + 'pelicula/tag/espanol/' ))
@@ -46,6 +46,7 @@ def generos(item):
     for url, title in matches:
         if 'genero/estrenos/' in url or 'genero/netflix/' in url: continue
         if url.startswith('/'): url = HOST + url[1:]
+        if '/genero/' not in url: url = url.replace(HOST, HOST+'genero/')
         itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
     itemlist.append(item.clone( action = 'list_all', title = 'Bélica', url = HOST + 'genero/belica/' ))

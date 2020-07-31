@@ -2,10 +2,10 @@
   "id": "salynpm",
   "name": "SalynPM",
   "force_unify": true,
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["VOSE","LAT"],
-  "thumbnail": "SalynPM.png",
+  "thumbnail": "https://i.postimg.cc/jCyhs6VF/SalynPM.png",
   "banner": "",
   "categories": [
     "movie",

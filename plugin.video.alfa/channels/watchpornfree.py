@@ -26,7 +26,7 @@ list_servers = ['mangovideo']
 
 # https://playpornfree.org/    https://mangoporn.net/   https://watchfreexxx.net/   https://losporn.org/  https://xxxstreams.me/  https://speedporn.net/
 
-host = 'https://watchpornfree.info'   #'https://xxxparodyhd.net'  'http://www.veporns.com'  'http://streamporno.eu'
+host = 'https://watchpornfree.info'   #'https://xxxparodyhd.net'  'http://www.veporns.com'  'http://streamporno.eu'  playpornx
 
 def mainlist(item):
     logger.info("")
@@ -34,13 +34,13 @@ def mainlist(item):
 
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append( Item(channel=item.channel, title="Videos" , action="lista", url=host + "/category/clips-scenes"))
-    itemlist.append( Item(channel=item.channel, title="Peliculas" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Parodia" , action="lista", url=host + "/category/parodies"))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Año" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Videos" , action="lista", url=host + "/category/clips-scenes"))
+    itemlist.append(item.clone(title="Peliculas" , action="lista", url=host))
+    itemlist.append(item.clone(title="Parodia" , action="lista", url=host + "/category/parodies"))
+    itemlist.append(item.clone(title="Canal" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Año" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
 
     autoplay.show_option(item.channel, itemlist)
 
@@ -77,7 +77,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedtitle = scrapedtitle
         scrapedthumbnail = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return itemlist
 
@@ -92,12 +92,12 @@ def lista(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         scrapedplot = ""
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, contentTitle=scrapedtitle, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<a class="next page-numbers" href="([^"]+)">Next &raquo;</a>')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -110,8 +110,14 @@ def findvideos(item):
     patron = 'href="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(links_data)
     for url in matches:
-        if not "waaws.tk" in url: #netu
-            itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', language='VO',contentTitle = item.contentTitle))
+        if "streamz" in url:
+            url = url.replace("streamz.cc", "stream2.vg").replace("streamz.vg", "stream2.vg")
+            # url= httptools.downloadpage(url).url
+            # url= url.replace("/x", "/getlink-")
+            # url += ".dll"
+            # url = httptools.downloadpage(url, headers={"referer": url}, follow_redirects=False).headers["location"]
+        if not ".xyz/" in url: #netu
+            itemlist.append(item.clone(title='%s', url=url, action='play', language='VO',contentTitle = item.contentTitle))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server)
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)

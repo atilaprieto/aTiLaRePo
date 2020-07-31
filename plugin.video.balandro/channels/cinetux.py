@@ -171,7 +171,10 @@ def findvideos(item):
         if not servidor: servidor = scrapertools.find_single_match(enlace, "domain=([^'.]+)")
         servidor = corregir_servidor(servidor.strip().lower())
         uploader = scrapertools.find_single_match(enlace, "author/[^/]+/'>([^<]+)</a>")
-        tds = scrapertools.find_multiple_matches(enlace.replace('https://static.cinetux.to/', '/'), 'data-lazy-src="/assets/img/([^\.]*)')
+        
+        enlace = enlace.replace('https://static.cinetux.to/', '/').replace('https://cdn.cinetux.nu/', '/')
+        tds = scrapertools.find_multiple_matches(enlace, 'data-lazy-src="/assets/img/([^\.]*)')
+        # ~ logger.debug(tds)
         if tds:
             quality = tds[1]
             lang = tds[2]
@@ -196,7 +199,7 @@ def findvideos(item):
         matches = scrapertools.find_multiple_matches(data, "<li id='player-option-\d+'(.*?)</li>")
         entrecomillado = "'([^']+)"
     for enlace in matches:
-        logger.debug(enlace)
+        # ~ logger.debug(enlace)
 
         dtype = scrapertools.find_single_match(enlace, 'data-type=%s' % entrecomillado)
         dpost = scrapertools.find_single_match(enlace, 'data-post=%s' % entrecomillado)

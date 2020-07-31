@@ -6,9 +6,10 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb
 
-host = 'https://grantorrent.eu/'
+# ~ host = 'https://grantorrent.eu/'
 # ~ host = 'https://grantorrentt.com/'
 # ~ host = 'https://grantorrent.online/'
+host = 'https://grantorrent.nl/'
 
 
 def item_configurar_proxies(item):
@@ -22,7 +23,7 @@ def configurar_proxies(item):
 
 def do_downloadpage(url, post=None):
     ant_hosts = ['http://grantorrent.net/', 'https://grantorrent1.com/', 'https://grantorrent.one/', 
-                 'https://grantorrent.tv/', 'https://grantorrent.la/', 'https://grantorrent.io/', 
+                 'https://grantorrent.tv/', 'https://grantorrent.la/', 'https://grantorrent.io/', 'https://grantorrent.eu/'
                  # ~ 'https://grantorrent.cc/', 'https://grantorrent.li/', 'https://grantorrent.eu/', 'https://grantorrentt.com/']
                  'https://grantorrent.cc/', 'https://grantorrent.li/', 'https://grantorrent.online/', 'https://grantorrentt.com/']
     for ant in ant_hosts:
@@ -175,7 +176,7 @@ def list_categ_search(item):
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.lower().replace(' ', '').replace('-', '')
-    orden = ['3d', 'screener', 'screener720p', 'hdscreener', 'brscreener', 'dvdrip', 'hdrip', 'bluray720p', 'microhd', 'microhd1080p', 'bluray1080p', 'fullbluray1080p', 'bdremux1080p', '4k', 'full4k', '4kuhdrip', '4kfulluhd', '4kuhdremux', '4kuhdremux1080p', '4khdr']
+    orden = ['3d', 'screener', 'screener720p', 'hdscreener', 'brscreener', 'mkv', 'dvdrip', 'hdrip', 'bluray720p', 'microhd', 'microhd1080p', 'bluray1080p', 'fullbluray1080p', 'bdremux1080p', '4k', 'full4k', '4kuhdrip', '4kfulluhd', '4kuhdremux', '4kuhdremux1080p', '4khdr']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

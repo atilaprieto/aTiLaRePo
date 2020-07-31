@@ -84,7 +84,7 @@ def lista(item):
             title = "[COLOR yellow]%s[/COLOR] %s" % (duration.strip(), scrapedtitle)
         else:
             title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (duration.strip(), scrapedtitle)
-        itemlist.append(Item(channel=item.channel, action=action, title=title, contentTitle = title, url=scrapedurl,
+        itemlist.append(item.clone(action=action, title=title, contentTitle = title, url=scrapedurl,
                                    fanart=scrapedthumbnail, thumbnail=scrapedthumbnail))
     # Extrae la marca de siguiente página
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')

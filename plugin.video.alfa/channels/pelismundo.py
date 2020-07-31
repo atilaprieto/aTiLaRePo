@@ -88,6 +88,9 @@ def sub_search(item):
         scrapedtitle = scrapedtitle.replace(st, "")
         st = scrapertools.find_single_match(scrapedtitle, '\(.*?\)')
         scrapedtitle = scrapedtitle.replace(st, "")
+        #hay algunos titulos que tiene doble parentesis
+        st = scrapertools.find_single_match(scrapedtitle, '\(.*?\)')
+        scrapedtitle = scrapedtitle.replace(st, "")
         title = scrapedtitle
         if year:
             title += "(" + year + ")"
@@ -104,6 +107,7 @@ def sub_search(item):
         itemlist.append(Item(channel = item.channel,
                              action = "findvideos",
                              title = title,
+                             contentThumbnail = scrapedthumbnail,
                              contentTitle = scrapedtitle,
                              thumbnail = scrapedthumbnail,
                              quality = scrapedquality,
@@ -173,6 +177,7 @@ def peliculas(item):
         itemlist.append(Item(channel = item.channel,
                              action = "findvideos",
                              title = title,
+                             contentThumbnail = scrapedthumbnail,
                              contentTitle = scrapedtitle,
                              thumbnail = scrapedthumbnail,
                              quality = scrapedquality,
@@ -192,11 +197,9 @@ def findvideos(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = 'SegundaParte.*?ventana-flotante'
-    bloque = scrapertools.find_single_match(data, patron)
-    patron  = 'hand" rel="([^"]+)".*?'
-    patron += 'optxt"><span>([^<]+)</span>.*?'
-    matches = scrapertools.find_multiple_matches(bloque, patron)
+    patron  = '(?is)hand" rel="([^"]+)".*?'
+    patron += 'optxt"><span>([^<]+)</span>'
+    matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedlanguage in matches:
         if "youtube" in scrapedurl:
             scrapedurl += "&"

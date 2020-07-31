@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from builtins import object
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import os
 
-from cursor import Cursor
+from .cursor import Cursor
 
 
 class File(object):

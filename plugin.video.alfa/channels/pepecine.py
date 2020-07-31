@@ -22,7 +22,7 @@ list_language = IDIOMAS.values()
 list_quality = []
 list_servers = ['rapidvideo', 'verystream', 'streamplay']
 
-host = 'https://pepecine.tv/'
+host = 'https://pepecine.to/'
 
 
 def mainlist(item):
@@ -51,11 +51,11 @@ def submenu(item):
     if 'series' in item.url:
         itemlist.append(
             Item(channel=item.channel, title='Nuevos capitulos',
-                 url='https://verencasa.com/last/estrenos-episodios-online.php', action='list_news',
+                 url= host + 'last/estrenos-episodios-online.php', action='list_news',
                  thumbnail=get_thumb('new episodes', auto=True), first=0, news_type='series'))
     else:
         itemlist.append(
-            Item(channel=item.channel, title='Ultimas', url='https://verencasa.com/last/estrenos-peliculas-online.php',
+            Item(channel=item.channel, title='Ultimas', url= host + 'last/estrenos-peliculas-online.php',
                  action='list_news', thumbnail=get_thumb('last', auto=True), first=0, news_type='movies'))
 
     itemlist.append(

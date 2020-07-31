@@ -2,41 +2,28 @@
 
 from core import httptools
 from core import scrapertools
-from lib import jsunpack
-from platformcode import logger
-
+from platformcode import logger, config
+import requests
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
+    global data
 
-    response = httptools.downloadpage(page_url)
-
-    if not response.sucess or "Not Found" in response.data or "File was deleted" in response.data or "is no longer available" in response.data:
+    data = requests.get(page_url)
+    if not data.sucess or "Not Found" in data.data or "File was deleted" in data.data or "is no longer available" in data.data:
         return False, "[Userscloud] El fichero no existe o ha sido borrado"
-
     return True, ""
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("url=" + page_url)
     video_urls = []
-    unpacked = ""
-    data = httptools.downloadpage(page_url).data
-    packed = scrapertools.find_single_match(data, "function\(p,a,c,k.*?</script>")
-    if packed:
-        unpacked = jsunpack.unpack(packed)
-    media_url = scrapertools.find_single_match(unpacked, 'url = "([^"]+)')
-    if not media_url:
-        id_ = page_url.rsplit("/", 1)[1]
-        rand = scrapertools.find_single_match(data, 'name="rand" value="([^"]+)"')
-        post = "op=download2&id=%s&rand=%s&referer=%s&method_free=&method_premium=" % (id_, rand, page_url)
-        data = httptools.downloadpage(page_url, post=post).data
-        media_url = scrapertools.find_single_match(data, 'name="down_script".*?<a href="([^"]+)"')
-
+    id_ = page_url.rsplit("/", 1)[1]
+    fname = scrapertools.find_single_match(data.text, '<h2><b>([^<]+)')
+    post = "op=download1&usr_login=&id=%s&fname=%s&referer=&method_free=Descarga Gratis" % (id_, fname)
+    data1 = requests.post(page_url, data=post).text
+    media_url = scrapertools.find_single_match(data1, '<source src="([^"]+)"')
     ext = scrapertools.get_filename_from_url(media_url)[-4:]
+    #config.set_setting("player_mode", 3)
     video_urls.append(["%s [userscloud]" % ext, media_url])
-
-    for video_url in video_urls:
-        logger.info("%s - %s" % (video_url[0], video_url[1]))
-
     return video_urls

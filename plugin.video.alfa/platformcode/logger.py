@@ -82,20 +82,20 @@ def get_caller(message=None):
             return module + "." + function
 
 
-def info(texto=""):
-    if loggeractive:
+def info(texto="", force=False):
+    if loggeractive or force:
         xbmc.log(get_caller(encode_log(texto)), xbmc.LOGNOTICE)
 
 
-def debug(texto=""):
-    if loggeractive:
+def debug(texto="", force=False):
+    if loggeractive or force:
         texto = "    [" + get_caller() + "] " + encode_log(texto)
 
         xbmc.log("######## DEBUG #########", xbmc.LOGNOTICE)
         xbmc.log(texto, xbmc.LOGNOTICE)
 
 
-def error(texto=""):
+def error(texto="", force=False):
     texto = "    [" + get_caller() + "] " + encode_log(texto)
 
     xbmc.log("######## ERROR #########", xbmc.LOGERROR)

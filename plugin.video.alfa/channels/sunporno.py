@@ -22,13 +22,13 @@ host = 'https://www.sunporno.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevas" , action="lista", url=host +"/most-recent/"))
-    itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=host + "/most-viewed/date-last-week/"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/top-rated/date-last-week/"))
-    itemlist.append( Item(channel=item.channel, title="Mas largas" , action="lista", url=host + "/long-movies/date-last-month/"))
-    itemlist.append( Item(channel=item.channel, title="PornStars" , action="catalogo", url=host + "/pornstars/most-viewed/1/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/channels/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevas" , action="lista", url=host +"/most-recent/"))
+    itemlist.append(item.clone(title="Popular" , action="lista", url=host + "/most-viewed/date-last-week/"))
+    itemlist.append(item.clone(title="Mejor valorada" , action="lista", url=host + "/top-rated/date-last-week/"))
+    itemlist.append(item.clone(title="Mas largas" , action="lista", url=host + "/long-movies/date-last-month/"))
+    itemlist.append(item.clone(title="PornStars" , action="catalogo", url=host + "/pornstars/most-viewed/1/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/channels/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -58,7 +58,7 @@ def categorias(item):
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         scrapedplot = ""
         scrapedurl = "%s/most-recent/" %scrapedurl
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return itemlist
 
@@ -76,12 +76,12 @@ def catalogo(item):
     for scrapedurl, scrapedthumbnail, scrapedtitle, cantidad in matches:
         scrapedplot = ""
         scrapedtitle = "%s (%s)"  %(scrapedtitle, cantidad)
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<li><a class="pag-next" href="(.*?)">Next &gt;</a>')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel , action="catalogo", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="catalogo", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist    
 
 
@@ -104,12 +104,12 @@ def lista(item):
             title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (duracion, scrapedtitle)
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,
+        itemlist.append(item.clone(action="play" , title=title , url=url, thumbnail=thumbnail,
                               fanart=scrapedthumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data,'<li><a class="pag-next" href="(.*?)">Next &gt;</a>')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel , action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

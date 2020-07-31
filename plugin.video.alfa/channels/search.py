@@ -193,7 +193,7 @@ def channel_search(item):
     searching_titles += channel_titles
     cnt = 0
 
-    progress = platformtools.dialog_progress(config.get_localized_string(30993) % item.title, config.get_localized_string(70744) % len(channel_list),
+    progress = platformtools.dialog_progress(config.get_localized_string(30993) % item.title, config.get_localized_string(70744) % len(channel_list), 
                                              str(searching_titles))
     config.set_setting('tmdb_active', False)
 
@@ -211,8 +211,8 @@ def channel_search(item):
             if finished in searching:
                 searching_titles.remove(searching_titles[searching.index(finished)])
                 searching.remove(finished)
-                progress.update(old_div((cnt * 100), len(channel_list)), config.get_localized_string(70744) % str(len(channel_list) - cnt),
-                                str(searching_titles))
+                progress.update(old_div((cnt * 100), len(channel_list)), config.get_localized_string(70744) % str(len(channel_list) - cnt)
+                                 + '\n' + str(searching_titles) + '\n' + ' ' + '\n' + ' ' + '\n' + ' ')
 
     progress.close()
 
@@ -226,7 +226,8 @@ def channel_search(item):
         ch_name = channel_titles[channel_list.index(key)]
         grouped = list()
         cnt += 1
-        progress.update(old_div((cnt * 100), len(ch_list)), config.get_localized_string(60295), config.get_localized_string(60293))
+        progress.update(old_div((cnt * 100), len(ch_list)), config.get_localized_string(60295) \
+                        + '\n' + config.get_localized_string(60293))
         if len(value) <= max_results and item.mode != 'all':
             if len(value) == 1:
                 if not value[0].action or config.get_localized_string(70006).lower() in value[0].title.lower():
@@ -251,7 +252,7 @@ def channel_search(item):
             if mode == 'all' or (it.contentType and mode == it.contentType):
                 if config.get_setting('result_mode', 'search') != 0:
                     if config.get_localized_string(30992) not in it.title:
-                        it.title += ch_name
+                        it.title += " " + ch_name
                         results.append(it)
                 else:
                     grouped.append(it)

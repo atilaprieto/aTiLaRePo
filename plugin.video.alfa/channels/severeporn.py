@@ -113,15 +113,13 @@ def lista(item):
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
+
 def play(item):
     logger.info()
     itemlist = []
-    itemlist.append(item.clone(action="play", title= "%s", contentTitle = item.title, url=item.url))
-    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|amp;|\s{2}|&nbsp;", "", data)
+    url = scrapertools.find_single_match(data, 'Download:<a href="([^"]+)"')
+    itemlist.append(item.clone(action="play", url=url))
     return itemlist
-
-# def play(item):
-    # logger.info(item)
-    # itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
-    # return itemlist
 

@@ -22,12 +22,12 @@ host = 'http://jizzbunker.com/es'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevas" , action="lista", url=host + "/newest"))
-    itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=host + "/popular1"))
-    itemlist.append( Item(channel=item.channel, title="Tendencia" , action="lista", url=host + "/trending"))
-    itemlist.append( Item(channel=item.channel, title="Longitud" , action="lista", url=host + "/longest"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/channels/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevas" , action="lista", url=host + "/newest"))
+    itemlist.append(item.clone(title="Popular" , action="lista", url=host + "/popular1"))
+    itemlist.append(item.clone(title="Tendencia" , action="lista", url=host + "/trending"))
+    itemlist.append(item.clone(title="Longitud" , action="lista", url=host + "/longest"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/channels/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -58,7 +58,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedurl = scrapedurl.replace("channel", "channel30")
         scrapedtitle = "%s (%s)" %(scrapedtitle,cantidad)
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=scrapedthumbnail , plot=scrapedplot) )
     return itemlist
 
@@ -78,12 +78,12 @@ def lista(item):
         contentTitle = title
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,
+        itemlist.append(item.clone(action="play" , title=title , url=url, thumbnail=thumbnail,
                               plot=plot, contentTitle = contentTitle))
-    next_page_url = scrapertools.find_single_match(data,'<li><a href="([^"]+)" rel="next">&rarr;</a>')
-    if next_page_url!="":
-        next_page_url = urlparse.urljoin(item.url,next_page_url)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page_url) )
+    next_page = scrapertools.find_single_match(data,'<li><a href="([^"]+)" rel="next">&rarr;</a>')
+    if next_page !="":
+        next_page = urlparse.urljoin(item.url,next_page)
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

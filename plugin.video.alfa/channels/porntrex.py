@@ -106,7 +106,7 @@ def lista(item):
         if not scrapedthumbnail.startswith("https"):
             scrapedthumbnail = "https:%s" % scrapedthumbnail
         scrapedtitle = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (duration, quality, scrapedtitle)
-        itemlist.append( Item(channel=item.channel, action=action, title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail, 
+        itemlist.append(item.clone(action=action, title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail, 
                               contentThumbnail=scrapedthumbnail, fanart=scrapedthumbnail, contentTitle = scrapedtitle))
     # Extrae la marca de siguiente página
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')

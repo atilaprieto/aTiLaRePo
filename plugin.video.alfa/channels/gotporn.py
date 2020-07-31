@@ -23,14 +23,14 @@ host = 'https://www.gotporn.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/?page=1"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorados" , action="lista", url=host + "/top-rated?page=1"))
-    itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "/most-viewed?page=1"))
-    itemlist.append( Item(channel=item.channel, title="Longitud" , action="lista", url=host + "/longest?page=1"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host + "/?page=1"))
+    itemlist.append(item.clone(title="Mejor valorados" , action="lista", url=host + "/top-rated?page=1"))
+    itemlist.append(item.clone(title="Mas vistos" , action="lista", url=host + "/most-viewed?page=1"))
+    itemlist.append(item.clone(title="Longitud" , action="lista", url=host + "/longest?page=1"))
 
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="catalogo", url=host + "/channels?page=1"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Canal" , action="catalogo", url=host + "/channels?page=1"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -61,7 +61,7 @@ def categorias(item):
         scrapedtitle = "%s %s" % (scrapedtitle,cantidad)
         scrapedurl = scrapedurl + "?page=1"
         thumbnail = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=thumbnail , plot=scrapedplot) )
     return itemlist
 
@@ -80,13 +80,12 @@ def catalogo(item):
         scrapedurl = scrapedurl + "?page=1"
         if not scrapedthumbnail.startswith("https"):
             thumbnail = "https:%s" % scrapedthumbnail
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=thumbnail , plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="btn btn-secondary"><span class="text">Next')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="catalogo", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="catalogo", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -110,7 +109,7 @@ def lista(item):
             scrapedthumbnail = "https:%s" % scrapedthumbnail
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl, thumbnail=thumbnail,
+        itemlist.append(item.clone(action="play", title=title, url=scrapedurl, thumbnail=thumbnail,
                               fanart=thumbnail, plot=plot,))
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="btn btn-secondary')
     if "categories" in item.url:
@@ -119,8 +118,7 @@ def lista(item):
         next_page = scrapertools.find_single_match(data, '<link rel=\'next\' href="([^"]+)">')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

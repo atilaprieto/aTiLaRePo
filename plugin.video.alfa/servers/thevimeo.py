@@ -3,8 +3,6 @@
 
 import re
 from core import httptools
-from core import scrapertools
-from platformcode import logger
 
 
 def get_source(url):
@@ -27,11 +25,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     #logger.info("url=" + page_url)
     video_urls = []
     data = get_source(page_url)
-    #logger.debug(data)
     patron = "{file:(.*?),label:(.*?),"
 
     matches = re.compile(patron, re.DOTALL).findall(data)
-    #url = scrapertools.find_single_match(data, "sources.*?{file:(.*?),")
     for url, qual in matches:
         url = url.replace("\/", "/")
         qual = qual.replace("M\u00f3vil","360")

@@ -3,38 +3,33 @@
 # By Alfa development Group
 # --------------------------------------------------------
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import urllib2
-import thread
+import requests
 import xbmc
 from platformcode import logger
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from threading import Thread
+
+domain = ""
 
 
+class HandleRequests(BaseHTTPRequestHandler):
 
-class S(BaseHTTPRequestHandler):
     def do_GET(self):
-        while 1:
-            url = "https://lh3.googleusercontent.com/%s" %  self.path
-            try:
-                data = urllib2.urlopen(url)
-            except:
-                logger.error('Fallo data')
-                break
 
-            try:
-                chunk = data.read()[4:]
-                self.wfile.write(chunk)
-                self.wfile.close()
- 
-            except Exception as e:
-                logger.error(e)
-                break
+        url = "%s%s" % (domain, self.path)
 
-        
-        
-def run(server_class=HTTPServer, handler_class=S, port=8781):
-    server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
+        if "redirect.php" in url:
+            url = requests.get(url, allow_redirects=False).headers["location"]
+
+        data = requests.get(url, stream=True).raw
+        chunk = data.read()[4:]
+        self.wfile.write(chunk)
+        self.wfile.close()
+
+
+def run():
+    server_address = ('', 8781)
+    httpd = HTTPServer(server_address, HandleRequests)
     monitor = xbmc.Monitor()
     httpd.timeout = 1
     while not monitor.abortRequested():
@@ -44,6 +39,9 @@ def run(server_class=HTTPServer, handler_class=S, port=8781):
             logger.error(e)
     httpd.socket.close()
 
-def start():
 
-    thread.start_new_thread(run, tuple())
+def start(base_url):
+    global domain
+
+    domain = base_url
+    Thread(target=run).start()

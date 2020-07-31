@@ -33,11 +33,11 @@ def mainlist(item):
 
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append( Item(channel=item.channel, title="Peliculas" , action="lista", url= host + "/full-porn-movie-stream/"))
-    itemlist.append( Item(channel=item.channel, title="Videos" , action="lista", url=host + "/new-porn-streaming/"))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="categorias", url=host))
-    # itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Peliculas" , action="lista", url= host + "/full-porn-movie-stream/"))
+    itemlist.append(item.clone(title="Videos" , action="lista", url=host + "/new-porn-streaming/"))
+    itemlist.append(item.clone(title="Canal" , action="categorias", url=host))
+    # itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
 
     autoplay.show_option(item.channel, itemlist)
 
@@ -73,7 +73,7 @@ def categorias(item):
     for scrapedurl,scrapedtitle in matches:
         scrapedplot = ""
         scrapedthumbnail = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=scrapedthumbnail , plot=scrapedplot) )
     return itemlist
 
@@ -95,7 +95,7 @@ def lista(item):
         elif '1080' in scrapedtitle : title= "[COLOR red]1080p[/COLOR] %s" % scrapedtitle
         else: title = scrapedtitle
         if not "MANYVIDS" in title or not "UBIQFILE" in title:
-            itemlist.append( Item(channel=item.channel, action="findvideos", title=title, contentTitle=title, url=scrapedurl,
+            itemlist.append(item.clone(action="findvideos", title=title, contentTitle=title, url=scrapedurl,
                                fanart=scrapedthumbnail, thumbnail=scrapedthumbnail,plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<a class="next page-numbers" href="([^"]+)">Next &rarr;</a>')
     if next_page!="":
@@ -105,6 +105,7 @@ def lista(item):
 
 
 def findvideos(item):
+    logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|amp;|\s{2}|&nbsp;", "", data)

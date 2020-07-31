@@ -14,8 +14,8 @@ host = 'https://es.camsoda.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/api/v1/browse/online"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/api/v1/tags/index?page=1"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host + "/api/v1/browse/online"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/api/v1/tags/index?page=1"))
     return itemlist
 
 
@@ -43,7 +43,7 @@ def categorias(item):
         title = scrapedtitle
         thumbnail = ""
         url = "https://es.camsoda.com/api/v1/browse/tag-%s" % scrapedtitle
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     page = scrapertools.find_single_match(item.url, "(.*?)=\d+")
     current_page = scrapertools.find_single_match(item.url, ".*?=(\d+)")
@@ -70,7 +70,7 @@ def lista(item):
         url = "https://es.camsoda.com/api/v1/video/vtoken/%s?username=%s" % (title,username)
         if not scrapedthumbnail.startswith("https"):
             thumbnail = "https:%s" % scrapedthumbnail
-        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle=title, url=url,
+        itemlist.append(item.clone(action="play", title=title, contentTitle=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=""))
     return itemlist
 

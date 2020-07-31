@@ -23,11 +23,11 @@ host = 'https://www.camwhoresbay.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/latest-updates/"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorados" , action="lista", url=host + "/top-rated/"))
-    itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "/most-popular/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host + "/latest-updates/"))
+    itemlist.append(item.clone(title="Mejor valorados" , action="lista", url=host + "/top-rated/"))
+    itemlist.append(item.clone(title="Mas vistos" , action="lista", url=host + "/most-popular/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -60,7 +60,7 @@ def categorias(item):
             scrapedthumbnail = "http:%s" % scrapedthumbnail
         scrapedthumbnail += "|Referer=%s" % item.url
         scrapedplot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return sorted(itemlist, key=lambda i: i.title)
 
@@ -81,7 +81,7 @@ def lista(item):
             scrapedthumbnail = "http:%s" % scrapedthumbnail
         scrapedthumbnail += "|Referer=%s" % item.url
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=scrapedthumbnail,
+        itemlist.append(item.clone(action="play", title=title, url=url, thumbnail=scrapedthumbnail,
                               fanart=scrapedthumbnail, contentTitle=title, plot=plot))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
     if "#" in next_page:

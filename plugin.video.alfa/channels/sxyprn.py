@@ -66,56 +66,47 @@ def lista(item):
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
     patron = "<img class=.*?"
     patron += " src='([^']+)'.*?"
-    patron += "<span class='duration_small'.*?'>([^<]+)<.*?"
-    patron += "<span class='shd_small'.*?>([^<]+)<.*?"
-    patron += "post_time' href='([^']+)' title='([^']+)'"
+    patron += "post_time' href='([^']+)' title='([^#]+)"
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedthumbnail,scrapedtime,quality,scrapedurl,scrapedtitle in matches:
-        title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (scrapedtime,quality,scrapedtitle)
-        thumbnail = "https:" + scrapedthumbnail
+    for thumbnail,scrapedurl,scrapedtitle in matches:
+        title = scrapedtitle
+        if title.startswith("http"):
+            scrapedtitle = scrapertools.find_single_match(title, '".*?html([^"]+)"')
+        if scrapedtitle =="":
+            title = title
+        else:
+            title = scrapedtitle
+        
+        if not thumbnail.startswith("https"):
+            thumbnail = "https:%s" % thumbnail
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl,
-                              thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = scrapedtitle))
-                              # 
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl,
+                              thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, "<div class='ctrl_el ctrl_sel'>.*?<a href='([^']+)'")
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
                               url=next_page) )
     return itemlist
-                                                                                                      130
-           https://www.sxyprn.com/cdn8/c9/e1y9b3mzc1o101lzg5q2cze1j390h/kK-CN4l73_EeBhkoYNYA2A/1568228307/65xbtac5i3dbd568c4r9z4575at/g5fd37a74djew1zev21dm176g86.vid
-data-vnfo='{"5d77de1e2d168":"\/cdn\/c9\/e1y9b3mzc1o101lzg5q2cze1j390h\/kK-CN4l73_EeBhkoYNYA2A\/1568228437\/65xbtac5i3dbd568c4r9z4575at\/g5fd37a74djew1zev21dm176g86.vid
-                                                                                                     -114
-data-vnfo='{"5d77de1e2d168":"\/cdn\/c9\/m1v963ez51m1u11za5u2xz41e3806\/BQFIcJlTMr0-Z1gVUTxgaQ\/1568228604\/je54bwaz5r3xbn5a864k91487sa\/o5sd17r7xdaea1be32xd41b6b8z.vid
-           https://www.sxyprn.com/cdn8/c9/m1v963ez51m1u11za5u2xz41e3806/BQFIcJlTMr0-Z1gVUTxgaQ/1568228490/je54bwaz5r3xbn5a864k91487sa/o5sd17r7xdaea1be32xd41b6b8z.vid
-                                                                                                     -137
-data-vnfo='{"5d77de1e2d168":"\/cdn\/c9\/5v1n993kzs1n1f1ozc5b20zg1o350\/NCnvDdBfOQmJOivEflNSww\/1568229437\/05pbja75c39br5m8q41974z7haf\/v85edl7b76diej12eb2wd7136v8.vid
-           https://www.sxyprn.com/cdn8/c9/5v1n993kzs1n1f1ozc5b20zg1o350/NCnvDdBfOQmJOivEflNSww/1568229300/05pbja75c39br5m8q41974z7haf/v85edl7b76diej12eb2wd7136v8.vid
 
-                                                                                                     -106
-data-vnfo='{"5d77de1e2d168":"\/cdn\/c9\/41v9b3nzc1q1615zr5n2szw153905\/9LeO2lux-GrgOaEPfMONcA\/1568230473\/1d52b3aa5s36bt5d8o4a9m427pa\/zh5sdc7k7ndee11qe42sdz1h6j8.vid
-           https://www.sxyprn.com/cdn8/c9/41v9b3nzc1q1615zr5n2szw153905/9LeO2lux-GrgOaEPfMONcA/1568230367/1d52b3aa5s36bt5d8o4a9m427pa/zh5sdc7k7ndee11qe42sdz1h6j8.vid
+ # data-vnfo='{"5ebe598bd68c4":"\/cdn\/c10\/xg108c8wzb8m4kzq1q7429zv151o3\/D4ApFJcEQuP2rcd6_AcNTQ\/1589571812\/o5sb9dy8z0abue865dm1r480pdk\/u58edbpe6589m8cb5d16i8scy4s.vid"}'></span>
+				# </div>	
 
-https://c9.trafficdeposit.com/vidi/m1v963ez51m1u11za5u2xz41e3806/BQFIcJlTMr0-Z1gVUTxgaQ/1568228490/5ba53b584947a/5d77de1e2d168.vid
-https://c9.trafficdeposit.com/vidi/e1y9b3mzc1o101lzg5q2cze1j390h/kK-CN4l73_EeBhkoYNYA2A/1568228307/5ba53b584947a/5d77de1e2d168.vid
-                                    + + +   + + +   + +   + + +
-                                    193111152130
-                                     + + +   + + +   + +   + + +
-https://c9.trafficdeposit.com/vidi/5v1n993kzs1n1f1ozc5b20zg1o350/NCnvDdBfOQmJOivEflNSww/1568229300/5ba53b584947a/5d77de1e2d168.vid
-
-https://c9.trafficdeposit.com/vidi/m1v963ez51m1u11za5u2xz41e3806/NCnvDdBfOQmJOivEflNSww/1568229300/5ba53b584947a/5d77de1e2d168.vid
-
-
-def play(item):
+def findvideos(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|amp;|\s{2}|&nbsp;", "", data)
+    data1 = scrapertools.find_single_match(data, "<div class='main_content'>(.*?)<div class='post_control_time'>")
+    logger.debug(data1)
+    if "title='>External Link!<'" in data:
+        url = scrapertools.find_single_match(data1, "<a href='([^']+)' target='_blank' rel='nofollow' title='>External Link!<'")
+        itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
     url = scrapertools.find_single_match(data, 'data-vnfo=.*?":"([^"]+)"')
     url = url.replace("\/", "/").replace("/cdn/", "/cdn8/")
     url = urlparse.urljoin(item.url,url)
-    itemlist = servertools.find_video_items(item.clone(url = url, contentTitle = item.title))
-    # itemlist.append( Item(channel=item.channel, action="play",server=directo, title = item.title, url=url))
+    if url:
+        itemlist.append(item.clone(action="play", title= "%s", contentTitle= item.title, url=url))
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
 

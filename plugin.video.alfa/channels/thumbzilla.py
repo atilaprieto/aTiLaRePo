@@ -50,42 +50,42 @@ thumbnail = 'https://raw.githubusercontent.com/Inter95/tvguia/master/thumbnails/
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append(Item(channel=__channel__, action="videos", title="Más Calientes", url=host,
+    itemlist.append(item.clone(action="videos", title="Más Calientes", url=host,
                          viewmode="movie", thumbnail=get_thumb("channels_adult.png")))
 
-    itemlist.append(Item(channel=__channel__, title="Nuevas", url=host + '/newest',
+    itemlist.append(item.clone(title="Nuevas", url=host + '/newest',
                          action="videos", viewmode="movie_with_plot", viewcontent='movies',
                          thumbnail=get_thumb("channels_adult.png")))
 
-    itemlist.append(Item(channel=__channel__, title="Tendencias", url=host + '/trending',
+    itemlist.append(item.clone(title="Tendencias", url=host + '/trending',
                          action="videos", viewmode="movie_with_plot", viewcontent='movies',
                          thumbnail=get_thumb("channels_adult.png")))
 
-    itemlist.append(Item(channel=__channel__, title="Mejores Videos", url=host + '/top',
+    itemlist.append(item.clone(title="Mejores Videos", url=host + '/top',
                          action="videos", viewmode="movie_with_plot", viewcontent='movies',
                          thumbnail=get_thumb("channels_adult.png")))
 
-    itemlist.append(Item(channel=__channel__, title="Populares", url=host + '/popular',
+    itemlist.append(item.clone(title="Populares", url=host + '/popular',
                          action="videos", viewmode="movie_with_plot", viewcontent='movies',
                          thumbnail=get_thumb("channels_adult.png")))
 
-    itemlist.append(Item(channel=__channel__, title="Videos en HD", url=host + '/hd',
+    itemlist.append(item.clone(title="Videos en HD", url=host + '/hd',
                          action="videos", viewmode="movie_with_plot", viewcontent='movies',
                          thumbnail=get_thumb("channels_adult.png")))
 
-    itemlist.append(Item(channel=__channel__, title="Caseros", url=host + '/hd',
+    itemlist.append(item.clone(title="Caseros", url=host + '/hd',
                          action="videos", viewmode="movie_with_plot", viewcontent='homemade',
                          thumbnail=get_thumb("channels_adult.png")))
  
-    itemlist.append(Item(channel=__channel__, title="PornStar", action="catalogo",
+    itemlist.append(item.clone(title="PornStar", action="catalogo",
                          url=host + '/pornstars/', viewmode="movie_with_plot", viewcontent='movies',
                          thumbnail=get_thumb("channels_adult.png")))
  
-    itemlist.append(Item(channel=__channel__, title="Categorías", action="categorias",
+    itemlist.append(item.clone(title="Categorías", action="categorias",
                          url=host, viewmode="movie_with_plot", viewcontent='movies',
                          thumbnail=get_thumb("channels_adult.png")))
 
-    itemlist.append(Item(channel=__channel__, title="Buscar", action="search", url=host,
+    itemlist.append(item.clone(title="Buscar", action="search", url=host,
                          thumbnail=get_thumb("channels_adult.png"), extra="buscar"))
     return itemlist
 
@@ -123,13 +123,11 @@ def videos(item):
         title = "[%s] %s" % (time, scrapedtitle)
         if ">HD<" in scrapedtime:
             title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (time, scrapedtitle)
-        itemlist.append(Item(channel=item.channel, action='play', title=title, thumbnail=scrapedthumbnail,
+        itemlist.append(item.clone(action='play', title=title, thumbnail=scrapedthumbnail,
                              url=host + scrapedurl, contentTitle=title, fanart=scrapedthumbnail))
     paginacion = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)" />').replace('amp;', '')
     if paginacion:
-        itemlist.append(Item(channel=item.channel, action="videos",
-                             thumbnail=thumbnail % 'rarrow',
-                             title="[COLOR blue]Página Siguiente >>[/COLOR]", url=paginacion))
+        itemlist.append(item.clone(action="videos", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=paginacion))
     return itemlist
 
 
@@ -143,13 +141,11 @@ def catalogo(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
         url = urlparse.urljoin(item.url, scrapedurl)
-        itemlist.append(Item(channel=item.channel, action="videos", url=url, title=scrapedtitle, fanart=scrapedthumbnail,
+        itemlist.append(item.clone(action="videos", url=url, title=scrapedtitle, fanart=scrapedthumbnail,
                              thumbnail=scrapedthumbnail, viewmode="movie_with_plot"))
     paginacion = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)" />').replace('amp;', '')
     if paginacion:
-        itemlist.append(Item(channel=item.channel, action="catalogo",
-                             thumbnail=thumbnail % 'rarrow',
-                             title="[COLOR blue]Página Siguiente >>[/COLOR]", url=paginacion))
+        itemlist.append(item.clone(action="catalogo", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=paginacion))
     return itemlist
 
 
@@ -166,8 +162,7 @@ def categorias(item):
         title = "%s (%s)" % (title, vids)
         thumbnail = item.thumbnail
         url = urlparse.urljoin(item.url, scrapedurl)
-        itemlist.append(Item(channel=item.channel, action="videos", fanart=thumbnail,
-                             title=title, url=url, thumbnail=thumbnail,
+        itemlist.append(item.clone(action="videos", title=title, url=url, fanart=thumbnail, thumbnail=thumbnail,
                              viewmode="movie_with_plot", folder=True))
     return itemlist
 

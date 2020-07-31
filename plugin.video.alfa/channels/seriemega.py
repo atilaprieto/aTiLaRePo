@@ -105,10 +105,12 @@ def list_all(item):
         itemlist.append(new_item)
 
     tmdb.set_infoLabels_itemlist(itemlist, True)
+    try:
+        next_page = soup.find("a", class_="next page-numbers")["href"]
 
-    next_page = soup.find("a", class_="next page-numbers")["href"]
-
-    itemlist.append(Item(channel=item.channel, title="Siguiente >>", url=next_page, action='list_all'))
+        itemlist.append(Item(channel=item.channel, title="Siguiente >>", url=next_page, action='list_all'))
+    except:
+        pass
 
     return itemlist
 
@@ -137,7 +139,6 @@ def alpha_list(item):
         else:
             new_item.action = "findvideos"
             new_item.contentTitle = title
-        logger.debug(new_item)
         itemlist.append(new_item)
 
     tmdb.set_infoLabels_itemlist(itemlist, True)
@@ -227,12 +228,12 @@ def findvideos(item):
         opt = btn["data-tplayernv"]
         lang, quality = btn.find_all("span")[-1].text.split(" - ")
         elem = soup.find("div", class_="TPlayerTb", id=opt)
-
+        logger.debug(elem)
         if not elem.iframe:
             elem = BeautifulSoup(elem.text, "html5lib", from_encoding="utf-8")
             new_url = elem.iframe["src"]
         else:
-            new_url = elem.iframe["src"]
+            new_url = elem.iframe["data-lazy-src"]
         new_url = create_soup(new_url).find("div", class_="Video").iframe["src"]
 
         if "seriemega" in new_url:

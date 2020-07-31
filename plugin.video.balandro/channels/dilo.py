@@ -21,7 +21,7 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
     
-    itemlist.append(item.clone( title = 'Series más populares', action = 'list_all', url = host_catalogue ))
+    itemlist.append(item.clone( title = 'Lista de series', action = 'list_all', url = host_catalogue ))
     itemlist.append(item.clone( title = 'Series de la semana', action = 'list_all', url = host_catalogue+'?sort=mosts-week' ))
     itemlist.append(item.clone( title = 'Últimas actualizadas', action = 'list_all', url = host_catalogue+'?sort=latest' ))
 

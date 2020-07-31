@@ -23,12 +23,12 @@ host = 'https://es.spankbang.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos", action="lista", url= host + "/new_videos/"))
-    itemlist.append( Item(channel=item.channel, title="Mas valorados", action="lista", url=host + "/trending_videos/"))
-    itemlist.append( Item(channel=item.channel, title="Mas vistos", action="lista", url= host + "/most_popular/"))
-    itemlist.append( Item(channel=item.channel, title="Mas largos", action="lista", url= host + "/longest_videos/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos", action="lista", url= host + "/new_videos/"))
+    itemlist.append(item.clone(title="Mas valorados", action="lista", url=host + "/trending_videos/"))
+    itemlist.append(item.clone(title="Mas vistos", action="lista", url= host + "/most_popular/"))
+    itemlist.append(item.clone(title="Mas largos", action="lista", url= host + "/longest_videos/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -56,7 +56,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedurl =  urlparse.urljoin(item.url,scrapedurl)
         scrapedthumbnail =  urlparse.urljoin(item.url,scrapedthumbnail)
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle , url=scrapedurl , 
+        itemlist.append(item.clone(action="lista", title=scrapedtitle , url=scrapedurl , 
                               thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot) )
     return itemlist
 
@@ -65,7 +65,7 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = '<div class="video-item" data-id="\d+">.*?'
+    patron = '<div class="video-item v-i-\d+" data-id="\d+">.*?'
     patron += '<a href="([^"]+)" class="thumb ">.*?'
     patron += 'data-src="([^"]+)" alt="([^"]+)".*?'
     patron += '<span class="i-len">(\d+m)</span>(.*?)</p>'
@@ -79,13 +79,12 @@ def lista(item):
         thumbnail = scrapedthumbnail
         plot = ""
         year = ""
-        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, 
+        itemlist.append(item.clone(action="play" , title=title , url=url, thumbnail=thumbnail, 
                               fanart=thumbnail, plot=plot, contentTitle=title) )
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)">')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>" , text_color="blue",
-                              url=next_page ) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page ) )
     return itemlist
 
 

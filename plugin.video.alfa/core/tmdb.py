@@ -49,7 +49,9 @@ from platformcode import logger
 #
 #       Obtener datos basicos de una pelicula:
 #           Antes de llamar al metodo set_infoLabels el titulo a buscar debe estar en item.contentTitle
-#           y el año en item.infoLabels['year'].
+#           y el año en item.infoLabels['year'] o se puede usar item.infoLabels['filtro']
+#           donde se para el jpg para la búsqueda en vez del año, ejemplo:
+#           infoLabels = {'filtro': '/wHP2GZcIQN42L8Gpb8m8znxOt6O.jpg'}
 #
 #       Obtener datos basicos de una serie:
 #           Antes de llamar al metodo set_infoLabels el titulo a buscar debe estar en item.show o en
@@ -498,7 +500,7 @@ def find_and_set_infoLabels(item):
             otmdb_global = Tmdb(external_id=item.infoLabels.get("imdb_id"), external_source="imdb_id",
                                 tipo=tipo_busqueda)
     elif not otmdb_global or str(otmdb_global.result.get("id")) != item.infoLabels['tmdb_id']:
-        otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda, idioma_busqueda="es")
+        otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda, idioma_busqueda=tmdb_lang)
 
     results = otmdb_global.get_list_resultados()
 
@@ -570,19 +572,19 @@ def discovery(item, dict_=False, cast=False):
         listado = Tmdb(discover = dict_, cast=cast)
     
     elif item.search_type == 'discover':
-        listado = Tmdb(discover={'url':'discover/%s' % item.type, 'with_genres':item.list_type, 'language':'es',
+        listado = Tmdb(discover={'url':'discover/%s' % item.type, 'with_genres':item.list_type, 'language':tmdb_lang,
                                  'page':item.page})
 
     elif item.search_type == 'list':
         if item.page == '':
             item.page = '1'
-        listado = Tmdb(discover={'url': item.list_type, 'language':'es', 'page':item.page})
+        listado = Tmdb(discover={'url': item.list_type, 'language':tmdb_lang, 'page':item.page})
 
 
     return listado
 
 def get_genres(type):
-    lang = 'es'
+    lang = tmdb_lang
     genres = Tmdb(tipo=type)
 
     return genres.dic_generos[lang]
@@ -810,7 +812,7 @@ class Tmdb(object):
         self.busqueda_id = kwargs.get('id_Tmdb', '')
         self.busqueda_texto = re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', self.texto_buscado).strip()
         self.busqueda_tipo = kwargs.get('tipo', '')
-        self.busqueda_idioma = kwargs.get('idioma_busqueda', 'es')
+        self.busqueda_idioma = kwargs.get('idioma_busqueda', tmdb_lang)
         self.busqueda_include_adult = kwargs.get('include_adult', False)
         self.busqueda_year = kwargs.get('year', '')
         self.busqueda_filtro = kwargs.get('filtro', {})
@@ -885,7 +887,7 @@ class Tmdb(object):
         return dict_data
 
     @classmethod
-    def rellenar_dic_generos(cls, tipo='movie', idioma='es'):
+    def rellenar_dic_generos(cls, tipo='movie', idioma=tmdb_lang):
         # Rellenar diccionario de generos del tipo e idioma pasados como parametros
         if idioma not in cls.dic_generos:
             cls.dic_generos[idioma] = {}

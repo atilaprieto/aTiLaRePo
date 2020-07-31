@@ -293,13 +293,12 @@ def findvideos(item):
 
 def languages_from_flags(lang_data, ext):
     logger.info()
-
     language = list()
 
     lang_list = lang_data.find_all("img")
 
     for lang in lang_list:
-        lang = scrapertools.find_single_match(lang["data-src"], "(\w+).%s" % ext)
+        lang = scrapertools.find_single_match(lang["src"], "(\w+).%s" % ext)
         language.append(IDIOMAS.get(lang, "VOSE"))
 
     return language

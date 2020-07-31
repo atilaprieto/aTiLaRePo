@@ -23,11 +23,11 @@ host = 'https://daftsex.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host, page=0))
-    itemlist.append( Item(channel=item.channel, title="Hot" , action="lista", url=host + "/hottest")) 
-    itemlist.append( Item(channel=item.channel, title="PornStar" , action="categorias", url=host + "/pornstars"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host, page=0))
+    itemlist.append(item.clone(title="Hot" , action="lista", url=host + "/hottest")) 
+    itemlist.append(item.clone(title="PornStar" , action="categorias", url=host + "/pornstars"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -61,13 +61,12 @@ def categorias(item):
         title=scrapedtitle
         thumbnail = urlparse.urljoin(host,scrapedthumbnail)
         url = urlparse.urljoin(host,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="", page=0) )
     next_page = scrapertools.find_single_match(data, '<li><a href="([^"]+)" title="Next page">Next')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="categorias", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -94,18 +93,18 @@ def lista(item):
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
+        itemlist.append(item.clone(action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<div class="(more)"')
     if not next_page:
         next_page = scrapertools.find_single_match(data, '<li><a href="([^"]+)" title="Next page">Next')
     if next_page:
         if "more" in next_page:
-            itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
+            itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", 
                                   url=item.url, next_page="more", page=page) )
         else:
             next_page = urlparse.urljoin(host,next_page)
-            itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
+            itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", 
                               url=next_page, page=page) )
     return itemlist
 

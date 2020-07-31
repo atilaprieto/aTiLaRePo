@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import re
 from channelselector import get_thumb
 from channels import autoplay
 from channels import filtertools
@@ -15,7 +14,7 @@ from platformcode import config, logger
 IDIOMAS = {'Latino': 'Latino'}
 list_language = IDIOMAS.values()
 list_quality = []
-list_servers = ['rapidvideo', 'streamango', 'fastplay', 'flashx', 'openload', 'vimeo', 'netutv']
+list_servers = ['fembed', 'streamtape', 'fastplay', 'gvideo', 'netutv', 'Jawcloud']
 
 
 __channel__='allcalidad'
@@ -161,15 +160,38 @@ def peliculas(item):
 
 def findvideos(item):
     itemlist = []
+    encontrado = []
+    
     data = httptools.downloadpage(item.url).data
 
-    patron = '<a href="([^"]+)" class="btn btn-xs btn-info".*?<span>([^<]+)</span>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    match = scrapertools.find_single_match(data, "<link rel='shortlink'.*?=([^']+)" )
+    data1 = httptools.downloadpage(host + "/wp-json/elifilms/movies?id=" + match).json
+    for url in data1["data"]["server_list"]:
+        url1 = clear_url(url["link"])
+        if url1 in encontrado or "youtube.com" in url1:
+            continue
+        encontrado.append(url1)
+        itemlist.append(Item(
+                        channel=item.channel,
+                        contentTitle=item.contentTitle,
+                        contentThumbnail=item.thumbnail,
+                        infoLabels=item.infoLabels,
+                        language="Latino",
+                        title='%s', action="play",
+                        url=url1
+                       ))
 
+    patron = '<a href="([^"]+)" class="btn btn-xs btn-info.*?<span>([^<]+)</span>'
+    matches = scrapertools.find_multiple_matches(data, patron)
+    
     for url, srv in matches:
+        url = clear_url(url)
+        if url in encontrado or ".srt" in url:
+            continue
+        encontrado.append(url)
 
-        new_item= Item(channel=item.channel, url=url, title='%s', action="play", infoLables=item.infoLabels,
-                       language="Latino")
+        new_item= Item(channel=item.channel, url=url, title='%s', action="play", contentTitle=item.contentTitle, contentThumbnail=item.thumbnail,
+                       infoLabels=item.infoLabels, language="Latino")
         if "torrent" in srv.lower():
             new_item.server = "Torrent"
         itemlist.append(new_item)
@@ -195,6 +217,11 @@ def findvideos(item):
                                  contentTitle = item.contentTitle
                                  ))
     return itemlist
+
+def clear_url(url):
+    url = url.replace("fembed.com/v","fembed.com/f").replace("mega.nz/embed/","mega.nz/file/").replace("streamtape.com/e/","streamtape.com/v/")
+    if "streamtape" in url: url = scrapertools.find_single_match(url, '(https://streamtape.com/v/\w+)')
+    return url
 
 
 def play(item):

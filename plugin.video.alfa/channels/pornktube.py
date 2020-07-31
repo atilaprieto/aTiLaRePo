@@ -22,11 +22,11 @@ host = 'https://www.pornktube.porn'     # https://www.tubxxporn.com
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/latest-updates/"))
-    itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=host + "/most-popular/"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/top-rated/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host + "/latest-updates/"))
+    itemlist.append(item.clone(title="Popular" , action="lista", url=host + "/most-popular/"))
+    itemlist.append(item.clone(title="Mejor valorada" , action="lista", url=host + "/top-rated/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -55,7 +55,7 @@ def categorias(item):
         url = scrapedurl
         thumbnail = ""
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               thumbnail=thumbnail , plot=plot) )
     return sorted(itemlist, key=lambda i: i.title)
 
@@ -75,13 +75,12 @@ def lista(item):
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
+        itemlist.append(item.clone(action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="mpages">Next')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

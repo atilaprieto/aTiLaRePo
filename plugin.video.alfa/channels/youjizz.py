@@ -23,12 +23,11 @@ host = 'https://www.youjizz.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append(Item(channel=item.channel, title="Nuevas", action="lista", url=host + "/newest-clips/1.html"))
-    itemlist.append(Item(channel=item.channel, title="Popular", action="lista", url=host + "/most-popular/1.html"))
-    itemlist.append(
-        Item(channel=item.channel, title="Mejor valorada", action="lista", url=host + "/top-rated-week/1.html"))
-    itemlist.append(Item(channel=item.channel, title="Categorias", action="categorias", url=host))
-    itemlist.append(Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevas", action="lista", url=host + "/newest-clips/1.html"))
+    itemlist.append(item.clone(title="Popular", action="lista", url=host + "/most-popular/1.html"))
+    itemlist.append(item.clone(title="Mejor valorada", action="lista", url=host + "/top-rated-week/1.html"))
+    itemlist.append(item.clone(title="Categorias", action="categorias", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -49,7 +48,7 @@ def categorias(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data, '>Trending Categories<(.*?)</ul>')
+    data = scrapertools.find_single_match(data, '>Trending in<(.*?)</ul>')
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     patron = '<li><a href="([^"]+)">([^"]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -57,7 +56,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedthumbnail = ""
         scrapedurl = urlparse.urljoin(item.url, scrapedurl)
-        itemlist.append(Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                              thumbnail=scrapedthumbnail, plot=scrapedplot))
     return itemlist
 
@@ -68,11 +67,11 @@ def lista(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     patron = '<div class="video-item">.*?'
-    patron += 'class="frame image" href="([^"]+)".*?'
-    patron += 'data-original="([^"]+)".*?'
+    patron += 'href="([^"]+)".*?'
+    patron += 'src="([^"]+)".*?'
     patron += '<div class="video-title">.*?'
-    patron += '>(.*?)</a>.*?'
-    patron += '<span class="time">(.*?)</span>'
+    patron += '>([^<]+)</a>.*?'
+    patron += '<span class="time">([^<]+)<'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedthumbnail, scrapedtitle, duracion in matches:
         url = urlparse.urljoin(item.url, scrapedurl)
@@ -89,12 +88,12 @@ def lista(item):
             scrapedthumbnail = "http:%s" % scrapedthumbnail
         plot = ""
         year = ""
-        itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=scrapedthumbnail,
+        itemlist.append(item.clone(action="play", title=title, url=url, thumbnail=scrapedthumbnail,
                              plot=plot, quality=quality, contentTitle=contentTitle))
     next_page = scrapertools.find_single_match(data, '<li><a class="pagination-next" href="([^"]+)">Next &raquo;</a>')
     if next_page != "":
         next_page = urlparse.urljoin(item.url, next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist
 
 

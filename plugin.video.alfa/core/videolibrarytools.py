@@ -206,21 +206,21 @@ def save_movie(item):
             logger.error(traceback.format_exc())
         
         if filetools.write(json_path, item.tojson()):
-            p_dialog.update(100, 'Añadiendo película...', item.contentTitle)
+            p_dialog.update(100, 'Añadiendo película...' + '\n' + item.contentTitle + '\n' + ' ')
             item_nfo.library_urls[item.channel] = item.url
 
             if filetools.write(nfo_path, head_nfo + item_nfo.tojson()):
                 # actualizamos la videoteca de Kodi con la pelicula
                 if config.is_xbmc():
                     from platformcode import xbmc_videolibrary
-                    xbmc_videolibrary.update(FOLDER_MOVIES, filetools.basename(path) + "/")
+                    xbmc_videolibrary.update(FOLDER_MOVIES, '_scan_series')
 
                 p_dialog.close()
                 return insertados, sobreescritos, fallidos
 
     # Si llegamos a este punto es por q algo ha fallado
     logger.error("No se ha podido guardar %s en la videoteca" % item.contentTitle)
-    p_dialog.update(100, config.get_localized_string(60063), item.contentTitle)
+    p_dialog.update(100, config.get_localized_string(60063) + '\n' + item.contentTitle + '\n' + ' ')
     p_dialog.close()
     return 0, 0, -1
 
@@ -413,11 +413,11 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
         p_dialog = platformtools.dialog_progress(config.get_localized_string(20000), config.get_localized_string(60064))
         p_dialog.update(0, config.get_localized_string(60065))
 
-    channel_alt = generictools.verify_channel(serie.channel)            #Preparamos para añadir las urls de emergencia
-    emergency_urls_stat = config.get_setting("emergency_urls", channel_alt)         #El canal quiere urls de emergencia?
+    channel_alt = generictools.verify_channel(serie.channel)                    #Preparamos para añadir las urls de emergencia
+    emergency_urls_stat = config.get_setting("emergency_urls", channel_alt)     #El canal quiere urls de emergencia?
     emergency_urls_succ = False
     channel = __import__('channels.%s' % channel_alt, fromlist=["channels.%s" % channel_alt])
-    if serie.torrent_caching_fail:                              #Si el proceso de conversión ha fallado, no se cachean
+    if serie.torrent_caching_fail:                                              #Si el proceso de conversión ha fallado, no se cachean
         emergency_urls_stat = 0
         del serie.torrent_caching_fail
     
@@ -436,7 +436,9 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
         
         try:
             season_episode = scrapertools.get_season_and_episode(e.title)
-            if not season_episode:
+            if not season_episode or 'temp. a videoteca' in e.title.lower() \
+                            or 'serie a videoteca' in e.title.lower() \
+                            or 'vista previa videoteca' in e.title.lower():
                 continue
         
             # Si se ha marcado la opción de url de emergencia, se añade ésta a cada episodio después de haber ejecutado Findvideos del canal
@@ -444,7 +446,7 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
             json_path = filetools.join(path, ("%s [%s].json" % (season_episode, e.channel)).lower())    #Path del .json del episodio
             if emergency_urls_stat == 1 and not e.emergency_urls and e.contentType == 'episode':     #Guardamos urls de emergencia?
                 if not silent:
-                    p_dialog.update(0, 'Cacheando enlaces y archivos .torrent...', e.title)     #progress dialog
+                    p_dialog.update(0, 'Cacheando enlaces y archivos .torrent...' + '\n' + e.title + '\n' + ' ' + '\n' + ' ')     #progress dialog
                 if json_path in ficheros:                                   #Si existe el .json sacamos de ahí las urls
                     if overwrite:                                           #pero solo si se se sobrescriben los .json
                         json_epi = Item().fromjson(filetools.read(json_path))                   #Leemos el .json
@@ -461,7 +463,7 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
                 emergency_urls_succ = True                                  #... es un éxito y vamos a marcar el .nfo
             elif emergency_urls_stat == 3 and e.contentType == 'episode':   #Actualizamos urls de emergencia?
                 if not silent:
-                    p_dialog.update(0, 'Cacheando enlaces y archivos .torrent...', e.title)     #progress dialog
+                    p_dialog.update(0, 'Cacheando enlaces y archivos .torrent...' + '\n' + e.title + '\n' + ' ' + '\n' + ' ')     #progress dialog
                 e = emergency_urls(e, channel, json_path, headers=headers)  #generamos las urls
                 if e.emergency_urls:                                        #Si ya tenemos urls...
                     emergency_urls_succ = True                              #... es un éxito y vamos a marcar el .nfo
@@ -494,7 +496,7 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
     last_season_episode = ''
     for i, e in enumerate(scraper.sort_episode_list(new_episodelist)):
         if not silent:
-            p_dialog.update(int(math.ceil((i + 1) * t)), config.get_localized_string(60064), e.title)
+            p_dialog.update(int(math.ceil((i + 1) * t)), config.get_localized_string(60064) + '\n' + e.title + '\n' + ' ' + '\n' + ' ')
 
         high_sea = e.contentSeason
         high_epi = e.contentEpisodeNumber
@@ -646,7 +648,7 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
             # ... si ha sido correcto actualizamos la videoteca de Kodi
             if config.is_xbmc() and not silent:
                 from platformcode import xbmc_videolibrary
-                xbmc_videolibrary.update(FOLDER_TVSHOWS, filetools.basename(path))
+                xbmc_videolibrary.update(FOLDER_TVSHOWS, '_scan_series')
 
     if fallidos == len(episodelist):
         fallidos = -1

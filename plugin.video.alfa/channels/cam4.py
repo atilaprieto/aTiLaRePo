@@ -29,12 +29,12 @@ def mainlist(item):
     url3= "https://www.cam4.es/directoryCams?directoryJson=true&online=true&url=true&gender=male&broadcastType=male_group&broadcastType=solo&page=1"
     url4= "https://www.cam4.es/directoryCams?directoryJson=true&online=true&url=true&gender=shemale&page=1"
 
-    itemlist.append( Item(channel=item.channel, title="Trending Cams" , action="lista", url=all))
-    itemlist.append( Item(channel=item.channel, title="Females" , action="lista", url=url1))
-    itemlist.append( Item(channel=item.channel, title="Couples" , action="lista", url=url2))
-    itemlist.append( Item(channel=item.channel, title="Males" , action="lista", url=url3))
-    itemlist.append( Item(channel=item.channel, title="Trans" , action="lista", url=url4)) 
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Trending Cams" , action="lista", url=all))
+    itemlist.append(item.clone(title="Females" , action="lista", url=url1))
+    itemlist.append(item.clone(title="Couples" , action="lista", url=url2))
+    itemlist.append(item.clone(title="Males" , action="lista", url=url3))
+    itemlist.append(item.clone(title="Trans" , action="lista", url=url4)) 
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -64,7 +64,7 @@ def lista(item):
         video_url = Video["hlsPreviewUrl"]
         title =  "%s (%s)" % (title,pais)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=video_url,
+        itemlist.append(item.clone(action="play", title=title, url=video_url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     last_page= scrapertools.find_single_match(data,'<a href=".*?/latest/(\d+)"><div style="display:inline">Last<')
     page = scrapertools.find_single_match(item.url, "(.*?=)\d+")
@@ -73,7 +73,6 @@ def lista(item):
         current_page = int(current_page)
         current_page += 1
         next_page = "%s%s" %(page,current_page)
-    itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                          url=next_page) )
+    itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 

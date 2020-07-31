@@ -4,9 +4,9 @@
   "active": true,
   "adult": false,
   "language": ["cast", "lat"],
-  "thumbnail": "grantorrent.jpg",
+  "thumbnail": "https://i.postimg.cc/crqnx0Kc/grantorrent.jpg",
   "banner": "grantorrent.png",
-  "fanart": "grantorrent.png",
+  "fanart": "https://i.postimg.cc/jjYFR6dY/grantorrent.png",
   "categories": [
     "torrent",
     "movie",

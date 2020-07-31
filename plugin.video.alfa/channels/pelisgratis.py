@@ -56,7 +56,8 @@ list_quality = ['BRRip', 'HDRip', 'DVD-R', 'HDTv-rip', 'BR-Screener',
 
 list_servers = ['rapidvideo', 'verystream', 'streamplay']
 
-host = 'http://pelisgratis.live/'
+#host = 'http://pelisgratis.live/'
+host = 'http://pelisap.com/'
 
 
 def mainlist(item):
@@ -213,14 +214,14 @@ def findvideos(item):
     global new_data
     new_data = []
     data = get_source(item.url)
-    
+
     patron = 'aria-labelledby="([^"]+)">(.*?)</li>'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedlang, data in matches:
 
         if 'trail' in scrapedlang.lower():
             continue
-        
+
         language = IDIOMAS.get(scrapedlang, scrapedlang)
         lang = audio_color.get(language, language)
 
@@ -228,64 +229,24 @@ def findvideos(item):
         matches = scrapertools.find_multiple_matches(data, patron)
 
         for scrapedurl, info in matches:
-            
+
             scrapedurl += "=="
-            urls_page = base64.b64decode(scrapedurl)
-            if "repro.live" in urls_page:
-                server_repro(urls_page, item.url)
-            elif "itatroniks.com" in urls_page:
-                server_itatroniks(urls_page)
-            else:
-                new_data = [urls_page]
+            urls_page = base64.urlsafe_b64decode(scrapedurl)
+
+            new_data = httptools.downloadpage(urls_page, headers={"referer": item.url}).data
+            patron = 'data-embed="([^"]+)"'
+            new_data = re.compile(patron, re.DOTALL).findall(new_data)
+
             for url in new_data:
+                url = base64.urlsafe_b64decode(url+"==")
                 itemlist.append(item.clone(title='[%s] %s',
                                 url=url,
                                 action='play',
                                 language=language,
                                 lang=lang
                                 ))
-            new_data = []
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % (x.server.capitalize(), x.lang))
     return itemlist
-
-
-def server_itatroniks(urls_page):
-    logger.info()
-    headers = {"Referer":urls_page}
-    id = scrapertools.find_single_match(urls_page, 'embed/(\w+)')
-    sub_data = httptools.downloadpage(urls_page, headers = headers).data
-    matches = scrapertools.find_multiple_matches(sub_data, 'button id="([^"]+)')
-    headers1 = ({"X-Requested-With":"XMLHttpRequest"})
-    for serv in matches:
-        data_json = httptools.downloadpage("https://itatroniks.com/get/%s/%s" %(id, serv), headers=headers1).json
-        urls_page = ""
-        try:
-            if "finished" == data_json["status"]: urls_page = "https://%s/embed/%s" %(data_json["server"], data_json["extid"])
-            if "propio" == data_json["status"]: urls_page = "https://%s/e/%s" %(data_json["server"], data_json["extid"])
-        except:
-            continue
-        new_data.append(urls_page)
-
-
-
-def server_repro(urls_page, ref):
-    logger.info()
-    headers = {"Referer":ref}
-    sub_data = httptools.downloadpage(urls_page, headers = headers).data
-    urls_page1 = scrapertools.find_multiple_matches(sub_data, 'data-embed="([^"]+)"')
-    
-    for urls_page in urls_page1:
-        urls_page += "=="
-        urls_page = base64.b64decode(urls_page)
-        
-        if "repro.live" in urls_page:
-            data1 = httptools.downloadpage(urls_page, headers = headers).data
-            urls_page1 = scrapertools.find_multiple_matches(data1, 'source src="([^"]+)')
-            for urls_page in urls_page1:
-                new_data.append(urls_page)
-        else:
-            new_data.append(urls_page)
-
 
 def newest(categoria):
     logger.info()

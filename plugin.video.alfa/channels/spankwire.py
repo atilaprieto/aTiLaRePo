@@ -27,13 +27,13 @@ url_api = host + "/api/video/list.json?segment=Straight&limit=33&sortby="
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevas" , action="lista", url=url_api + "recent&page=1"))
-    itemlist.append( Item(channel=item.channel, title="Mas Vistas" , action="lista", url=url_api + "views&period=Month&page=1"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=url_api + "rating&period=Month&page=1"))
-    itemlist.append( Item(channel=item.channel, title="Longitud" , action="lista", url=url_api + "duration&period=Month&page=1"))
-    itemlist.append( Item(channel=item.channel, title="Pornstar" , action="catalogo", url=host + "/api/pornstars?limit=48&sort=popular&page=1"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/api/categories/list.json?segmentId=0&limit=100&sort=abc&page=1"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevas" , action="lista", url=url_api + "recent&page=1"))
+    itemlist.append(item.clone(title="Mas Vistas" , action="lista", url=url_api + "views&period=Month&page=1"))
+    itemlist.append(item.clone(title="Mejor valorada" , action="lista", url=url_api + "rating&period=Month&page=1"))
+    itemlist.append(item.clone(title="Longitud" , action="lista", url=url_api + "duration&period=Month&page=1"))
+    itemlist.append(item.clone(title="Pornstar" , action="catalogo", url=host + "/api/pornstars?limit=48&sort=popular&page=1"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/api/categories/list.json?segmentId=0&limit=100&sort=abc&page=1"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -65,7 +65,7 @@ def categorias(item):
         thumbnail = thumbnail.replace("\/", "/").replace(".webp", ".jpg")
         url =  "%srecent&category=%s&page=1" % (url_api, id)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot=plot) )
     Actual = int(scrapertools.find_single_match(item.url, '&page=([0-9]+)'))
     if JSONData["pages"] - 1 > Actual:
@@ -89,7 +89,7 @@ def catalogo(item):
         thumbnail = thumbnail.replace("\/", "/").replace(".webp", ".jpg")
         url = "%s/api/video/list.json?pornstarId=%s&limit=25&sortby=recent&page=1" % (host, id)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot=plot) )
     Actual = int(scrapertools.find_single_match(item.url, '&page=([0-9]+)'))
     if JSONData["pages"] - 1 > Actual:
@@ -126,7 +126,7 @@ def lista(item):
         thumbnail = thumbnail.replace("\/", "/").replace("{index}", "2")
         url = url.replace("\/", "/")
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=url,
+        itemlist.append(item.clone(action="play", title=title, contentTitle = title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot=plot))
     Actual = int(scrapertools.find_single_match(item.url, '&page=([0-9]+)'))
     if JSONData["pages"] - 1 > Actual:

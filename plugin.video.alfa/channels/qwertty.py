@@ -23,11 +23,11 @@ host = 'http://qwertty.net'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Recientes" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Mas Vistas" , action="lista", url=host + "/?filter=most-viewed"))
-    itemlist.append( Item(channel=item.channel, title="Mas popular" , action="lista", url=host + "/?filter=popular"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valoradas" , action="lista", url=host + "/?filter=random"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Recientes" , action="lista", url=host))
+    itemlist.append(item.clone(title="Mas Vistas" , action="lista", url=host + "/?filter=most-viewed"))
+    itemlist.append(item.clone(title="Mas popular" , action="lista", url=host + "/?filter=popular"))
+    itemlist.append(item.clone(title="Mejor valoradas" , action="lista", url=host + "/?filter=random"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -54,7 +54,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedthumbnail = ""
         scrapedurl = host + scrapedurl
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return itemlist
 
@@ -75,7 +75,7 @@ def lista(item):
         if thumbnail == "":
             thumbnail = scrapertools.find_single_match(scrapedthumbnail, "data-thumbs='(.*?jpg)")
         title = "[COLOR yellow]%s[/COLOR] %s" % (duracion,scrapedtitle)
-        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=scrapedurl,
+        itemlist.append(item.clone(action="play", title=title, contentTitle = title, url=scrapedurl,
                               fanart=thumbnail, thumbnail=thumbnail, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<li><a href="([^"]+)">Next</a>')
     if next_page=="":

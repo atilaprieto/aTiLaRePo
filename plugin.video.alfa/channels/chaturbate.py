@@ -14,11 +14,11 @@ host = 'https://es.chaturbate.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Mujeres" , action="lista", url=host + "/female-cams/"))
-    itemlist.append( Item(channel=item.channel, title="Hombres" , action="lista", url=host + "/male-cams/"))
-    itemlist.append( Item(channel=item.channel, title="Parejas" , action="lista", url=host + "/couple-cams/"))
-    itemlist.append( Item(channel=item.channel, title="Trans" , action="lista", url=host + "/trans-cams/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/tags/"))
+    itemlist.append(item.clone(title="Mujeres" , action="lista", url=host + "/female-cams/"))
+    itemlist.append(item.clone(title="Hombres" , action="lista", url=host + "/male-cams/"))
+    itemlist.append(item.clone(title="Parejas" , action="lista", url=host + "/couple-cams/"))
+    itemlist.append(item.clone(title="Trans" , action="lista", url=host + "/trans-cams/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/tags/"))
     return itemlist
 
 
@@ -34,7 +34,7 @@ def categorias(item):
         title = "%s (%s)" % (scrapedtitle, cantidad) 
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     return itemlist
 
@@ -53,13 +53,12 @@ def lista(item):
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
+        itemlist.append(item.clone(action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<li><a href="([^"]+)" class="next')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

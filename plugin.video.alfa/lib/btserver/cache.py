@@ -4,6 +4,13 @@
 # Guarda los .torrent generado
 # Guarda los .resume de cada torrent
 # ------------------------------------------------------------
+
+
+from builtins import object
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import base64
 import os.path
 import re

@@ -4,8 +4,16 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, servertools, jsontools, tmdb
 
+# ~ f_y_m
 # ~ host = 'https://pepecine.me'
+# ~ host = 'https://verencasa.com'
+# ~ host = 'https://pepecine.tv'
+# ~ host = 'https://pepecine.to'
+
 host = 'https://verencasa.com'
+
+# ~ f_y_m
+host_latest = 'https://verencasa.com'
 
 ruta_pelis  = '/browse?type=movie'
 ruta_series = '/browse?type=series'
@@ -21,10 +29,23 @@ ruta_series = '/browse?type=series'
     # ~ return proxytools.configurar_proxies_canal(item.channel, host)
 
 def do_downloadpage(url, post=None):
+    # ~ f_y_m
     url = url.replace('pepecine.me', 'verencasa.com') # por si viene de enlaces guardados
     url = url.replace('pepecine.tv', 'verencasa.com') # por si viene de enlaces guardados
-    data = httptools.downloadpage(url, post=post).data
+    url = url.replace('pepecine.to', 'verencasa.com') # por si viene de enlaces guardados
+
+    # ~ f_y_m
+    # ~ if not '/last/' in url:
+        # ~ url = url.replace('verencasa.com', 'pepecine.to') # por si viene de enlaces guardados
+
+    # ~ data = httptools.downloadpage(url, post=post, headers={'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:77.0) Gecko/20100101 Firefox/77.0'}).data
+    # ~ data = httptools.downloadpage(url, post=post, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'}).data
+    # ~ data = httptools.downloadpage(url, post=post, headers={'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36'}).data
     # ~ data = httptools.downloadpage_proxy('pepecine', url, post=post).data
+
+    # ~ f_y_m
+    data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://verencasa.com', 'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36'}).data
+
     return data
 
 
@@ -48,7 +69,8 @@ def mainlist_pelis(item):
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
     if not descartar_xxx:
-        itemlist.append(item.clone( title = 'Últimas películas', action = 'list_latest', url = host + '/last/estrenos-peliculas-online.php', search_type = 'movie' ))
+        # ~ f_y_m
+        itemlist.append(item.clone( title = 'Últimas películas', action = 'list_latest', url = host_latest + '/last/estrenos-peliculas-online.php', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Las más populares', action = 'list_all', url = host + ruta_pelis, orden = 'popularity:desc', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Las más valoradas', action = 'list_all', url = host + ruta_pelis, orden = 'user_score:desc', search_type = 'movie' ))
@@ -69,7 +91,8 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Últimos episodios', action = 'list_latest', url = host + '/last/estrenos-episodios-online.php', search_type = 'tvshow' ))
+    # ~ f_y_m
+    itemlist.append(item.clone( title = 'Últimos episodios', action = 'list_latest', url = host_latest + '/last/estrenos-episodios-online.php', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Las más populares', action = 'list_all', url = host + ruta_series, orden = 'popularity:desc', search_type = 'tvshow' ))
     itemlist.append(item.clone( title = 'Las más valoradas', action = 'list_all', url = host + ruta_series, orden = 'user_score:desc', search_type = 'tvshow' ))
@@ -145,16 +168,16 @@ def sub_search(item):
 
     data = do_downloadpage(url)
     dict_data = jsontools.load(data)
-    
+
     if 'results' not in dict_data: return itemlist
-    
+
     for element in dict_data['results']:
         # ~ logger.debug(element)
         if 'is_series' not in element or 'name' not in element: continue
-        
+
         if element['is_series'] and item.search_type == 'movie': continue
         if not element['is_series'] and item.search_type == 'tvshow': continue
-        
+
         thumb = element['poster'] if element['poster'] else item.thumbnail
         new_item = item.clone( title = element['name'], thumbnail = thumb,
                                infoLabels = {'year':element['year'], 'plot': element['description']})
@@ -170,9 +193,9 @@ def sub_search(item):
             new_item.action = 'temporadas'
             new_item.contentType = 'tvshow'
             new_item.contentSerieName = element['name']
-        
+
         new_item.fmt_sufijo = '' if item.search_type != 'all' else new_item.contentType
-    
+
         itemlist.append(new_item)
 
     tmdb.set_infoLabels(itemlist)
@@ -197,6 +220,7 @@ def list_all(item):
     if item.calificacion: url += '&certification=' + item.calificacion
 
     data = do_downloadpage(url)
+    # ~ logger.debug(data)
     dict_data = jsontools.load(data)
 
     if 'pagination' not in dict_data: return itemlist
@@ -255,16 +279,16 @@ def episodios(item):
     itemlist=[]
 
     url = item.url+'&seasonNumber='+str(item.contentSeason)
-    
+
     data = do_downloadpage(url)
     dict_data = jsontools.load(data)
 
     if 'title' not in dict_data: return itemlist
 
     for element in dict_data['title']['season']['episodes']:
-        
+
         titulo = '%sx%s %s' % (element['season_number'], element['episode_number'], element['name'])
-        
+
         itemlist.append(item.clone( action='findvideos', title = titulo, url = url + '&episodeNumber=' + str(element['episode_number']),
                                     contentType = 'episode', contentSeason = element['season_number'], contentEpisodeNumber = element['episode_number'] ))
 
@@ -289,13 +313,13 @@ def _extraer_idioma(lang):
 def findvideos(item):
     logger.info()
     itemlist=[]
-    
+
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
     dict_data = jsontools.load(data)
 
     if 'title' not in dict_data: return itemlist
-    
+
     elementos = []
     if 'episodeNumber=' in item.url and 'season' in dict_data['title'] and 'episodes' in dict_data['title']['season']:
         for epi in dict_data['title']['season']['episodes']:
@@ -304,12 +328,12 @@ def findvideos(item):
                 break
     if len(elementos) == 0:
         elementos = dict_data['title']['videos']
-    
+
     for element in elementos:
         if '/z' in element['name'] and 'clicknupload' not in element['url']: continue # descartar descargas directas (menos clicknupload)
         if 'youtube.com/' in element['url']: continue # descartar tráilers
         # ~ logger.debug(element)
-        
+
         url = element['url']
         if url.startswith('https://goo.gl/'): # acortador de google
             url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
@@ -317,17 +341,17 @@ def findvideos(item):
         elif 'streamcrypt.net/' in url: # acortador
             url = scrapertools.decode_streamcrypt(url)
             if not url: continue
-        
+
         #TODO? Mostrar info de positive_votes, negative_votes, reports
-        
+
         itemlist.append(Item(channel = item.channel, action = 'play',
                              title = item.title, url = url,
                              language = _extraer_idioma(element['name']), 
                              quality = element['quality'], quality_num = puntuar_calidad(element['quality']) #, other = url
                        ))
-        
+
     itemlist = servertools.get_servers_itemlist(itemlist)
-    
+
     return itemlist
 
 
@@ -345,6 +369,7 @@ def list_latest(item):
     import re
     matches = re.compile("<div class='online'><table><tr>(.*?)</tr></table></div>", re.DOTALL).findall(data)
     num_matches = len(matches)
+    if num_matches == 0: return itemlist
 
     # Como len(matches)=300, se controla una paginación interna y se muestran en bloques de 20 (perpage)
     # Se descartan enlaces repetidos en la misma paginación pq algunas pelis se duplican por el idioma/calidad pero apuntan a la misma url
@@ -358,7 +383,7 @@ def list_latest(item):
 
         if '-z' in language: continue # descartar descargas directas
         # ~ lang = _extraer_idioma(language) # No se muestran los idiomas pq sólo se indican los modificados y normalmente hay más, por lo que puede llevar a engaño.
-        
+
         if item.search_type == 'movie':
             vid = scrapertools.find_single_match(url, '/([^/]+)$')
             url = host + '/secure/titles/' + vid + '?titleId=' + vid
@@ -376,7 +401,7 @@ def list_latest(item):
             url = url_tempo + '&episodeNumber=' + episode
 
             if url in [it.url for it in itemlist]: continue # descartar repetidos
-            
+
             show = title.replace(' %sx%s' % (season, episode), '').strip()
 
             # Menú contextual: ofrecer acceso a temporada / serie
@@ -404,47 +429,51 @@ def list_latest(item):
 def listas(item):
     logger.info()
     itemlist = []
-    
+
     if item.search_type == 'movie':
         seleccion = [
             ['226606', 'Cine Familiar'], 
             ['226608', 'Recomendadas'], 
             ['226605', 'Recomendaciones'], 
-            ['226598', 'Mejor Puntuadas'], #new
+            ['226598', 'Mejor Puntuadas'], 
             ['226596', 'En Cines'], 
             ['226704', 'Documentales'], 
             ['226607', 'Universo Marvel'], 
             ['226613', 'Animación'], 
             ['226612', 'Terror'], 
-            ['226817', 'Zombies'], #new
-            ['226731', 'En busca del valle encantado'], #new
-            ['227474', 'La princesa cisne'], #new
-            ['227471', 'Princesas de cuento'], #new
-            ['228253', 'Astérix y Obélix'], #new
-            ['234653', 'Cine Mudo'], #new
-            ['234652', 'Clásicos en color'], #new
+            ['226817', 'Zombies'], 
+            ['226731', 'En busca del valle encantado'], 
+            ['227474', 'La princesa cisne'], 
+            ['227471', 'Princesas de cuento'], 
+            ['228253', 'Astérix y Obélix'], 
+            ['234653', 'Cine Mudo'], 
+            ['234652', 'Clásicos en color'], 
         ]
     else:
         seleccion = [
-            ['226600', 'Episodios de hoy'], #new 
+            ['226600', 'Episodios de hoy'],  
             ['226601', 'En emisión'], 
             ['226604', 'Nuevas Series y Temporadas'], 
-            ['232318', 'Series actualizadas'], #new
-            ['229375', 'Novelas'], #new
-            ['226610', 'Series SF'], #new
+            ['232318', 'Series actualizadas'], 
+            ['229375', 'Novelas'], 
+            ['226610', 'Series SF'], 
             ['226609', 'Recomendadas'], 
             ['226611', 'Renovadas'], 
             ['226607', 'Universo Marvel'], 
             ['226613', 'Animación'], 
             ['226612', 'Terror'], 
-            ['226817', 'Zombies'], #new
+            ['226817', 'Zombies'], 
         ]
-        
+
     for numero, nombre in seleccion:
         itemlist.append(item.clone( title = nombre, action = 'list_list', 
-                                    url = host + '/secure/lists/' + numero + '.php?sortBy=pivot.order&sortDir=asc' ))
+                                    # ~ f_y_m
+                                    url = host + '/secure/lists/' + numero + '.php?sortBy=pivot.order&sortDir=asc' )) # verencasa.
+                                    # ~ url = host + '/secure/lists/' + numero + '?sortBy=pivot.order&sortDir=asc' )) # pepecine.
 
-    return itemlist
+    # ~ f_y_m
+    # ~ return itemlist
+    return sorted(itemlist, key=lambda it: it.title)
 
 
 def list_list(item):
@@ -462,7 +491,7 @@ def list_list(item):
     for n, element in enumerate(dict_data['items']['data'][item.desde:]):
         if item.search_type == 'movie' and element['is_series']: continue
         if item.search_type == 'tvshow' and not element['is_series']: continue
-        
+
         new_item = item.clone( title = element['name'], thumbnail = element['poster'],
                                infoLabels = {'year':element['year'], 'plot': element['description']})
 
@@ -485,7 +514,7 @@ def list_list(item):
     tmdb.set_infoLabels(itemlist)
 
     # Paginación 
-    if item.desde + n + 1 < len(dict_data['items']['data']):
+    if n and item.desde + n + 1 < len(dict_data['items']['data']):
         itemlist.append(item.clone( title='>> Página siguiente', desde=item.desde + n + 1, action='list_list' ))
 
     return itemlist

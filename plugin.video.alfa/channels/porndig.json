@@ -1,0 +1,15 @@
+{
+  "id": "porndig",
+  "name": "porndig",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "https://assets.porndig.com/assets/porndig/img/logo/logo_desktop_1.png?ver=1563177258",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+  ]
+}
+

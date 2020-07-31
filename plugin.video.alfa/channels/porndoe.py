@@ -22,15 +22,15 @@ host = 'https://porndoe.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host +"/videos"))
-    itemlist.append( Item(channel=item.channel, title="Exclusivos" , action="lista", url=host + "/category/74/premium-hd"))
-    itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "/videos?sort=views-down"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorado" , action="lista", url=host + "/videos?sort=likes-down"))
-    itemlist.append( Item(channel=item.channel, title="Mas largo" , action="lista", url=host + "/videos?sort=duration-down"))
-    itemlist.append( Item(channel=item.channel, title="PornStar" , action="categorias", url=host + "/pornstars"))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="categorias", url=host + "/channels?sort=ranking"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host +"/videos"))
+    itemlist.append(item.clone(title="Exclusivos" , action="lista", url=host + "/category/74/premium-hd"))
+    itemlist.append(item.clone(title="Mas vistos" , action="lista", url=host + "/videos?sort=views-down"))
+    itemlist.append(item.clone(title="Mejor valorado" , action="lista", url=host + "/videos?sort=likes-down"))
+    itemlist.append(item.clone(title="Mas largo" , action="lista", url=host + "/videos?sort=duration-down"))
+    itemlist.append(item.clone(title="PornStar" , action="categorias", url=host + "/pornstars"))
+    itemlist.append(item.clone(title="Canal" , action="categorias", url=host + "/channels?sort=ranking"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -68,7 +68,7 @@ def categorias(item):
         title = "%s %s" % (scrapedtitle, quality)
         scrapedurl = scrapedurl.replace("https://letsdoeit.com", "")
         url = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     next_page = scrapertools.find_single_match(data, '<li class="page page-mobile current">.*?href="([^"]+)"')
     if next_page:
@@ -95,7 +95,7 @@ def lista(item):
         thumbnail = scrapedthumbnail
         url = scrapedurl
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
+        itemlist.append(item.clone(action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<li class="page page-mobile current">.*?href="([^"]+)"').replace("amp;", "")
     if next_page:

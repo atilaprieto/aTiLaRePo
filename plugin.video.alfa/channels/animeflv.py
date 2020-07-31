@@ -80,7 +80,7 @@ def search(item, texto):
     item.url = urlparse.urljoin(HOST, "api/animes/search")
     
     texto = texto.replace(" ", "+")
-    post = "value=%s" % texto
+    post = "value=%s&limit=100" % texto
     
     try:
         dict_data = httptools.downloadpage(item.url, post=post).json

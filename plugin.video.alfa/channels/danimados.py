@@ -258,80 +258,23 @@ def play(item):
     scrapeduser = scrapertools.find_single_match(str(soup), 'data-user="([^"]+)"')
     headers = {"X-Requested-With":"XMLHttpRequest"}
     data1 = httptools.downloadpage("https://sv.danimados.com/gilberto.php?id=%s&sv=mp4" % scrapeduser).data
-    data1 = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data1)
     url = base64.b64decode(scrapertools.find_single_match(data1, '<iframe data-source="([^"]+)"'))
     url1 = devuelve_enlace(url)
     if url1:
-        srv = servertools.get_server_from_url(url1)
-        itemlist.append(item.clone(url=url1, server=srv))
+        item.url = url1
+        if item.server == "Directo": item.server = ""
+        itemlist = servertools.get_servers_itemlist([item])
     
     return itemlist
 
 def devuelve_enlace(url1):
+    logger.info()
     if 'danimados' in url1:
-        url1 = "https:%s" % url1
-        new_data = httptools.downloadpage(url1).data
-        url1 = scrapertools.find_single_match(new_data, '<iframe src="([^"]+)"')
+        url2 = "https:%s" % url1
+        new_data = httptools.downloadpage(url2, follow_redirects=False)
+        url1 = new_data.headers.get("location", "")
         if not url1:
-            url1 = scrapertools.find_single_match(new_data, 'sources: \[{file: "([^"]+)"')
+            url1 = scrapertools.find_single_match(new_data.data, '<iframe src="([^"]+)"')
+            if not url1:
+                url1 = scrapertools.find_single_match(new_data.data, 'sources: \[{file: "([^"]+)"')
     return url1
-'''
-def findvideos(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron  = 'player-option-\d+.*?'
-    patron += 'data-sv=(\w+).*?'
-    patron += 'data-user="([^"]+)'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    headers = {"X-Requested-With":"XMLHttpRequest"}
-    for scrapedserver, scrapeduser in matches:
-        data1 = httptools.downloadpage("https://sv.danimados.com/gilberto.php?id=%s&sv=mp4" %scrapeduser).data
-        data1 = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data1)
-        url = base64.b64decode(scrapertools.find_single_match(data1, '<iframe data-source="([^"]+)"'))
-        url1 = devuelve_enlace(url)
-        if url1:
-            itemlist.append(item.clone(title="Ver en %s",url=url1, action="play"))
-    tmdb.set_infoLabels(itemlist)
-    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
-    if config.get_videolibrary_support() and len(itemlist) > 0 and item.contentType=="movie" and item.contentChannel!='videolibrary':
-        itemlist.append(
-            item.clone(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la videoteca[/COLOR]', url=item.url,
-                action="add_pelicula_to_library"))
-    autoplay.start(itemlist, item)
-    return itemlist
-'''
-'''
-def findvideos(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron  = 'player-option-\d+.*?'
-    patron += 'data-sv=(\w+).*?'
-    patron += 'data-user="([^"]+)'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    headers = {"X-Requested-With":"XMLHttpRequest"}
-    for scrapedserver, scrapeduser in matches:
-        data1 = httptools.downloadpage("https://sv.danimados.com/gilberto.php?id=%s&sv=mp4" %scrapeduser).data
-        data1 = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data1)
-        url = base64.b64decode(scrapertools.find_single_match(data1, '<iframe data-source="([^"]+)"'))
-        url1 = devuelve_enlace(url)
-        if url1:
-            itemlist.append(item.clone(title="Ver en %s",url=url1, action="play"))
-    tmdb.set_infoLabels(itemlist)
-    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
-    if config.get_videolibrary_support() and len(itemlist) > 0 and item.contentType=="movie" and item.contentChannel!='videolibrary':
-        itemlist.append(
-            item.clone(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la videoteca[/COLOR]', url=item.url,
-                action="add_pelicula_to_library"))
-    autoplay.start(itemlist, item)
-    return itemlist
-
-
-def play(item):
-    item.thumbnail = item.contentThumbnail
-    return [item]
-
-
-
-'''

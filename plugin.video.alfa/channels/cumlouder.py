@@ -106,8 +106,7 @@ def categorias(item):
             url = urlparse.urljoin(item.url, url)
             if not thumbnail.startswith("https"):
                 thumbnail = "https:%s" % thumbnail
-        itemlist.append(
-            item.clone(action="lista", title=title, url=url, fanart=thumbnail, thumbnail=thumbnail))
+        itemlist.append(item.clone(action="lista", title=title, url=url, fanart=thumbnail, thumbnail=thumbnail))
     # Paginador
     next_page = scrapertools.find_single_match(data,'<a class="btn-pagination" itemprop="name" href="([^"]+)">Next')
     if next_page!="":
@@ -128,8 +127,7 @@ def series(item):
     for url, thumbnail, title, count in matches:
         title="%s (%s) " % (title, count)
         url=urlparse.urljoin(item.url, url)
-        itemlist.append(
-            item.clone(title=title, url=url, action="lista", fanart=thumbnail, thumbnail=thumbnail))
+        itemlist.append(item.clone(title=title, url=url, action="lista", fanart=thumbnail, thumbnail=thumbnail))
     # Paginador
     next_page = scrapertools.find_single_match(data,'<a class="btn-pagination" itemprop="name" href="([^"]+)">Next')
     if next_page!="":
@@ -142,7 +140,6 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    logger.debug(data)
     patron = '<a class="muestra-escena" href="([^"]+)".*?'
     patron += 'data-src="([^"]+)".*?alt="([^"]+)".*?'
     patron += '"ico-minutos sprite"></span>([^<]+)</span>(.*?)</a>'
@@ -164,7 +161,6 @@ def lista(item):
                                    fanart=thumbnail, contentType="movie", contentTitle=title))
     # Paginador
     next_page = scrapertools.find_single_match(data,'<a class="btn-pagination" itemprop="name" href="([^"]+)">Next')
-    logger.debug(next_page)
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
@@ -182,7 +178,5 @@ def play(item):
     elif not url.startswith("http"):
         url = "https:%s" % url.replace("&amp;", "&")
         title="Video %s" % res
-        # contentTitle=item.title + ' (' + res + "%s (%sp)"
-    itemlist.append(
-        Item(channel='cumlouder', action="play", title=title, contentTitle=item.contentTitle, url=url, server="directo"))
+    itemlist.append(item.clone(action="play", title=title, contentTitle=item.contentTitle, url=url, server="directo"))
     return itemlist

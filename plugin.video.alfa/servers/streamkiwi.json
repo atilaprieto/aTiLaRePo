@@ -4,7 +4,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "https://stream.kiwi/e/([A-z0-9]+)",
+        "pattern": "https://stream.kiwi/(?:e|v)/([A-z0-9]+)",
         "url": "https://stream.kiwi/e/\\1"
       }
     ]

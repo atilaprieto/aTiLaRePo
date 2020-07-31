@@ -26,14 +26,29 @@ Ver ejemplos en el código de los canales animeyt y pelispedia
 
 Created for Alfa-addon by Alfa Developers Team 2018
 '''
+from __future__ import division
+from __future__ import absolute_import
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-import os, base64, json, hashlib, urlparse
+
+from builtins import hex
+from builtins import range
+from .past.utils import old_div
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
+import os, base64, json, hashlib
 from core import httptools
 from core import scrapertools
 from platformcode import logger
-from aadecode import decode as aadecode
+from .aadecode import decode as aadecode
 
 # Descarga página y captura la petición de cookie
 # -----------------------------------------------
@@ -146,7 +161,7 @@ def extraer_enlaces_json(data, referer, subtitle=''):
 def analizar_enlaces_json(d):
     itemlist = []
     found = {}
-    for k, v in d.iteritems():
+    for k, v in d.items():
         if k in ['file','link','type','label'] and not isinstance(v, list):
             found[k] = v
         
@@ -190,7 +205,7 @@ def md5_dominio(url): # sutorimux/kubechi
 
 
 def transforma_gsv(gsv, valor):
-    llista = range(256)
+    llista = list(range(256))
     a = 0
     for i in range(256):
         a = (a + llista[i] + ord(gsv[i % len(gsv)]) ) % 256
@@ -216,12 +231,12 @@ def transforma_gsv(gsv, valor):
 # ----------------------------------
 
 def encode_rijndael(msg, IV, key):
-    import rijndael
+    from . import rijndael
     return rijndael.cbc_encrypt(msg, IV, key)
 
 
 def decode_rijndael(txt, preIV='b3512f4972d314da9', key='3e1a854e7d5835ab99d99a29afec8bbb'):
-    import rijndael
+    from . import rijndael
     msg = base64.b64decode(txt[:-15])
     IV = preIV + txt[-15:]
     deco = rijndael.cbc_decrypt(msg, IV, key)
@@ -275,10 +290,10 @@ def obtener_cripto(password, plaintext):
     iv = kdf['iv']
 
     try: # Intentar con librería AES del sistema
-        from Crypto.Cipher import AES
+        from .Crypto.Cipher import AES
         cipherSpec = AES.new(kdf['key'], AES.MODE_CBC, iv)
     except: # Si falla intentar con librería del addon 
-        import jscrypto
+        from . import jscrypto
         cipherSpec = jscrypto.new(kdf['key'], jscrypto.MODE_CBC, iv)
     ciphertext = cipherSpec.encrypt(paddedPlaintext)
 
@@ -307,7 +322,7 @@ def evpKDF(passwd, salt, key_size=8, iv_size=4, iterations=1, hash_algorithm="md
 
         derived_bytes += block[0: min(len(block), (target_key_size - number_of_derived_words) * 4)]
 
-        number_of_derived_words += len(block)/4
+        number_of_derived_words += old_div(len(block),4)
 
     return {
         "key": derived_bytes[0: key_size * 4],

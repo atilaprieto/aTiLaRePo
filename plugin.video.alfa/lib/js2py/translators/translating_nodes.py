@@ -109,7 +109,7 @@ def to_key(literal_or_identifier):
             return unicode(k)
 
 
-def trans(ele, standard=False):
+def trans(ele, standard=False, comments=None):
     """Translates esprima syntax tree to python by delegating to appropriate translating node"""
     try:
         node = globals().get(ele['type'])
@@ -183,7 +183,7 @@ def MemberExpression(type, computed, object, property, comments=None):
     return far_left + '.get(%s)' % prop
 
 
-def ThisExpression(type, comments=None):
+def ThisExpression(type):
     return 'var.get(u"this")'
 
 
@@ -218,27 +218,36 @@ def ArrayExpression(type, elements, comments=None):  # todo fix null inside prob
 
 
 def ObjectExpression(type, properties, comments=None):
-    name = inline_stack.require('Object')
+    name = None
     elems = []
     after = ''
     for p in properties:
         if p['kind'] == 'init':
             elems.append('%s:%s' % Property(**p))
-        elif p['kind'] == 'set':
-            k, setter = Property(
-                **p
-            )  # setter is just a lval referring to that function, it will be defined in InlineStack automatically
-            after += '%s.define_own_property(%s, {"set":%s, "configurable":True, "enumerable":True})\n' % (
-                name, k, setter)
-        elif p['kind'] == 'get':
-            k, getter = Property(**p)
-            after += '%s.define_own_property(%s, {"get":%s, "configurable":True, "enumerable":True})\n' % (
-                name, k, getter)
         else:
-            raise RuntimeError('Unexpected object propery kind')
-    obj = '%s = Js({%s})\n' % (name, ','.join(elems))
-    inline_stack.define(name, obj + after)
-    return name
+            if name is None:
+                name = inline_stack.require('Object')
+            if p['kind'] == 'set':
+                k, setter = Property(
+                    **p
+                )  # setter is just a lval referring to that function, it will be defined in InlineStack automatically
+                after += '%s.define_own_property(%s, {"set":%s, "configurable":True, "enumerable":True})\n' % (
+                    name, k, setter)
+            elif p['kind'] == 'get':
+                k, getter = Property(**p)
+                after += '%s.define_own_property(%s, {"get":%s, "configurable":True, "enumerable":True})\n' % (
+                    name, k, getter)
+            else:
+                raise RuntimeError('Unexpected object propery kind')
+    definition = 'Js({%s})' % ','.join(elems)
+    if name is None:
+        return definition
+    body = '%s = %s\n' % (name, definition)
+    body += after
+    body += 'return %s\n' % name
+    code = 'def %s():\n%s' % (name, indent(body))
+    inline_stack.define(name, code)
+    return name + '()'
 
 
 def Property(type, kind, key, computed, value, method, shorthand, comments=None):
@@ -279,7 +288,7 @@ def BinaryExpression(type, operator, left, right, comments=None):
 
 
 @limited
-def UpdateExpression(type, operator, argument, prefix, comments=None):
+def UpdateExpression(type, operator, argument, prefix):
     a = trans(
         argument, standard=True
     )  # also complex operation involving parsing of the result so no line length reducing here

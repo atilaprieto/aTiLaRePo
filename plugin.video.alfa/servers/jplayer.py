@@ -7,12 +7,6 @@ import sys
 PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
-if PY3:
-    #from future import standard_library
-    #standard_library.install_aliases()
-    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
-else:
-    import urllib                                               # Usamos el nativo de PY2 que es más rápido
 
 from core import httptools
 from core import jsontools
@@ -31,7 +25,7 @@ def test_video_exists(page_url):
 def get_video_url(page_url, user="", password="", video_password=""):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
-    post = urllib.urlencode({"r":"", "d":"www.jplayer.net"})
+    post = {"r":"", "d":"www.jplayer.club"}
     data = httptools.downloadpage(page_url, post=post).data
     json = jsontools.load(data)["data"]
     for _url in json:

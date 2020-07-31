@@ -16,7 +16,7 @@ from core.item import Item
 from platformcode import config, logger
 from channelselector import get_thumb
 
-host = 'https://www4.doramasmp4.com/'
+host = 'https://www8.doramasmp4.com/'
 
 IDIOMAS = {'sub': 'VOSE', 'VO': 'VO'}
 list_language = IDIOMAS.values()
@@ -48,7 +48,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Películas", action="list_all",
                          url=host + 'catalogue?format%5B%5D=movie&sort=latest',
                          thumbnail=get_thumb('movies', auto=True), type='movie'))
-    itemlist.append(Item(channel=item.channel, title = 'Buscar', action="search", url= host+'search?s=',
+    itemlist.append(Item(channel=item.channel, title = 'Buscar', action="search", url= host+'ajax/search.php',
                          thumbnail=get_thumb('search', auto=True)))
 
     autoplay.show_option(item.channel, itemlist)
@@ -133,6 +133,9 @@ def episodios(item):
     patron = '<a itemprop="url".*?href="([^"]+)".*?title="(.*?) Cap.*?".*?>Capítulo (\d+)<'
 
     matches = re.compile(patron, re.DOTALL).findall(data)
+    if not matches and item.mode == "search":
+        return findvideos(item)
+
     infoLabels = item.infoLabels
 
     for scrapedurl, scrapedtitle, scrapedep in matches:
@@ -160,6 +163,7 @@ def episodios(item):
             item.clone(title="Añadir esta serie a la videoteca", action="add_serie_to_library", extra="episodios", text_color='yellow'))
     return itemlist
 
+
 def findvideos(item):
     logger.info()
 
@@ -186,20 +190,17 @@ def findvideos(item):
     # else:
 
     for video_url in matches:
-        headers = {'referer': video_url}
+        headers = {'referer': item.url}
         token = scrapertools.find_single_match(video_url, 'token=(.*)')
-        if 'fast.php' in video_url:
-            video_url = 'https://player.rldev.in/fast.php?token=%s' % token
-            video_data = httptools.downloadpage(video_url, headers=headers).data
-            url = scrapertools.find_single_match(video_data, "'file':'([^']+)'")
-        else:
-            video_url = new_dom+'api/redirect.php?token=%s' % token
-            video_data = httptools.downloadpage(video_url, headers=headers, follow_redirects=False).data
+        #
+        video_data = httptools.downloadpage(video_url, headers=headers, follow_redirects=False).data
+        url = scrapertools.find_single_match(video_data, '<iframe class=".*?" src="([^"]+)"')
+        if "redirect.php" in url:
+            video_data = httptools.downloadpage(url, headers=headers, follow_redirects=False).data
             url = scrapertools.find_single_match(video_data, "window.location.href = '([^']+)'")
 
-
-
         new_item = Item(channel=item.channel, title='[%s] [%s]', url=url, action='play', language = language)
+
         itemlist.append(new_item)
 
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % (x.server.capitalize(), x.language))
@@ -220,16 +221,27 @@ def findvideos(item):
     return itemlist
 
 
+def search_results(item):
+    logger.info()
+    itemlist = []
+    data = httptools.downloadpage(item.url, post={"q": item.texto}).data
+    patron = 'href="([^"]+)">\s+<img class="mr-2" src="([^"]+)">.*?<div class="font-weight-500">([^<]+)</div>'
+    matches = re.compile(patron, re.DOTALL).findall(data)
+
+    for url, thumb, title in matches:
+        itemlist.append(Item(channel=item.channel, title=title, url=url, thumbnail=thumb, action="episodios",
+                             mode="search"))
+
+    return itemlist
+
+
 def search(item, texto):
     logger.info()
-    import urllib
     itemlist = []
-    texto = texto.replace(" ", "+")
-    item.url = item.url + texto
-    item.type = 'search'
+    item.texto = texto.replace(" ", "+")
     if texto != '':
         try:
-            return list_all(item)
+            return search_results(item)
         except:
             itemlist.append(item.clone(url='', title='No hay elementos...', action=''))
             return itemlist

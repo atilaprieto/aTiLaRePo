@@ -8,7 +8,7 @@
     "ignore_urls": ["http://soon.megaup.net/"],
     "patterns": [
       {
-        "pattern": "(megaup.net/[A-z0-9]+/.*?.(?:mp4|avi))",
+        "pattern": "(megaup.net/[A-z0-9]+/.*?.(?:mp4|avi|mkv))",
         "url": "https://\\1"
       }
     ]

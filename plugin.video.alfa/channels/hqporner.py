@@ -25,11 +25,11 @@ host = 'https://hqporner.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Mas vista" , action="lista", url=host + "/top"))
-    itemlist.append( Item(channel=item.channel, title="PornStar" , action="categorias", url=host + "/girls"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host))
+    itemlist.append(item.clone(title="Mas vista" , action="lista", url=host + "/top"))
+    itemlist.append(item.clone(title="PornStar" , action="categorias", url=host + "/girls"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -60,7 +60,7 @@ def categorias(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               thumbnail=thumbnail , plot=plot) )
     return sorted(itemlist, key=lambda i: i.title)
 
@@ -82,7 +82,7 @@ def lista(item):
         thumbnail = scrapedthumbnail + "|verifypeer=false"
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=url,
+        itemlist.append(item.clone(action="play", title=title, contentTitle = title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot))
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="button mobile-pagi pagi-btn">Next')
     if next_page:

@@ -22,13 +22,13 @@ host = 'https://tubedupe.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/latest-updates/"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorados" , action="lista", url=host + "/top-rated/"))
-    itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "/most-popular/"))
-    itemlist.append( Item(channel=item.channel, title="Modelos" , action="categorias", url=host + "/models/?sort_by=model_viewed"))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="categorias", url=host + "/channels/?sort_by=cs_viewed"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/?sort_by=avg_videos_popularity"))
-    # itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host + "/latest-updates/"))
+    itemlist.append(item.clone(title="Mejor valorados" , action="lista", url=host + "/top-rated/"))
+    itemlist.append(item.clone(title="Mas vistos" , action="lista", url=host + "/most-popular/"))
+    itemlist.append(item.clone(title="Modelos" , action="categorias", url=host + "/models/?sort_by=model_viewed"))
+    itemlist.append(item.clone(title="Canal" , action="categorias", url=host + "/channels/?sort_by=cs_viewed"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories/?sort_by=avg_videos_popularity"))
+    # itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -67,12 +67,12 @@ def categorias(item):
         cantidad = cantidad.strip()
         scrapedtitle = "%s (%s)" % (scrapedtitle,cantidad)
         scrapedplot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=scrapedthumbnail,fanart=scrapedthumbnail, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data, '<li class="active">.*?<a href="([^"]+)" title="Page')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page ) )
+        itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page ) )
     return itemlist
 
 
@@ -90,12 +90,12 @@ def lista(item):
         title = "[COLOR yellow]%s[/COLOR] %s" % (scrapedtime, scrapedtitle)
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
+        itemlist.append(item.clone(action="play", title=title, url=url, thumbnail=thumbnail,
                               fanart=thumbnail,plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<li class="active">.*?<a href="([^"]+)" title="Page')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page ) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page ) )
     return itemlist
 
 

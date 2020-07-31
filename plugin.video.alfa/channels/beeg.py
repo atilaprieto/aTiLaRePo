@@ -16,8 +16,8 @@ Host = "https://beeg.com"
 def get_api_url():
     global url_api
     data = httptools.downloadpage(Host).data
-    version = re.compile('var beeg_version = ([\d]+)').findall(data)[0]
-    url_api = Host + "/api/v6/" + version    # https://beeg.com/api/v6/1568386822920/
+    # version = re.compile('var beeg_version = ([\d]+)').findall(data)[0]
+    url_api = Host + "/api/v6/1593617312958" #+ version    # https://beeg.com/api/v6/1568386822920/  https://api.beeg.com/api/v6/1593617312958/index/main/0/pc
 
 get_api_url()
 
@@ -25,11 +25,11 @@ def mainlist(item):
     logger.info()
     get_api_url()
     itemlist = []
-    itemlist.append(Item(channel=item.channel, action="videos", title="Útimos videos", url=url_api + "/index/main/0/pc",
+    itemlist.append(item.clone(action="videos", title="Útimos videos", url=url_api + "/index/main/0/pc",
                          viewmode="movie"))
-    itemlist.append(Item(channel=item.channel, action="canal", title="Canal",
+    itemlist.append(item.clone(action="canal", title="Canal",
                         url=url_api + "/channels"))
-    itemlist.append(Item(channel=item.channel, action="listcategorias", title="Categorias",
+    itemlist.append(item.clone(action="listcategorias", title="Categorias",
                          url=url_api + "/index/main/0/pc", extra="nonpopular"))
     itemlist.append(
         Item(channel=item.channel, action="search", title="Buscar"))
@@ -86,7 +86,7 @@ def videos(item):
         url = '%s/video/%s?v=2&s=%s&e=%s&p=%s' % (url_api, id, start, end, pid)
         title = "[COLOR yellow]%s[/COLOR] %s - %s" %( duration, canal, title)
 
-        itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail, 
+        itemlist.append(item.clone(action="play", title=title, url=url, thumbnail=thumbnail, 
                              fanart=thumbnail, plot="",contentTitle=title, contentType="movie"))
     # Paginador
     Actual = int(scrapertools.find_single_match(item.url, '/([0-9]+)/pc'))
@@ -105,8 +105,7 @@ def listcategorias(item):
         url = url_api + "/index/tag/0/pc?tag=%s" % Tag["tag"]
         url = url.replace("%20", "-")
         title = '%s (%s)' % (str(Tag["tag"]), str(Tag["videos"]))
-        itemlist.append(
-            Item(channel=item.channel, action="videos", title=title, url=url, viewmode="movie", type="item"))
+        itemlist.append(item.clone(action="videos", title=title, url=url, viewmode="movie", type="item"))
     return itemlist
 
 
@@ -121,8 +120,7 @@ def canal(item):
         url = url_api + "/index/channel/0/pc?channel=%s" % canal 
         url = url.replace("%20", "-")
         title = '%s (%s)' % (str(Tag["ps_name"]), str(Tag["videos"]))
-        itemlist.append(
-            Item(channel=item.channel, action="videos", title=title, url=url, viewmode="movie", type="item"))
+        itemlist.append(item.clone(action="videos", title=title, url=url, viewmode="movie", type="item"))
     return itemlist
 
 

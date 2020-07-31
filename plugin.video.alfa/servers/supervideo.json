@@ -6,6 +6,10 @@
       {
         "pattern": "https://supervideo.tv/(?:e/|emb.html\\?)?([A-z0-9]+)",
         "url": "https://supervideo.tv/\\1"
+      },
+      {
+        "pattern": "https://supervideo.tv/e/([A-z0-9]+)",
+        "url": "https://supervideo.tv/\\1"
       }
     ]
   },

@@ -25,7 +25,7 @@ list_quality = ['default']
 list_servers = ['mangovideo']
 
 
-host = 'https://pandamovies.pw'
+host = 'https://pandamovies.pw'     #'https://watchpornfree.info'   'https://xxxparodyhd.net'  'http://www.veporns.com'  'http://streamporno.eu'  playpornx
 
 def mainlist(item):
     logger.info()
@@ -33,10 +33,10 @@ def mainlist(item):
     autoplay.init(item.channel, list_servers, list_quality)
 
     itemlist = []
-    itemlist.append(Item(channel=item.channel, title="Peliculas", action="lista", url=host + "/movies"))
-    itemlist.append(Item(channel=item.channel, title="Canal", action="categorias", url=host + "/movies"))
-    itemlist.append(Item(channel=item.channel, title="Categorias", action="categorias", url=host + "/movies"))
-    itemlist.append(Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Peliculas", action="lista", url=host + "/movies"))
+    itemlist.append(item.clone(title="Canal", action="categorias", url=host + "/movies"))
+    itemlist.append(item.clone(title="Categorias", action="categorias", url=host + "/movies"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
 
     autoplay.show_option(item.channel, itemlist)
 
@@ -71,7 +71,7 @@ def categorias(item):
         scrapedthumbnail = ""
         if not scrapedurl.startswith("https"):
             scrapedurl = "https:%s" % scrapedurl
-        itemlist.append(Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                              thumbnail=scrapedthumbnail, plot=scrapedplot))
     return itemlist
 
@@ -89,14 +89,14 @@ def lista(item):
         title = scrapedtitle
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=thumbnail,
+        itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumbnail,
                              fanart=thumbnail, plot=plot, contentTitle=title))
     next_page = scrapertools.find_single_match(data, '<li class=\'active\'>.*?href=\'([^\']+)\'>')
     if next_page == "":
         next_page = scrapertools.find_single_match(data, '<a.*?href="([^"]+)" >Next &raquo;</a>')
     if next_page != "":
         next_page = urlparse.urljoin(item.url, next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist
 
 
@@ -110,7 +110,13 @@ def findvideos(item):
     matches = re.compile(patron, re.DOTALL).findall(links_data)
     for url in matches:
         url = url.replace("/waaws.tk/", "/netu.tv/") 
-        itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', language='VO',contentTitle = item.contentTitle))
+        if "streamz" in url:
+            url = url.replace("streamz.cc", "stream2.vg").replace("streamz.vg", "stream2.vg")
+            # url= httptools.downloadpage(url).url
+            # url= url.replace("/x", "/getlink-")
+            # url += ".dll"
+            # url = httptools.downloadpage(url, headers={"referer": url}, follow_redirects=False).headers["location"]
+        itemlist.append(item.clone(title='%s', url=url, action='play', language='VO',contentTitle = item.contentTitle))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server)
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)

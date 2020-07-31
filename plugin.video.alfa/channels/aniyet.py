@@ -196,14 +196,15 @@ def findvideos(item):
     srv_list = {'Zeta-SV': 'sendvid', 'Zeta-CU': 'directo', 'Zeta-GD': 'uqload', 'Zeta-MP4': 'mp4upload',
                 'StreamOnly': 'uqload', 'CloudVid': 'gounlimited',
                 'EmbedFe': 'fembed', 'Upload': 'yourupload', 'LoadJet': 'jetload', 'Load': 'openload',
-                'Mango': 'streamango', 'StreamVery': 'verystream', 'StreamNormal': 'netutv', }
+                'Mango': 'streamango', 'StreamVery': 'verystream', 'StreamNormal': 'netutv', "Ru": "okru",
+                "VideoRapid": "bitp"}
     itemlist = list()
     soup = create_soup(item.url).find("ul", class_="TPlayerNv").find_all("li")
     infoLabels = item.infoLabels
     for btn in soup:
         opt = btn["data-tplayernv"]
         srv = srv_list.get(btn.text, 'directo')
-        itemlist.append(Item(channel=item.channel, url=item.url, action='play', server=srv, opt=opt, language='LAT',
+        itemlist.append(Item(channel=item.channel, title=srv, url=item.url, action='play', server=srv, opt=opt, language='LAT',
                         infoLabels=infoLabels))
 
     # Requerido para FilterTools

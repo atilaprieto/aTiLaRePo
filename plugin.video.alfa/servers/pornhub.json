@@ -4,7 +4,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "https://(?:www.|)pornhub.com/embed/([A-z0-9]+)",
+        "pattern": "https://(?:www.|it.|)pornhub.com/embed/([A-z0-9]+)",
         "url": "https://www.pornhub.com/view_video.php?viewkey=\\1"
       },
       {

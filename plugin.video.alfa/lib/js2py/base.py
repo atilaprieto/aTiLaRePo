@@ -5,6 +5,7 @@ import re
 from .translators.friendly_nodes import REGEXP_CONVERTER
 from .utils.injector import fix_js_args
 from types import FunctionType, ModuleType, GeneratorType, BuiltinFunctionType, MethodType, BuiltinMethodType
+from math import floor, log10
 import traceback
 try:
     import numpy
@@ -125,7 +126,7 @@ def HJs(val):
             except Exception as e:
                 message = 'your Python function failed!  '
                 try:
-                    message += e.message
+                    message += str(e)
                 except:
                     pass
                 raise MakeError('Error', message)
@@ -318,7 +319,7 @@ class PyJs(object):
         #prop = prop.value
         if self.Class == 'Undefined' or self.Class == 'Null':
             raise MakeError('TypeError',
-                            'Undefined and null dont have properties!')
+                            'Undefined and null dont have properties (tried getting property %s)' % repr(prop))
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
         if not isinstance(prop, basestring): raise RuntimeError('Bug')
@@ -360,7 +361,7 @@ class PyJs(object):
            * / % + - << >> & ^ |'''
         if self.Class == 'Undefined' or self.Class == 'Null':
             raise MakeError('TypeError',
-                            'Undefined and null dont have properties!')
+                            'Undefined and null don\'t have properties (tried setting property %s)' % repr(prop))
         if not isinstance(prop, basestring):
             prop = prop.to_string().value
         if NUMPY_AVAILABLE and prop.isdigit():
@@ -603,15 +604,7 @@ class PyJs(object):
         elif typ == 'Boolean':
             return Js('true') if self.value else Js('false')
         elif typ == 'Number':  #or self.Class=='Number':
-            if self.is_nan():
-                return Js('NaN')
-            elif self.is_infinity():
-                sign = '-' if self.value < 0 else ''
-                return Js(sign + 'Infinity')
-            elif isinstance(self.value,
-                            long) or self.value.is_integer():  # dont print .0
-                return Js(unicode(int(self.value)))
-            return Js(unicode(self.value))  # accurate enough
+            return Js(unicode(js_dtoa(self.value)))
         elif typ == 'String':
             return self
         else:  #object
@@ -998,7 +991,8 @@ class PyJs(object):
         cand = self.get(prop)
         if not cand.is_callable():
             raise MakeError('TypeError',
-                            '%s is not a function' % cand.typeof())
+                            '%s is not a function (tried calling property %s of %s)' % (
+                            cand.typeof(), repr(prop), repr(self.Class)))
         return cand.call(self, args)
 
     def to_python(self):
@@ -1046,7 +1040,7 @@ def PyJsComma(a, b):
     return b
 
 
-from .internals.simplex import JsException as PyJsException
+from .internals.simplex import JsException as PyJsException, js_dtoa
 import pyjsparser
 pyjsparser.parser.ENABLE_JS2PY_ERRORS = lambda msg: MakeError('SyntaxError', msg)
 
@@ -1311,7 +1305,7 @@ class PyObjectWrapper(PyJs):
         except Exception as e:
             message = 'your Python function failed!  '
             try:
-                message += e.message
+                message += str(e)
             except:
                 pass
             raise MakeError('Error', message)
@@ -1471,9 +1465,11 @@ class PyJsFunction(PyJs):
         except NotImplementedError:
             raise
         except RuntimeError as e:  # maximum recursion
-            raise MakeError(
-                'RangeError', e.message if
-                not isinstance(e, NotImplementedError) else 'Not implemented!')
+            try:
+                msg = e.message
+            except:
+                msg = repr(e)
+            raise MakeError('RangeError', msg)
 
     def has_instance(self, other):
         # I am not sure here so instanceof may not work lol.

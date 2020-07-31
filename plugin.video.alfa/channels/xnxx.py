@@ -22,9 +22,9 @@ host = 'https://www.xnxx.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=host + "/hits/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Popular" , action="lista", url=host + "/hits/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -56,7 +56,7 @@ def categorias(item):
         url = scrapedurl.replace("\/" , "/")
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = scrapedthumbnail.replace("\/" , "/")
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     return itemlist
 
@@ -78,9 +78,9 @@ def lista(item):
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, quality=quality,
+        itemlist.append(item.clone(action="play", title=title, url=url, quality=quality,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
-    next_page = scrapertools.find_single_match(data, '<li><a href="([^"]+)" class="no-page next">(?:Next|Siguiente)')
+    next_page = scrapertools.find_single_match(data, '<li><a href="([^"]+)" class="no-page next">')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )

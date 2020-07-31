@@ -115,15 +115,17 @@ def update(path, p_dialog, i, t, serie, overwrite):
             if insertados > 0  and config.get_setting('auto_download_new', serie.channel, default=False):
                 config.set_setting("search_new_content", 1, "videolibrary")     # Escaneamos a final todas la series
                 serie.sub_action = 'auto'
+                serie.category = itemlist[0].category
                 from channels import downloads
                 downloads.save_download(serie, silent=True)
+                if serie.sub_action: del serie.sub_action
 
         else:
             logger.debug("Canal %s no activo no se actualiza" % serie.channel)
 
     #Sincronizamos los episodios vistos desde la videoteca de Kodi con la de Alfa
     try:
-        if config.is_xbmc():                                                    #Si es Kodi, lo hacemos
+        if config.is_xbmc() and not config.get_setting('cleanlibrary', 'videolibrary', default=False):  #Si es Kodi, lo hacemos
             xbmc_videolibrary.mark_content_as_watched_on_alfa(path + '/tvshow.nfo')
     except:
         logger.error(traceback.format_exc())
@@ -277,7 +279,7 @@ def check_for_update(overwrite=True):
                         serie.action = "get_seasons"
                         filetools.write(tvshow_file, head_nfo + serie.tojson())
 
-                    if serie_actualizada:
+                    if serie_actualizada and not config.get_setting('cleanlibrary', 'videolibrary', default=False):
                         if config.get_setting("search_new_content", "videolibrary") == 0:
                             # Actualizamos la videoteca de Kodi: Buscar contenido en la carpeta de la serie
                             if config.is_xbmc():
@@ -290,12 +292,21 @@ def check_for_update(overwrite=True):
                     template = "An exception of type %s occured. Arguments:\n%r"
                     message = template % (type(ex).__name__, ex.args)
                     logger.error(message)
+                    logger.error(traceback.format_exc(1))
                     
 
             if estado_verify_playcount_series:                                  #Si se ha cambiado algún playcount, ...
                 estado = config.set_setting("verify_playcount", True, "videolibrary")   #... actualizamos la opción de Videolibrary
 
             #if config.get_setting("search_new_content", "videolibrary") == 1 and update_when_finished:
+            if config.is_xbmc() and config.get_setting('cleanlibrary', 'videolibrary', default=False):
+                while xbmc.getCondVisibility('Library.IsScanningVideo()'):      # Se espera a que acabe
+                    time.sleep(1)
+                xbmc.executebuiltin('CleanLibrary(video)')
+                while xbmc.getCondVisibility('Library.IsScanningVideo()'):      # Se espera a que acabe
+                    time.sleep(1)
+                update_when_finished = True
+                config.set_setting('cleanlibrary', False, 'videolibrary')
             if update_when_finished:
                 # Actualizamos la videoteca de Kodi: Buscar contenido en todas las series
                 if config.is_xbmc():
@@ -387,6 +398,10 @@ if __name__ == "__main__":
     # modo adulto:
     # sistema actual 0: Nunca, 1:Siempre, 2:Solo hasta que se reinicie Kodi
     # si es == 2 lo desactivamos.
+    # Detecta la versión correcta de marshal
+    if PY3:
+        from platformcode import custom_code
+        custom_code.marshal_check()
     if config.get_platform(True)['num_version'] >= 17.0:
         if not PY3:
             from lib.alfaresolver import updated, update_now

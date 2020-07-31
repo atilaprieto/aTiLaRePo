@@ -29,6 +29,7 @@ host = "https://123pelis.fun/"
 def mainlist(item):
     logger.info()
 
+
     itemlist = list()
 
     autoplay.init(item.channel, list_servers, list_quality)
@@ -218,12 +219,12 @@ def findvideos(item):
                 "type": elem["data-type"]}
         headers = {"Referer": item.url}
         doo_url = "%swp-admin/admin-ajax.php" % host
-        lang = elem.find("span", class_="flag").img["src"]
+        lang = elem.find("span", class_="flag").img["data-src"]
         lang = scrapertools.find_single_match(lang, r"flags/([^\.]+)\.png")
-        data = httptools.downloadpage(doo_url, post=post, headers=headers).data
+        data = httptools.downloadpage(doo_url, post=post, headers=headers).json
         if not data:
             continue
-        url = BeautifulSoup(data, "html5lib").find("iframe")["src"]
+        url = data["embed_url"]
         if "hideload" in url:
             url = unhideload(url)
         if "pelis123" in url:

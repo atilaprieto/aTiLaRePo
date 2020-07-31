@@ -52,7 +52,8 @@ def downloadpage(url, post=None, headers=None, random_headers=False, replace_hea
                  only_headers=False, referer=None, follow_redirects=True, timeout=None, 
                  proxy=True, proxy_web=False, proxy_addr_forced={}, forced_proxy=None, 
                  proxy_retries=1, CF=False, file=None, filename=None, ignore_response_code=True, 
-                 alfa_s=False, decode_code=None, s2=None, patron=None, item={}, itemlist=[]):
+                 alfa_s=False, decode_code=None, json=False, s2=None, patron='', quote_rep=False, 
+                 no_comments=True, item={}, itemlist=[]):
     
     # Función "wraper" que puede ser llamada desde los canales para descargar páginas de forma unificada y evitar
     # tener que hacer todas las comprobaciones dentro del canal, lo que dificulta su mantenimiento y mejora.
@@ -80,54 +81,72 @@ def downloadpage(url, post=None, headers=None, random_headers=False, replace_hea
     
     try:
         response = httptools.downloadpage(url, post=post, headers=headers, random_headers=random_headers, 
-                                      replace_headers=replace_headers, only_headers=only_headers, 
-                                      follow_redirects=follow_redirects, 
-                                      timeout=timeout, proxy=proxy, proxy_web=proxy_web, 
-                                      proxy_addr_forced=proxy_addr_forced, forced_proxy=forced_proxy, 
-                                      proxy_retries=proxy_retries, CF=CF, file=file, filename=filename, 
-                                      ignore_response_code=ignore_response_code, alfa_s=alfa_s)
+                                          replace_headers=replace_headers, only_headers=only_headers, 
+                                          follow_redirects=follow_redirects, 
+                                          timeout=timeout, proxy=proxy, proxy_web=proxy_web, 
+                                          proxy_addr_forced=proxy_addr_forced, forced_proxy=forced_proxy, 
+                                          proxy_retries=proxy_retries, CF=CF, file=file, filename=filename, 
+                                          ignore_response_code=ignore_response_code, alfa_s=alfa_s)
         if response:
-            data = response.data
+            if json and response.json:
+                data = response.json
+            else:
+                data = response.data
             success = response.sucess
             code = response.code
+            if decode_code is None and response.encoding is not None:
+                decode_code = response.encoding
             if success and only_headers:
                 data = response.headers
                 return (data, success, code, item, itemlist)
             if success and 'Content-Type' in response.headers and not 'text/html' \
+                                in response.headers['Content-Type'] and not 'json' \
+                                in response.headers['Content-Type'] and not 'xml' \
                                 in response.headers['Content-Type']:
                 return (data, success, code, item, itemlist)
 
         if data:
-            data = re.sub(r"\n|\r|\t|(<!--.*?-->)", "", data).replace("'", '"') # Reemplaza caracteres innecesarios
+            data = re.sub(r"\n|\r|\t", "", data).replace("'", '"')              # Reemplaza caracteres innecesarios
+            if quote_rep:
+                data = data.replace("'", '"')                                   # Reemplaza ' por "
             if s2:
                 data = re.sub(r"\s{2,}", "", data)                              # Reemplaza blancos innecesarios, salvo en "findvideos"
-            if decode_code is not None:                                         # Si se especifica, se decodifica con el código dado
-                if not PY3 and isinstance(data, str):
-                    data = unicode(data, decode_code, errors="replace").encode("utf8")
-                elif PY3 and isinstance(data, bytes):
-                    data = data.decode(decode_code)
+            if no_comments:
+                data = re.sub(r"(<!--.*?-->)", "", data)                        # Reemplaza comentarios
+            if decode_code is None:                                             # Si se especifica, se decodifica con el código dado
+                decode_code = 'utf8'
+            if not PY3 and isinstance(data, str):
+                data = unicode(data, decode_code, errors="replace").encode("utf8")
+            elif PY3 and isinstance(data, bytes):
+                data = data.decode(decode_code)
             if patron and not scrapertools.find_single_match(data, patron):     # Se comprueba que el patrón funciona
                 code = 999                                                      # Si no funciona, se pasa error
-                logger.error('ERROR 02: ' + ERROR_02 + item.url + " CODE: " + str(code) 
-                             + " PATRON: " + patron + " DATA: " + data)
-                itemlist.append(item.clone(action='', title=item.category + ': CODE: ' +
-                             '[COLOR yellow]' + str(code) + '[/COLOR]: ERROR 02: ' + ERROR_02, 
-                             folder=False))
+                try:
+                    logger.error('ERROR 02: ' + ERROR_02 + str(item.url) + " CODE: " + str(code) 
+                            + " PATRON: " + str(patron) + " DATA: " + str(data))
+                except:
+                    logger.error('ERROR 02: ' + ERROR_02 + str(item.url) + " CODE: " + str(code)
+                            + " PATRON: " + str(patron) + " DATA: ")
+                if funcion != 'episodios':
+                    itemlist.append(item.clone(action='', title=item.category + ': CODE: ' +
+                             '[COLOR yellow]' + str(code) + '[/COLOR]: ERROR 02: ' + ERROR_02))
         else:                                                                   # Si no hay datos, se verifica la razón
+            data = ''
             item = web_intervenida(item, data)                                  #Verificamos que no haya sido clausurada
             if item.intervencion:                                               #Sí ha sido clausurada judicialmente
                 for clone_inter, autoridad in item.intervencion:
                     thumb_intervenido = get_thumb(autoridad)
-                    itemlist.append(item.clone(action='', title="[COLOR yellow]" + 
+                    if funcion != 'episodios':
+                        itemlist.append(item.clone(action='', title="[COLOR yellow]" + 
                             clone_inter.capitalize() + ': [/COLOR]' + intervenido_judicial + 
                             '. Reportar el problema en el foro', thumbnail=thumb_intervenido, 
                             folder=False))
             else:
-                logger.error('ERROR 01: ' + ERROR_01 + item.url + " CODE: " + str(code) 
-                             + " PATRON: " + patron + " DATA: " + data)
-                itemlist.append(item.clone(action='', title=item.category + ': CODE: ' +
-                             '[COLOR yellow]' + str(code) + '[/COLOR]: ERROR 01: ' + ERROR_01, 
-                             folder=False))
+                logger.error('ERROR 01: ' + ERROR_01 + str(item.url) + " CODE: " + str(code) 
+                                 + " PATRON: " + str(patron) + " DATA: ")
+                if funcion != 'episodios':
+                    itemlist.append(item.clone(action='', title=item.category + ': CODE: ' +
+                             '[COLOR yellow]' + str(code) + '[/COLOR]: ERROR 01: ' + ERROR_01))
     except:
         logger.error(traceback.format_exc(1))
     
@@ -376,8 +395,9 @@ def post_tmdb_listado(item, itemlist):
         del item.url_alt
 
     #Ajustamos el nombre de la categoría
-    if not item.category_new:
-        item.category_new = ''
+    if item.category_new == "newest":                           #Viene de Novedades.  Lo marcamos para Unify
+        item.from_channel = 'news'
+        del item.category_new
 
     for item_local in itemlist:                                 #Recorremos el Itemlist generado por el canal
         item_local.title = re.sub(r'(?i)online|descarga|downloads|trailer|videoteca|gb|autoplay', '', item_local.title).strip()
@@ -402,7 +422,10 @@ def post_tmdb_listado(item, itemlist):
             del item_local.library_filter_show
         if item_local.channel_host:
             del item_local.channel_host
-        
+        if item_local.category_new == "newest":                 #Viene de Novedades.  Lo marcamos para Unify
+            item_local.from_channel = 'news'
+            del item_local.category_new
+
         #Ajustamos el nombre de la categoría
         if item_local.channel == channel_py:
             item_local.category = scrapertools.find_single_match(item_local.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/').capitalize()
@@ -420,6 +443,8 @@ def post_tmdb_listado(item, itemlist):
                     continue
 
                 title_add = title_add.rstrip()
+                if scrapertools.find_single_match(title_subs, r'Episodio\s*(\d+)x(\d+)'):
+                    title_subs += ' (MAX_EPISODIOS)'
                 title_add = '%s -%s-' % (title_add, title_subs)                 #se agregan el resto de etiquetas salvadas
         item_local.title_subs = []
         del item_local.title_subs
@@ -486,10 +511,52 @@ def post_tmdb_listado(item, itemlist):
         
         # Preparamos el título para series, con los núm. de temporadas, si las hay
         if item_local.contentType in ['season', 'tvshow', 'episode']:
-            if item_local.contentType == "episode":
+            
+            # Pasada por TMDB a Serie, para datos adicionales, y mejorar la experiencia en Novedades
+            if scrapertools.find_single_match(title_add, r'Episodio\s*(\d+)x(\d+)') and item_local.infoLabels['tmdb_id']:
+                # Salva los datos de la Serie y lo transforma temporalmente en Season o Episode
+                contentPlot = item_local.contentPlot
+                contentType = item_local.contentType
+                season, episode = scrapertools.find_single_match(title_add, r'Episodio\s*(\d+)x(\d+)')
+                episode_max = int(episode)
+                item_local.infoLabels['season'] = season
+                if '-al-' not in title_add:
+                    item_local.infoLabels['episode'] = episode
+                    item_local.contentType = "episode"
+                else:
+                    item_local.contentType = "season"
+                    episode_max = int(scrapertools.find_single_match(title_add, r'Episodio\s*\d+x\d+-al-(\d+)'))
+            
+            try:
+                if item_local.infoLabels['tmdb_id']:
+                    tmdb.set_infoLabels_item(item_local, seekTmdb=True, idioma_busqueda='es,en')  #TMDB de la serie
+            except:
+                logger.error(traceback.format_exc())
                 
+            if scrapertools.find_single_match(title_add, r'Episodio\s*(\d+)x(\d+)') and item_local.infoLabels['tmdb_id']:
+                # Restaura los datos de infoLabels a su estado original, menos plot y año
+                item_local.infoLabels['year'] = scrapertools.find_single_match(item_local.infoLabels['aired'], r'\d{4}')
+                if item_local.infoLabels.get('temporada_num_episodios', 0) >= episode_max:
+                    tot_epis = ' (de %s' % str(item_local.infoLabels['temporada_num_episodios'])
+                    if item_local.infoLabels.get('number_of_seasons', 0) > int(season) \
+                            and item_local.infoLabels.get('number_of_episodes', 0) > 0:
+                        tot_epis += ', de %sx%s' % (str(item_local.infoLabels['number_of_seasons']), \
+                            str(item_local.infoLabels['number_of_episodes']))
+                    tot_epis += ')'
+                    title_add = title_add.replace(' (MAX_EPISODIOS)', tot_epis)
+                else:
+                    title_add = title_add.replace(' (MAX_EPISODIOS)', '')
+                if contentPlot[10:] != item_local.contentPlot[10:]:
+                    item_local.contentPlot += '\n\n%s' % contentPlot
+                item_local.contentType = contentType
+                if item_local.contentType in ['tvshow']: del item_local.infoLabels['season']
+                if item_local.contentType in ['season', 'tvshow'] and item_local.contentEpisodeNumber: del item_local.infoLabels['episode']
+
+            # Exploramos los diferentes formatos
+            if item_local.contentType == "episode":
                 #Si no está el título del episodio, pero sí está en "title", lo rescatamos
-                if not item_local.infoLabels['episodio_titulo'] and item_local.infoLabels['title'].lower() != item_local.infoLabels['tvshowtitle'].lower():
+                if not item_local.infoLabels['episodio_titulo'] and item_local.infoLabels['title'].lower() \
+                            != item_local.infoLabels['tvshowtitle'].lower():
                     item_local.infoLabels['episodio_titulo'] = item_local.infoLabels['title']
 
                 if "Temporada" in title:                    #Compatibilizamos "Temporada" con Unify
@@ -527,24 +594,30 @@ def post_tmdb_listado(item, itemlist):
                 else:
                     title = '%s -Temporada !!!' % (title)
 
-            elif (item.action == "search" or item.extra == "search") and not \
+            elif (item.action == "search" or item.extra == "search" or item_local.from_channel == "news") and not \
                         (item_local.extra == "varios" or item_local.extra == "documentales"):
                 title += " -Serie-"
-        
+                if item_local.from_channel == "news":
+                    title_add += " -Serie-"
+
         if (item_local.extra == "varios" or item_local.extra == "documentales") \
                         and (item.action == "search" or item.extra == "search" or \
-                        item.action == "listado_busqueda"):
+                        item.action == "listado_busqueda" or item_local.from_channel == "news"):
             title += " -Varios-"
             item_local.contentTitle += " -Varios-"
+            if item_local.from_channel == "news":
+                title_add += " -Varios-"
         
-        title += title_add                          #Se añaden etiquetas adicionales, si las hay
+        title += title_add.replace(' (MAX_EPISODIOS)', '')                      #Se añaden etiquetas adicionales, si las hay
 
         #Ahora maquillamos un poco los titulos dependiendo de si se han seleccionado títulos inteleigentes o no
-        if not config.get_setting("unify"):         #Si Titulos Inteligentes NO seleccionados:
+        if not config.get_setting("unify"):                                     #Si Titulos Inteligentes NO seleccionados:
             title = '%s [COLOR yellow][%s][/COLOR] [%s] [COLOR limegreen][%s][/COLOR] [COLOR red]%s[/COLOR]' % (title, str(item_local.infoLabels['year']), rating, item_local.quality, str(item_local.language))
 
-        else:                                       #Si Titulos Inteligentes SÍ seleccionados:
-            title = title.replace("[", "-").replace("]", "-").replace(".", ",").replace("GB", "G B").replace("Gb", "G b").replace("gb", "g b").replace("MB", "M B").replace("Mb", "M b").replace("mb", "m b")
+        elif item_local.action:                                                 #Si Titulos Inteligentes SÍ seleccionados:
+            title = title.replace("[", "-").replace("]", "-").replace(".", ",").replace("GB", "G B")\
+                        .replace("Gb", "G b").replace("gb", "g b").replace("MB", "M B")\
+                        .replace("Mb", "M b").replace("mb", "m b")
         
         #Limpiamos las etiquetas vacías
         if item_local.infoLabels['episodio_titulo']:
@@ -553,7 +626,9 @@ def post_tmdb_listado(item, itemlist):
         title = re.sub(r'\s?\[COLOR \w+\]\[\[?\s?\]?\]\[\/COLOR\]', '', title).strip()
         title = re.sub(r'\s?\[COLOR \w+\]\s?\[\/COLOR\]', '', title).strip()
     
-        if item.category_new == "newest":           #Viene de Novedades.  Marcamos el título con el nombre del canal
+        #Viene de Novedades.  Lo preparamos para Unify
+        if item_local.from_channel == "news":
+            """
             if scrapertools.find_single_match(item_local.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/'):
                 title += ' -%s-' % scrapertools.find_single_match(item_local.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/').capitalize()
             else:
@@ -563,10 +638,17 @@ def post_tmdb_listado(item, itemlist):
                     item_local.contentTitle += ' -%s-' % scrapertools.find_single_match(item_local.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/').capitalize()
                 else:
                     item_local.contentTitle += ' -%s-' % item_local.channel.capitalize()
+            """
+            if item_local.contentType in ['season', 'tvshow']:
+                title = '%s %s' % (item_local.contentSerieName, title_add)
             elif "Episodio " in title:
                 if not item_local.contentSeason or not item_local.contentEpisodeNumber:
                     item_local.contentSeason, item_local.contentEpisodeNumber = scrapertools.find_single_match(title_add, 'Episodio (\d+)x(\d+)')
 
+        if item_local.infoLabels['status'] and (item_local.infoLabels['status'].lower() == "ended" \
+                        or item_local.infoLabels['status'].lower() == "canceled"):
+            title += ' [TERM]'
+        
         item_local.title = title
         
         #logger.debug("url: " + item_local.url + " / title: " + item_local.title + " / content title: " + item_local.contentTitle + "/" + item_local.contentSerieName + " / calidad: " + item_local.quality + "[" + str(item_local.language) + "]" + " / year: " + str(item_local.infoLabels['year']))
@@ -581,14 +663,15 @@ def post_tmdb_listado(item, itemlist):
         del item.intervencion
     
     #Si ha habido fail-over, lo comento
-    if channel_alt and item.category_new != "newest":
+    if channel_alt and item.from_channel != "news":
         itemlist_fo.append(item.clone(action='', title="[COLOR yellow]" + item.category + '[/COLOR] [ALT ] en uso'))
         itemlist_fo.append(item.clone(action='', title="[COLOR yellow]" + channel_alt.capitalize() + '[/COLOR] inaccesible'))
     
     if len(itemlist_fo) > 0:
         itemlist = itemlist_fo + itemlist
         
-    del item.category_new
+    if item.from_channel:
+        del item.from_channel
         
     return (item, itemlist)
 
@@ -628,6 +711,9 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
     
     #Restauramos valores si ha habido fail-over
     channel_alt = ''
+    channel_alt_org = item.channel_alt
+    category = item.category
+    url_alt = ''
     if item.channel == channel_py:
         if item.channel_alt:
             channel_alt = item.category
@@ -640,6 +726,7 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
             item.category = item.channel_alt.capitalize()
             del item.channel_alt
     if item.url_alt:
+        url_alt = item.url
         item.url = item.url_alt
         del item.url_alt
     
@@ -651,13 +738,14 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
         logger.error(traceback.format_exc())
     
     item_season = item.clone()
-    if item_season.season_colapse:                          #Quitamos el indicador de listado por Temporadas
+    if item_season.season_colapse:                                              #Quitamos el indicador de listado por Temporadas
         del item_season.season_colapse
-    title = '** Todas las Temporadas'                       #Agregamos título de TODAS las Temporadas (modo tradicional)
-    if item_season.infoLabels['number_of_episodes']:        #Ponemos el núm de episodios de la Serie
-        title += ' [%sx%s epi]' % (str(item_season.infoLabels['number_of_seasons']), str(item_season.infoLabels['number_of_episodes']))
+    title = '** Todas las Temporadas'                                           #Agregamos título de TODAS las Temporadas (modo tradicional)
+    if item_season.infoLabels['number_of_episodes']:                            #Ponemos el núm de episodios de la Serie
+        title += ' [%sx%s epi]' % (str(item_season.infoLabels['number_of_seasons']), \
+                str(item_season.infoLabels['number_of_episodes']))
     
-    rating = ''                                             #Ponemos el rating, si es diferente del de la Serie
+    rating = ''                                                                 #Ponemos el rating, si es diferente del de la Serie
     if item_season.infoLabels['rating'] and item_season.infoLabels['rating'] != 0.0:
         try:
             rating = float(item_season.infoLabels['rating'])
@@ -667,9 +755,10 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
     if rating and rating == 0.0:
         rating = ''
     
-    if not config.get_setting("unify"):                     #Si Titulos Inteligentes NO seleccionados:
-        title = '%s [COLOR yellow][%s][/COLOR] [%s] [COLOR limegreen][%s][/COLOR] [COLOR red]%s[/COLOR]' % (title, str(item_season.infoLabels['year']), rating, item_season.quality, str(item_season.language))
-    else:                                                   #Lo arreglamos un poco para Unify
+    if not config.get_setting("unify"):                                         #Si Titulos Inteligentes NO seleccionados:
+        title = '%s [COLOR yellow][%s][/COLOR] [%s] [COLOR limegreen][%s][/COLOR] [COLOR red]%s[/COLOR]' % \
+                (title, str(item_season.infoLabels['year']), rating, item_season.quality, str(item_season.language))
+    else:                                                                       #Lo arreglamos un poco para Unify
         title = title.replace('[', '-').replace(']', '-').replace('.', ',').strip()
     title = title.replace("--", "").replace("[]", "").replace("()", "").replace("(/)", "").replace("[/]", "").strip()
     
@@ -679,9 +768,9 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
     #Repasamos todos los episodios para detectar las diferentes temporadas
     for item_local in itemlist:
         if item_local.contentSeason != season:
-            season = item_local.contentSeason                       #Si se detecta una temporada distinta se prepara un título
+            season = item_local.contentSeason                                   #Si se detecta una temporada distinta se prepara un título
             item_season = item.clone()
-            item_season.contentSeason = item_local.contentSeason    #Se pone el núm de Temporada para obtener mejores datos de TMDB
+            item_season.contentSeason = item_local.contentSeason                #Se pone el núm de Temporada para obtener mejores datos de TMDB
             item_season.contentType = 'season'
             item_season.title = 'Temporada %s' % item_season.contentSeason
             if url != 'serie':
@@ -691,7 +780,7 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
     #Si hay más de una temporada se sigue, o se ha forzado a listar por temporadas, si no se devuelve el Itemlist original
     if len(itemlist_temporadas) > 2 or config.get_setting("no_pile_on_seasons", 'videolibrary') == 0:
         for item_local in itemlist_temporadas:
-            if "** Todas las Temporadas" in item_local.title:       #Si es el título de TODAS las Temporadas, lo ignoramos
+            if "** Todas las Temporadas" in item_local.title:                   #Si es el título de TODAS las Temporadas, lo ignoramos
                 continue
             
             # Pasada por TMDB a las Temporada
@@ -700,10 +789,10 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
             except:
                 logger.error(traceback.format_exc())
         
-            if item_local.infoLabels['temporada_air_date']:         #Fecha de emisión de la Temp
+            if item_local.infoLabels['temporada_air_date']:                     #Fecha de emisión de la Temp
                 item_local.title += ' [%s]' % str(scrapertools.find_single_match(str(item_local.infoLabels['temporada_air_date']), r'\/(\d{4})'))
             
-            #rating = ''                                            #Ponemos el rating, si es diferente del de la Serie
+            #rating = ''                                                        #Ponemos el rating, si es diferente del de la Serie
             #if item_local.infoLabels['rating'] and item_local.infoLabels['rating'] != 0.0:
             #    try:
             #        rating = float(item_local.infoLabels['rating'])
@@ -713,12 +802,12 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
             #if rating and rating > 0.0:
             #    item_local.title += ' [%s]' % str(rating)
             
-            if item_local.infoLabels['temporada_num_episodios']:    #Núm. de episodios de la Temp
+            if item_local.infoLabels['temporada_num_episodios']:                #Núm. de episodios de la Temp
                 item_local.title += ' [%s epi]' % str(item_local.infoLabels['temporada_num_episodios'])
                 
-            if not config.get_setting("unify"):                     #Si Titulos Inteligentes NO seleccionados:
+            if not config.get_setting("unify"):                                 #Si Titulos Inteligentes NO seleccionados:
                 item_local.title = '%s [COLOR limegreen][%s][/COLOR] [COLOR red]%s[/COLOR]' % (item_local.title, item_local.quality, str(item_local.language))
-            else:                                                   #Lo arreglamos un poco para Unify
+            elif item_local.action:                                 #Si Titulos Inteligentes SÍ seleccionados:
                 item_local.title = item_local.title.replace("[", "-").replace("]", "-").replace(".", ",").replace("GB", "G B").replace("Gb", "G b").replace("gb", "g b").replace("MB", "M B").replace("Mb", "M b").replace("mb", "m b")
             item_local.title = item_local.title.replace("--", "").replace("[]", "").replace("()", "").replace("(/)", "").replace("[/]", "").strip()
             
@@ -727,6 +816,11 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
     else:                                   #Si hay más de una temporada se sigue, si no se devuelve el Itemlist original
         if item.season_colapse:
             del item.season_colapse
+        if channel_alt_org:                 # Si ha habido fail-over, restauramos los valores previos
+            item.channel_alt = channel_alt_org
+            item.category = channel_alt
+            item.url_alt = item.url
+            item.url = url_alt
         return (item, itemlist)
     
     #Permitimos la actualización de los títulos, bien para uso inmediato, o para añadir a la videoteca
@@ -736,7 +830,7 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
     title = ''
     if item.infoLabels['status'] and (item.infoLabels['status'].lower() == "ended" \
                         or item.infoLabels['status'].lower() == "canceled"):
-        title += ' [TERMINADA]'
+        title += ' [TERM]'
     itemlist_temporadas.append(item_season.clone(title="[COLOR yellow]Añadir esta serie a videoteca-[/COLOR]" + title, action="add_serie_to_library", extra="episodios", add_menu=True))
 
     #Si intervención judicial, alerto!!!
@@ -896,7 +990,7 @@ def post_tmdb_episodios(item, itemlist):
             #item_local.category = scrapertools.find_single_match(item_local.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/').capitalize()
         #Restauramos valores para cada Episodio si ha habido fail-over de un clone de NewPct1
         if (item_local.channel_alt or item_local.channel_redir) and not item.downloadFilename:
-            item_local.channel = item_local.channel_redir.lower() or item_local.channel_alt.lower()
+            #item_local.channel = item_local.channel_redir.lower() or item_local.channel_alt.lower()
             item_local.category = item_local.channel_redir.capitalize() or item_local.channel_alt.capitalize()
             if item_local.channel_alt: del item_local.channel_alt
             #if item_local.channel_redir: del item_local.channel_redir
@@ -905,6 +999,12 @@ def post_tmdb_episodios(item, itemlist):
         if item_local.url_alt:
             host_act = scrapertools.find_single_match(item_local.url, '(http.*\:\/\/(?:www.)?\w+\.\w+\/)')
             host_org = scrapertools.find_single_match(item_local.url_alt, '(http.*\:\/\/(?:www.)?\w+\.\w+\/)')
+            dom_sufix_act = scrapertools.find_single_match(host_act, ':\/\/(.*?)\/*$').replace('.', '-')
+            dom_sufix_org = scrapertools.find_single_match(host_org, ':\/\/(.*?)\/*$').replace('.', '-')
+            if dom_sufix_act:
+                item_local.url = item_local.url.replace(dom_sufix_act, dom_sufix_org)
+            else:
+                item_local.url += dom_sufix_org
             item_local.url = item_local.url.replace(host_act, host_org)
             del item_local.url_alt
             
@@ -988,7 +1088,8 @@ def post_tmdb_episodios(item, itemlist):
         
         #Componemos el título final, aunque con Unify usará infoLabels['episodio_titulo']
         item_local.infoLabels['title'] = item_local.infoLabels['episodio_titulo']
-        item_local.title = item_local.title.replace("[", "-").replace("]", "-")
+        if item_local.action:
+            item_local.title = item_local.title.replace("[", "-").replace("]", "-")
         item_local.title = '%s [%s] [%s] [COLOR limegreen][%s][/COLOR] [COLOR red]%s[/COLOR]' % (item_local.title, item_local.infoLabels['year'], rating, item_local.quality, str(item_local.language))
     
         #Quitamos campos vacíos
@@ -997,7 +1098,8 @@ def post_tmdb_episodios(item, itemlist):
         item_local.title = item_local.title.replace("[]", "").strip()
         item_local.title = re.sub(r'\s?\[COLOR \w+\]\[\[?-?\s?\]?\]\[\/COLOR\]', '', item_local.title).strip()
         item_local.title = re.sub(r'\s?\[COLOR \w+\]-?\s?\[\/COLOR\]', '', item_local.title).strip()
-        item_local.title = item_local.title.replace(".", ",").replace("GB", "G B").replace("Gb", "G b").replace("gb", "g b").replace("MB", "M B").replace("Mb", "M b").replace("mb", "m b")
+        item_local.title = item_local.title.replace(".", ",").replace("GB", "G B").replace("Gb", "G b")\
+                        .replace("gb", "g b").replace("MB", "M B").replace("Mb", "M b").replace("mb", "m b")
         
         #Si la información de num. total de episodios de TMDB no es correcta, tratamos de calcularla
         if num_episodios < item_local.contentEpisodeNumber:
@@ -1053,10 +1155,15 @@ def post_tmdb_episodios(item, itemlist):
         title = ''
         
         if item_local.infoLabels['temporada_num_episodios']:
-            title += ' [Temp. de %s ep.]' % item_local.infoLabels['temporada_num_episodios']
-            
+            title += ' [%sx%s' % (item_local.infoLabels['season'], item_local.infoLabels['temporada_num_episodios'])
+        
+        if item_local.infoLabels['number_of_episodes'] and item_local.infoLabels['number_of_seasons'] > 1:
+            title += ' de %sx%s' % (str(item_local.infoLabels['number_of_seasons']), \
+                    str(item_local.infoLabels['number_of_episodes']))   
+        title += ']'
+        
         if item_local.infoLabels['status'] and item_local.infoLabels['status'].lower() == "ended":
-            title += ' [TERMINADA]'
+            title += ' [TERM]'
             
         if item_local.quality:      #La Videoteca no toma la calidad del episodio, sino de la serie.  Pongo del episodio
             item.quality = item_local.quality
@@ -1147,10 +1254,7 @@ def post_tmdb_findvideos(item, itemlist):
     
     """
     #logger.debug(item)
-    
-    if not config.get_setting("pseudo_titulos", item.channel, default=False) or item.downloadFilename:
-        return (item, itemlist)
-    
+ 
     # Saber si estamos en una ventana emergente lanzada desde una viñeta del menú principal,
     # con la función "play_from_library"
     item.unify = False
@@ -1206,6 +1310,9 @@ def post_tmdb_findvideos(item, itemlist):
         category = scrapertools.find_single_match(item.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/').capitalize()
         if category:
             item.category = category
+            
+    if not config.get_setting("pseudo_titulos", item.channel, default=False) or item.downloadFilename:
+        return (item, itemlist)
     
     if item.armagedon:                                                          #Es una situación catastrófica?
         itemlist.append(item.clone(action='', title=item.category + ': [COLOR hotpink]Usando enlaces de emergencia[/COLOR]', 
@@ -1289,7 +1396,12 @@ def post_tmdb_findvideos(item, itemlist):
     if item.contentType == "episode":                                                           #Series
         title = '%sx%s' % (str(item.contentSeason), str(item.contentEpisodeNumber).zfill(2))    #Temporada y Episodio
         if item.infoLabels['temporada_num_episodios']:
-            title = '%s (de %s)' % (title, str(item.infoLabels['temporada_num_episodios']))     #Total Episodios
+            title = '%s (de %s' % (title, str(item.infoLabels['temporada_num_episodios']))     #Total Episodios
+            
+        if item.infoLabels['number_of_episodes'] and item.infoLabels['number_of_seasons'] > 1:
+            title += ', de %sx%s' % (str(item.infoLabels['number_of_seasons']), \
+                    str(item.infoLabels['number_of_episodes']))   
+        title += ')'
         
         #Si son episodios múltiples, y viene de Videoteca, ponemos nombre de serie        
         if (" al " in item.title or " Al " in item.title) and not "al " in item.infoLabels['episodio_titulo']: 
@@ -1299,7 +1411,9 @@ def post_tmdb_findvideos(item, itemlist):
         title_gen = '%s, ' % title
         
     if item.contentType == "episode" or item.contentType == "season":                           #Series o Temporadas
-        title_gen += '%s [COLOR yellow][%s][/COLOR] [%s] [COLOR limegreen][%s][/COLOR] [COLOR red]%s[/COLOR] [%s]' % (item.contentSerieName, item.infoLabels['year'], rating, item.quality, str(item.language), scrapertools.find_single_match(item.title, '\s\[(\d+,?\d*?\s\w[b|B])\]'))                                      #Rating, Calidad, Idioma, Tamaño
+        title_gen += '%s [COLOR yellow][%s][/COLOR] [%s] [COLOR limegreen][%s][/COLOR] [COLOR red]%s[/COLOR] [%s]' % \
+                        (item.contentSerieName, item.infoLabels['year'], rating, item.quality, str(item.language), \
+                        scrapertools.find_single_match(item.title, '\s\[(\d+,?\d*?\s\w[b|B])\]'))   #Rating, Calidad, Idioma, Tamaño
         if item.infoLabels['status'] and (item.infoLabels['status'].lower() == "ended" \
                         or item.infoLabels['status'].lower() == "canceled"):
             title_gen = '[TERM.] %s' % title_gen            #Marca cuando la Serie está terminada y no va a haber más producción
@@ -1307,7 +1421,7 @@ def post_tmdb_findvideos(item, itemlist):
 
     else:                                                   #Películas
         title = item.title
-        title_gen = item.title
+        title_gen += '%s [COLOR yellow][%s][/COLOR] [%s]' % (item.contentTitle, item.infoLabels['year'], rating)  #Rating, Calidad, Idioma, Tamaño
 
     #Limpiamos etiquetas vacías
     title_gen = re.sub(r'\s?\[COLOR \w+\]\[\[?\s?\]?\]\[\/COLOR\]', '', title_gen).strip()  #Quitamos etiquetas vacías
@@ -1470,7 +1584,7 @@ def find_rar_password(item):
 
 
 def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torrent=False, \
-                        timeout=10, file_list=False, lookup=True, local_torr=None, headers={}, short_pad=False):
+                        timeout=5, file_list=False, lookup=True, local_torr=None, headers={}, short_pad=False):
     logger.info()
     from servers import torrent
     
@@ -1571,15 +1685,42 @@ def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torr
         #urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'
         #urllib.urlretrieve(url, torrents_path + "/generictools.torrent")        #desacargamos el .torrent a la carpeta
         #torrent_file = open(torrents_path + "/generictools.torrent", "rb").read()   #leemos el .torrent
-
+        
+        if not lookup: timeout = timeout * 3
         if ((url and not local_torr) or url.startswith('magnet')):
             torrents_path, torrent_file = torrent.caching_torrents(url, \
                         referer=referer, post=post, torrents_path=torrents_path, \
                         timeout=timeout, lookup=lookup, data_torrent=True, headers=headers)
         elif local_torr:
             torrent_file = filetools.read(local_torr)
-        if not torrent_file:
+            torrents_path = local_torr
+        
+        if not torrents_path or torrents_path == 'CF_BLOCKED':
             size = 'ERROR'
+            
+            # si el archivo .torrent está bloqueado con CF, se intentará descargarlo a través de un browser externo
+            if torrent_file and torrents_path == 'CF_BLOCKED':
+                size += ' [COLOR hotpink][B]BLOQUEO[/B][/COLOR]'
+                browser, res = call_browser('', lookup=True, strict=True)
+                if not browser:
+                    browser, res = call_browser('', lookup=True)
+                if not browser:
+                    size += ': [COLOR magenta][B]Instala un browser externo para usar este enlace[/B][/COLOR] (Chrome, Firefox, Opera)'
+                elif res is None and not config.get_setting("capture_thru_browser_path", server="torrent", default=""):
+                    size += ': [COLOR gold][B]Introduce la ruta para usar con [I]%s[/I][/B][/COLOR]' % browser
+                elif res is None and config.get_setting("capture_thru_browser_path", server="torrent", default=""):
+                    size += ': [COLOR limegreen][B]Pincha para usar con [I]%s[/I][/B][/COLOR]' % browser
+                elif res or config.get_setting("capture_thru_browser_path", server="torrent", default=""):
+                    if res is not True:
+                        config.set_setting("capture_thru_browser_path", res, server="torrent")
+                        size += ': [COLOR limegreen][B]Pincha para usar con [I]%s[/I][/B][/COLOR]' % browser
+                    elif res and not config.get_setting("capture_thru_browser_path", server="torrent", default=""):
+                        size += ': [COLOR gold][B]Introduce la ruta para usar con [I]%s[/I][/B][/COLOR]' % browser
+                    else:
+                        size += ': [COLOR limegreen][B]Pincha para usar con [I]%s[/I][/B][/COLOR]' % browser
+                else:
+                    size += ': [COLOR gold][B]Introduce la ruta para usar con [I]%s[/I][/B][/COLOR]' % browser
+            
             if not lookup:
                 return (size, torrents_path, torrent_f, files)
             elif file_list and data_torrent:
@@ -1765,15 +1906,16 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
     data = ''
     channel_failed = ''
     url_alt = []
+    decode_code = 'iso-8859-1'
     item.category = scrapertools.find_single_match(item.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/').capitalize()
     if not item.extra2:
         item.extra2 = 'z9z8z7z6z5'
 
     patron_alt = ''
     verify_torrent = ''
-    if patron is not True and '|' in patron:                            #Comprobamos si hay dos patrones alternativos
+    if patron is not True and '|' in patron:                                    #Comprobamos si hay dos patrones alternativos
         try:
-            verify_torrent, patron1, patron_alt = patron.split('|')     #Si es así, los separamos y los tratamos
+            verify_torrent, patron1, patron_alt = patron.split('|')             #Si es así, los separamos y los tratamos
             patron = patron1
         except:
             logger.error(traceback.format_exc())
@@ -1781,30 +1923,30 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
     #Array con los datos de los canales alternativos
     #Cargamos en .json del canal para ver las listas de valores en settings
     fail_over = channeltools.get_channel_json(channel_py)
-    for settings in fail_over['settings']:                              #Se recorren todos los settings
-        if settings['id'] == "clonenewpct1_channels_list":              #Encontramos en setting
-            fail_over = settings['default']                             #Carga lista de clones
+    for settings in fail_over['settings']:                                      #Se recorren todos los settings
+        if settings['id'] == "clonenewpct1_channels_list":                      #Encontramos en setting
+            fail_over = settings['default']                                     #Carga lista de clones
             break
     fail_over_list = ast.literal_eval(fail_over)
     #logger.debug(str(fail_over_list))
 
-    if item.from_channel and item.from_channel != 'videolibrary': #Desde search puede venir con el nombre de canal equivocado
+    if item.from_channel and item.from_channel != 'videolibrary':               #Desde search puede venir con el nombre de canal equivocado
         item.channel = item.from_channel
     #Recorremos el Array identificando el canal que falla
     for active, channel, channel_host, contentType, action_excluded in fail_over_list:
         if item.channel == channel_py:
-            if channel != item.category.lower():                        #es el canal/categoría que falla?
+            if channel != item.category.lower():                                #es el canal/categoría que falla?
                 continue
         else:
-            if channel != item.channel:                                 #es el canal que falla?
+            if channel != item.channel:                                         #es el canal que falla?
                 continue
-        channel_failed = channel                                        #salvamos el nombre del canal o categoría
-        channel_host_failed = channel_host                              #salvamos el nombre del host
-        channel_url_failed = item.url                                   #salvamos la url
+        channel_failed = channel                                                #salvamos el nombre del canal o categoría
+        channel_host_failed = channel_host                                      #salvamos el nombre del host
+        channel_url_failed = item.url                                           #salvamos la url
         #logger.debug(channel_failed + ' / ' + channel_host_failed)
         
-        if patron == True and active == '1':                            #solo nos han pedido verificar el clone
-            return (item, data)                                         #nos vamos, con el mismo clone, si está activo
+        if patron == True and active == '1':                                    #solo nos han pedido verificar el clone
+            return (item, data)                                                 #nos vamos, con el mismo clone, si está activo
         if (item.action == 'episodios' or item.action == "update_tvshow" or item.action == "get_seasons" or item.action == 'findvideos') and item.contentType not in contentType:          #soporta el fail_over de este contenido?
             logger.error("ERROR 99: " + item.action.upper() + ": Acción no soportada para Fail-Over en canal: " + item.url)
             return (item, data)                         #no soporta el fail_over de este contenido, no podemos hacer nada
@@ -1814,14 +1956,16 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
         logger.error('NO CHANNEL FAILED: Patrón: ' + str(patron) + \
                     ' / fail_over_list: ' + str(fail_over_list))
         logger.error(item)
-        return (item, data)                                             #Algo no ha funcionado, no podemos hacer nada
+        return (item, data)                                                     #Algo no ha funcionado, no podemos hacer nada
 
     #Recorremos el Array identificando canales activos que funcionen, distintos del caído, que soporten el contenido
     for active, channel, channel_host, contentType, action_excluded in fail_over_list:
         data_alt = ''
         if channel == channel_failed or active == '0' or item.action in action_excluded or item.extra2 in action_excluded:  #es válido el nuevo canal?
             continue
-        if (item.action == 'episodios' or item.action == "update_tvshow" or item.action == "get_seasons" or item.action == 'findvideos') and item.contentType not in contentType:                           #soporta el contenido?
+        if (item.action == 'episodios' or item.action == "update_tvshow" or \
+                    item.action == "get_seasons" or item.action == 'findvideos') and \
+                    item.contentType not in contentType:                        #soporta el contenido?
             continue
         
         #Hacemos el cambio de nombre de canal y url, conservando las anteriores como ALT
@@ -1842,20 +1986,20 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
             item.url = re.sub('\/\w+(-\w+)$', r'/%s\1' % channel, item.url)
         if channel == 'pctreload':
             item.url = re.sub('\/\w+-\w+$', '/pctreload-com', item.url)
-            url_alt += [item.url]                                       #salvamos la url para el bucle
+            url_alt += [item.url]                                               #salvamos la url para el bucle
             item.url = re.sub('\/\w+-\w+$', '/pctnew-org', item.url)
         if channel == 'planetatorrent':
             item.url = re.sub('\/\w+-\w+$', '', item.url)
             item.url = re.sub('\/\w+-\w+$', '', item.url)
         
-        url_alt += [item.url]                                           #salvamos la url para el bucle
+        url_alt += [item.url]                                                   #salvamos la url para el bucle
         item.channel_host = channel_host
         #logger.debug(str(url_alt))
         
         #quitamos el código de series, porque puede variar entre webs
         if item.action == "episodios" or item.action == "get_seasons" or item.action == "update_tvshow":
-            item.url = re.sub(r'\/\d+\/?$', '', item.url)   #parece que con el título solo ecuentra la serie, normalmente...
-            url_alt = [item.url]    #salvamos la url para el bucle, pero de momento ignoramos la inicial con código de serie
+            url_alt += [re.sub(r'\/\d+\/?$', '', item.url)]   #parece que con el título solo ecuentra la serie, normalmente...
+        
         
         #si es un episodio, generalizamos la url para que se pueda encontrar en otro clone.  Quitamos la calidad del final de la url
         elif item.action == "findvideos" and item.contentType == "episode":
@@ -1876,10 +2020,10 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
             except:
                 logger.error("ERROR 88: " + item.action + ": Error al convertir la url: " + item.url)
                 logger.error(traceback.format_exc())
-            logger.debug('URLs convertidas: ' + str(url_alt))
+        logger.debug('URLs convertidas: ' + str(url_alt))
 
-        if patron == True:                                              #solo nos han pedido verificar el clone
-            return (item, data)                                         #nos vamos, con un nuevo clone
+        if patron == True:                                                      #solo nos han pedido verificar el clone
+            return (item, data)                                                 #nos vamos, con un nuevo clone
         
         #Leemos la nueva url.. Puede haber varias alternativas a la url original
         for url in url_alt:
@@ -1888,11 +2032,13 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
                     data = re.sub(r"\n|\r|\t|(<!--.*?-->)", "", httptools.downloadpage(url, post=item.post, timeout=timeout).data)
                 else:
                     data = re.sub(r"\n|\r|\t|(<!--.*?-->)", "", httptools.downloadpage(url, timeout=timeout).data)
-                data_comillas = data.replace("'", "\"")
+                if not PY3:
+                    data = unicode(data, decode_code, errors="replace").encode("utf-8")
+                data_comillas = data.replace("'", '"')
             except:
                 data = ''
                 logger.error(traceback.format_exc())
-            if not data:                                                #no ha habido suerte, probamos con la siguiente url
+            if not data:                                                        #no ha habido suerte, probamos con la siguiente url
                 logger.error("ERROR 01: " + item.action + ": La Web no responde o la URL es erronea: " + url)
                 continue
         
@@ -1909,26 +2055,29 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
                                 data_alt = scrapertools.find_single_match(data_comillas, patron_alt)
                     if patron2 is not None:
                         data_alt = scrapertools.find_single_match(data_alt, patron2)
-                    if not data_alt:                                        #no ha habido suerte, probamos con el siguiente canal
+                    if not data_alt:                                            #no ha habido suerte, probamos con el siguiente canal
                         logger.error("ERROR 02: " + item.action + ": Ha cambiado la estructura de la Web: " + url + " / Patron: " + patron + " / " + patron_alt)
                         web_intervenida(item, data)
                         data = ''
                         continue
                     else:
-                        break                                               #por fin !!!  Este canal parece que funciona
+                        if not "'" in data_alt:
+                            data = data.replace("'", '"')
+                        item.url = url                                          #guardamos la url que funciona
+                        break                                                   #por fin !!!  Este canal parece que funciona
                 else:
                     #Función especial para encontrar en otro clone un .torrent válido
                     if verify_torrent == 'torrent:check:status':
                         from servers import torrent
                         if not data_alt.startswith("http"):                     #Si le falta el http.: lo ponemos
                             data_alt = scrapertools.find_single_match(item.channel_host, '(\w+:)//') + data_alt
-                        if torrent.verify_url_torrent(data_alt):        #verificamos si el .torrent existe
+                        if torrent.verify_url_torrent(data_alt):                #verificamos si el .torrent existe
                             item.url = url                                      #guardamos la url que funciona
-                            break                                       #nos vamos, con la nueva url del .torrent verificada
+                            break                                               #nos vamos, con la nueva url del .torrent verificada
                         data = ''
                         continue                                                #no vale el .torrent, continuamos
-                    item.url = url                                      #guardamos la url que funciona, sin verificar
-                    break                                               #por fin !!!  Este canal parece que funciona
+                    item.url = url                                              #guardamos la url que funciona, sin verificar
+                    break                                                       #por fin !!!  Este canal parece que funciona
             else:
                 logger.error("ERROR 02: " + item.action + ": Ha cambiado la estructura de la Web: " 
                             + url + " / Patron: " + patron + " / " +patron_alt)
@@ -1936,14 +2085,14 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
                 data = ''
                 continue
                 
-        if not data:                                                    #no ha habido suerte, probamos con el siguiente clone
+        if not data:                                                            #no ha habido suerte, probamos con el siguiente clone
             url_alt = []
             continue
         else:
             break
     
-    del item.extra2                                                     #Borramos acción temporal excluyente
-    if not data:                                                        #Si no ha logrado encontrar nada, salimos limpiando variables
+    del item.extra2                                                             #Borramos acción temporal excluyente
+    if not data:                                                                #Si no ha logrado encontrar nada, salimos limpiando variables
         if item.channel == channel_py:
             if item.channel_alt:
                 item.category = item.channel_alt.capitalize()
@@ -2131,8 +2280,19 @@ def redirect_clone_newpct1(item, head_nfo=None, it=None, path=False, overwrite=F
                 filetools.write(nfo, head_nfo + it.tojson())                #escribo el .nfo de la peli por si aborta update
                 logger.error('** .nfo ACTUALIZADO: it.ow_force: ' + nfo)    #aviso que ha habido una incidencia
             except:
-                logger.error('** .nfo ERROR actualizar: it.ow_force: ' + nfo)   #aviso que ha habido una incidencia
-                logger.error(traceback.format_exc())
+                logger.error('** .nfo ERROR actualizar: it.ow_force: %s' % nfo)     #aviso que ha habido una incidencia
+                logger.error(traceback.format_exc(1))
+    
+    # Si no existe el path al .nfo, se regenera
+    if it.library_urls and head_nfo and path and not it.path:
+        try:
+            it.path = filetools.join(' ', filetools.basename(path)).strip()
+            nfo = filetools.join(path, '/tvshow.nfo')
+            filetools.write(nfo, head_nfo + it.tojson())                    #escribo el .nfo de la peli por si aborta update
+            logger.error('** .nfo ACTUALIZADO: it.path: %s' % it.path)      #aviso que ha habido una incidencia
+        except:
+            logger.error('** .nfo ERROR actualizar: it.path: %s' % it.path) #aviso que ha habido una incidencia
+            logger.error(traceback.format_exc(1))
 
     #Array con los datos de los canales alternativos
     #Cargamos en .json de Newpct1 para ver las listas de valores en settings
@@ -2164,7 +2324,8 @@ def redirect_clone_newpct1(item, head_nfo=None, it=None, path=False, overwrite=F
 
     if it.emergency_urls:
         item.emergency_urls = it.emergency_urls                             #Refrescar desde el .nfo
-    
+
+
     #Analizamos si hay series o películas que migrar, debido a que se ha activado en el .json del canal la opción "guardar" 
     #"emergency_urls = 1", y hay que calcularla para todos los episodios y película existentes en la Videoteca.
     #Si "emergency_urls" está activada para uno o más canales, se verifica en el .nfo del vídeo si ya se ha realizado
@@ -2176,7 +2337,21 @@ def redirect_clone_newpct1(item, head_nfo=None, it=None, path=False, overwrite=F
     #Cuando en el .json se activa "Borrar", "emergency_urls = 2", se borran todos los enlaces existentes
     #Cuando en el .json se activa "Actualizar", "emergency_urls = 3", se actualizan todos los enlaces existentes
     
-    """ 
+    """
+    if it.verified_encode:
+        try:
+            del it.verified_encode
+            it.path = filetools.join(' ', filetools.basename(path)).strip()
+            nfo = filetools.join(path, '/tvshow.nfo')
+            filetools.write(nfo, head_nfo + it.tojson())                                #escribo el .nfo de la peli por si aborta update
+            logger.error('** .nfo ACTUALIZADO: it.verified_encode: %s' % it.path)       #aviso que ha habido una incidencia
+        except:
+            logger.error('** .nfo ERROR actualizar: it.verified_encode: %s' % it.path)  #aviso que ha habido una incidencia
+            logger.error(traceback.format_exc(1))
+    
+    if not it.verified_encode and path and it.library_playcounts and it.infoLabels['mediatype'] in ['tvshow', 'season', 'episode']:
+        it = borrar_episodio_add_videolibrary(path, head_nfo, it)
+    
     try:
         item, it = borrar_jsons_dups(item, it, path, head_nfo)      #TEMPORAL: Reparación de Videoteca con Newpct1
     except:
@@ -2594,6 +2769,68 @@ def redirect_clone_newpct1(item, head_nfo=None, it=None, path=False, overwrite=F
     return (item, it, overwrite)
     
 
+def borrar_episodio_add_videolibrary(path, head_nfo, nfo):
+    logger.info()
+    # Por error se ha creado un episodio en la actualización de la videteca que hace referencia a "añadir a la Videoteca"
+    # Hay que borrar ese episodio completo (json, strm, nfo, torrents) y borraar la entrada de library_playcounts del .nfo
+    # Hay que restaurar la temporada/serie como vista/no vista y hay que limpiar el Catálogo de Kodi para que borre los episodios
+
+    from channels import videolibrary
+
+    # Pasamos por todos los episodios de la SERIE
+    sesxepi_list = []
+    season = 0
+    files = sorted(filetools.listdir(path), reverse=True)
+    for file in files:
+        if not '.json' in file:
+            continue
+            
+        # Localizamos y cargamos el .json con el error
+        """
+        json_file = Item(path=filetools.join(path, file)).fromjson(
+                    filetools.read(filetools.join(path, file)))
+        if not 'serie a videoteca' in json_file.title.lower() and not \
+                    'temp. a videoteca' in json_file.title.lower() and not \
+                    'vista previa videoteca' in json_file.title.lower():
+            continue
+        """
+        json_file = filetools.read(filetools.join(path, file))
+        if 'infoLabels' in json_file:
+            continue
+            
+        # Estraemos el nº de temporada y episodio para localizar y borrar los otros archivos del episodio (strm, nfo, torrents)
+        sesxepi = '%sx%s' % (str(scrapertools.find_single_match(file, '^(\d+)x\d+\s*\[')), \
+                    str(scrapertools.find_single_match(file, '^\d+x(\d+)\s*\[')).zfill(2))
+        sesxepi_list += [sesxepi]
+        season = str(scrapertools.find_single_match(file, '^(\d+)x\d+\s*\['))
+        for file in files:
+            if file.startswith(sesxepi):
+                filetools.remove(filetools.join(path, file))
+                logger.error('Episodio borrado: %s' % file)
+        break
+            
+    logger.error('Serie: %s, Episodios: %s' % (filetools.basename(path), str(sesxepi_list)))
+    """
+    if sesxepi_list:
+        # Actualizamos el .nfo borrado las entradas de library_playcounts que no procedan
+        for epi, valor in list(nfo.library_playcounts.items()):
+            if epi in str(sesxepi_list):
+                nfo.library_playcounts.pop(epi, None)
+                logger.error('pop %s: %s' % (epi, valor))
+        
+        # Llamamos al método que reestablece los vistos/no vistos en el .nfo
+        nfo.active = 1
+        nfo = videolibrary.check_season_playcount(nfo, season)
+        config.set_setting('cleanlibrary', True, 'videolibrary')
+        logger.error('.nfo actualizado de Serie: %s, %s' % (nfo.infoLabels['tvshowtitle'], nfo.library_playcounts))
+    """
+    nfo.verified_encode = True
+    if nfo.verified: del nfo.verified
+    filetools.write(filetools.join(path, 'tvshow.nfo'), head_nfo + nfo.tojson())
+    
+    return nfo
+
+
 def borrar_jsons_dups(item, it, path, head_nfo):
     logger.info()
     
@@ -2891,62 +3128,359 @@ def regenerate_clones():
     return True
 
                             
-def call_chrome(url):
+def call_browser(url, download_path=None, lookup=False, strict=False, wait=False):
     logger.info()
     # Basado en el código de "Chrome Launcher 1.2.0" de Jani (@rasjani) Mikkonen
-    # Llama al browse Chrome y le pasa una url
+    # Llama a un browser disponible y le pasa una url
     import xbmc
     import subprocess
     
-    exePath = []
+    exePath = {}
+    PATHS = []
+    PM_LIST = ''
     creationFlags = 0
-    
+    prefs_file = ''
+    res = None
+    browsers = []
+
     try:
+        # Establecemos las variables relativas a cada browser
+        browser_params = {
+                          "chrome": ['<html><body style="background:black"><script>window.location.href = "%s";</script></body></html>' % url, 
+                                     ['--start-maximized', '--disable-translate', '--disable-new-tab-first-run', 
+                                     '--no-default-browser-check', '--no-first-run '], 
+                                     '', '"savefile"\s*:\s*{.*?"default_directory"\s*:\s*"([^"]+)"'], 
+                          "chromium": ['<html><body style="background:black"><script>window.location.href = "%s";</script></body></html>' % url, 
+                                       ['--noerordialogs', '--disable-session-crashed-bubble', '--disable-infobars', '--start-maximized'], 
+                                       '', '"savefile"\s*:\s*{.*?"default_directory"\s*:\s*"([^"]+)"'], 
+                          "firefox": ['<html><body style="background:black"><script>window.location.href = "%s";</script></body></html>' % url, 
+                                      [], 
+                                      'Default=(.*?)[\r|\n]', 'user_pref\s*\("browser.download.dir",\s*"([^"]+)"\)'], 
+                          "opera": ['<html><body style="background:black"><script>window.location.href = "%s";</script></body></html>' % url, 
+                                    [], 
+                                    '', '"savefile"\s*:\s*{.*?"default_directory"\s*:\s*"([^"]+)"']
+                         }
+
+        # Establecemos las variables relativas a cada plataforma
         if xbmc.getCondVisibility("system.platform.Android"):
-            xbmc.executebuiltin("StartAndroidActivity(com.android.chrome,,," + url + ")")
-            return True
-            
-        elif xbmc.getCondVisibility("system.platform.Windows"):
-            exePath = ['C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-                        'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe']
-            creationFlags = 0x00000008
-            
-        elif xbmc.getCondVisibility("system.platform.OSX"):
-            exePath = ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",]
-            
-        elif xbmc.getCondVisibility("system.platform.Linux"):
-            exePath = ["/usr/bin/google-chrome", "/usr/bin/google-chrome-stable"]
-            
-        else:
-            return False
-        
-        for path in exePath:
-            if filetools.exists(path):
-                chrome_call = filetools.join(xbmc.translatePath(config.get_data_path()), 'chrome_call.html')
-                filetools.write(chrome_call, '<html><body style="background:black"><script>window.location.href = "%s";</script></body></html>' % url)
-                
-                params = [path, '--kiosk', '--start-maximized', '--disable-translate', '--disable-new-tab-first-run', '--no-default-browser-check', '--no-first-run', chrome_call]
-                
-                if xbmc.getCondVisibility("system.platform.Windows"):
-                    s = subprocess.Popen(params, shell=False, creationflags=creationFlags, close_fds = True)
+            try:
+                ANDROID_STORAGE = os.getenv('ANDROID_STORAGE')
+            except:
+                ANDROID_STORAGE = ''
+            if not ANDROID_STORAGE:
+                if "'HOME'" in os.environ:
+                    ANDROID_STORAGE = scrapertools.find_single_match(os.getenv('HOME'), '^(\/.*?)\/')
+                    if not ANDROID_STORAGE:
+                        ANDROID_STORAGE = '/storage'
                 else:
-                    s = subprocess.Popen(params, shell=False, close_fds = True)
+                    ANDROID_STORAGE = '/storage'
+            
+            exePath = {
+                       "chrome": [[ANDROID_STORAGE + '/emulated/0/Android/data/com.android.chrome',
+                                   ANDROID_STORAGE + '/emulated/0/Android/data/com.chrome.canary'], 
+                                  0, 'ANDROID_DATA', [], ['/user/0/com.android.chrome/app_chrome/Default/Preferences', 
+                                  '/user/0/com.chrome.canary/app_chrome/Default/Preferences']], 
+                       "chromium": [[ANDROID_STORAGE + '/emulated/0/Android/data/org.bromite.chromium', 
+                                     ANDROID_STORAGE + '/emulated/0/Android/data/org.chromium.webview_shell'], 
+                                    0, 'ANDROID_DATA', [], ['/user/0/org.bromite.chromium/app_chrome/Default/Preferences', 
+                                    '/user/0/org.chromium.webview_shell/app_chrome/Default/Preferences']], 
+                       "firefox": [[ANDROID_STORAGE + '/emulated/0/Android/data/org.mozilla.firefox'], 
+                                   0, 'ANDROID_DATA', ['/user/0/org.mozilla.firefox/files/mozilla/installs.ini', 
+                                   '/user/0/org.mozilla.firefox/files/mozilla/profiles.ini'], ['prefs.js']],
+                       "opera": [[ANDROID_STORAGE + '/emulated/0/Android/data/com.opera.browser', 
+                                  ANDROID_STORAGE + '/emulated/0/Android/data/com.vewd.core.integration.dia', 
+                                  os.getenv('ANDROID_DATA') + '/user/0/com.vewd.core.integration.dia', 
+                                  ANDROID_STORAGE + '/emulated/0/Android/data/com.opera.sdk.example', 
+                                  os.getenv('ANDROID_DATA') + '/user/0/com.opera.sdk.example'], 
+                                 0, 'ANDROID_DATA', [], ['/user/0/com.opera.browser/Preferences', 
+                                 'user/0/com.vewd.core.integration.dia/Preferences', 'user/0/com.opera.sdk.example/Preferences']]
+                      }
+        
+            PATHS = [ANDROID_STORAGE + '/emulated/0/Android/data', os.getenv('ANDROID_DATA') + '/user/0']
+            DOWNLOADS_PATH = [filetools.join(ANDROID_STORAGE, 'emulated/0/Download')]
+            
+            try:
+                command = ['pm', 'list', 'packages']
+                p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                PM_LIST, error_cmd = p.communicate()
+                PM_LIST = PM_LIST.replace('\n', ', ')
+            except:
+                PM_LIST = ''
+                logger.error(traceback.format_exc())
+            logger.info('PACKAGE LIST: %s' % PM_LIST, force=True)
+
+            PREF_PATHS = [ANDROID_STORAGE + '/emulated/0/Android/data']
+            PREF_PATHS += [os.getenv('ANDROID_DATA') + '/user/0']
+        
+        elif xbmc.getCondVisibility("system.platform.Windows"):
+            exePath = {
+                       "chrome": [['%PATH%\\Google\\Chrome\\Application\\chrome.exe'], 
+                                  0x00000008, 'LOCALAPPDATA', [], ['\\Google\\Chrome\\User Data\\Default\\Preferences']], 
+                       "chromium": [[os.getenv('LOCALAPPDATA') + '\\Chromium\\Application\\chrome.exe'], 
+                                    0x00000008, 'LOCALAPPDATA', [], ['\\Chromium\\User Data\\Default\\Preferences']], 
+                       "firefox": [['%PATH%\\Mozilla Firefox\\firefox.exe'], 
+                                   0x00000008, 'APPDATA', ['\\Mozilla\\Firefox\\installs.ini'], ['prefs.js']],
+                       "opera": [[os.getenv('LOCALAPPDATA') + '\\Programs\\Opera\\launcher.exe'], 
+                                 0x00000008, 'APPDATA', [], ['\\Opera Software\\Opera Stable\\Preferences']]
+                      }
+                      
+            PATHS = [os.getenv('PROGRAMFILES')]
+            PATHS += [os.getenv('PROGRAMFILES(X86)')]
+            if not PATHS:
+                PATHS = ['C:\\Program Files', 'C:\\Program Files (x86)']
+            DOWNLOADS_PATH = [filetools.join(os.getenv('SYSTEMDRIVE'), os.getenv('HOMEPATH'), 'Downloads'), \
+                                'D:\\Downloads', 'D:\\Mis documentos\\Downloads']
+                
+            PREF_PATHS = [os.getenv('LOCALAPPDATA')]
+            PREF_PATHS += [os.getenv('APPDATA')]
+
+        elif xbmc.getCondVisibility("system.platform.OSX"):
+            exePath = {
+                       "chrome": [['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'], 
+                                  0, 'HOME', [], ['Library/Application Support/Google/Chrome/Default/Preferences']], 
+                       "chromium": [['/Applications/Chromium.app/Contents/MacOS/Chromium'], 
+                                    0, 'HOME', [], ['Library/Application Support/Chromium/Default/Preferences']], 
+                       "firefox": [['/Applications/Firefox.app/Contents/MacOS/firefox'], 
+                                   0, 'HOME', ['Library/Application Support/Firefox/installs.ini'], ['prefs.js']],
+                       "opera": [['/Applications/Firefox.app/Contents/MacOS/opera'], 
+                                 0, 'HOME', [], ['/Library/Application Support/com.operasoftware.Opera/Preferences']]
+                      }
+            
+            PATHS = ['/Applications']
+            DOWNLOADS_PATH = [filetools.join(os.getenv('HOME'), 'Descargas'), filetools.join(os.getenv('HOME'), 'Downloads')]
+            
+            PREF_PATHS = [filetools.join(os.getenv('HOME'), '/Library/Application Support')]
+            
+        elif xbmc.getCondVisibility("system.platform.Linux.RaspberryPi"):
+            exePath = {
+                       "chrome": [['%PATH%/google-chrome', '%PATH%/google-chrome-stable'], 
+                                  0, 'HOME', [], ['.config/google-chrome/Default/Preferences', 
+                                  '.config/google-chrome-stable/Default/Preferences', 
+                                  'snap/google-chrome/current/.config/google-chrome/Default/Preferences']],
+                       "opera": [['%PATH%/opera'], 
+                                 0, 'HOME', [], ['.config/opera/Preferences', 
+                                 'snap/opera/current/.config/opera/Preferences']], 
+                       "firefox": [['%PATH%/firefox'], 
+                                   0, 'HOME', ['.mozilla/firefox/installs.ini', 
+                                   'snap/mozilla/current/.mozilla/firefox/installs.ini'], ['prefs.js']], 
+                       "chromium": [['%PATH%/chromium', '%PATH%/chromium-browser'], 
+                                    0, 'HOME', [], ['.config/chromium/Default/Preferences', 
+                                    'snap/chromium/current/.config/chromium/Default/Preferences']]
+                      }
+            
+            PATHS = ['/usr/bin', '/usr/local/bin', '/usr/sbin', '/usr/local/sbin']
+            xpaths = os.getenv('PATH').split(':')
+            if xpaths:
+                for xpath in xpaths:
+                    if xpath not in PATHS:
+                        PATHS += [xpath]
+            DOWNLOADS_PATH = [filetools.join(os.getenv('HOME'), 'Descargas'), filetools.join(os.getenv('HOME'), 'Downloads')]
+            
+            PREF_PATHS = [os.getenv('HOME')]
+            PREF_PATHS += [filetools.join(os.getenv('HOME'), '.config')]
+            PREF_PATHS += [filetools.join(os.getenv('HOME'), 'snap')]
+        
+        elif xbmc.getCondVisibility("system.platform.Linux"):
+            exePath = {
+                       "chrome": [['%PATH%/google-chrome', '%PATH%/google-chrome-stable'], 
+                                  0, 'HOME', [], ['.config/google-chrome/Default/Preferences', 
+                                  '.config/google-chrome-stable/Default/Preferences', 
+                                  'snap/google-chrome/current/.config/google-chrome/Default/Preferences']], 
+                       "chromium": [['%PATH%/chromium', '%PATH%/chromium-browser'], 
+                                    0, 'HOME', [], ['.config/chromium/Default/Preferences', 
+                                    'snap/chromium/current/.config/chromium/Default/Preferences']],
+                       "opera": [['%PATH%/opera'], 
+                                 0, 'HOME', [], ['.config/opera/Preferences', 
+                                 'snap/opera/current/.config/opera/Preferences']], 
+                       "firefox": [['%PATH%/firefox'], 
+                                   0, 'HOME', ['.mozilla/firefox/installs.ini', 
+                                   'snap/mozilla/current/.mozilla/firefox/installs.ini'], ['prefs.js']]
+                      }
+            
+            PATHS = ['/usr/bin', '/usr/local/bin', '/usr/sbin', '/usr/local/sbin']
+            xpaths = os.getenv('PATH').split(':')
+            if xpaths:
+                for xpath in xpaths:
+                    if xpath not in PATHS:
+                        PATHS += [xpath]
+            DOWNLOADS_PATH = [filetools.join(os.getenv('HOME'), 'Descargas'), filetools.join(os.getenv('HOME'), 'Downloads')]
+            
+            PREF_PATHS = [os.getenv('HOME')]
+            PREF_PATHS += [filetools.join(os.getenv('HOME'), '.config')]
+            PREF_PATHS += [filetools.join(os.getenv('HOME'), 'snap')]
+
+        else:
+            return (False, False)
+            
+        # Añadimos PATHS adicionales para listar carpetas de Preferencias
+        for browser, paths in list(exePath.items()):
+            for path in paths[4]:
+                if filetools.dirname(path):
+                    PREF_PATHS += [filetools.join(os.getenv(paths[2]), filetools.dirname(path))]
+            for path in paths[3]:
+                if filetools.dirname(path):
+                    PREF_PATHS += [filetools.join(os.getenv(paths[2]), filetools.dirname(path))]
+
+        
+        # Buscamos si está instalado un browser soportado
+        for browser, paths in list(exePath.items()):
+            for path in paths[0]:
+                #if browser != 'chromium': continue
+                if path.startswith('%PATH%'):
+                    for PATH in PATHS:
+                        xpath = path.replace('%PATH%', PATH)
+                        if filetools.exists(xpath):
+                            path = xpath
+                            break
+                    else:
+                        if PM_LIST and filetools.basename(xpath) in PM_LIST:
+                            path = xpath
+                            break
+                        continue
+
+                # Se comprueba que los paths de ejecución existen.  En el caso de Android se comprueban los paths de configuración en sdcard
+                if filetools.basename(path) in PM_LIST or filetools.exists(path):
+                    creationFlags = paths[1]
+                    try:
+                        prefs_file = os.getenv(paths[2])
+                        if not prefs_file and xbmc.getCondVisibility("system.platform.Android"):
+                            prefs_file = '/data'
+                    except:
+                        if xbmc.getCondVisibility("system.platform.Android"):
+                            prefs_file = '/data'
+                    break
+            else:
+                continue
+            
+            browsers.append((browser, path))
+            logger.info('BROWSER: %s, PATH: %s, PREFS_FILE: %s, LOOKUP: %s, STRICIT: %s, DOWNLOAD_PATH: %s' % \
+                                (browser, path, prefs_file, lookup, strict, download_path), force=True)
+            # Cuando se necesita conocer el path de Downloads
+            if lookup or download_path:
+                res = True
+                if not prefs_file:
+                    return (browser.capitalize(), res)
+                
+                # Buscamos el path correcto para obtener el archivo de preferencias
+                if paths[3]:
+                    for prefs_path in paths[3]:
+                        if filetools.exists(filetools.join(prefs_file, prefs_path)):
+                            break
+                else:
+                    for prefs_path in paths[4]:
+                        if filetools.exists(filetools.join(prefs_file, prefs_path)):
+                            break
+                
+                # Opción especial para Firefox
+                if browser_params[browser][2]:
+                    installs = filetools.join(prefs_file, prefs_path)
+                    scraper = browser_params[browser][2]
+                    if xbmc.getCondVisibility("system.platform.Android"):
+                        scraper = scraper.replace('Default', 'Path')
+                    profile = scrapertools.find_single_match(filetools.read(installs, silent=True), scraper)
+                    prefs_file = filetools.join(prefs_file, filetools.dirname(prefs_path), profile)
+                    prefs_path = paths[4][0]
+                
+                # Accedemos al archivo de las preferencias del browser.  
+                prefs_file = filetools.join(prefs_file, prefs_path)
+                browser_prefs = filetools.read(prefs_file, silent=True)
+                res = scrapertools.find_single_match(browser_prefs, browser_params[browser][3]).replace('\\\\', '\\')
+                if not res and browser_prefs:
+                    try:
+                        logger.error('Archivo de Preferencias en ERROR %s: %s' % (prefs_file, str(browser_prefs[:60])))
+                    except:
+                        logger.error('Archivo de Preferencias en ERROR no PRINTABLE %s' % (prefs_file))  
+                elif not res:
+                    logger.error('Archivo de preferencias no encontrado/accesible: %s' % (prefs_file))
+                    for prefs_dir in PREF_PATHS:
+                        logger.error('Listado de %s - %s' % (prefs_dir, sorted(filetools.listdir(prefs_dir))))
+
+                # En Android puede haber problemas de permisos.  Si no se encuentra el path, se asume un path por defecto
+                if not res and not download_path and not config.get_setting("capture_thru_browser_path", server="torrent", default=""):
+                    for folder in DOWNLOADS_PATH:
+                        if filetools.exists(folder):
+                            res = folder
+                            break
+
+                # Si se ha pasado la opción de download_path y difiere del path obtenido, se pasa a otro browser
+                if download_path and download_path.lower() != res.lower():
+                    logger.info('Paths de DESCARGA DIFERENTES: download_PATH: %s - RES: %s' % (download_path, res), force=True)
+                    continue
+                # Si no se ha obtenido el path y se ha pedido la opción strict, se pasa a otro browser
+                if not res and strict:
+                    continue
+                # Si no se ha obtenido el path y no hay ninguno guardado, se notifica
+                if not res and not config.get_setting("capture_thru_browser_path", server="torrent", default=""):
+                    res = None
+                # Si no se ha obtenido el path pero hay uno guardado, se notifica
+                elif not res:
+                    res = True
+                else:
+                    break
+            
+            else:
+                # Se ha encontrado un browser aceptable.  Se llama al browser
+                break
+                
+        else:
+            if browsers:
+                browser = browsers[0][0]
+                path = browsers[0][1]
+                # Si hay browser(s) pero no hay res pero se ha suministrado un download path, y existe, se usa éste último con el primer browser
+                if not strict and not res and (download_path or config.get_setting("capture_thru_browser_path", server="torrent", default="")):
+                    if download_path and filetools.exists(download_path):
+                        res = download_path
+                    elif config.get_setting("capture_thru_browser_path", server="torrent", default="") and \
+                                filetools.exists(config.get_setting("capture_thru_browser_path", server="torrent", default="")):
+                        res = config.get_setting("capture_thru_browser_path", server="torrent", default="")
+
+            else:
+                # Si no se ha encontrado ningún browser que cumpla las condidiciones, se vuelve con error
+                logger.error('No se ha encontrado ningún BROWSER: %s' % str(exePath))
+                logger.error('Listado de APPS INSTALADAS en %s: %s' % (PATHS[0], sorted(filetools.listdir(PATHS[0]))))
+                if len(PATHS) > 1:
+                    logger.error('Listado de APPS INSTALADAS en %s: %s' % (PATHS[1], sorted(filetools.listdir(PATHS[1]))))
+                return (False, False)
+        
+        if lookup:
+            logger.info('LOOKUP: Selección BROWSER: %s, RES: %s' % (browser, res), force=True)
+            return (browser.capitalize(), res)
+        
+        
+        # Ahora hacemos la Call al Browser detectado
+        # Si la plataforma es Android, se llama de una forma diferente.
+        if xbmc.getCondVisibility("system.platform.Android"):
+            xbmc.executebuiltin("StartAndroidActivity(%s,,,%s)" % (filetools.basename(path), url))
+        
+        else:
+            # Se crea una página .html intermedia con los parámetros necesarios para que funcione la llamada al browser
+            if browser == 'chromium':
+                browser_call = url
+            else:
+                browser_call = filetools.join(xbmc.translatePath(config.get_data_path()), 'browser_call.html')
+                filetools.write(browser_call, browser_params[browser][0])
+
+            params = [path]
+            # Se añaden las opciones de llamada del browser seleccionado
+            for option in browser_params[browser][1]:
+                params += [option]
+            params += [browser_call]
+            
+            # Se crea un subproceso con la llama al browser
+            if xbmc.getCondVisibility("system.platform.Windows"):
+                s = subprocess.Popen(params, shell=False, creationflags=creationFlags, close_fds = True)
+            else:
+                s = subprocess.Popen(params, shell=False, close_fds = True)
+            
+            # Si se ha pedido esperar hasta que termine el browser...
+            if wait:
                 s.communicate()
 
-                """
-                bringChromeToFront(s.pid)
-
-                xbmcplugin.endOfDirectory(pluginhandle)
-                xbmc.executebuiltin("ReplaceWindow(Programs,%s)" % ("plugin://"+addonID+"/"))
-                """
-                
-        else:
-            return False
-        
     except:
         logger.error(traceback.format_exc())
+        return (False, False)
     
-    return True
+    return (browser.capitalize(), res)
 
 
 def dejuice(data):

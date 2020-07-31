@@ -70,7 +70,6 @@ def mainlist(item):
                               thumbnail='',
                               url=host + 'categoria/ona'))
 
-
     itemlist.append(Item(channel=item.channel, title="Especiales",
                               action="list_all",
                               thumbnail='',
@@ -103,33 +102,35 @@ def list_all(item):
 
     data = get_source(item.url)
     patron = '<article.*?href="([^"]+)">.*?src="([^"]+)".*?'
-    patron +=  '<h3 class="Title">([^<]+)</h3>.*?"fecha">([^<]+)<.*?</i>([^<]+)'
+    patron += '<h3 class="Title">([^<]+)</h3>.*?</i>([^<]+)'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
-    for scrapedurl, scrapedthumbnail, scrapedtitle, year, type in matches:
+    for scrapedurl, scrapedthumbnail, scrapedtitle, type in matches:
         type = type.strip().lower()
         url = scrapedurl
         #Ajuste resolución de la imagen
         thumbnail = scrapedthumbnail.replace("200/", "800/").replace("280/", "1120/")
         lang = 'VOSE'
         title = scrapedtitle
-        context = renumbertools.context(item)
-        context2 = autoplay.context
-        context.extend(context2)
+        year = "-"
         new_item= Item(channel=item.channel,
                        action='episodios',
                        title=title,
                        url=url,
                        thumbnail=thumbnail,
-                       language = lang,
-                       infoLabels={'year':year}
+                       language=lang,
+                       infoLabels={"year": year}
                        )
         if type != 'anime':
-            new_item.contentTitle=title
+            new_item.contentTitle = title
         else:
-            new_item.plot=type
-            new_item.contentSerieName=title
+            new_item.plot = type
+            new_item.contentSerieName = title
+            context = renumbertools.context(item)
+            context2 = autoplay.context
+            context.extend(context2)
             new_item.context = context
+
         itemlist.append(new_item)
 
         # Paginacion
@@ -147,6 +148,7 @@ def list_all(item):
     tmdb.set_infoLabels(itemlist, seekTmdb=True)
     return itemlist
 
+
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
@@ -161,6 +163,7 @@ def search(item, texto):
         for line in sys.exc_info():
             logger.error("%s" % line)
         return []
+
 
 def new_episodes(item):
     logger.info()
@@ -184,23 +187,26 @@ def new_episodes(item):
 
     return itemlist
 
+
 def episodios(item):
     logger.info()
     itemlist = []
 
     data = get_source(item.url)
-    patron = '<a class="item" href="([^"]+)">'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
+    anime_info = eval(scrapertools.find_single_match(data, "var anime_info = ([^;]+);"))
+    episodes = eval(scrapertools.find_single_match(data, "var episodes = ([^;]+);"))
     infoLabels = item.infoLabels
-    for scrapedurl in matches:
-        episode = scrapertools.find_single_match(scrapedurl, '.*?capitulo-(\d+)')
+
+    for episode in episodes:
         lang = 'VOSE'
-        season, episode = renumbertools.numbered_for_tratk(item.channel, item.contentSerieName, 1, int(episode))
-        title = "%sx%s - %s" % (season, str(episode).zfill(2),item.contentSerieName)
-        url = scrapedurl
-        infoLabels['season'] = season
-        infoLabels['episode'] = episode
+        if item.contentSerieName:
+            season, episode = renumbertools.numbered_for_tratk(item.channel, item.contentSerieName, 1, int(episode))
+            title = "%sx%s - %s" % (season, str(episode).zfill(2),item.contentSerieName)
+            infoLabels['season'] = season
+            infoLabels['episode'] = episode
+        else:
+            title = item.contentTitle
+        url = '%sver/%s-capitulo-%s' % (host, anime_info[0], episode)
 
         itemlist.append(Item(channel=item.channel, title=title, contentSerieName=item.contentSerieName, url=url,
                              action='findvideos', language=lang, infoLabels=infoLabels))
@@ -257,6 +263,7 @@ def findvideos(item):
     autoplay.start(itemlist, item)
 
     return itemlist
+
 
 def newest(categoria):
     itemlist = []

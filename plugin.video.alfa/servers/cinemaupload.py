@@ -17,28 +17,22 @@ def test_video_exists(page_url):
 
     if '|' in page_url:
         page_url, referer = page_url.split("|", 1)
-    else:
-        return video_urls
 
-    headers = {'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)',
-               'Referer': referer
-               }
-    data = httptools.downloadpage(page_url, headers=headers).data
-    data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
+    url = httptools.downloadpage(page_url, follow_redirects=False, only_headers=True).headers.get("location", "")
+    data = httptools.downloadpage(url)
     if data.code == 404:
         return False, "[CinemaUpload] El archivo no existe o ha sido borrado"
     return True, ""
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("url=" + page_url)
-
+    logger.info("url1=" + page_url)
+    if '|' in page_url:
+        page_url, referer = page_url.split("|", 1)
     video_urls = list()
-    referer = ''
     patron = 'file: "([^"]+)",'
-    matches = scrapertools.find_multiple_matches(data, patron)
-
+    matches = scrapertools.find_multiple_matches(data.data, patron)
     for url in matches:
         url += "|Referer=%s" %page_url
-        video_urls.append(['.m3u8 [CinemaUpload]', url])
+        video_urls.append(['.mpd [CinemaUpload]', url,0,"", "mpd"])
     return video_urls

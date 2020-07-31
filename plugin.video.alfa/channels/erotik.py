@@ -21,17 +21,12 @@ host = "https://www.vipporns.com"  # https://www.youfreeporntube.net
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append(Item(channel=item.channel, action="lista", title="Útimos videos",
-                         url= host + "/latest-updates/1/"))
-    itemlist.append(Item(channel=item.channel, action="lista", title="Populares",
-                         url=host + "/most-popular/1/"))
-    itemlist.append(Item(channel=item.channel, action="lista", title="Mejor valorado",
-                         url=host + "/top-rated/1/"))
-    itemlist.append(
-        Item(channel=item.channel, action="categorias", title="Canal", url=host + "/categories/"))
+    itemlist.append(item.clone(action="lista", title="Útimos videos", url= host + "/latest-updates/1/"))
+    itemlist.append(item.clone(action="lista", title="Populares", url=host + "/most-popular/1/"))
+    itemlist.append(item.clone(action="lista", title="Mejor valorado", url=host + "/top-rated/1/"))
+    itemlist.append(item.clone(action="categorias", title="Canal", url=host + "/categories/"))
 
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar",
-                         url=host + "/search.php?keywords="))
+    itemlist.append(item.clone(action="search", title="Buscar", url=host + "/search.php?keywords="))
     return itemlist
 
 
@@ -61,7 +56,7 @@ def categorias(item):
     for scrapedurl,scrapedtitle,scrapedthumbnail,cantidad in matches:
         title= "%s (%s)" %(scrapedtitle,cantidad)
         thumbnail =scrapedthumbnail
-        itemlist.append(Item(channel=item.channel, action="lista", title=title, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=title, url=scrapedurl,
                              thumbnail=thumbnail, fanart=thumbnail))
     return itemlist
 
@@ -81,7 +76,7 @@ def lista(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = urlparse.urljoin(item.url, scrapedthumbnail)
         title = "[COLOR yellow]%s[/COLOR] %s" % (time, scrapedtitle)
-        itemlist.append(Item(channel=item.channel, action="play", thumbnail=thumbnail, fanart=thumbnail, title=title,
+        itemlist.append(item.clone(action="play", thumbnail=thumbnail, fanart=thumbnail, title=title,
                              url=url, viewmode="movie", folder=True))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
     if "#" in next_page:
@@ -90,8 +85,7 @@ def lista(item):
         next_page = "?%s" % next_page
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

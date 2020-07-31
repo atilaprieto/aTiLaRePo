@@ -50,10 +50,10 @@ def download_and_play(url, file_name, download_path):
         dialog.update(0)
 
         while not cancelled and download_thread.isAlive():
-            dialog.update(download_thread.get_progress(), config.get_localized_string(60313),
+            dialog.update(download_thread.get_progress(), config.get_localized_string(60313) + '\n' + 
                           "Velocidad: " + str(int(old_div(download_thread.get_speed(), 1024))) + " KB/s " + str(
                               download_thread.get_actual_size()) + "MB de " + str(
-                              download_thread.get_total_size()) + "MB",
+                              download_thread.get_total_size()) + "MB" + 
                           "Tiempo restante: " + str(downloadtools.sec_to_hms(download_thread.get_remaining_time())))
             xbmc.sleep(1000)
 

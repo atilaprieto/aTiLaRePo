@@ -9,7 +9,7 @@ def get_video_url(page_url, video_password):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
     data = httptools.downloadpage(page_url).data
-    url = scrapertools.find_single_match(data, '"url":"([^"]+)"')
+    url = scrapertools.find_single_match(data, '{"url":"([^"]+)"')
     url =  url.replace("\/", "/")
     url = "https://xhamster.com%s" % url
     data = httptools.downloadpage(url).data

@@ -263,19 +263,21 @@ def findvideos(item):
 
 def decode_link(enc_url):
     logger.info()
-
+    url = ""
     try:
         new_data = get_source(enc_url)
-        new_enc_url = scrapertools.find_single_match(new_data, 'src="([^"]+)"')
-        if "gamovideo" in new_enc_url: return new_enc_url
-        try:
-            url = httptools.downloadpage(new_enc_url, follow_redirects=False).headers['location']
-        except:
-            if not 'jquery' in new_enc_url:
-                url = new_enc_url
+        if "gamovideo" in enc_url:
+            url = scrapertools.find_single_match(new_data, '<a href="([^"]+)"')
+        else:
+            new_enc_url = scrapertools.find_single_match(new_data, 'src="([^"]+)"')
+
+            try:
+                url = httptools.downloadpage(new_enc_url, follow_redirects=False).headers['location']
+            except:
+                if not 'jquery' in new_enc_url:
+                    url = new_enc_url
     except:
         pass
-
     return url
 
 
@@ -285,6 +287,8 @@ def play(item):
     if item.server not in ['openload', 'streamcherry', 'streamango']:
         item.server = ''
     item.url = decode_link(item.url)
+    if not item.url:
+        return []
     itemlist.append(item.clone())
     itemlist = servertools.get_servers_itemlist(itemlist)
 

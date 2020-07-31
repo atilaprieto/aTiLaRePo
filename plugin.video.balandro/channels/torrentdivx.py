@@ -6,13 +6,14 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-# ~ HOST = 'https://www.torrentdivx.com/'
-HOST = 'https://www.esdivx.nl/'
+HOST = 'https://www.torrentdivx.com/'
+# ~ HOST = 'https://www.esdivx.nl/'
 
 perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (5x8=40) para que la subpaginación interna no se descompense
 
 def do_downloadpage(url, post=None, headers=None):
-    url = url.replace('https://www.torrentdivx.com/', 'https://www.esdivx.nl/') # por si viene de enlaces guardados
+    # ~ url = url.replace('https://www.torrentdivx.com/', 'https://www.esdivx.nl/') # por si viene de enlaces guardados
+    url = url.replace('https://www.esdivx.nl/', 'https://www.torrentdivx.com/') # por si viene de enlaces guardados
     data = httptools.downloadpage(url, post=post, headers=headers).data
     return data
 
@@ -210,6 +211,7 @@ def findvideos(item):
     matches = scrapertools.find_multiple_matches(bloque, '<tr(.*?)</tr>')
     for enlace in matches:
         if '<th' in enlace or 'torrent' not in enlace: continue
+        if "id='link-fake'" in enlace: continue
         url = scrapertools.find_single_match(enlace, " href='([^']+)")
         if not url: continue
         tds = scrapertools.find_multiple_matches(enlace, '<td>(.*?)</td>')
@@ -227,6 +229,7 @@ def findvideos(item):
         for url in matches:
             itemlist.append(Item( channel = item.channel, action = 'play', server = 'torrent', title = '', url = url ))
 
+    # ~ for it in itemlist: logger.info(it.url)
     return itemlist
 
 def play(item):

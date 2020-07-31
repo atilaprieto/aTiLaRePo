@@ -30,12 +30,15 @@ if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 from builtins import object
 
 import os
+import time
 import xbmc, xbmcgui, xbmcaddon
 
 from .net import HTTP
-from core import filetools                                                                                          ### Alfa
+from core import filetools                                                      ### Alfa
+from core import ziptools
 
-__libbaseurl__ = "https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"
+#__libbaseurl__ = "https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"
+__libbaseurl__ = ["https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"]
 #__settings__ = xbmcaddon.Addon(id='script.module.libtorrent')
 #__version__ = __settings__.getAddonInfo('version')
 #__plugin__ = __settings__.getAddonInfo('name') + " v." + __version__
@@ -76,10 +79,14 @@ class LibraryManager(object):
             pass
         if ver1 >= 1 and ver2 >= 2:
             global __libbaseurl__
-            #__libbaseurl__ = 'https://github.com/alfa-addon/alfa-repo/raw/master/downloads/libtorrent'
-            __libbaseurl__ = 'https://bitbucket.org/alfa_addon/alfa-repo/raw/master/downloads/libtorrent'
+            __libbaseurl__ = ['https://github.com/alfa-addon/alfa-repo/raw/master/downloads/libtorrent', \
+                              'https://bitbucket.org/alfa_addon/alfa-repo/raw/master/downloads/libtorrent']
+        else:
+            __libbaseurl__ = ["https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"]
 
-    def check_exist(self):
+    def check_exist(self, dest_path='', platform=''):
+        if dest_path: self.dest_path = dest_path
+        if platform: self.platform = platform
         for libname in get_libname(self.platform):
             if not filetools.exists(os.path.join(self.dest_path,libname)):
                 return False
@@ -97,14 +104,31 @@ class LibraryManager(object):
                     need_update=True
         return need_update
 
-    def update(self):
+    def update(self, dest_path='', platform=''):
+        if dest_path: self.dest_path = dest_path
+        if platform: self.platform = platform
         if self.check_update():
             for libname in get_libname(self.platform):
                 self.libpath = os.path.join(self.dest_path, libname)
                 filetools.remove(self.libpath)
             self.download()
 
-    def download(self):
+    def download(self, dest_path='', platform=''):
+        if dest_path: self.dest_path = dest_path
+        if platform: self.platform = platform
+        ver1, ver2, ver3 = platform['version'].split('.')                       ### Alfa: resto método
+        try:
+            ver1 = int(ver1)
+            ver2 = int(ver2)
+        except:
+            pass
+        if ver1 >= 1 and ver2 >= 2:
+            global __libbaseurl__
+            __libbaseurl__ = ['https://github.com/alfa-addon/alfa-repo/raw/master/downloads/libtorrent', \
+                              'https://bitbucket.org/alfa_addon/alfa-repo/raw/master/downloads/libtorrent']
+        else:
+            __libbaseurl__ = ["https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"]
+            
         __settings__ = xbmcaddon.Addon(id='plugin.video.alfa')                  ### Alfa
         filetools.mkdir(self.dest_path)
         for libname in get_libname(self.platform):
@@ -112,28 +136,48 @@ class LibraryManager(object):
             if PY3: p_version += '_PY3'
             dest = os.path.join(self.dest_path, libname)
             log("try to fetch %s/%s/%s" % (self.platform['system'], p_version, libname))
-            url = "%s/%s/%s/%s.zip" % (__libbaseurl__, self.platform['system'], p_version, libname)
-            url_size = "%s/%s/%s/%s.size.txt" % (__libbaseurl__, self.platform['system'], p_version, libname)
-            if libname!='liblibtorrent.so':
-                try:
-                    self.http = HTTP()
-                    self.http.fetch(url, download=dest + ".zip", progress=False)                    ### Alfa
-                    log("%s -> %s" % (url, dest))
-                    self.http.fetch(url_size, download=dest + '.size.txt', progress=False)          ### Alfa
-                    log("%s -> %s" % (url_size, dest + '.size.txt'))
-                    xbmc.executebuiltin('XBMC.Extract("%s.zip","%s")' % (dest, self.dest_path), True)
-                    filetools.remove(dest + ".zip")
-                except:
-                    text = 'Failed download %s!' % libname
-                    xbmc.executebuiltin("XBMC.Notification(%s,%s,%s,%s)" % (__plugin__,text,750,__icon__))
+            
+            for url_lib in __libbaseurl__:                                      ### Alfa
+                url = "%s/%s/%s/%s.zip" % (url_lib, self.platform['system'], p_version, libname)
+                url_size = "%s/%s/%s/%s.size.txt" % (url_lib, self.platform['system'], p_version, libname)
+                if libname!='liblibtorrent.so':
+                    try:
+                        self.http = HTTP()
+                        response = self.http.fetch(url, download=dest + ".zip", progress=False)                ### Alfa
+                        log("%s -> %s" % (url, dest))
+                        if response.code != 200: continue                                      ### Alfa
+                        response = self.http.fetch(url_size, download=dest + '.size.txt', progress=False)      ### Alfa
+                        log("%s -> %s" % (url_size, dest + '.size.txt'))
+                        if response.code != 200: continue                                      ### Alfa
+                        
+                        try:
+                            unzipper = ziptools.ziptools()
+                            unzipper.extract("%s.zip" % dest, self.dest_path)
+                        except:
+                            xbmc.executebuiltin('Extract("%s.zip","%s")' % (dest, self.dest_path))
+                            time.sleep(1)
+                        if filetools.exists(dest):
+                            filetools.remove(dest + ".zip")
+                    except:
+                        import traceback
+                        text = 'Failed download %s!' % libname
+                        log(text)
+                        log(traceback.format_exc(1))
+                        #xbmc.executebuiltin("Notification(%s,%s,%s,%s)" % (__plugin__,text,750,__icon__))
+                        continue
+                else:
+                    filetools.copy(os.path.join(self.dest_path, 'libtorrent.so'), dest, silent=True)    ### Alfa
+                
+                dest_alfa = os.path.join(xbmc.translatePath(__settings__.getAddonInfo('Path')), \
+                                'lib', libname)                                 ### Alfa
+                #filetools.copy(dest, dest_alfa, silent=True)                    ### Alfa
+                dest_alfa = os.path.join(xbmc.translatePath(__settings__.getAddonInfo('Profile')), \
+                                'custom_code', 'lib', libname)                  ### Alfa
+                filetools.copy(dest, dest_alfa, silent=True)                    ### Alfa
+                break
             else:
-                filetools.copy(os.path.join(self.dest_path, 'libtorrent.so'), dest, silent=True)    ### Alfa
-            dest_alfa = os.path.join(xbmc.translatePath(__settings__.getAddonInfo('Path')), \
-                            'lib', libname)                                     ### Alfa
-            filetools.copy(dest, dest_alfa, silent=True)                        ### Alfa
-            dest_alfa = os.path.join(xbmc.translatePath(__settings__.getAddonInfo('Profile')), \
-                            'custom_code', 'lib', libname)                      ### Alfa
-            filetools.copy(dest, dest_alfa, silent=True)                        ### Alfa
+                return False
+
         return True
 
     def android_workaround(self, new_dest_path):                                ### Alfa (entera)

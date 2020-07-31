@@ -52,7 +52,7 @@ ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
 # Headers por defecto, si no se especifica nada
 default_headers = dict()
 #default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/79.0.3945.117"
-default_headers["User-Agent"] = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+default_headers["User-Agent"] = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36"
 default_headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
 default_headers["Accept-Language"] = "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"
 default_headers["Accept-Charset"] = "UTF-8"
@@ -77,6 +77,7 @@ def get_url_headers(url, forced=False):
     if sub_dom and not 'google' in url:
         domain = sub_dom
     domain_cookies = cj._cookies.get("." + domain, {}).get("/", {})
+    domain_cookies.update(cj._cookies.get("www." + domain, {}).get("/", {}))
 
     if "|" in url or not "cf_clearance" in domain_cookies:
         if not forced:
@@ -295,6 +296,7 @@ def check_proxy(url, **opt):
                 if proxy_addr_forced: proxy_data['CF_addr'] = proxy_addr_forced
                 proxy_data['dict'] = proxy_data['CF_addr']
                 proxy_data['stat'] = ', Proxy CF ' + proxy_data['log']
+                opt['CF'] = True
             elif proxy and proxy_addr_forced:
                 proxy_data['addr'] = proxy_addr_forced
                 proxy_data['dict'] = proxy_data['addr']
@@ -330,6 +332,7 @@ def check_proxy(url, **opt):
                     proxy = True
                     proxy_data['dict'] = proxy_data['CF_addr']
                     proxy_data['stat'] = ', Proxy CF ' + proxy_data['log']
+                    opt['CF'] = True
                 elif proxy_data['addr']:
                     proxy = True
                     proxy_data['dict'] = proxy_data['addr']
@@ -390,6 +393,7 @@ def proxy_post_processing(url, proxy_data, response, opt):
                     opt['forced_proxy'] = 'ProxyCF'
                     url =opt['url_save']
                     opt['post'] = opt['post_save']
+                    opt['CF'] = True
                 else:
                     proxytools.get_proxy_list_method(proxy_init='ProxyWeb',
                                                      error_skip=proxy_data['web_name'])
@@ -455,6 +459,8 @@ def downloadpage(url, **opt):
 
     # Headers por defecto, si no se especifica nada
     req_headers = default_headers.copy()
+    if opt.get('add_referer', False):
+        req_headers['Referer'] = "/".join(url.split("/")[:3])
 
     # Headers pasados como parametros
     if opt.get('headers', None) is not None:
@@ -481,7 +487,7 @@ def downloadpage(url, **opt):
 
         domain = urlparse.urlparse(url)[1]
         global CS_stat
-        if domain in CF_LIST or opt.get('CF', False):                         #Está en la lista de CF o viene en la llamada
+        if domain in CF_LIST or opt.get('CF', False):                           #Está en la lista de CF o viene en la llamada
             from lib import cloudscraper
             session = cloudscraper.create_scraper()                             #El dominio necesita CloudScraper
             session.verify = True
@@ -599,9 +605,12 @@ def downloadpage(url, **opt):
 
         response['data'] = req.content
         try:
-            encoding = req.encoding
+            response['encoding'] = None
+            if req.encoding is not None:
+                response['encoding'] = str(req.encoding).lower()
+            encoding = response['encoding']
             if not encoding:
-                encoding = 'utf8'
+                encoding = 'utf-8'
             if PY3 and isinstance(response['data'], bytes) and 'Content-Type' in req.headers \
                         and ('text/' in req.headers['Content-Type'] or 'json' in req.headers['Content-Type'] \
                         or 'xml' in req.headers['Content-Type']):
@@ -636,7 +645,10 @@ def downloadpage(url, **opt):
         if not response['data']:
             response['data'] = ''
         try:
-            response['json'] = to_utf8(req.json())
+            if 'Content-Type' in req.headers and 'bittorrent' not in req.headers['Content-Type']:
+                response['json'] = to_utf8(req.json())
+            else:
+                response['json'] = dict()
         except:
             response['json'] = dict()
         response['code'] = response_code

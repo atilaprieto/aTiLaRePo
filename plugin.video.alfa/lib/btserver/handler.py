@@ -1,12 +1,22 @@
 # -*- coding: utf-8 -*-
 
-import BaseHTTPServer
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+    
+if PY3:
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urlparse
+    import http.server as BaseHTTPServer
+else:
+    import urllib                                               # Usamos el nativo de PY2 que es más rápido
+    import urlparse
+    import BaseHTTPServer
+
 import os
 import re
 import time
 import types
-import urllib
-import urlparse
 
 RANGE_RE = re.compile(r'bytes=(\d+)-')
 
@@ -121,7 +131,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header('Accept-Ranges', 'bytes')
 
         if range:
-            if isinstance(range, (types.TupleType, types.ListType)) and len(range) == 3:
+            if isinstance(range, (tuple, list)) and len(range) == 3:
                 self.send_header('Content-Range', 'bytes %d-%d/%d' % range)
                 self.send_header('Content-Length', range[1] - range[0] + 1)
             else:

@@ -23,14 +23,14 @@ host = 'https://www.xozilla.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append(Item(channel=item.channel, title="Nuevas", action="lista", url=host + "/latest-updates/"))
-    itemlist.append(Item(channel=item.channel, title="Popular", action="lista", url=host + "/most-popular/"))
-    itemlist.append(Item(channel=item.channel, title="Mejor valorada", action="lista", url=host + "/top-rated/"))
+    itemlist.append(item.clone(title="Nuevas", action="lista", url=host + "/latest-updates/"))
+    itemlist.append(item.clone(title="Popular", action="lista", url=host + "/most-popular/"))
+    itemlist.append(item.clone(title="Mejor valorada", action="lista", url=host + "/top-rated/"))
 
-    itemlist.append(Item(channel=item.channel, title="PornStar", action="categorias", url=host + "/models/"))
-    itemlist.append(Item(channel=item.channel, title="Canal", action="categorias", url=host + "/channels/"))
-    itemlist.append(Item(channel=item.channel, title="Categorias", action="categorias", url=host + "/categories/"))
-    itemlist.append(Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="PornStar", action="categorias", url=host + "/models/"))
+    itemlist.append(item.clone(title="Canal", action="categorias", url=host + "/channels/"))
+    itemlist.append(item.clone(title="Categorias", action="categorias", url=host + "/categories/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -62,7 +62,7 @@ def categorias(item):
         cantidad = scrapertools.find_single_match(cantidad, '(\d+) videos</div>')
         if cantidad:
             scrapedtitle= "%s (%s)" % (scrapedtitle, cantidad)
-        itemlist.append(Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                              thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot))
     if not "models" in item.url:
         itemlist.sort(key=lambda x: x.title)
@@ -71,11 +71,11 @@ def categorias(item):
     page = scrapertools.find_single_match(item.url, '([^"]+)\d+')
     if next_page != "#videos" and next_page != "":
         next_page = urlparse.urljoin(item.url, next_page)
-        itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page))
+        itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     if next_page == "#videos":
         next_page = scrapertools.find_single_match(data, ':(\d+)">Next</a>')
         next_page = "%s%s/" %(page, next_page)
-        itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page))
+        itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist
 
 
@@ -96,17 +96,17 @@ def lista(item):
         thumbnail = scrapedthumbnail
         plot = ""
         year = ""
-        itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
+        itemlist.append(item.clone(action="play", title=title, url=url, thumbnail=thumbnail,
                              fanart=thumbnail, plot=plot, contentTitle=contentTitle))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
     page = scrapertools.find_single_match(item.url, '([^"]+)\d+')
     if not "#" in next_page:
         next_page = urlparse.urljoin(item.url, next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     else:
         next_page = scrapertools.find_single_match(data, ':(\d+)">Next</a>')
         next_page = "%s%s/" %(page, next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist
 
 

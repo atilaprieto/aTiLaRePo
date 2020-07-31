@@ -139,6 +139,22 @@
       "default": true,
       "enabled": true,
       "visible": false
+    },
+    {
+      "id": "include_in_newest_latino",
+      "type": "bool",
+      "label": "Incluir en Novedades - Latino",
+      "default": true,
+      "enabled": true,
+      "visible": false
+    },
+    {
+      "id": "include_in_newest_torrent",
+      "type": "bool",
+      "label": "Incluir en Novedades - Torrent",
+      "default": true,
+      "enabled": true,
+      "visible": true
     }
   ]
 }

@@ -4,7 +4,7 @@
 # -*- By the Alfa Develop Group -*-
 
 import re
-
+import sys
 from channels import autoplay
 from channels import filtertools
 from core import httptools
@@ -21,6 +21,7 @@ IDIOMAS = {'la_la': 'LAT', 'es_es':'CAST', 'en_es':'VOSE', 'en_en':'VO'}
 list_language = IDIOMAS.values()
 list_quality = []
 list_servers = ['xdrive', 'bitertv', 'okru']
+
 
 def get_source(url, referer=None):
     logger.info()
@@ -168,15 +169,20 @@ def findvideos(item):
 
 def search(item, texto):
     logger.info()
-    itemlist = []
-    texto = texto.replace(" ", "+")
-    item.url = item.url + texto
-    if texto != '':
-        try:
+    try:
+        texto = texto.replace(" ", "+")
+        item.url = item.url + texto
+
+        if texto != '':
             return list_all(item)
-        except:
-            itemlist.append(item.clone(url='', title='No hay elementos...', action=''))
-            return itemlist
+        else:
+            return []
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []
+
 
 def newest(categoria):
     logger.info()

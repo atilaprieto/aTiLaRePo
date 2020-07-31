@@ -5,9 +5,9 @@ PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
 if PY3:
-    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
 else:
-    import urlparse                                             # Usamos el nativo de PY2 que es más rápido
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
 
 import re
 import time
@@ -56,6 +56,7 @@ def mainlist(item):
     thumb_documentales = get_thumb("channels_documentary.png")
     thumb_alfabeto = get_thumb("channels_movie_az.png")
     thumb_genero = get_thumb("genres.png")
+    thumb_calidad = get_thumb("top_rated.png")
     thumb_buscar = get_thumb("search.png")
     thumb_separador = get_thumb("next.png")
     thumb_settings = get_thumb("setting_0.png")
@@ -98,7 +99,7 @@ def submenu(item):
     
     thumb_alfabeto = get_thumb("channels_movie_az.png")
     thumb_genero = get_thumb("genres.png")
-    thumb_anno = get_thumb("update.png")
+    thumb_anno = get_thumb("years.png")
 
     patron = '<h1\s*class="list-group-item top"\s*style="[^"]+">.*?<\/h1>\s*(.*?)<\/span><\/div>'
     data, success, code, item, itemlist = generictools.downloadpage(item.url, timeout=timeout, s2=False, 
@@ -281,19 +282,32 @@ def listado(item):                                                              
     
     curr_page = 1                                                               # Página inicial
     last_page = 99999                                                           # Última página inicial
+    last_page_print = 1                                                         # Última página inicial, para píe de página
+    page_factor = 1.0                                                           # Factor de conversión de pag. web a pag. Alfa
     if item.curr_page:
         curr_page = int(item.curr_page)                                         # Si viene de una pasada anterior, lo usamos
         del item.curr_page                                                      # ... y lo borramos
     if item.last_page:
         last_page = int(item.last_page)                                         # Si viene de una pasada anterior, lo usamos
         del item.last_page                                                      # ... y lo borramos
+    if item.page_factor:
+        page_factor = float(item.page_factor)                                   # Si viene de una pasada anterior, lo usamos
+        del item.page_factor                                                    # ... y lo borramos
+    if item.last_page_print:
+        last_page_print = item.last_page_print                                  # Si viene de una pasada anterior, lo usamos
+        del item.last_page_print                                                # ... y lo borramos
     
     cnt_tot = 30                                                                # Poner el num. máximo de items por página
     cnt_title = 0                                                               # Contador de líneas insertadas en Itemlist
+    if item.cnt_tot_match:
+        cnt_tot_match = float(item.cnt_tot_match)                               # restauramos el contador TOTAL de líneas procesadas de matches
+        del item.cnt_tot_match
+    else:
+        cnt_tot_match = 0.0                                                     # Contador TOTAL de líneas procesadas de matches
     inicio = time.time()                                    # Controlaremos que el proceso no exceda de un tiempo razonable
     fin = inicio + 5                                                            # Después de este tiempo pintamos (segundos)
     timeout_search = timeout * 2                                                # Timeout para descargas
-    if item.extra == 'search' and item.extra2 == 'episodios':                   # Si viene de episodio que quitan los límites
+    if item.extra == 'search' and item.extra2 == 'episodios':                   # Si viene de episodio se quitan los límites
         cnt_tot = 999
         fin = inicio + 30
 
@@ -385,7 +399,7 @@ def listado(item):                                                              
                 post = re.sub(r'pagina=(\d+)', 'pagina=%s' % str(curr_page), post)
             else:                                                               # Resto
                 next_page_url = re.sub(r'page\/(\d+)', 'page/%s' % str(curr_page), item.url)
-            #logger.debug('curr_page: ' + str(curr_page) + ' / last_page: ' + str(last_page))
+            #logger.debug('curr_page: ' + str(curr_page) + ' / last_page: ' + str(last_page) + ' / page_factor: ' + str(page_factor))
         
         #Buscamos la última página
         if last_page == 99999:                                                  #Si es el valor inicial, buscamos
@@ -394,6 +408,7 @@ def listado(item):                                                              
                 patron_last = '<option value="(\d+)"[^<]+<\/option><\/select>'
                 try:
                     last_page = int(scrapertools.find_single_match(data, patron_last))
+                    page_factor = float(len(matches)) / float(cnt_tot)
                 except:                                                         #Si no lo encuentra, lo ponemos a 999
                     last_page = 999
             elif item.extra2 == 'novedades':                                    # Novedades, no hay última página
@@ -408,10 +423,11 @@ def listado(item):                                                              
                 
                 try:
                     last_page = int(scrapertools.find_single_match(data, patron_last))
+                    page_factor = float(len(matches)) / float(cnt_tot)
                 except:                                                         #Si no lo encuentra, lo ponemos a 999
                     last_page = 999
 
-            #logger.debug('curr_page: ' + str(curr_page) + ' / last_page: ' + str(last_page))
+            #logger.debug('curr_page: ' + str(curr_page) + ' / last_page: ' + str(last_page) + ' / page_factor: ' + str(page_factor))
         
         #Empezamos el procesado de matches
         for scrapedurl, scrapedtitle, scrapedquality in matches:
@@ -579,6 +595,7 @@ def listado(item):                                                              
             #logger.debug(item_local)
     
         matches = matches[cnt_match:]                                           # Salvamos la entradas no procesadas
+        cnt_tot_match += cnt_match                                              # Calcular el num. total de items mostrados
     
     #Pasamos a TMDB la lista completa Itemlist
     tmdb.set_infoLabels(itemlist, __modo_grafico__, idioma_busqueda='es')
@@ -588,15 +605,21 @@ def listado(item):                                                              
 
     # Si es necesario añadir paginacion
     if curr_page <= last_page or len(matches) > 0:
+        curr_page_print = int(cnt_tot_match / float(cnt_tot))
+        if curr_page_print < 1:
+            curr_page_print = 1
         if last_page:
-            title = '%s de %s' % (curr_page-1, last_page)
+            if last_page > 1:
+                last_page_print = int((last_page * page_factor) + 0.999999)
+            title = '%s de %s' % (curr_page_print, last_page_print)
         else:
-            title = '%s' % curr_page-1
+            title = '%s' % curr_page_print
 
         itemlist.append(Item(channel=item.channel, action="listado", title=">> Página siguiente " 
                         + title, title_lista=title_lista, url=next_page_url, extra=item.extra, 
                         extra2=item.extra2, last_page=str(last_page), curr_page=str(curr_page), 
-                        matches=matches, post=post))
+                        page_factor=str(page_factor), cnt_tot_match=str(cnt_tot_match), matches=matches, 
+                        last_page_print=last_page_print, post=post))
 
     return itemlist
 
@@ -632,7 +655,8 @@ def findvideos(item):
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
     if (not data and not item.matches) or code == 999:
         if item.emergency_urls and not item.videolibray_emergency_urls:         #Hay urls de emergencia?
-            matches = item.emergency_urls[1]                                    #Restauramos matches de vídeos
+            if len(item.emergency_urls) > 1:
+                matches = item.emergency_urls[1]                                #Restauramos matches de vídeos
             item.armagedon = True                                               #Marcamos la situación como catastrófica 
         else:
             if item.videolibray_emergency_urls:                                 #Si es llamado desde creación de Videoteca...
@@ -691,15 +715,14 @@ def findvideos(item):
         local_torr = ''
         if item.emergency_urls and not item.videolibray_emergency_urls:
             item_local.torrent_alt = item.emergency_urls[0][0]                  #Guardamos la url del .Torrent ALTERNATIVA
+            from core import filetools
+            if item.contentType == 'movie':
+                FOLDER = config.get_setting("folder_movies")
+            else:
+                FOLDER = config.get_setting("folder_tvshows")
             if item.armagedon:
                 item_local.url = item.emergency_urls[0][0]                      #Restauramos la url
-                if item_local.url.startswith("\\") or item_local.url.startswith("/"):
-                    from core import filetools
-                    if item.contentType == 'movie':
-                        FOLDER = config.get_setting("folder_movies")
-                    else:
-                        FOLDER = config.get_setting("folder_tvshows")
-                    local_torr = filetools.join(config.get_videolibrary_path(), FOLDER, item_local.url)
+                local_torr = filetools.join(config.get_videolibrary_path(), FOLDER, item_local.url)
             if len(item.emergency_urls[0]) > 1:
                 del item.emergency_urls[0][0]
         
@@ -711,6 +734,11 @@ def findvideos(item):
         if not size and not item.videolibray_emergency_urls:
             if not item.armagedon:
                 size = generictools.get_torrent_size(item_local.url, local_torr=local_torr) #Buscamos el tamaño en el .torrent desde la web
+                if 'ERROR' in size and item.emergency_urls and not item.videolibray_emergency_urls:
+                    item_local.armagedon = True
+                    item_local.url = item.emergency_urls[0][0]                      #Restauramos la url
+                    local_torr = filetools.join(config.get_videolibrary_path(), FOLDER, item_local.url)
+                    size = generictools.get_torrent_size(item_local.url, local_torr=local_torr) #Buscamos el tamaño en el .torrent emergencia
         if size:
             size = size.replace('GB', 'G·B').replace('Gb', 'G·b').replace('MB', 'M·B')\
                         .replace('Mb', 'M·b').replace('.', ',')
@@ -738,6 +766,9 @@ def findvideos(item):
         if item.videolibray_emergency_urls:
             item.emergency_urls[0].append(item_local.url)                       #guardamos la url y nos vamos
             continue
+            
+        if item_local.armagedon:
+            item_local.quality = '[COLOR hotpink][E][/COLOR] [COLOR limegreen]%s[/COLOR]' % item_local.quality
 
         #Ahora pintamos el link del Torrent
         item_local.title = '[[COLOR yellow]?[/COLOR]] [COLOR yellow][Torrent][/COLOR] ' \
@@ -751,15 +782,31 @@ def findvideos(item):
         item_local.title = item_local.title.replace("--", "").replace("[]", "")\
                         .replace("()", "").replace("(/)", "").replace("[/]", "")\
                         .replace("|", "").strip()
+        
         item_local.quality = re.sub(r'\s?\[COLOR \w+\]\[\[?\s?\]?\]\[\/COLOR\]', '', item_local.quality)
         item_local.quality = re.sub(r'\s?\[COLOR \w+\]\s?\[\/COLOR\]', '', item_local.quality)
         item_local.quality = item_local.quality.replace("--", "").replace("[]", "")\
                         .replace("()", "").replace("(/)", "").replace("[/]", "")\
                         .replace("|", "").strip()
         
-        item_local.alive = "??"                                                 #Calidad del link sin verificar
-        item_local.action = "play"                                              #Visualizar vídeo
-        item_local.server = "torrent"                                           #Seridor Torrent
+        if not size or 'Magnet' in size:
+            item_local.alive = "??"                                             #Calidad del link sin verificar
+        elif 'ERROR' in size and 'Pincha' in size:
+            item_local.alive = "ok"                                             #link en error, CF challenge, Chrome disponible
+        elif 'ERROR' in size and 'Introduce' in size:
+            item_local.alive = "??"                                             #link en error, CF challenge, ruta de descarga no disponible
+            item_local.channel = 'setting'
+            item_local.action = 'setting_torrent'
+            item_local.unify = False
+            item_local.folder = False
+            item_local.item_org = item.tourl()
+        elif 'ERROR' in size:
+            item_local.alive = "no"                                             #Calidad del link en error, CF challenge?
+        else:
+            item_local.alive = "ok"                                             #Calidad del link verificada
+        if item_local.channel != 'setting':
+            item_local.action = "play"                                          #Visualizar vídeo
+            item_local.server = "torrent"                                       #Seridor Torrent
         
         itemlist_t.append(item_local.clone())                                   #Pintar pantalla, si no se filtran idiomas
         
@@ -946,7 +993,7 @@ def episodios(item):
                 if item.extra == 'documentales':
                     item_local.contentEpisodeNumber = 1
 
-            if epi_rango:                                                       #Si son episodios múltiples, lo guardamos
+            if epi_rango:                                                       #Si son episodi os múltiples, lo guardamos
                 item_local.infoLabels['episodio_titulo'] = 'al %s' % str(alt_epi).zfill(2)
                 item_local.title = '%sx%s al %s' % (str(item_local.contentSeason), 
                         str(item_local.contentEpisodeNumber).zfill(2), str(alt_epi).zfill(2))
@@ -968,7 +1015,7 @@ def episodios(item):
         itemlist = sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))       #clasificamos
         
     if item.season_colapse and not item.add_videolibrary:                       #Si viene de listado, mostramos solo Temporadas
-        item, itemlist = generictools.post_tmdb_seasons(item, itemlist, url='episode')
+        item, itemlist = generictools.post_tmdb_seasons(item, itemlist, url='season')
 
     if not item.season_colapse:                                                 #Si no es pantalla de Temporadas, pintamos todo
         # Pasada por TMDB y clasificación de lista por temporada y episodio
@@ -985,7 +1032,7 @@ def episodios(item):
 def find_seasons(item, modo_ultima_temp_alt, max_temp, max_nfo, list_temps=[]):
     logger.info()
     
-    # Si hay varias temporadas, buscamos todas las ocurrencias y las filtraos por TMDB, calidad e idioma
+    # Si hay varias temporadas, buscamos todas las ocurrencias y las filtrados por TMDB, calidad e idioma
     list_temp = []
     itemlist = []
     #patron_quality = '(?:Temporada|Miniserie)(?:-(.*?)(?:\.|$)|()\.|()$)'

@@ -107,7 +107,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     video_id = scrapertools.find_single_match(page_url, '(?:v=|embed/)([A-z0-9_-]{11})')
     video_urls = extract_videos(video_id)
 
-    return video_urls
+    return sorted(video_urls, reverse=True)
 
 
 def remove_additional_ending_delimiter(data):

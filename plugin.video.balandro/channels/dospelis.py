@@ -341,7 +341,6 @@ def findvideos(item):
 
     return itemlist
 
-
 def play(item):
     logger.info()
     itemlist = []
@@ -360,8 +359,14 @@ def play(item):
         url = scrapertools.find_single_match(data, "src='([^']+)")
         if not url: url = scrapertools.find_single_match(data, 'src="([^"]+)')
         if url: 
-            if 'jwplayer' in url and 'source=' in url: # Ej: https://www.dospelis.online/jwplayer-2/?source=https%3A%2F%2Fyoutu.be%2Fzcn89lxhEWk&id=71977&type=mp4
-                url = urllib.unquote(scrapertools.find_single_match(url, "source=([^&']+)"))
+            if 'jwplayer' in url and 'source=' in url: 
+                # Ej: https://www.dospelis.online/jwplayer-2/?source=12ZOwR37oT0mPRlEdceQ1f2t1jSac8H9U&id=127575&type=gdrive
+                # Ej: https://www.dospelis.online/jwplayer-2/?source=https%3A%2F%2Fyoutu.be%2Fzcn89lxhEWk&id=71977&type=mp4
+                if 'type=gdrive' in url: 
+                    url = 'http://docs.google.com/get_video_info?docid=' + urllib.unquote(scrapertools.find_single_match(url, "source=([^&']+)"))
+                else: 
+                    url = urllib.unquote(scrapertools.find_single_match(url, "source=([^&']+)"))
+
             elif 'streamcrypt.net/' in url: # Ej: https://streamcrypt.net/embed/streamz.cc/...
                 url = scrapertools.decode_streamcrypt(url)
 

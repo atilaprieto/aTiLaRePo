@@ -23,14 +23,14 @@ host = 'https://www.pornohdmega.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/?filter=latest"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorados" , action="lista", url=host + "/?filter=top-rated"))
-    itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "/?filter=most-viewed"))
-    itemlist.append( Item(channel=item.channel, title="Mas popular" , action="lista", url=host + "/?filter=popular"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host + "/?filter=latest"))
+    itemlist.append(item.clone(title="Mejor valorados" , action="lista", url=host + "/?filter=top-rated"))
+    itemlist.append(item.clone(title="Mas vistos" , action="lista", url=host + "/?filter=most-viewed"))
+    itemlist.append(item.clone(title="Mas popular" , action="lista", url=host + "/?filter=popular"))
     
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="catalogo", url=host + "/categories/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/tags/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Canal" , action="catalogo", url=host + "/categories/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/tags/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -60,7 +60,7 @@ def categorias(item):
         thumbnail = ""
         scrapedplot = ""
         if int(numero) > 10:
-            itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+            itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                                   thumbnail=thumbnail , plot=scrapedplot) )
     return itemlist
 
@@ -78,7 +78,7 @@ def catalogo(item):
         title = scrapedtitle
         thumbnail = scrapedthumbnail
         scrapedplot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               thumbnail=thumbnail , plot=scrapedplot) )
     return itemlist
 
@@ -101,7 +101,7 @@ def lista(item):
             title = scrapedtitle
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle = title, url=scrapedurl,
+        itemlist.append(item.clone(action="play", title=title, contentTitle = title, url=scrapedurl,
                               fanart=thumbnail, thumbnail=thumbnail, plot=plot,))
     next_page = scrapertools.find_single_match(data, '<li><a class="current">.*?<a href="([^"]+)" class="inactive">')
     if next_page:

@@ -143,7 +143,7 @@ def list_all(item):
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
-    orden = ['CAM', 'TS', 'TS-HQ', 'WEB-S', 'HD-S', 'DVD-S', 'BR-S', 'HD-TC', 'DVD-R', 'HD-R', 'BR-R']
+    orden = ['CAM', 'TS', 'TS-HQ', 'WEB-S', 'HD-S', 'DVD-S', 'BR-S', 'HD-TC', 'HD-TV', 'DVD-R', 'HD-R', 'BR-R']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

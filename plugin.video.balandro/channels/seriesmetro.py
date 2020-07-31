@@ -180,7 +180,7 @@ def findvideos(item):
     dterm = scrapertools.find_single_match(data, ' data-term="([^"]+)')
     if not dterm: return itemlist
 
-    matches = scrapertools.find_multiple_matches(data, '<a data-opt="([^"]+)".*?<span class="option">Cload - ([^<]*)')
+    matches = scrapertools.find_multiple_matches(data, '<a data-opt="([^"]+)".*?<span class="option">(?:Cload|CinemaUpload) - ([^<]*)')
     for dopt, lang in matches:
         itemlist.append(Item( channel = item.channel, action = 'play', server = 'directo',
                               title = '', dterm = dterm, dopt = dopt, url = item.url, 

@@ -10,10 +10,18 @@ def get_video_url(page_url, url_referer=''):
     
     page_url = page_url.replace('mixdrop.to/', 'mixdrop.co/')
     page_url = page_url.replace('mixdrop.co/f/', 'mixdrop.co/e/')
+    page_url = page_url.replace('mixdrop.co/embed/', 'mixdrop.co/e/')
 
     headers = {'Referer': page_url.replace('mixdrop.co/e/', 'mixdrop.co/f/')}
     data = httptools.downloadpage(page_url, headers=headers).data
     # ~ logger.debug(data)
+    
+    url = scrapertools.find_single_match(data, 'window\.location\s*=\s*"([^"]+)')
+    if url:
+        if url.startswith('/e/'): url = 'https://mixdrop.co' + url
+        data = httptools.downloadpage(url).data
+        # ~ logger.debug(data)
+    
 
     packed = scrapertools.find_multiple_matches(data, "(?s)eval(.*?)\s*</script>")
     for pack in packed:

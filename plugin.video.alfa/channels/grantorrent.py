@@ -48,11 +48,12 @@ list_servers = ['torrent']
 #host = 'https://grantorrent.li/'
 #host = 'https://grantorrent.cc/'
 #host = 'https://grantorrent.eu/'
-host = 'https://grantorrentt.com/'
+#host = 'https://grantorrentt.com/'
+host = 'https://grantorrent.nl/'
 channel = "grantorrent"
-domain = 'grantorrentt.com'
-sufix = '.com'
-domain_files = 'files.grantorrent.la'
+domain = 'grantorrent.eu'
+sufix = '.eu'
+domain_files = 'files.grantorrent.eu'
 domain_files_old = 'files.grantorrent.eu'
 #domain_files = domain
 sufix_alt = '.com'
@@ -256,7 +257,6 @@ def listado(item):
             video_section = scrapertools.find_single_match(data, '<div class="contenedor-home">(?:\s*<div class="titulo-inicial">\s*Últi.*?Añadi...\s*<\/div>)?\s*<div class="contenedor-imagen">\s*(<div class="imagen-post">.*?<\/div><\/div>)<\/div>')
             if not video_section:
                 video_section = scrapertools.find_single_match(data, '<div class="contenedor-home">(?:\s*<div class="titulo-inicial">.*?<\/div>)?\s*<div class="contenedor-imagen">\s*(<div class="imagen-post">.*?<\/div><\/div>)<\/div>')
-            logger.error(video_section)
         except:
             pass
             
@@ -553,12 +553,15 @@ def findvideos(item):
         data = unicode(data, "utf-8", errors="replace").encode("utf-8")
     data = scrapertools.find_single_match(data, 'div id="Tokyo" [^>]+>(.*?)</div>')     #Seleccionamos la zona de links
     
-    #patron = '\/icono_.*?png"\s*(?:title|alt)="(?P<lang>[^"]+)?"[^>]+><\/td><td>'
     patron = '\/icono_.*?png"\s*(?:title|alt)="(?P<lang>[^"]+)?"[^>]+>.*?<\/td><td>'
     patron += '(?P<temp_epi>.*?)?<?\/td>.*?<td>(?P<quality>.*?)?<\/td><td><a\s*'
-    patron += 'class="link"\s*href="(?P<url>[^"]+)?"'
-    #patron += 'class="link"\s*onclick="'
-    #patron += "post\('(?P<url>[^']+)',\s*{u:\s*'(?P<key>[^']+)'}\);"
+    patron += 'class="link"\s*onclick="'
+    patron += "post\('(?P<url>[^']+)',\s*{u:\s*'(?P<key>[^']+)'}\);"
+    if not scrapertools.find_single_match(data, patron):
+        patron = '\/icono_.*?png"\s*(?:title|alt)="(?P<lang>[^"]+)?"[^>]+>.*?<\/td><td>'
+        patron += '(?P<temp_epi>.*?)?<?\/td>.*?<td>(?P<quality>.*?)?<\/td><td><a\s*'
+        patron += 'class="link"\s*href="(?P<url>[^"]+)?"()'
+    
     if not item.armagedon:                                                      #Si es un proceso normal, seguimos
         matches = re.compile(patron, re.DOTALL).findall(data)
     if not matches:                                                             #error
@@ -590,13 +593,13 @@ def findvideos(item):
         emergency_urls = []
     i = -1
     scrapedkey = ''
-    for lang, quality, size, scrapedurl_la in matches:
-    #for lang, quality, size, scrapedurl_la, scrapedkey in matches:
+    for lang, quality, size, scrapedurl_la, scrapedkey in matches:
         i += 1
         temp_epi = ''
         if scrapedkey:
             scrapedurl = '%s?u=%s' % (urlparse.urljoin(host, scrapedurl_la).replace(sufix, sufix_alt)\
-                    .replace('download/torrent.php', 'download_tt.php'), scrapedkey)
+                    .replace('download/torrent.php', 'download_tt.php')\
+                    .replace('/torrent.php', '/download_tt.php') ,scrapedkey)
         else:
             scrapedurl = scrapedurl_la.replace(domain_files_old, domain_files)
         if scrapertools.find_single_match(quality, '\([C|c]ontrase[^>]+>(.*?)<\/[^>]+>.'):
@@ -690,7 +693,7 @@ def findvideos(item):
         
         #if size and item_local.contentType != "episode":
         if not item.armagedon:
-            size = generictools.get_torrent_size(scrapedurl)                        #Buscamos el tamaño en el .torrent y si es RAR
+            size = generictools.get_torrent_size(scrapedurl, timeout=10)        #Buscamos el tamaño en el .torrent y si es RAR
         if size:
             size = size.replace('GB', 'G·B').replace('Gb', 'G·b').replace('MB', 'M·B')\
                         .replace('Mb', 'M·b').replace('.', ',')
@@ -744,7 +747,12 @@ def findvideos(item):
             item_local.quality = re.sub(r'\s?\[COLOR \w+\]\s?\[\/COLOR\]', '', item_local.quality)
             item_local.quality = item_local.quality.replace("--", "").replace("[]", "").replace("()", "").replace("(/)", "").replace("[/]", "").strip()
             
-            item_local.alive = "??"                                             #Calidad del link sin verificar
+            if not size or 'Magnet' in size:
+                item_local.alive = "??"                                         #Calidad del link sin verificar
+            elif 'ERROR' in size:
+                item_local.alive = "??"                                         #Calidad del link en error, timeout???
+            else:
+                item_local.alive = "ok"                                         #Calidad del link verificada
             item_local.action = "play"                                          #Visualizar vídeo
             item_local.server = "torrent"                                       #Seridor Torrent
         

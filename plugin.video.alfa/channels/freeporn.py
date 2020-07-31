@@ -23,12 +23,12 @@ host = 'https://frprn.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevas" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/top-rated/"))
-    itemlist.append( Item(channel=item.channel, title="Mas largo" , action="lista", url=host + "/longest/"))
-    itemlist.append( Item(channel=item.channel, title="Modelos" , action="categorias", url=host + "/models/most-popular/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevas" , action="lista", url=host))
+    itemlist.append(item.clone(title="Mejor valorada" , action="lista", url=host + "/top-rated/"))
+    itemlist.append(item.clone(title="Mas largo" , action="lista", url=host + "/longest/"))
+    itemlist.append(item.clone(title="Modelos" , action="categorias", url=host + "/models/most-popular/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -63,12 +63,12 @@ def categorias(item):
             scrapedtitle = scrapertools.find_single_match(scrapedtitle,'<div class="name">([^<]+)</div>')
             title = "%s (%s)" %(scrapedtitle, cantidad)
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=title, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail,  plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<li class="pagination-next"><a href="([^"]+)">')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="categorias", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -80,16 +80,16 @@ def lista(item):
     patron  = '<div class="thumb">.*?'
     patron += '<a href="([^"]+)".*?'
     patron += '<img class="lazy" data-original="([^"]+)" alt="([^"]+)".*?'
-    patron += '<span class="duration">([^"]+)</span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedthumbnail,scrapedtitle,duracion  in matches:
+    for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
+        duracion = ""
         title = "[COLOR yellow]%s[/COLOR] %s" % (duracion, scrapedtitle)
         contentTitle = title
         thumbnail = scrapedthumbnail
         plot = ""
         year = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail,
+        itemlist.append(item.clone(action="play", title=title, url=url, thumbnail=thumbnail,
                               fanart=thumbnail, plot=plot, contentTitle = contentTitle))
     patron = 'data-from="([^"]+)" data-id="([^"]+)" data-total="([^"]+)" data-page="([^"]+)" data-url="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -97,7 +97,7 @@ def lista(item):
         page = int(page)
         page += page
         next_page = "%s?action=get_block&block_id=%s&%s=%s" %(purl, id, dfrom, page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

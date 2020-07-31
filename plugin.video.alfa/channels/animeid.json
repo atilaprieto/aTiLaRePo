@@ -4,7 +4,7 @@
   "active": true,
   "adult": false,
   "language": ["cast", "lat"],
-  "thumbnail": "animeid.png",
+  "thumbnail": "https://i.postimg.cc/QH7N1QRr/animeid.png",
   "banner": "animeid.png",
   "categories": [
     "anime"

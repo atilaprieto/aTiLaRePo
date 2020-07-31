@@ -259,7 +259,8 @@ def findvideos(item):
 
     soup = create_soup(item.url)
     matches = soup.find("ul", id="playeroptionsul")
-
+    if not matches:
+        return itemlist
     for elem in matches.find_all("li"):
         if "youtube" in elem.find("span", class_="server").text:
             continue
@@ -267,8 +268,11 @@ def findvideos(item):
                 "type": elem["data-type"]}
         headers = {"Referer": item.url}
         doo_url = "%swp-admin/admin-ajax.php" % host
-        lang = elem.find("span", class_="flag").img["src"]
-        lang = scrapertools.find_single_match(lang, r"flags/([^\.]+)\.png")
+        try:
+            lang = elem.find("span", class_="flag").img["src"]
+            lang = scrapertools.find_single_match(lang, r"flags/([^\.]+)\.png")
+        except:
+            lang = ""
         data = httptools.downloadpage(doo_url, post=post, headers=headers).data
         if not data:
             continue
@@ -318,13 +322,14 @@ def search_results(item):
     itemlist = list()
 
     soup = create_soup(item.url)
-
     for elem in soup.find_all("div", class_="result-item"):
-
         url = elem.a["href"]
         thumb = elem.img["src"]
         title = elem.img["alt"]
-        year = elem.find("span", class_="year").text
+        try:
+            year = elem.find("span", class_="year").text
+        except:
+            year = '-'
 
         language = get_language(elem)
 

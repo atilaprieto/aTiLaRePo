@@ -204,6 +204,7 @@ def findvideos(item):
         source_headers = dict()
         source_headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
         source_headers["X-Requested-With"] = "XMLHttpRequest"
+        # logger.info("{0}: {1}".format(option, scrapedurl))
         if scrapedurl.find("https://repro") != 0:
             logger.info("Caso 0: url externa")
             url = scrapedurl
@@ -219,11 +220,14 @@ def findvideos(item):
                                                        source_id + '&tk=' + source_tk, headers=source_headers)
                 if source_result.code == 200:
                     source_json = jsontools.load(source_result.data)
-                    itemlist.append(Item(channel=item.channel, title=option, url=source_json['urlremoto'], action='play', language=IDIOMA))
+                    if source_json['urlremoto']:
+                        itemlist.append(Item(channel=item.channel, title=option, url=source_json['urlremoto'], action='play', language=IDIOMA))
         elif scrapedurl.find("pi7.php") > 0:
             logger.info("Caso 2")
             source_data = get_source(scrapedurl)
-            source_regex = 'post\( "(.*?)", { acc: "(.*?)", id: \'(.*?)\', tk: \'(.*?)\' }'
+            # logger.info(source_data)
+            # source_regex = 'post\( "(.*?)", { acc: "(.*?)", id: \'(.*?)\', tk: \'(.*?)\' }'
+            source_regex = 'post\("(.*?)",{acc: "(.*?)", id: \'(.*?)\', tk: \'(.*?)\'}'
             source_matches = re.compile(source_regex, re.DOTALL).findall(source_data)
             for source_page, source_acc, source_id, source_tk in source_matches:
                 source_url = scrapedurl[0:scrapedurl.find("pi7.php")] + source_page
@@ -231,7 +235,8 @@ def findvideos(item):
                                                        source_id + '&tk=' + source_tk, headers=source_headers)
                 if source_result.code == 200:
                     source_json = jsontools.load(source_result.data)
-                    itemlist.append(Item(channel=item.channel, title=option, url=source_json['urlremoto'], action='play', language=IDIOMA))
+                    if source_json['urlremoto']:
+                        itemlist.append(Item(channel=item.channel, title=option, url=source_json['urlremoto'], action='play', language=IDIOMA))
         elif scrapedurl.find("reproducir120.php") > 0:
             logger.info("Caso 3")
             source_data = get_source(scrapedurl)
@@ -268,7 +273,8 @@ def findvideos(item):
                                                        videoidn + '&tk=' + tokensn, headers=source_headers)
                 if source_result.code == 200:
                     source_json = jsontools.load(source_result.data)
-                    itemlist.append(Item(channel=item.channel, title=option, url=source_json['urlremoto'], action='play', language=IDIOMA))
+                    if source_json['urlremoto']: 
+                        itemlist.append(Item(channel=item.channel, title=option, url=source_json['urlremoto'], action='play', language=IDIOMA))
         else:
             logger.info("Caso nuevo")      
 

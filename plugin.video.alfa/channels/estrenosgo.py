@@ -27,7 +27,7 @@ list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['torrent']
 
-host = 'http://estrenosflix.net/'
+host = 'https://estrenosflix.net/'
 host_alt = 'http://estrenosgo.site/' # 'http://estrenosli.org/'
 channel = "estrenosgo"
 
@@ -878,7 +878,12 @@ def findvideos(item):
                     quality = re.sub(r'\s?\[COLOR \w+\]\s?\[\/COLOR\]', '', quality)
                     quality = quality.replace("--", "").replace("[]", "").replace("()", "").replace("(/)", "").replace("[/]", "").strip()
                     
-                    item_local.alive = "??"                                                 #Calidad del link sin verificar
+                    if not size or 'Magnet' in size:
+                        item_local.alive = "??"                                             #Calidad del link sin verificar
+                    elif 'ERROR' in size:
+                        item_local.alive = "no"                                             #Calidad del link en error
+                    else:
+                        item_local.alive = "ok"                                             #Calidad del link verificada
                     item_local.action = "play"                                              #Visualizar vídeo
                     item_local.server = "torrent"                                           #Seridor Torrent
 

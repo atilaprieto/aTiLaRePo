@@ -23,10 +23,10 @@ host = 'http://www.perfectgirls.net'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Ultimos" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Top" , action="lista", url=host + "/top/3days/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Ultimos" , action="lista", url=host))
+    itemlist.append(item.clone(title="Top" , action="lista", url=host + "/top/3days/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -54,7 +54,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedthumbnail = ""
         url = urlparse.urljoin(item.url,scrapedurl) + "/1"
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=url,
                                thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return itemlist
 
@@ -80,12 +80,12 @@ def lista(item):
         if not scrapedthumbnail.startswith("https"):
             scrapedthumbnail = "https:%s" % scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url, thumbnail=scrapedthumbnail,
+        itemlist.append(item.clone(action="play", title=title, url=url, thumbnail=scrapedthumbnail,
                               fanart=scrapedthumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<a class="btn_wrapper__btn" href="([^"]+)">Next</a></li>')
     if next_page:
         next_page = urlparse.urljoin(item.url, next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page ))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page ))
     return itemlist
 
 
@@ -95,7 +95,9 @@ def play(item):
     data = httptools.downloadpage(item.url).data
     patron  = '<source src="([^"]+)" res="\d+" label="([^"]+)" type="video/mp4" default/>'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedtitle  in matches:
-        itemlist.append(item.clone(action="play", title=scrapedtitle, url=scrapedurl))
+    for url,quality in matches:
+        if not url.startswith("https"):
+            url = "http:%s" % url
+        itemlist.append(['.mp4 %s' %quality, url])
     return itemlist
 

@@ -725,6 +725,7 @@ def newest(categoria):
     logger.info()
     itemlist = []
     item = Item()
+    item.category_new= 'newest'
 
     try:
         if categoria == 'torrent' or categoria == 'peliculas':
@@ -734,14 +735,15 @@ def newest(categoria):
             item.extra = "peliculas"
             
             item.url = api + "?sort_by=date_added&page=0"
-            itemlist = listado(item)
+            itemlist.extend(listado(item))
             if ">> Página siguiente" in itemlist[-1].title:
                 itemlist.pop()
             
             if categoria == 'torrent':
+                item.category_new= 'newest'
                 item.extra = "series"
                 item.url = api_serie + "?sort_by=date_added&page=0"
-                itemlist = listado(item)
+                itemlist.extend(listado(item))
                 if ">> Página siguiente" in itemlist[-1].title:
                     itemlist.pop()
 

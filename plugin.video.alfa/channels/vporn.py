@@ -18,21 +18,21 @@ from core.item import Item
 from platformcode import config, logger
 from core import httptools
 
-host = 'https://www.vporn.com'
+host = 'https://www.vporn.com' #https://pornone.com/
 
 
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Novedades" , action="lista", url=host + "/newest/month/"))
-    itemlist.append( Item(channel=item.channel, title="Mas Vistas" , action="lista", url=host + "/views/month/"))
-    itemlist.append( Item(channel=item.channel, title="Mejor Valoradas" , action="lista", url=host + "/rating/month/"))
-    itemlist.append( Item(channel=item.channel, title="Favoritas" , action="lista", url=host + "/favorites/month/"))
-    itemlist.append( Item(channel=item.channel, title="Mas Votada" , action="lista", url=host + "/votes/month/"))
-    itemlist.append( Item(channel=item.channel, title="Longitud" , action="lista", url=host + "/longest/month/"))
-    itemlist.append( Item(channel=item.channel, title="PornStar" , action="catalogo", url=host + "/pornstars/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Novedades" , action="lista", url=host + "/newest/month/"))
+    itemlist.append(item.clone(title="Mas Vistas" , action="lista", url=host + "/views/month/"))
+    itemlist.append(item.clone(title="Mejor Valoradas" , action="lista", url=host + "/rating/month/"))
+    itemlist.append(item.clone(title="Favoritas" , action="lista", url=host + "/favorites/month/"))
+    itemlist.append(item.clone(title="Mas Votada" , action="lista", url=host + "/votes/month/"))
+    itemlist.append(item.clone(title="Longitud" , action="lista", url=host + "/longest/month/"))
+    itemlist.append(item.clone(title="PornStar" , action="catalogo", url=host + "/pornstars/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -63,12 +63,12 @@ def catalogo(item):
         scrapedplot = ""
         title = "%s (%s)" %(scrapedtitle,cantidad)
         url = "%s%s" %(host,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<a class="next" href="([^"]+)">')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="catalogo", title="Next page >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="catalogo", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -86,7 +86,7 @@ def categorias(item):
         plot = ""
         thumbnail = "https://th-eu3.vporn.com/images/categories/%s.jpg" % scrapedtitle.lower()
         url = "%s%s" %(host,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot=plot) )
     return itemlist
 
@@ -108,23 +108,12 @@ def lista(item):
             title = "[COLOR yellow]%s[/COLOR] [COLOR red]HD[/COLOR] %s" % (time, scrapedtitle)
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=scrapedurl,
+        itemlist.append(item.clone(action="play" , title=title , url=scrapedurl,
                               fanart=thumbnail, thumbnail=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data,'<link rel="next" href="([^"]+)">')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Next page >>", text_color="blue", url=next_page) )
-    return itemlist
-
-
-def findvideos(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron  = '<source src="([^"]+)" type="video/mp4" label="([^"]+)"'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    for url,quality in matches:
-        itemlist.append(['%s' %quality, url])
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

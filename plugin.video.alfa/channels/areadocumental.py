@@ -8,7 +8,7 @@ from core import scrapertools
 from core.item import Item
 from platformcode import config, logger
 
-host = "https://www.area-documental.com"
+host = "https://area-documental.com"
 __perfil__ = int(config.get_setting('perfil', "areadocumental"))
 
 # Fijar perfil de color
@@ -214,11 +214,11 @@ def findvideos(item):
     data = httptools.downloadpage(item.url).data
 
     subs = scrapertools.find_multiple_matches(data, 'file: "(/webvtt[^"]+)".*?label: "([^"]+)"')
-    patron = 'file:\s*"(https://[^/]*/Videos/[^"]+)",\s*label:\s*"([^"]+)"'
-    matches = scrapertools.find_multiple_matches(data, patron)
+    bloque = scrapertools.find_single_match(data, 'title.*?track')
+    patron = 'file:\s*"([^"]+).*?label:\s*"([^"]+)"'
+    matches = scrapertools.find_multiple_matches(bloque, patron)
     for url, quality in matches:
-        url += "|User-Agent=%s&Referer=%s" \
-               % ("Mozilla/5.0 (Windows NT 10.0; WOW64; rv:66.0) Gecko/20100101 Firefox/66.0", item.url)
+        url = httptools.get_url_headers(host + "/" + url, forced=True)
         for url_sub, label in subs:
             url_sub = host + urllib.quote(url_sub)
             title = "Ver video en [[COLOR %s]%s[/COLOR]] Sub %s" % (color3, quality, label)

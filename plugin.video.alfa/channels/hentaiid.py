@@ -31,14 +31,14 @@ def mainlist(item):
 
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
+    itemlist.append(item.clone(action="series", title="Novedades",
                          url=urlparse.urljoin(CHANNEL_HOST, "archivos/h2/"), extra="novedades"))
-    itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros", url=CHANNEL_HOST))
-    itemlist.append(Item(channel=item.channel, action="series", title="Sin Censura",
+    itemlist.append(item.clone(action="generos", title="Por géneros", url=CHANNEL_HOST))
+    itemlist.append(item.clone(action="series", title="Sin Censura",
                          url=urlparse.urljoin(CHANNEL_HOST, "archivos/sin-censura/")))
-    itemlist.append(Item(channel=item.channel, action="series", title="High Definition",
+    itemlist.append(item.clone(action="series", title="High Definition",
                          url=urlparse.urljoin(CHANNEL_HOST, "archivos/high-definition/")))
-    itemlist.append(Item(channel=item.channel, action="series", title="Mejores Hentais",
+    itemlist.append(item.clone(action="series", title="Mejores Hentais",
                          url=urlparse.urljoin(CHANNEL_HOST, "archivos/ranking-hentai/")))
 
     autoplay.show_option(item.channel, itemlist)
@@ -60,7 +60,7 @@ def generos(item):
 
     for url, title in matches:
         # logger.debug("title=[{0}], url=[{1}]".format(title, url))
-        itemlist.append(Item(channel=item.channel, action="series", title=title, url=url))
+        itemlist.append(item.clone(action="series", title=title, url=url))
 
     return itemlist
 
@@ -88,7 +88,7 @@ def series(item):
     for url, thumbnail, title in matches:
         show = title
         # logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=item.channel, action=action, title=title, contentTitle = title, url=url,
+        itemlist.append(item.clone(action=action, title=title, contentTitle = title, url=url,
                              show=show, thumbnail=thumbnail, fanart=thumbnail, folder=True))
 
     if pagination:
@@ -97,7 +97,7 @@ def series(item):
         url_page = scrapertools.find_single_match(pagination, pattern)
 
         if url_page:
-            itemlist.append(Item(channel=item.channel, action="series", title=">> Página Siguiente", url=url_page))
+            itemlist.append(item.clone(action="series", title=">> Página Siguiente", url=url_page))
 
     return itemlist
 
@@ -120,7 +120,7 @@ def episodios(item):
         plot = item.plot
 
         # logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, contentTitle = title, url=url,
+        itemlist.append(item.clone(action="findvideos", title=title, contentTitle = title, url=url,
                              thumbnail=thumbnail, plot=plot,
                              fanart=thumbnail))
 

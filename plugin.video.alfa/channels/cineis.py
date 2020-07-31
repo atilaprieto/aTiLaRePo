@@ -219,7 +219,7 @@ def episodesxseason(item):
 
     for block in data:
         elem = BeautifulSoup(block["contenido"], "html5lib", from_encoding="utf-8")
-        url = "%s%s" % (host, elem.a["href"])
+        url = "%s%s" % (host, elem.a["href"].replace(' ', '-'))
         title = "%sx%s - %s" % (season, block["id"], elem.a.text)
         infoLabels["episode"] = block["id"]
 

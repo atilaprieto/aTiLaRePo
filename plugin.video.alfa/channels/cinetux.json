@@ -4,9 +4,9 @@
   "active": true,
   "adult": false,
   "language": ["cast", "lat"],
-  "thumbnail": "cinetux.png",
+  "thumbnail": "https://i.postimg.cc/dD8SCD4x/cinetux.png",
   "banner": "cinetux.png",
-  "fanart": "cinetux.jpg",
+  "fanart": "https://i.postimg.cc/1R8fZDgz/cinetux.jpg",
   "categories": [
     "direct",
     "movie"

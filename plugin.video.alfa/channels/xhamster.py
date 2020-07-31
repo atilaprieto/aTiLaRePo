@@ -21,14 +21,13 @@ def mainlist(item):
     logger.info()
 
     itemlist = []
-    itemlist.append(Item(channel=item.channel, action="videos", title="Útimos videos", url=HOST, viewmode="movie"))
-    itemlist.append(Item(channel=item.channel, action="votados", title="Lo mejor"))
-    itemlist.append(Item(channel=item.channel, action="vistos", title="Los mas vistos"))
-    itemlist.append(Item(channel=item.channel, action="videos", title="Recomendados",
+    itemlist.append(item.clone(action="videos", title="Útimos videos", url=HOST, viewmode="movie"))
+    itemlist.append(item.clone(action="votados", title="Lo mejor"))
+    itemlist.append(item.clone(action="vistos", title="Los mas vistos"))
+    itemlist.append(item.clone(action="videos", title="Recomendados",
                          url=urlparse.urljoin(HOST, "videos/recommended")))
-    itemlist.append(Item(channel=item.channel, action="categorias", title="Categorías", url=HOST))
-    itemlist.append(
-        Item(channel=item.channel, action="search", title="Buscar", url=urlparse.urljoin(HOST, "/search?q=%s")))
+    itemlist.append(item.clone(action="categorias", title="Categorías", url=HOST))
+    itemlist.append(item.clone(action="search", title="Buscar"))
 
     return itemlist
 
@@ -38,8 +37,8 @@ def mainlist(item):
 
 def search(item, texto):
     logger.info()
-    tecleado = texto.replace(" ", "+")
-    item.url = item.url % tecleado
+    texto = texto.replace(" ", "+")
+    item.url = "%s/search?q=%s" % (HOST, texto)
     item.extra = "buscar"
     try:
         return videos(item)
@@ -68,7 +67,7 @@ def videos(item):
         if "hd" in quality: quality = "HD"
         else:  quality = ""
         title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (duration,quality, scrapedtitle.strip())
-        itemlist.append(Item(channel=item.channel, action="play", title=title, contentTitle=title, url=scrapedurl,
+        itemlist.append(item.clone(action="play", title=title, contentTitle=title, url=scrapedurl,
                              fanart=scrapedthumbnail, thumbnail=scrapedthumbnail,folder=True))
     # Paginador
     patron = '(?s)<div class="pager-container".*?<li class="next">.*?href="([^"]+)"'
@@ -89,7 +88,7 @@ def categorias(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle in matches:
         contentTitle = scrapedtitle.strip()
-        itemlist.append(Item(channel=item.channel, action="videos", title=contentTitle, url=scrapedurl))
+        itemlist.append(item.clone(action="videos", title=contentTitle, url=scrapedurl))
 
     return itemlist
 
@@ -98,16 +97,13 @@ def votados(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(Item(channel=item.channel, action="videos", title="Día", url=urlparse.urljoin(HOST, "/best/daily"),
+    itemlist.append(item.clone(action="videos", title="Día", url=urlparse.urljoin(HOST, "/best/daily"),
                          viewmode="movie"))
-    itemlist.append(
-        Item(channel=item.channel, action="videos", title="Semana", url=urlparse.urljoin(HOST, "/best/weekly"),
+    itemlist.append(item.clone(action="videos", title="Semana", url=urlparse.urljoin(HOST, "/best/weekly"),
              viewmode="movie"))
-    itemlist.append(
-        Item(channel=item.channel, action="videos", title="Mes", url=urlparse.urljoin(HOST, "/best/monthly"),
+    itemlist.append(item.clone(action="videos", title="Mes", url=urlparse.urljoin(HOST, "/best/monthly"),
              viewmode="movie"))
-    itemlist.append(
-        Item(channel=item.channel, action="videos", title="De siempre", url=urlparse.urljoin(HOST, "/best/"),
+    itemlist.append(item.clone(action="videos", title="De siempre", url=urlparse.urljoin(HOST, "/best/"),
              viewmode="movie"))
     return itemlist
 
@@ -115,17 +111,13 @@ def votados(item):
 def vistos(item):
     logger.info()
     itemlist = []
-    itemlist.append(
-        Item(channel=item.channel, action="videos", title="Día", url=urlparse.urljoin(HOST, "/most-viewed/daily"),
+    itemlist.append(item.clone(action="videos", title="Día", url=urlparse.urljoin(HOST, "/most-viewed/daily"),
              viewmode="movie"))
-    itemlist.append(
-        Item(channel=item.channel, action="videos", title="Semana", url=urlparse.urljoin(HOST, "/most-viewed/weekly"),
+    itemlist.append(item.clone(action="videos", title="Semana", url=urlparse.urljoin(HOST, "/most-viewed/weekly"),
              viewmode="movie"))
-    itemlist.append(
-        Item(channel=item.channel, action="videos", title="Mes", url=urlparse.urljoin(HOST, "/most-viewed/monthly"),
+    itemlist.append(item.clone(action="videos", title="Mes", url=urlparse.urljoin(HOST, "/most-viewed/monthly"),
              viewmode="movie"))
-    itemlist.append(
-        Item(channel=item.channel, action="videos", title="De siempre", url=urlparse.urljoin(HOST, "/most-viewed/"),
+    itemlist.append(item.clone(action="videos", title="De siempre", url=urlparse.urljoin(HOST, "/most-viewed/"),
              viewmode="movie"))
     return itemlist
 

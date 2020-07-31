@@ -4,7 +4,6 @@
 # -*- By the Alfa Develop Group -*-
 
 import re
-import urllib
 from channelselector import get_thumb
 from core import httptools
 from core import scrapertools
@@ -12,16 +11,9 @@ from core import servertools
 from core import tmdb
 from core.item import Item
 from platformcode import config, logger
-from channels import autoplay
-from channels import filtertools
 
 
 host = 'https://retroseriestv.com/'
-
-# IDIOMAS = {'la': 'LAT', 'es': 'Cast'}
-# list_language = IDIOMAS.values()
-# list_quality = []
-# list_servers = ['openload']
 
 
 def mainlist(item):
@@ -36,9 +28,6 @@ def mainlist(item):
 
     itemlist.append(item.clone(title="Por Año", action="section", url=host, thumbnail=get_thumb('year', auto=True),
                                section='releases'))
-
-    #itemlist.append(item.clone(title="Alfabetico", action="section", url=host, thumbnail=get_thumb('alphabet', auto=True),
-    #                           section='glossary'))
 
     itemlist.append(item.clone(title="Buscar", action="search", url=host+'?s=',
                                thumbnail=get_thumb('search', auto=True)))
@@ -55,12 +44,13 @@ def get_source(url, referer=None):
     data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
     return data
 
+
 def list_all(item):
     logger.info()
     itemlist = []
 
     data = get_source(item.url)
-    patron = '<article id="post-\d+.*?<img src="([^"]+)" alt="([^"]+)">.*?'
+    patron = r'<article id="post-\d+.*?<img src="([^"]+)" alt="([^"]+)">.*?'
     patron += '<a href="([^"]+)">.*?</h3> <span>(.*?)<'
 
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -76,15 +66,16 @@ def list_all(item):
                                    url=url,
                                    thumbnail=thumbnail,
                                    contentSerieName=contentSerieName,
-                                   infoLabels={'year':year}
+                                   infoLabels={'year': year}
                                    ))
     tmdb.set_infoLabels_itemlist(itemlist, True)
 
     #  Paginación
-    url_next_page = scrapertools.find_single_match(data, "<span class=\"current\">\d+</span><a href='([^']+)'")
+    url_next_page = scrapertools.find_single_match(data, r"<span class=\"current\">\d+</span><a href='([^']+)'")
     if url_next_page:
         itemlist.append(item.clone(title="Siguiente >>", url=url_next_page, action='list_all'))
     return itemlist
+
 
 def section(item):
     logger.info()
@@ -102,12 +93,13 @@ def section(item):
 
     return itemlist
 
+
 def seasons(item):
     logger.info()
 
     itemlist = []
     data = get_source(item.url).replace("'", '"')
-    patron = '<span class="title">Temporada (\d+) <'
+    patron = r'<span class="title">Temporada (\d+) <'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedtitle in matches:
@@ -126,6 +118,7 @@ def seasons(item):
 
     return itemlist
 
+
 def episodios(item):
     logger.info()
     itemlist = []
@@ -133,6 +126,7 @@ def episodios(item):
     for tempitem in templist:
         itemlist += episodesxseason(tempitem)
     return itemlist
+
 
 def episodesxseason(item):
     logger.info()
@@ -142,14 +136,14 @@ def episodesxseason(item):
     data = get_source(item.url).replace("'", '"')
     infoLabels = item.infoLabels
     season = infoLabels['season']
-    patron = '<img src="([^>]+)"></div><div class="numerando">%s+ - (\d+|\d+\/\d+)</div>' % season
+    patron = r'data-src="([^>]+)"></div><div class="numerando">%s+ - (\d+|\d+\/\d+)</div>' % season
     patron += '<div class="episodiotitle"><a href="([^"]+)">(.*?)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedthumbnail, scrapedepi, scrapedurl, scrapedtitle in matches:
 
         if '/' in scrapedepi:
-            scrapedepi = scrapertools.find_single_match (scrapedepi, '(\d+)\/\d+')
+            scrapedepi = scrapertools.find_single_match (scrapedepi, r'(\d+)\/\d+')
 
         title = '%sx%s - %s' % (season, scrapedepi, scrapedtitle)
         infoLabels['episode'] = scrapedepi
@@ -161,24 +155,22 @@ def episodesxseason(item):
 
     return itemlist
 
+
 def findvideos(item):
     logger.info()
-    from lib import generictools
-    import urllib
+
     itemlist = []
     data = get_source(item.url).replace("'", '"')
-    patron = 'data-post="(\d+)" data-nume="(\d+)".*?img src="([^"]+)"'
+    patron = r'data-post="(\d+)" data-nume="(\d+)".*?img src="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for id, option, lang in matches:
         lang = scrapertools.find_single_match(lang, '.*?/flags/(.*?).png')
         if lang == 'ar':
             lang = 'lat'
         post = {'action': 'doo_player_ajax', 'post': id, 'nume': option, 'type':'tv'}
-        post = urllib.urlencode(post)
-
         test_url = '%swp-admin/admin-ajax.php' % host
-        new_data = httptools.downloadpage(test_url, post=post, headers={'Referer':item.url}).data
-        url = scrapertools.find_single_match(new_data, "src='([^']+)'")
+        new_data = httptools.downloadpage(test_url, post=post, headers={'Referer': item.url}).json
+        url = new_data["embed_url"]
         if url != '':
             itemlist.append(
                 Item(channel=item.channel, url=url, title='%s', action='play', language=lang,
@@ -188,6 +180,7 @@ def findvideos(item):
 
     return itemlist
 
+
 def search_results(item):
     logger.info()
 
@@ -195,7 +188,7 @@ def search_results(item):
 
     data = get_source(item.url)
     data = scrapertools.find_single_match(data, '<h1>Resultados encontrados:(.*?)genres')
-    patron = '<article.*?<a href="([^"]+)"><img src="([^"]+)".*?alt="([^"]+)".*?class="year">(\d{4}).*?<p>([^<]+)</p>'
+    patron = r'<article.*?<a href="([^"]+)"><img src="([^"]+)".*?alt="([^"]+)".*?class="year">(\d{4}).*?<p>([^<]+)</p>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedthumbnail, scrapedtitle, year, scrapedplot in matches:
@@ -214,6 +207,7 @@ def search_results(item):
     tmdb.set_infoLabels_itemlist(itemlist, True)
 
     return itemlist
+
 
 def search(item, texto):
     logger.info()

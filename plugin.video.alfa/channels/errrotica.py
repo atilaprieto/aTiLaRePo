@@ -22,10 +22,10 @@ host = 'http://www.errrotica.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="catalogo", url=host + "/sites/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host))
+    itemlist.append(item.clone(title="Canal" , action="catalogo", url=host + "/sites/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -56,7 +56,7 @@ def catalogo(item):
         title = "%s (%s)" %(scrapedtitle,cantidad)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         url = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     next_page = scrapertools.find_single_match(data, "<li><a href='([^']+)' id='next_previous'")
     if next_page:
@@ -77,7 +77,7 @@ def categorias(item):
         title = scrapedtitle
         thumbnail = ""
         url = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     return itemlist
 
@@ -95,7 +95,7 @@ def lista(item):
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
+        itemlist.append(item.clone(action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
     if next_page:
@@ -112,6 +112,7 @@ def play(item):
     patron = '<source src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for url in matches:
+        url = url + "|verifypeer=false"
         itemlist.append(['.mp4', url])
     return itemlist
 

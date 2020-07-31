@@ -20,7 +20,7 @@ list_quality = []
 list_servers = ['directo', 'rapidvideo', 'streamango', 'okru', 'vidoza', 'openload', 'powvideo']
 
 
-CHANNEL_HOST = "http://www.cinetux.to/"
+CHANNEL_HOST = "https://cinetux.nu/"
 
 # Configuracion del canal
 __modo_grafico__ = config.get_setting('modo_grafico', 'cinetux')
@@ -281,12 +281,12 @@ def findvideos(item):
         itemlist.append(Item(channel=item.channel, title=iserver, url=url,
                             action='play', quality=quality, text_color="",
                             language=lang, infoLabels=item.infoLabels, server=server))
-
+    data = data.replace('"',"'")
     patron  = "tooltipctx.*?data-type='([^']+)'.*?"
     patron += "data-post='(\d+)'.*?"
     patron += "data-nume='(\d+).*?"
     patron += "</noscript> (.*?)</.*?"
-    patron += "assets/img/(.*?)'/>"
+    patron += "assets/img/(.*?)'"
     matches = scrapertools.find_multiple_matches(data, patron)
     for tp, pt, nm, language, iserver in matches:
         language = language.strip()
@@ -319,6 +319,7 @@ def findvideos(item):
         itemlist.append(Item(channel=item.channel, title=iserver, url="", action='play',
                              infoLabels=item.infoLabels, language=lang, text_color = "", server=server,
                                  spost=post, quality=quality))
+   
     #itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     itemlist.sort(key=lambda it: (it.language, it.title, it.quality))
     tmdb.set_infoLabels(itemlist, __modo_grafico__)
@@ -361,7 +362,7 @@ def get_url(url):
 def play(item):
     if not item.spost:
         new_data = httptools.downloadpage(item.url, headers={'Referer': item.url}).data
-        url = scrapertools.find_single_match(new_data, 'id="link" href="([^"]+)"')
+        url = scrapertools.find_single_match(new_data, 'id="link".*?href="([^"]+)"')
         item.url = get_url(url)
     else:
         post = item.spost

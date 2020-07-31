@@ -23,11 +23,11 @@ host = 'https://www.tubxxporn.com'  #  https://www.pornktube.porn
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorada" , action="lista", url=host + "/top-rated/"))
-    itemlist.append( Item(channel=item.channel, title="Mas popular" , action="lista", url=host + "/most-popular/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host))
+    itemlist.append(item.clone(title="Mejor valorada" , action="lista", url=host + "/top-rated/"))
+    itemlist.append(item.clone(title="Mas popular" , action="lista", url=host + "/most-popular/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -56,8 +56,7 @@ def categorias(item):
         title = scrapedtitle
         thumbnail = ""
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=scrapedurl,
-                              thumbnail=thumbnail , plot=plot) )
+        itemlist.append(item.clone(action="lista", title=title, url=scrapedurl, thumbnail=thumbnail , plot=plot) )
     return itemlist
 
 
@@ -75,13 +74,12 @@ def lista(item):
         title = '[COLOR yellow] %s [/COLOR] %s' % (scrapedtime , scrapedtitle)
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl,
+        itemlist.append(item.clone(action="play", title=title, url=scrapedurl,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="mobnav">Next')
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append( Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue", 
-                              url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

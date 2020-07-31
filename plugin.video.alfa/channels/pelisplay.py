@@ -426,7 +426,8 @@ def findvideos(item):
                   'subtitulado': '[COLOR red](VOSE)[/COLOR]'}
         if lang in idioma:
             lang = idioma[lang]
-
+        if servername.lower() == "tazmania":
+            servername = "fembed"
         title = "Ver en: [COLOR yellowgreen](%s)[/COLOR] [COLOR yellow](%s)[/COLOR] %s" % (
             servername.title(), quality, lang)
 

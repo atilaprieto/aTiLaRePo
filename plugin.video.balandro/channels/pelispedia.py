@@ -7,7 +7,9 @@ from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
 # ~ host = 'https://www.pelispedia.biz/'
-host = 'https://www.pelispedia.mobi/'
+# ~ host = 'https://www.pelispedia.mobi/'
+# ~ host = 'https://www.pelispedia.cc/'
+host = 'https://www.pelispedia.pro/'
 
 
 def mainlist(item):
@@ -288,7 +290,6 @@ def findvideos(item):
 
     return itemlist
 
-
 def play(item):
     logger.info()
     itemlist = []
@@ -296,10 +297,11 @@ def play(item):
     if item.dpost and item.dnume and item.dtype:
         post = {'action': 'doo_player_ajax', 'post': item.dpost, 'nume': item.dnume, 'type': item.dtype}
         data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':item.referer}).data
-        # ~ logger.debug(data)
+        data = data.replace('\\/', '/')
         url = scrapertools.find_single_match(data, "src='([^']+)")
         if not url: url = scrapertools.find_single_match(data, 'src="([^"]+)')
         if not url: url = scrapertools.find_single_match(data, 'src=([^ >]+)')
+        if not url: url = scrapertools.find_single_match(data, '"embed_url":"([^"]+)')
         if url: 
             servidor = servertools.get_server_from_url(url)
             if servidor and servidor != 'directo':
@@ -319,6 +321,7 @@ def play(item):
                 itemlist.append(item.clone( url=url, server=servidor ))
         
     elif 'stream-mx.com/' in item.url:
+        item.url = item.url.replace('v=2&', '') + '&sub=&ver=si'
         data = httptools.downloadpage(item.url, headers={'Referer': item.referer}).data
         # ~ logger.debug(data)
         bloque = scrapertools.find_single_match(data, '"sources":\s*\[(.*?)\]')

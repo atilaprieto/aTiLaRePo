@@ -310,6 +310,7 @@ def play(item):
 
     elif 'openloadpremium.com/' in item.url and '/player.php?' in item.url:
         data = httptools.downloadpage(item.url, headers={'Referer': item.referer}).data
+        # ~ logger.debug(data)
         url = scrapertools.find_single_match(data, '"file": "([^"]+)')
         if url:
             # ~ itemlist.append(item.clone(url = url))

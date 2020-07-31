@@ -1,7 +1,7 @@
 {
   "id": "pelishd24",
   "name": "PelisHD24",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["lat", "cast", "eng"],
   "fanart": "https://pelishd24.com/wp-content/uploads/2018/11/background.png",

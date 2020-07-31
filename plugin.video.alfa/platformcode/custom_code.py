@@ -64,16 +64,22 @@ def init():
     """
 
     try:
+        #Verifica si es necsario instalar script.alfa-update-helper
+        verify_script_alfa_update_helper()
+        
         #Borra el .zip de instalación de Alfa de la carpeta Packages, por si está corrupto, y que así se pueda descargar de nuevo
         version = 'plugin.video.alfa-%s.zip' % config.get_addon_version(with_fix=False)
         filetools.remove(filetools.join(xbmc.translatePath('special://home'), 'addons', 'packages', version), True)
         
         #Borrar contenido de carpeta de Torrents
         filetools.rmdirtree(filetools.join(config.get_videolibrary_path(), 'temp_torrents_Alfa'), silent=True)
-        
+
         #Verifica si Kodi tiene algún achivo de Base de Datos de Vídeo de versiones anteriores, entonces los borra
         verify_Kodi_video_DB()
         
+        #Verifica si la Base de Datos de Vídeo tiene la fuente de CINE con useFolderNames=1
+        set_Kodi_video_DB_useFolderNames()
+
         #LIBTORRENT: se descarga el binario de Libtorrent cada vez que se actualiza Alfa
         try:
             threading.Thread(target=update_libtorrent).start()          # Creamos un Thread independiente, hasta el fin de Kodi
@@ -121,6 +127,88 @@ def init():
             logger.error(traceback.format_exc())
     except:
         logger.error(traceback.format_exc())
+
+
+def marshal_check():
+    try:
+        marshal_modules = ['lib/alfaresolver_py3', 'core/proxytools_py3']
+        for module in marshal_modules:
+            path = filetools.join(config.get_runtime_path(), filetools.dirname(module))
+            path_list = filetools.listdir(path)
+            library = filetools.dirname(module).rstrip('/')
+            module_name = filetools.basename(module)
+            for alt_module in path_list:
+                if module_name not in alt_module:
+                    continue
+                if alt_module == module_name + '.py':
+                    continue
+                try:
+                    alt_module_path = '%s.%s' % (library, alt_module.rstrip('.py'))
+                    spec = __import__(alt_module_path, None, None, [alt_module_path])
+                    if not spec:
+                        raise
+                except Exception as e:
+                    logger.info('marshal_check ERROR in %s: %s' % (alt_module, str(e)), force=True)
+                    continue
+                filetools.copy(filetools.join(path, alt_module), filetools.join(path, module_name + '.py'), silent=True)
+                logger.info('marshal_check FOUND: %s' % alt_module, force=True)
+                break
+            else:
+                logger.info('marshal_check NOT FOUND: %s.py' % module_name, force=True)
+    except:
+        logger.error(traceback.format_exc(1))
+
+
+def verify_script_alfa_update_helper():
+    logger.info()
+    
+    import json
+    from zipfile import ZipFile
+    from core import httptools
+    
+    addonid = 'script.alfa-update-helper'
+    package = addonid + '-0.0.1.zip'
+    filetools.remove(filetools.join(xbmc.translatePath('special://home'), 'addons', 'packages', package), True)
+    
+    # Comprobamos si hay acceso a Github
+    url = 'https://github.com/alfa-addon/alfa-repo/raw/master/plugin.video.alfa/addon.xml'
+    response = httptools.downloadpage(url, timeout=5, ignore_response_code=True, alfa_s=True)
+    if response.code != 200 and not bool(xbmc.getCondVisibility("System.HasAddon(%s)" % addonid)):
+        
+        # Si no lo hay, descargamos el Script desde Bitbucket y lo salvamos a disco
+        url = 'https://bitbucket.org/alfa_addon/alfa-repo/raw/master/script.alfa-update-helper/%s' % package
+        response = httptools.downloadpage(url, ignore_response_code=True, alfa_s=True)
+        if response.code == 200:
+            zip_data = response.data
+            addons_path = xbmc.translatePath("special://home/addons")
+            pkg_updated = filetools.join(addons_path, 'packages', package)
+            with open(pkg_updated, "wb") as f:
+                f.write(zip_data)
+            
+            # Verificamos el .zip
+            ret = None
+            try:
+                with ZipFile(pkg_updated, "r") as zf:
+                    ret = zf.testzip()
+            except Exception as e:
+                ret = str(e)
+            if ret is not None:
+                logger.error("Corrupted .zip, error: %s" % (str(ret)))
+            else:
+                # Si el .zip es correcto los extraemos e instalamos
+                with ZipFile(pkg_updated, "r") as zf:
+                    zf.extractall(addons_path)
+
+                logger.info("Installiing %s" % package)
+                xbmc.executebuiltin('UpdateLocalAddons')
+                time.sleep(2)
+                method = "Addons.SetAddonEnabled"
+                xbmc.executeJSONRPC(
+                    '{"jsonrpc": "2.0", "id":1, "method": "%s", "params": {"addonid": "%s", "enabled": true}}' % (method, addonid))
+                profile = json.loads(xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id":1, "method": "Profiles.GetCurrentProfile"}'))
+                logger.info("Reloading Profile...")
+                user = profile["result"]["label"]
+                xbmc.executebuiltin('LoadProfile(%s)' % user)
 
 
 def create_folder_structure(custom_code_dir):
@@ -216,10 +304,11 @@ def update_external_addon(addon_name):
             #Path de destino en addon externo
             __settings__ = xbmcaddon.Addon(id="plugin.video." + addon_name)
             if addon_name.lower() in ['quasar', 'elementum']:
-                addon_path_mig = filetools.join(xbmc.translatePath(__settings__.getAddonInfo('Path')), \
-                        filetools.join("resources", "site-packages"))
+                addon_path_root = xbmc.translatePath(__settings__.getAddonInfo('Path'))
+                addon_path_mig = filetools.join(addon_path_root, filetools.join("resources", "site-packages"))
                 addon_path = filetools.join(addon_path_mig, addon_name)
             else:
+                addon_path_root = ''
                 addon_path_mig = ''
                 addon_path = ''
             
@@ -242,13 +331,16 @@ def update_external_addon(addon_name):
                 for root, folders, files in filetools.walk(alfa_addon_updates):
                     for file in files:
                         input_file = filetools.join(root, file)
-                        output_file = input_file.replace(alfa_addon_updates, addon_path)
+                        output_file = input_file.replace(alfa_addon_updates, addon_path_mig)
+                        if file in ['addon.xml']:
+                            filetools.copy(input_file, filetools.join(addon_path_root, file), silent=True)
+                            continue
                         if not filetools.copy(input_file, output_file, silent=True):
                             logger.error('Error en la copia: Input: %s o Output: %s' % (input_file, output_file))
                             return False
                 return True
             else:
-                logger.error('Alguna carpeta no existe: Alfa: %s o %s: %s' % (alfa_addon_updates, addon_name, addon_path))
+                logger.error('Alguna carpeta no existe: Alfa: %s o %s: %s' % (alfa_addon_updates, addon_name, addon_path_mig))
         # Se ha desinstalado Quasar, reseteamos la opción
         else:
             config.set_setting('addon_quasar_update', False)
@@ -341,8 +433,37 @@ def update_libtorrent():
         
         if unrar: config.set_setting("unrar_path", unrar, server="torrent")
 
-    if filetools.exists(filetools.join(config.get_runtime_path(), "custom_code.json")) and \
-                    config.get_setting("libtorrent_path", server="torrent", default="") :
+    # Ahora descargamos la última versión disponible de Liborrent para esta plataforma
+    try:
+        version_base = filetools.join(config.get_runtime_path(), 'lib', 'python_libtorrent')
+        if config.get_setting("libtorrent_version", server="torrent", default=""):
+            current_system, current_version = config.get_setting("libtorrent_version", server="torrent", default="").split('/')
+        else:
+            current_system = ''
+            current_version = ''
+
+        version_base = filetools.join(version_base, current_system)
+        if current_version:
+            old_version = current_version
+            new_version = sorted(filetools.listdir(version_base))
+            new_version_alt = new_version[:]
+            if new_version:
+                for folder in new_version_alt:
+                    if not filetools.isdir(filetools.join(version_base, folder)):
+                        new_version.remove(folder)
+                if old_version != new_version[-1]:
+                    current_version = ''
+            else:
+                current_version = ''
+    except:
+        current_version = ''
+        logger.error(traceback.format_exc(1))
+    
+    if filetools.exists(filetools.join(config.get_runtime_path(), "custom_code.json")) and current_version:
+        msg = 'Libtorrent_path: %s' % config.get_setting("libtorrent_path", server="torrent", default="")
+        if current_version not in msg:
+            msg += ' - Libtorrent_version: %s/%s' % (current_system, current_version)
+        logger.info(msg, force=True)
         return
 
     try:
@@ -394,6 +515,23 @@ def verify_Kodi_video_DB():
         
     return
     
+
+def set_Kodi_video_DB_useFolderNames():
+    logger.info()
+    
+    from platformcode import xbmc_videolibrary
+
+    strPath = filetools.join(config.get_setting("videolibrarypath"), config.get_setting("folder_movies"), ' ').strip()
+    scanRecursive = 2147483647
+        
+    sql = 'UPDATE path SET useFolderNames=1 WHERE (strPath="%s" and scanRecursive=%s and strContent="movies" ' \
+                        'and useFolderNames=0)' % (strPath, scanRecursive)
+                      
+    nun_records, records = xbmc_videolibrary.execute_sql_kodi(sql)
+    
+    if nun_records > 0:
+        logger.debug('MyVideos DB updated to Videolibrary %s useFolderNames=1' % config.get_setting("folder_movies"))
+
 
 def reactivate_unrar(init=False, mute=True):
     logger.info()

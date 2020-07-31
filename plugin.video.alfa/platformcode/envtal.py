@@ -199,6 +199,8 @@ def get_environment():
             lib_path = 'Activo'
         else:
             lib_path = 'Inactivo'
+        if config.get_setting("libtorrent_version", server="torrent", default=""):
+            lib_path += '-%s' % config.get_setting("libtorrent_version", server="torrent", default="")
         environment['torrentcli_unrar'] = config.get_setting("unrar_path", server="torrent", default="")
         if environment['torrentcli_unrar']:
             if xbmc.getCondVisibility("system.platform.Android"):
@@ -362,6 +364,8 @@ def list_env(environment={}):
     logger.info('----------------------------------------------')
     logger.info('Variables de entorno Alfa: ' + environment['addon_version'] + 
                 ' Debug: ' + environment['debug'])
+    logger.info("----------------------------------------------")
+    logger.info(os.environ)
     logger.info("----------------------------------------------")
 
     logger.info(environment['os_name'] + ' ' + environment['prod_model'] + ' ' + 

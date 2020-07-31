@@ -4,16 +4,24 @@
 # -*- By the Alfa Develop Group -*-
 
 import re
-
+import base64
 from core import httptools
 from core import scrapertools
 from core import servertools
 from core.item import Item
 from platformcode import logger
 from channelselector import get_thumb
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib
 
 
-host = 'https://www.animejl.net/'
+host = 'https://www.anime-jl.net/'
 
 def mainlist(item):
     logger.info()
@@ -42,7 +50,7 @@ def mainlist(item):
 def get_source(url):
     logger.info()
     data = httptools.downloadpage(url).data
-    data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}|"|\(|\)', "", data)
+    data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}|\(|\)', "", data)
     return data
 
 
@@ -52,15 +60,15 @@ def new_episodes(item):
     itemlist = []
 
     data = get_source(item.url)
-    data = scrapertools.find_single_match(data, "<h2>Últimos episodios</h2>.*?</ul>")
+    data = scrapertools.find_single_match(data, "<h2>Últimos episodios agregados</h2>.*?</ul>")
     patron = "<li><a href='(.*?)' class.*?<img src='(.*?)' alt='(.*?)'></span><span class='Capi'>(.*?)</span>"
 
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedthumbnail, scrapedtitle, scrapedepi in matches:
-        url = host+scrapedurl
+        url = scrapedurl
         thumbnail = host+scrapedthumbnail
-        title = '%s %s' % (scrapedtitle, scrapedepi)
+        title = '%s %s' % (scrapedtitle.replace('ver ', ''), scrapedepi)
         itemlist.append(Item(channel=item.channel, action='findvideos',
                              title=title,
                              url=url,
@@ -70,19 +78,20 @@ def new_episodes(item):
 
     return itemlist
 
+
 def list_all(item):
     logger.info()
 
     itemlist = []
 
     data = get_source(item.url)
-    patron = "<article class='Anime alt B'><a href='(.*?)'>.*?class=.*?<img src='(.*?)' alt='(.*?)'>"
-    patron +="</figure><span class='Type .*?'>(.*?)</span>.*?star.*?<p>(.*?)</p>"
+    patron = "<article class='Anime alt B'><a href='([^']+)'>.*?class=.*?<img src='([^']+)' alt='([^']+)'>"
+    patron += "</figure><span class='Type' .*?>([^']+)</span>.*?star.*?<p>([^<]+)</p>"
 
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedthumbnail, scrapedtitle, type, plot in matches:
-        url = host + scrapedurl
+        url = scrapedurl
         thumbnail = host+scrapedthumbnail
         title = scrapedtitle
         type = type
@@ -95,7 +104,6 @@ def list_all(item):
                         title=title,
                         url=url,
                         thumbnail=thumbnail,
-                        contentSerieName=scrapedtitle,
                         plot=plot,
                         type=item.type,
                         infoLabels={}
@@ -121,50 +129,25 @@ def list_all(item):
 
     return itemlist
 
+
 def episodios(item):
     logger.info()
     itemlist = []
 
-    base_data = get_source(item.url)
-    data = scrapertools.find_single_match(base_data, '<div class=Title>Lista de episodios</div>.*?</ul>')
-    if data == '':
-        data = scrapertools.find_single_match(base_data, '<div class=Title>Formatos disponibles</div>.*?</ul>')
-
-    if 'listepisodes' in data.lower():
-        patron = "<li><a href='(.*?)' class.*?>(.*?)<i class='fa-eye-slash'></i></a></li>"
-    elif 'listcaps' in data.lower():
-        patron = "<a href=(.*?)>.*?alt=(.*?)>"
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    for scrapedurl, scrapedtitle in matches:
-        title = scrapedtitle.strip()
-        n=0
-        for char in title[::-1]:
-            n += 1
-            if char == ' ':
-                break
-        episode = title[-n:]
-        episode = scrapertools.find_single_match(episode, r' (\d+)')
-
-        url = host + scrapedurl
-        itemlist.append(Item(channel=item.channel, title='Episodio %s' % episode, thumbnail=item.thumbnail, url=url,
-                             action='findvideos'))
-    if item.type.lower != 'anime' and len(itemlist)==1:
-        return findvideos(itemlist[0])
-    else:
-        return itemlist[::-1]
-
-def findvideos(item):
-    logger.info()
-
-    itemlist = []
     data = get_source(item.url)
-    itemlist.extend(servertools.find_video_items(data=data))
+    patron = '\[(\d+),"([^"]+)","([^"]+)",[^]]+\]'
+    matches = re.compile(patron, re.DOTALL).findall(data)
 
-    for videoitem in itemlist:
-        videoitem.channel = item.channel
-        videoitem.title = '[%s]' % videoitem.server.capitalize()
+    for epi_num, epi_url, epi_thumb in matches:
+        title = 'Episodio %s' % epi_num
+        url = item.url +'/'+ epi_url
+        itemlist.append(Item(channel=item.channel, title=title, thumbnail=item.thumbnail, url=url,
+                             action='findvideos'))
+        if item.type.lower != 'anime' and len(itemlist) == 1:
+            return findvideos(itemlist[0])
+        else:
+            return itemlist[::-1]
 
-    return itemlist
 
 def search(item, texto):
     logger.info()
@@ -180,6 +163,27 @@ def search(item, texto):
         for line in sys.exc_info():
             logger.error("%s" % line)
         return []
+
+
+def findvideos(item):
+    logger.info()
+
+    itemlist = []
+
+    data = get_source(item.url)
+    patron = 'video\[\d+\] = \'<iframe.*?src="([^"]+)"'
+    matches = re.compile(patron, re.DOTALL).findall(data)
+
+    for scrapedurl in matches:
+        enc_url = scrapertools.find_single_match(scrapedurl, r'hs=(.*)$')
+        url = urllib.unquote(base64.b64decode(rot13(enc_url)))
+        if url != '':
+            itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play'))
+
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server.capitalize())
+
+    return itemlist
+
 
 def newest(categoria):
     logger.info()
@@ -197,3 +201,8 @@ def newest(categoria):
         for line in sys.exc_info():
             logger.error("{0}".format(line))
         return []
+
+
+def rot13(s):
+    d = {chr(i+c): chr((i+13) % 26 + c) for i in range(26) for c in (65, 97)}
+    return ''.join([d.get(c, c) for c in s])

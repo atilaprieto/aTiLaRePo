@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from monitor import Monitor
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+from .monitor import Monitor
 
 import traceback
 

@@ -1,0 +1,14 @@
+{
+"id": "locomotion",
+  "name": "Locomotion (vivo)",
+  "force_unify": true,
+  "active": true,
+  "adult": false,
+  "language": ["lat"],
+  "thumbnail": "http://locomotiontv.com/imgs/loco/logo_white.png",
+  "banner": "",
+  "categories": [
+    "anime"
+  ],
+  "settings": []
+}

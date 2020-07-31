@@ -4,7 +4,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(https://thevimeo.pw/[a-zA-Z0-9]+)",
+        "pattern": "(https://thevimeo.pw/player.php\\?token=[A-z0-9!@?>]+)",
         "url": "\\1"
       }
     ]

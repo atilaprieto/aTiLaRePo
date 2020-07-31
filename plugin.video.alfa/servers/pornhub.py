@@ -8,12 +8,12 @@ from core import scrapertools
 from platformcode import logger
 
 
-def test_video_exists(page_url):
-    data = httptools.downloadpage(page_url).data
-    if "File was deleted" in data or "eliminado" in data\
-       or "no está disponible" in data or "Page Not Found" in data:
-        return False, "[pornhub] El video ha sido borrado o no existe"
-    return True, ""
+# def test_video_exists(page_url):
+    # data = httptools.downloadpage(page_url).data
+    # if "File was deleted" in data or "eliminado" in data\
+       # or "no está disponible" in data or "Page Not Found" in data:
+        # return False, "[pornhub] El video ha sido borrado o no existe"
+    # return True, ""
 
 def get_video_url(page_url, user="", password="", video_password=""):
     logger.info()

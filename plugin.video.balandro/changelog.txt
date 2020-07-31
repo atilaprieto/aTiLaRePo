@@ -1,6 +1,11 @@
 Balandro changelog
 ==================
 
+1.4.16:
+    Canales modificados: Retroseriestv, Seriez, Cinetux, Allpeliculas, Newpct1, Dospelis,
+    Pelispedia, Seriesmetro, Pepecine, Playview, Seriemega, Tvvip, Cinefox.
+    Servidores modificados: Zembed, Vk, Cloudvideo, Mixdrop, Easyload, Megaup.
+
 1.4.15:
     Canales modificados: Cinetux, Cuevana3, Dilo, Yape, Seriesmetro, Seriespapaya, 
     Grantorrent, Pelispedia, Tucineclasico, Documentalesonline.

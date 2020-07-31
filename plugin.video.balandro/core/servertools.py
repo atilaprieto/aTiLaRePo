@@ -64,17 +64,22 @@ def normalize_url(serverid, url):
         # ~ logger.info(pattern["pattern"])
 
         # Recorre los resultados
+        found = False
         for match in re.compile(pattern["pattern"], re.DOTALL).finditer(url):
             new_url = pattern["url"]
             for x in range(len(match.groups())):
                 new_url = new_url.replace("\\%s" % (x + 1), match.groups()[x])
+
+            if new_url not in server_parameters["find_videos"].get("ignore_urls", []):
+                found = True
+            else:
+                new_url = url
             break
         
-        if new_url != url: break
+        if found: break
 
     # ~ logger.info("Server: %s, Url: %s => %s" % (serverid, url, new_url))
     return new_url
-
 
 
 def get_servers_itemlist(itemlist):
@@ -376,6 +381,7 @@ def corregir_servidor(servidor):
     elif servidor in ['povwideo', 'powvldeo', 'powv1deo', 'povw1deo']: return 'powvideo'
     elif servidor in ['steamplay', 'streamp1ay']: return 'streamplay'
     elif servidor in ['jplayer', 'feurl']: return 'fembed'
+    elif servidor in ['google', 'google drive']: return 'gvideo'
     elif servidor == 'vidto': return 'vidtodo'
     elif servidor == 'vev': return 'vevio'
     elif servidor == 'v-s': return 'vsmobi'

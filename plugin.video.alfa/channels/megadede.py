@@ -646,7 +646,7 @@ def play(item):
         headers = {'Referer': item.extra}
         data = httptools.downloadpage(item.url, headers=headers).data
         url = scrapertools.find_single_match(data,
-                                             '<a href="([^"]+)" target="_blank"><button class="btn btn-primary">visitar enlace</button>')
+                                             '<a href="([^"]+)" target="_blank".*?><button class="btn btn-primary">visitar enlace</button>')
         url = urlparse.urljoin(host, url)
         headers = {'Referer': item.url}
         media_url = httptools.downloadpage(url, headers=headers, follow_redirects=False).headers.get("location")

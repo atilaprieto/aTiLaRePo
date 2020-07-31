@@ -33,11 +33,11 @@ def mainlist(item):
 
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append(Item(channel=item.channel, action="lista", title="Estrenos", url=host + "/hentai/estrenos/"))
-    itemlist.append(Item(channel=item.channel, action="series", title="Todos", url=host + "/hentai/"))
-    itemlist.append(Item(channel=item.channel, action="series", title="Sin Censura", url=host + "/hentai/sin-censura/"))
-    itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros", url=host + "/hentai/generos/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(action="lista", title="Estrenos", url=host + "/hentai/estrenos/"))
+    itemlist.append(item.clone(action="series", title="Todos", url=host + "/hentai/"))
+    itemlist.append(item.clone(action="series", title="Sin Censura", url=host + "/hentai/sin-censura/"))
+    itemlist.append(item.clone(action="generos", title="Por géneros", url=host + "/hentai/generos/"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
 
     autoplay.show_option(item.channel, itemlist)
 
@@ -65,7 +65,7 @@ def generos(item):
     patron = '<h3 class="media-heading"><a href="([^"]+)" alt="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for url, title in matches:
-        itemlist.append(Item(channel=item.channel, action="lista", title=title, url=url))
+        itemlist.append(item.clone(action="lista", title=title, url=url))
     return itemlist
 
 
@@ -83,7 +83,7 @@ def lista(item):
         title = scrapedtitle
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="episodios", title=title, url=scrapedurl,
+        itemlist.append(item.clone(action="episodios", title=title, url=scrapedurl,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
     if next_page:
@@ -106,7 +106,7 @@ def series(item):
         url=scrapedurl
         title=scrapedtitle
         thumbnail=scrapedthumbnail
-        itemlist.append(Item(channel=item.channel, action="episodios", title=title, contentTitle = title, url=url,
+        itemlist.append(item.clone(action="episodios", title=title, contentTitle = title, url=url,
                              thumbnail=thumbnail, fanart=thumbnail, plot=plot))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
     if next_page:
@@ -128,7 +128,7 @@ def episodios(item):
         url = scrapedurl
         thumbnail = item.thumbnail
         plot = item.plot
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, contentTitle = title, url=url,
+        itemlist.append(item.clone(action="findvideos", title=title, contentTitle = title, url=url,
                              fanart=thumbnail, thumbnail=thumbnail, plot=plot))
     return itemlist
 
@@ -153,7 +153,7 @@ def findvideos(item):
             url = scrapertools.find_single_match(unpacked, '"src","([^"]+)"')
             if not url.startswith("https"):
                 url = "https:%s" % url
-        itemlist.append(Item(channel=item.channel, title="%s", url=url, action='play', language='VO',contentTitle = item.contentTitle))
+        itemlist.append(item.clone(title="%s", url=url, action='play', language='VO',contentTitle = item.contentTitle))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server)
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)

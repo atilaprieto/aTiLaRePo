@@ -283,13 +283,13 @@ def novedades(item):
                 t.start()
                 threads.append(t)
                 if mode == 'normal':
-                    progreso.update(percentage, "", config.get_localized_string(60520) % channel_title)
+                    progreso.update(percentage, "" + '\n' + config.get_localized_string(60520) % channel_title)
 
             # Modo single Thread
             else:
                 if mode == 'normal':
                     logger.info("Obteniendo novedades de channel_id=" + channel_id)
-                    progreso.update(percentage, "", config.get_localized_string(60520) % channel_title)
+                    progreso.update(percentage, "" + '\n' + config.get_localized_string(60520) % channel_title)
                 get_newest(channel_id, item.extra)
 
         # Modo Multi Thread: esperar q todos los hilos terminen
@@ -303,8 +303,7 @@ def novedades(item):
                 list_pendent_names = [a.getName() for a in pendent]
                 if mode == 'normal':
                     mensaje = config.get_localized_string(30994) % (", ".join(list_pendent_names))
-                    progreso.update(percentage, config.get_localized_string(60521) % (len(threads) - len(pendent), len(threads)),
-                                mensaje)
+                    progreso.update(percentage, config.get_localized_string(60521) % (len(threads) - len(pendent), len(threads)) + '\n' + mensaje + '\n' + ' ' + '\n' + ' ')
                     logger.debug(mensaje)
 
                     if progreso.iscanceled():
@@ -315,7 +314,7 @@ def novedades(item):
                 pendent = [a for a in threads if a.isAlive()]
         if mode == 'normal':
             mensaje = config.get_localized_string(60522) % (len(list_newest), time.time() - start_time)
-            progreso.update(100, mensaje, " ", " ")
+            progreso.update(100, mensaje + '\n' + " " + '\n' + " " + '\n' + " ")
             logger.info(mensaje)
             start_time = time.time()
             # logger.debug(start_time)
@@ -365,7 +364,8 @@ def get_newest(channel_id, categoria):
             modulo = __import__('channels.%s' % channel_id, fromlist=["channels.%s" % channel_id])
         except:
             try:
-                exec("import channels." + channel_id + " as modulo")
+                #exec("import channels." + channel_id + " as modulo")
+                modulo = __import__('channels.%s' % channel_id, fromlist=["channels.%s" % channel_id])
             except:
                 puede = False
 
@@ -417,6 +417,13 @@ def get_title(item):
     title = re.compile("\[/*COLO.*?\]", re.DOTALL).sub("", title)
     title = re.compile("\[/*B\]", re.DOTALL).sub("", title)
     title = re.compile("\[/*I\]", re.DOTALL).sub("", title)
+    
+    if '-Serie-' in item.title:
+        title = '%s -Serie-' % title
+    elif '-Varios-' in item.title:
+        title = '%s -Varios-' % title
+    if '[TERM]' in item.title:
+        title = '%s [TERM]' % title
 
     return title
 

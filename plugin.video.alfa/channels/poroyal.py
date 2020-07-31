@@ -23,12 +23,12 @@ host = 'https://poroyal.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host + "/videos?o=mr"))
-    itemlist.append( Item(channel=item.channel, title="Mas vistos" , action="lista", url=host + "/videos?o=mv&t=a"))
-    itemlist.append( Item(channel=item.channel, title="Mas comentados" , action="lista", url=host + "/videos?t=a&o=md"))
-    itemlist.append( Item(channel=item.channel, title="Mas largo" , action="lista", url=host + "/videos?t=a&o=lg"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/categories"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host + "/videos?o=mr"))
+    itemlist.append(item.clone(title="Mas vistos" , action="lista", url=host + "/videos?o=mv&t=a"))
+    itemlist.append(item.clone(title="Mas comentados" , action="lista", url=host + "/videos?t=a&o=md"))
+    itemlist.append(item.clone(title="Mas largo" , action="lista", url=host + "/videos?t=a&o=lg"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -59,7 +59,7 @@ def categorias(item):
         title = "%s (%s)" %(scrapedtitle, cantidad)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         url = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title, url=url,
+        itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
     return itemlist
 
@@ -84,7 +84,7 @@ def lista(item):
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
+        itemlist.append(item.clone(action="play", title=title, url=url,
                               thumbnail=thumbnail, fanart=thumbnail, plot=plot, contentTitle = title))
     next_page = scrapertools.find_single_match(data, '<li class="page-item"><a class="page-link" href="([^"]+)" class="prevnext">')
     if next_page:

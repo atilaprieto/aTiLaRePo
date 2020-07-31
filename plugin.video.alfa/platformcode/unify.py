@@ -346,7 +346,7 @@ def title_format(item):
         visto = True
 
     # Se elimina cualquier formato previo en el titulo
-    if item.action != '' and item.action !='mainlist' and item.unify:
+    if item.action != '' and item.action !='mainlist' and item.channel !='downloads' and item.unify:
         item.title = remove_format(item.title)
 
     #logger.debug('visto? %s' % visto)
@@ -361,8 +361,6 @@ def title_format(item):
     if hasattr(item,'text_color'):
         item.text_color=''
 
-
-
     if valid and item.unify!=False:
 
         # Formamos el titulo para serie, se debe definir contentSerieName
@@ -373,6 +371,8 @@ def title_format(item):
             if item.contentType == 'episode' and info['episode'] != '':
                 if info['title'] == '':
                     info['title'] = '%s - Episodio %s'% (info['tvshowtitle'], info['episode'])
+                elif item.channel == 'downloads':
+                    item.title = item.title
                 elif 'Episode' in info['title']:
                     episode = info['title'].lower().replace('episode', 'episodio')
                     info['title'] = '%s - %s' % (info['tvshowtitle'], episode.capitalize())
@@ -402,6 +402,8 @@ def title_format(item):
                 item.title = '%s [Miniserie]' % set_color(item.contentTitle, 'movie')
             elif 'extend' in item.title.lower():
                 item.title = '%s [V.Extend.]' % set_color(item.contentTitle, 'movie')
+            elif item.channel == 'downloads' or item.from_channel == 'news':
+                item.title = '%s' % set_color(item.title, 'movie')
             else:
                 item.title = '%s' % set_color(item.contentTitle, 'movie')
             if item.contentType=='movie':
@@ -409,7 +411,7 @@ def title_format(item):
                     if isinstance(item.context, list):
                         item.context.append('Buscar esta pelicula en otros canales')
 
-        if ('Novedades' in item.category and item.from_channel=='news'):
+        if 'Novedades' in item.category and item.from_channel == 'news' and item.channel not in item.title.lower():
             #logger.debug('novedades')
             item.title = '%s [%s]'%(item.title, item.channel)
 
@@ -499,7 +501,7 @@ def title_format(item):
 
 
         # Para las busquedas por canal
-        if item.from_channel != '':
+        if item.from_channel != '' and item.from_channel != 'news':
             from core import channeltools
             channel_parameters = channeltools.get_channel_parameters(item.from_channel)
             logger.debug(channel_parameters)
@@ -551,8 +553,14 @@ def title_format(item):
                     item.title = '[[COLOR red][B]X[/B][/COLOR]] %s' % item.title
                 elif item.alive == '??':
                     item.title = '[[COLOR yellow][B]?[/B][/COLOR]] %s' % item.title
+
         else:
             item.title = '%s' % item.title
+            
+        if item.channel == 'downloads' and item.contentChannel and item.contentAction:
+            serie = '-serie-'
+            if item.contentType != 'tvshow': serie = ''
+            item.title = '%s [%s%s]' % (item.title, item.contentChannel, serie)
 
         #logger.debug('item.title despues de server: %s' % item.title)
     elif 'library' in item.action:

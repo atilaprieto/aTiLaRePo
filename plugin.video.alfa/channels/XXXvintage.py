@@ -17,16 +17,16 @@ from core.item import Item
 from platformcode import config, logger
 from core import httptools
 
-host = 'http://www.vintagetube.xxx'
+host = 'https://vintagetube.xxx'
 
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Ultimos" , action="lista", url=host + "/latest/all-time/1"))
-    itemlist.append( Item(channel=item.channel, title="Mas visto" , action="lista", url=host + "/most-viewed/all-time/1"))
-    itemlist.append( Item(channel=item.channel, title="Pornstar" , action="categorias", url=host + "/models/top-rated/"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
-    # itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Ultimos" , action="lista", url=host + "/latest/all-time/1"))
+    itemlist.append(item.clone(title="Mas visto" , action="lista", url=host + "/most-viewed/all-time/1"))
+    itemlist.append(item.clone(title="Pornstar" , action="categorias", url=host + "/models/top-rated/"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
+    # itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -61,7 +61,7 @@ def categorias(item):
             url = "%s%s/latest/1" % (host,scrapedurl)
         else:
             url = "%s%s" % (host,scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=url,
                               thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot) )
     return sorted(itemlist, key=lambda i: i.title)
 
@@ -71,17 +71,17 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     patron = '<div class="item col-lg-2 col-md-3 col-xs-12">.*?'
-    patron += '<a href="([^"]+)">.*?'
     patron += '<span class="duration">([^<]+)</span>.*?'
     patron += 'src="([^"]+)".*?'
     patron += '<strong class="thumb-title">([^<]+)</strong>'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedtime,scrapedthumbnail,scrapedtitle in matches:
+    for scrapedtime,scrapedthumbnail,scrapedtitle in matches:
         scrapedplot = ""
         title = "[COLOR yellow]%s[/COLOR] %s" %(scrapedtime,scrapedtitle)
-        scrapedurl = scrapedurl.replace("/xxx.php?tube=", "")
-        scrapedurl = "%s%s" % (host, scrapedurl)
-        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle=title, url=scrapedurl,
+        scrapedurl = scrapedtitle.replace(" ", "-")
+        num = scrapertools.find_single_match(scrapedthumbnail, '.*?/videos_screenshots/\d+/(\d+)/')
+        scrapedurl = "%s/videos/%s/%s" % (host, num, scrapedurl)
+        itemlist.append(item.clone(action="play", title=title, contentTitle=title, url=scrapedurl,
                               thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot) )
     last_page= scrapertools.find_single_match(data,'<a href=".*?/latest/(\d+)"><div style="display:inline">Last<')
     page = scrapertools.find_single_match(item.url, "(.*?)/\d+")
@@ -94,8 +94,7 @@ def lista(item):
         current_page = current_page + 1
         next_page = "%s/%s" %(page,current_page)
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(Item(channel=item.channel, action="lista", title="Página Siguiente >>", text_color="blue",
-                              url=next_page, thumbnail=""))
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist
 
 

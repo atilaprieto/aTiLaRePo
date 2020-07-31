@@ -16,13 +16,13 @@ url_api = "https://hclips.com/api/json/videos/86400/str/%s/60/%s.%s.1.all..day.j
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=url_api % ("latest-updates", "", "")))
-    itemlist.append( Item(channel=item.channel, title="Popular" , action="lista", url=url_api %  ("most-popular", "", "")))
-    itemlist.append( Item(channel=item.channel, title="Longitud" , action="lista", url=url_api %  ("longest", "", "")))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="canal", url=host + "/api/json/channels/86400/str/latest-updates/80/..1.json"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/api/json/categories/14400/str.all.json"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=url_api % ("latest-updates", "", "")))
+    itemlist.append(item.clone(title="Popular" , action="lista", url=url_api %  ("most-popular", "", "")))
+    itemlist.append(item.clone(title="Longitud" , action="lista", url=url_api %  ("longest", "", "")))
+    itemlist.append(item.clone(title="Canal" , action="canal", url=host + "/api/json/channels/86400/str/latest-updates/80/..1.json"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/api/json/categories/14400/str.all.json"))
 
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -53,7 +53,7 @@ def categorias(item):
         url = url_api %("latest-updates", "categories", dir)
         scrapedplot = ""
         title = "%s (%s)" % (scrapedtitle, vidnum)
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=url,
                                thumbnail="", plot=scrapedplot) )
     return itemlist
 
@@ -75,7 +75,7 @@ def canal(item):
         thumbnail = thumbnail.replace("\/", "/")
         scrapedplot = ""
         title = "%s (%s)" % (scrapedtitle, vidnum)
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=url,
                                thumbnail=thumbnail, plot=scrapedplot) )
     total= int(JSONData["total_count"])
     page = int(scrapertools.find_single_match(item.url,'(\d+).json'))
@@ -83,7 +83,7 @@ def canal(item):
     next_page = (page+ 1)
     if (page*80) < total:
         next_page = "%s.%s.json" %(url_page,next_page)
-        itemlist.append(item.clone(action="canal", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="canal", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -107,7 +107,7 @@ def lista(item):
         contentTitle = title
         thumbnail = thumbnail.replace("\/", "/")
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=url,
+        itemlist.append(item.clone(action="play", title=title, url=url,
                               thumbnail=thumbnail, plot=plot, contentTitle = contentTitle))
     total= int(JSONData["total_count"])
     page = int(scrapertools.find_single_match(item.url,'(\d+).all..'))
@@ -116,7 +116,7 @@ def lista(item):
     next_page = (page+ 1)
     if (page*60) < total:
         next_page = "%s.%s.all..%s" %(url_page,next_page,post)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

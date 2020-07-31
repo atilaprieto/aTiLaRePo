@@ -1,7 +1,6 @@
 # Conector Cloudvideo By Alfa development Group
 # --------------------------------------------------------
 
-import re
 from core import httptools
 from core import scrapertools
 from lib import jsunpack
@@ -22,10 +21,15 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     data = httptools.downloadpage(page_url).data
     patron = '<source src="([^"]+)" type="([^"]+)"'
     sub = scrapertools.find_single_match(data, '<track kind="captions" src="([^"]+)"')
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
+    matches = scrapertools.find_single_match(data, patron)
     for url, v_type in matches:
         if 'mpegURL' in v_type:
             v_type = 'm3u8'
         video_urls.append(['cloudvideo [%s]' % v_type, url, 0, sub])
+    if not matches:
+        enc_data = scrapertools.find_single_match(data, "p,a,c,k,e.*?</script>")
+        unpacker = jsunpack.unpack(enc_data)
+        url = scrapertools.find_single_match(unpacker, 'src:"([^"]+)"')
+        video_urls.append(['cloudvideo [m3u8]', url])
+
     return video_urls

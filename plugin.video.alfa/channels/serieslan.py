@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                             # Usamos el nativo de PY2 que es más rápido
+
 import re
 import string
+import json
 
 from channels import renumbertools
 from bs4 import BeautifulSoup
@@ -94,9 +104,11 @@ def search(item, texto):
 def sub_search(item):
     logger.info()
     itemlist = []
+    logger.info(item.url)
     post = "k=" + item.texto
-    results = httptools.downloadpage(item.url, post=post).json
-    
+    logger.info(post)
+    results = httptools.downloadpage(item.url, post=post).data#.json
+    results = json.loads(results)
     if not results:
         return itemlist
     for result in results["dt"]:
@@ -208,7 +220,7 @@ def seasons(item):
     for i, elem in enumerate(matches):
         title = elem.text
         dt = elem['dt']
-        season = title.split(" ")[1] if "temporada" in title.lower() else 0
+        season = 1 if "unica" in title.lower() else title.split(" ")[1] if "temporada" in title.lower() else 0
         if not "temporada" in title.lower():
             season = i+1 if not [int(s) for s in title if s.isdigit()] else [int(s) for s in title if s.isdigit()][0]
         infoLabels['season'] = season
@@ -336,7 +348,6 @@ def findvideos(item):
     return itemlist
 
 def golink (num, sa, sl):
-    import urllib
     b = [3, 10, 5, 22, 31]
     #d = ''
     #for i in range(len(b)):

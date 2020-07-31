@@ -1,7 +1,7 @@
 {
   "id": "peliculasgratis",
   "name": "PeliculasGratis",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["cast", "lat"],
   "thumbnail": "http://imgur.com/ThH8Zmk.png",

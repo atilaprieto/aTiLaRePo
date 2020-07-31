@@ -18,6 +18,8 @@ from core.item import Item
 from core import httptools
 from channels import filtertools
 from channels import autoplay
+from bs4 import BeautifulSoup
+
 
 IDIOMAS = {'vo': 'VO'}
 list_language = list(IDIOMAS.values())
@@ -26,7 +28,7 @@ list_servers = ['gounlimited']
 
 host = 'http://fullxxxmovies.net'          #es   http://freepornstreams.org    http://xxxstreams.org
 
-# Cloudscraper
+# Cloudscraper casi todo ubiqfile
 
 def mainlist(item):
     logger.info()
@@ -34,9 +36,9 @@ def mainlist(item):
 
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append( Item(channel=item.channel, title="Peliculas" , action="lista", url=host))
-    # itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Peliculas" , action="lista", url=host + "/streams"))
+    # itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
 
     autoplay.show_option(item.channel, itemlist)
 
@@ -69,30 +71,40 @@ def categorias(item):
             scrapedplot = ""
             scrapedthumbnail = ""
             scrapedurl = scrapedurl.replace ("http://freepornstreams.org/freepornst/stout.php?s=100,75,65:*&#038;u=" , "")
-            itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+            itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                                    thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return sorted(itemlist, key=lambda i: i.title)
+
+
+def create_soup(url, referer=None, unescape=False):
+    logger.info()
+    if referer:
+        data = httptools.downloadpage(url, headers={'Referer': referer}).data
+    else:
+        data = httptools.downloadpage(url).data
+    if unescape:
+        data = scrapertools.unescape(data)
+    soup = BeautifulSoup(data, "html5lib", from_encoding="utf-8")
+    return soup
 
 
 def lista(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
-    data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron = '<article id="post-\d+".*?'
-    patron += '<a href="([^"]+)" rel="bookmark">([^<]+)<.*?'
-    patron += '<img src="([^"]+)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
-        thumbnail = scrapedthumbnail
+    soup = create_soup(item.url)
+    matches = soup.find_all('article', class_='post')
+    for elem in matches:
+        url = elem.a['href']
+        title = elem.find('header',  class_='entry-header').text
+        thumbnail = elem.img['src']
         plot = ""
-        if not "Ubiqfile" in scrapedtitle:
-            itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle, url=scrapedurl, 
+        if not "ubiqfile" in url or not "siterip" in url:
+            itemlist.append(item.clone(action="findvideos", title=title, url=url, 
                                   thumbnail=thumbnail, fanart=thumbnail, plot=plot) )
-    next_page = scrapertools.find_single_match(data, '<a class="next page-numbers" href="([^"]+)">Next')
+    next_page = soup.find('a', class_='next')['href']
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -100,7 +112,7 @@ def findvideos(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|amp;|\s{2}|&nbsp;", "", data)
-    patron = '<a href="([^"]+)" rel="nofollow"[^<]+>(?:Streaming|Download)'
+    patron = '<a href="([^"]+)" rel="nofollow[^<]+>(?:Streaming|Download)'
     matches = scrapertools.find_multiple_matches(data, patron)
     for url in matches:
         if not "ubiqfile" in url:

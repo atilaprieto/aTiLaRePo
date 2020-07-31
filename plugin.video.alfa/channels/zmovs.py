@@ -25,10 +25,10 @@ url_api = host + "/?ajax=1&type="
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=url_api + "most-recent&page=1"))
-    itemlist.append( Item(channel=item.channel, title="Mejor valorados" , action="lista", url=url_api + "top-rated&page=1"))
-    itemlist.append( Item(channel=item.channel, title="Longitud" , action="lista", url=url_api + "long&page=1"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=url_api + "most-recent&page=1"))
+    itemlist.append(item.clone(title="Mejor valorados" , action="lista", url=url_api + "top-rated&page=1"))
+    itemlist.append(item.clone(title="Longitud" , action="lista", url=url_api + "long&page=1"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
     return itemlist
 
 
@@ -41,10 +41,10 @@ def categorias(item):
     patron = '<a class="category-item" href="([^"]+)">([^"]+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle in matches:
-        url = "%s%s?ajax=1&type=most-recent&page=1" % (host, scrapedurl)
+        url = "%s%s?ajax=1&type=top-rated&page=1" %(host, scrapedurl)  #most-recent
         scrapedplot = ""
         thumbnail = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=url,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=url,
                               thumbnail=thumbnail , plot=scrapedplot) )
     return itemlist
 
@@ -66,7 +66,7 @@ def lista(item):
         url= url.get('480', domain)
         url = url.replace("/\n/", "/")
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play", title=title, contentTitle=title, url=url,
+        itemlist.append(item.clone(action="play", title=title, contentTitle=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot=plot,))
     Actual = int(scrapertools.find_single_match(item.url, '&page=([0-9]+)'))
     if JSONData["pagesLeft"] - 1 > Actual:

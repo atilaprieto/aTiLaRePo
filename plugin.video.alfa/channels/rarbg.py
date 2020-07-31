@@ -605,7 +605,7 @@ def play(item):                                 #Permite preparar la descarga de
                 unzipper.extract(subtitle_folder_path, videolibrary_path)
             except:
                 import xbmc
-                xbmc.executebuiltin('XBMC.Extract("%s", "%s")' % (subtitle_folder_path, videolibrary_path))
+                xbmc.executebuiltin('Extract("%s", "%s")' % (subtitle_folder_path, videolibrary_path))
                 time.sleep(1)
             
             # Borrar el zip descargado

@@ -25,13 +25,13 @@ url_api = host + "/api/json/videos/%s/str/%s/60/%s.%s.1.all..%s.json"
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Ultimas" , action="lista", url=url_api % ("14400", "latest-updates", "", "", "")))
-    itemlist.append( Item(channel=item.channel, title="Mejor valoradas" , action="lista", url=url_api % ("14400", "top-rated", "", "", "")))
-    itemlist.append( Item(channel=item.channel, title="Mas popular" , action="lista", url=url_api % ("14400", "most-popular", "", "", "")))
-    itemlist.append( Item(channel=item.channel, title="Pornstar" , action="pornstar", url=host + "/api/json/models/86400/str/filt........../most-popular/48/1.json"))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="catalogo", url=host + "/api/json/channels/86400/str/latest-updates/80/..1.json"))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host + "/api/json/categories/14400/str.all.json"))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Ultimas" , action="lista", url=url_api % ("14400", "latest-updates", "", "", "")))
+    itemlist.append(item.clone(title="Mejor valoradas" , action="lista", url=url_api % ("14400", "top-rated", "", "", "")))
+    itemlist.append(item.clone(title="Mas popular" , action="lista", url=url_api % ("14400", "most-popular", "", "", "")))
+    itemlist.append(item.clone(title="Pornstar" , action="pornstar", url=host + "/api/json/models/86400/str/filt........../most-popular/48/1.json"))
+    itemlist.append(item.clone(title="Canal" , action="catalogo", url=host + "/api/json/channels/86400/str/latest-updates/80/..1.json"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/api/json/categories/14400/str.all.json"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -67,15 +67,14 @@ def pornstar(item):
         scrapedplot = ""
         url = url_api % ("14400", "latest-updates", "model", dir, "")
         title = "%s (%s)" %(scrapedtitle,num)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title , url=url , 
-                        thumbnail=thumbnail , plot=scrapedplot) )
+        itemlist.append(item.clone(action="lista", title=title, url=url, thumbnail=thumbnail , plot=scrapedplot) )
     total= int(JSONData["total_count"])
     page = int(scrapertools.find_single_match(item.url,'.*?(\d+).json'))
     url_page = scrapertools.find_single_match(item.url,'(.*?)\d+.json')
     next_page = (page+ 1)
     if (page*60) < total:
         next_page = "%s%s.json" %(url_page,next_page)
-        itemlist.append(item.clone(action="pornstar", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="pornstar", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -97,7 +96,7 @@ def catalogo(item):
         scrapedplot = ""
         url = url_api % ("7200", "latest-updates", "channel", dir, "")
         title = "%s (%s)" %(scrapedtitle,num)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title , url=url , 
+        itemlist.append(item.clone(action="lista", title=title , url=url , 
                         thumbnail=thumbnail , plot=scrapedplot) )
     total= int(JSONData["total_count"])
     page = int(scrapertools.find_single_match(item.url,'.*?.(\d+).json'))
@@ -105,7 +104,7 @@ def catalogo(item):
     next_page = (page+ 1)
     if (page*60) < total:
         next_page = "%s.%s.json" %(url_page,next_page)
-        itemlist.append(item.clone(action="catalogo", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="catalogo", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
@@ -123,8 +122,7 @@ def categorias(item):
         thumbnail = ""
         scrapedplot = ""
         title = "%s (%s)" %(scrapedtitle,num)
-        itemlist.append( Item(channel=item.channel, action="lista", title=title , url=url , 
-                        thumbnail=thumbnail, plot=scrapedplot) )
+        itemlist.append(item.clone(action="lista", title=title, url=url, thumbnail=thumbnail, plot=scrapedplot) )
     return  sorted(itemlist, key=lambda i: i.title)
 
 
@@ -149,7 +147,7 @@ def lista(item):
             title = "[COLOR yellow]%s[/COLOR] %s" % (duration, scrapedtitle)
         thumbnail = scrapedthumbnail.replace("\/", "/")
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=scrapedurl, thumbnail=thumbnail, 
+        itemlist.append(item.clone(action="play" , title=title , url=scrapedurl, thumbnail=thumbnail, 
                         fanart=thumbnail, plot=plot, contentTitle=title) )
     total= int(JSONData["total_count"])
     page = int(scrapertools.find_single_match(item.url,'(\d+).all..'))
@@ -158,12 +156,12 @@ def lista(item):
     next_page = (page+ 1)
     if (page*60) < total:
         next_page = "%s.%s.all..%s" %(url_page,next_page,post)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 
 def play(item):
-    logger.info(item)
+    logger.info()
     itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
     return itemlist
 

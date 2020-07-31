@@ -244,12 +244,13 @@ def episodios(item):
 
     return itemlist
 
+
 def findvideos(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    bloque = scrapertools.find_single_match(data, 'Server</span>(.*?)choose_quality')
-    matches = scrapertools.find_multiple_matches(bloque, '<option value="([^"]+)"')
+    bloque = scrapertools.find_single_match(data, 'Server</span>(.*?)id="choose_quality"')
+    matches = scrapertools.find_multiple_matches(bloque, '<option sv="[^"]+" value="([^"]+)"')
     headers = {"Referer" : item.url}
 
     for url in matches:

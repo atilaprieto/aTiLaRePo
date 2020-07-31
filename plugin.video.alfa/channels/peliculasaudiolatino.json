@@ -1,10 +1,10 @@
 {
   "id": "peliculasaudiolatino",
   "name": "Peliculasaudiolatino",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["lat"],
-  "thumbnail": "peliculasaudiolatino.png",
+  "thumbnail": "https://i.postimg.cc/mPfzh7TP/peliculasaudiolatino.png",
   "banner": "peliculasaudiolatino.png",
   "categories": [
     "movie"

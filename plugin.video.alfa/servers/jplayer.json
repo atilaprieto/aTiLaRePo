@@ -4,8 +4,8 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "jplayer.net/v/([A-z0-9_-]+)",
-        "url": "https://www.jplayer.net/api/source/\\1"
+        "pattern": "jplayer.(?:net|club)/v/([A-z0-9_-]+)",
+        "url": "https://www.jplayer.club/api/source/\\1"
       }
     ]
   },

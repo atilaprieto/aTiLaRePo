@@ -81,7 +81,7 @@ else:
 UPLOAD_LIMIT = 0
 if DOWNLOAD_LIMIT > 0:
     UPLOAD_LIMIT = DOWNLOAD_LIMIT / 35
-msg_header = 'Alfa MCT Cliente Torrent'
+msg_header = 'Alfa MCT Cliente Torrent: %s' % config.get_setting("libtorrent_version", server="torrent", default="")
 
 
 def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
@@ -105,7 +105,7 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
             url = decode_adfly(data)
         except:
             ddd = xbmcgui.Dialog()
-            ddd.ok( msg_header + ": Sin soporte adf.ly", "El script no tiene soporte para el acortador de urls adf.ly.", "", "url: " + url )
+            ddd.ok( msg_header + ": Sin soporte adf.ly", "El script no tiene soporte para el acortador de urls adf.ly." + '\n' + " " + '\n' + "url: " + url )
             return
 
     """
@@ -128,12 +128,14 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
     video_path = ''
     global bkg_user
     bkg_user = False
+    dp_BG = False
     DOWNGROUND = False
     BACKGROUND = config.get_setting("mct_background_download", server="torrent", default=True)
     if item.downloadFilename and item.downloadStatus in [2, 4]:                 # Descargas AUTO
         BACKGROUND = True
         DOWNGROUND = True
         bkg_user = True
+    global ses_lt
     ses_lt = False
     if item:
         if item.contentType == 'movie':
@@ -180,8 +182,8 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
     except Exception as e:
         do = xbmcgui.Dialog()
         e = e1 or e2
-        do.ok('ERROR en el cliente MCT Libtorrent', 'Módulo no encontrado o imcompatible con el dispositivo.', 
-                    'Reporte el fallo adjuntando un "log".', str(e))
+        do.ok('ERROR en el cliente MCT Libtorrent', 'Módulo no encontrado o imcompatible con el dispositivo.' + '\n' + 
+                    'Reporte el fallo adjuntando un "log".' + '\n' + str(e))
         return
         
     log("XXX libtorrent version: %s" % lt.version)
@@ -250,7 +252,7 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
         dp.create(msg_header)
         while not h.has_metadata():
             message, porcent, msg_file, s, download = getProgress(h, "Creando torrent desde magnet")
-            dp.update(porcent, message, msg_file)
+            dp.update(porcent, message + '\n' + msg_file + '\n' + ' ')
             if s.state == 1: download = 1
             if dp.iscanceled():
                 dp.close()
@@ -326,13 +328,14 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
                                         "Te informaremos...", time=10000)
             dialog = True
         else:
-            dialog = xbmcgui.Dialog().yesno("Encontrado archivo .RAR...", "Nombre: %s" % filename,
-                                        "Tamaño: %.2f MB" % (video_size / 1048576.0),
+            dialog = xbmcgui.Dialog().yesno("Encontrado archivo .RAR...", "Nombre: %s" % filename + '\n' + 
+                                        "Tamaño: %.2f MB" % (video_size / 1048576.0) + '\n' + 
                                         "¿Descargar en segundo plano? Cancelar en menú Descargas")
         if dialog:
             dp_cerrado = False
             dp = xbmcgui.DialogProgressBG()
             dp.create(msg_header)
+            dp_BG = True
 
     if (_video_file_ext == ".avi" or _video_file_ext == ".mp4" or _video_file_ext == ".mkv") and allocate:
         log("##### storage_mode_t.storage_mode_allocate ("+_video_file_ext+") #####")
@@ -341,7 +344,7 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
         log("##### storage_mode_t.storage_mode_sparse ("+_video_file_ext+") #####")
         h = ses.add_torrent( { 'ti':info, 'save_path': save_path_videos, 'trackers':trackers, 'storage_mode':lt.storage_mode_t.storage_mode_sparse } )
         allocate = True
-    global ses_lt
+
     ses_lt = True
     # -----------------------------------------------------------
 
@@ -383,6 +386,7 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
         if bkg_user:
             dp = xbmcgui.DialogProgressBG()
             dp.create(msg_header)
+            dp_BG = True
         else:
             # -- Crear diálogo de progreso para el primer bucle ---------
             dp = xbmcgui.DialogProgress()
@@ -582,15 +586,22 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
                     if not player.statusDialogoProgress:
                         dp = xbmcgui.DialogProgressBG()
                         dp.create(msg_header)
+                        dp_BG = True
                         player.setDialogoProgress()
 
                     # -- Diálogos de estado en el visionado -----
                     if not h.is_seed():
                         # -- Recuperar los datos del progreso ---
                         message, porcent, msg_file, s, download = getProgress(h, video_file, _pf=_pieces_info)
-                        dp.update(porcent, message, '[CR]' +  message + '[CR]' + msg_file)
+                        if dp_BG:
+                            dp.update(porcent, message, msg_file)
+                        else:
+                            dp.update(porcent, message + '\n' + msg_file + '\n' + ' ')
                     else:
-                        dp.update(100, "Descarga completa: " + video_file)
+                        if dp_BG:
+                            dp.update(100, "Descarga completa: ", video_file)
+                        else:
+                            dp.update(100, "Descarga completa: " + '\n' + video_file + '\n' + ' ')
 
                     # -- Se canceló el progreso en el visionado -
                     # -- Continuar                              -
@@ -631,7 +642,7 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
             if h.status().num_pieces < tot_piece_set:
                 # -- Diálogo continuar o terminar ---------------
                 # Preguntamos si el usuario quiere pasar a backgroung
-                ok = xbmcgui.Dialog().yesno(msg_header, "¿Borramos los archivo descargados? (incompletos)",  
+                ok = xbmcgui.Dialog().yesno(msg_header, "¿Borramos los archivo descargados? (incompletos)" + '\n' + 
                                     "Selecciona NO para seguir descargando en segundo plano")
             else: ok = True
             # -- NO ---------------------------------------------
@@ -641,12 +652,16 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
                 dp_cerrado = False
                 dp = xbmcgui.DialogProgressBG()
                 dp.create(msg_header)
+                dp_BG = True
             
             else:
                 # -- Terminar: ----------------------------------
                 # -- Comprobar si el vídeo pertenece a una ------
                 # -- lista de archivos                          -
                 remove_files( download, torrent_file, video_file, ses, h, ren_video_file, item )
+                if item.path.endswith('.json'):
+                    log("##### BORRANDO Archivo de CONTROL %s" % item.path)
+                    filetools.remove(filetools.join(config.get_setting("downloadlistpath"), item.path))
                 dp.close()
                 return
                 """
@@ -668,7 +683,10 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
 
         # -- Mostar progeso antes del visionado -----------------
         if is_view != "Ok" :
-            dp.update(porcent, message, msg_file)
+            if dp_BG:
+                dp.update(porcent, message, msg_file)
+            else:
+                dp.update(porcent, message + '\n' + msg_file + '\n' + ' ')
 
         # -- Se canceló el progreso antes del visionado ---------
         # -- Dar otra oportunidad en background o Terminar                                           -
@@ -682,11 +700,14 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
                 dp_cerrado = False
                 dp = xbmcgui.DialogProgressBG()
                 dp.create(msg_header)
+                dp_BG = True
                 if ses_lt: h.set_download_limit(DOWNLOAD_LIMIT)
                 
             else:
-            
                 remove_files( download, torrent_file, video_file, ses, h, ren_video_file, item )
+                if item.path.endswith('.json'):
+                    log("##### BORRANDO Archivo de CONTROL %s" % item.path)
+                    filetools.remove(filetools.join(config.get_setting("downloadlistpath"), item.path))
                 return
                 # -- Comprobar si el vídeo pertenece a una lista de -
                 # -- archivos                                       -
@@ -805,8 +826,11 @@ def get_video_files_sizes( info ):
 
     # -- Eliminar errores con tíldes -----------------------------
     for i, f in enumerate( info.files() ):
-        _title = unicode(f.path, "iso-8859-1", errors="replace")
-        _title = unicode(f.path, "'utf-8'", errors="replace")
+        if not PY3:
+            _title = unicode(f.path, "iso-8859-1", errors="replace")
+            _title = unicode(f.path, "'utf-8'", errors="replace")
+        elif PY3 and isinstance(f.path, bytes):
+            _title = f.path.decode('utf-8')
 
     extensions_list = ['.aaf', '.3gp', '.asf', '.avi', '.flv', '.mpeg',
                        '.m1v', '.m2v', '.m4v', '.mkv', '.mov', '.mpg',
@@ -896,7 +920,7 @@ def remove_files( download, torrent_file, video_file, ses, h, ren_video_file="",
     if dialog_view and ren_video_file:
         if h.status().num_pieces >= tot_piece_set:
             d = xbmcgui.Dialog()
-            ok = d.yesno(msg_header, '¿Borrarmos los archivos descargados? (completos)', video_file)
+            ok = d.yesno(msg_header, '¿Borrarmos los archivos descargados? (completos)' + '\n' +  video_file)
         else:
             ok = True
 

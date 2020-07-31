@@ -110,6 +110,7 @@ def setting_torrent(item):
     DOWNLOAD_PATH_BT = config.get_setting("bt_download_path", server="torrent", default=config.get_setting("downloadpath"))
     if not DOWNLOAD_PATH_BT: DOWNLOAD_PATH_BT = filetools.join(config.get_data_path(), 'downloads')
     MAGNET2TORRENT = config.get_setting("magnet2torrent", server="torrent", default=False)
+    CAPTURE_THRU_ROWSER_PATH = config.get_setting("capture_thru_browser_path", server="torrent", default="")
 
     torrent_options = [config.get_localized_string(30006), config.get_localized_string(70254), config.get_localized_string(70255)]
     torrent_options.extend(platformtools.torrent_client_installed())
@@ -204,11 +205,23 @@ def setting_torrent(item):
             "default": MAGNET2TORRENT,
             "enabled": True,
             "visible": True
+        },
+        {
+            "id": "capture_thru_browser_path",
+            "type": "text",
+            "label": "Path para descargar con un browser archivos .torrent bloqueados",
+            "default": CAPTURE_THRU_ROWSER_PATH,
+            "enabled": True,
+            "visible": True
         }
     ]
 
     platformtools.show_channel_settings(list_controls=list_controls, callback='save_setting_torrent', item=item,
                                         caption=config.get_localized_string(70257), custom_button={'visible': False})
+    if item.item_org:
+        item_org = Item().fromurl(item.item_org)
+        if item_org.torrent_info: del item_org.torrent_info
+        platformtools.itemlist_update(item_org)
 
 
 def save_setting_torrent(item, dict_data_saved):
@@ -230,6 +243,8 @@ def save_setting_torrent(item, dict_data_saved):
         config.set_setting("bt_download_path", dict_data_saved["bt_download_path"], server="torrent")
     if dict_data_saved and "magnet2torrent" in dict_data_saved:
         config.set_setting("magnet2torrent", dict_data_saved["magnet2torrent"], server="torrent")
+    if dict_data_saved and "capture_thru_browser_path" in dict_data_saved:
+        config.set_setting("capture_thru_browser_path", dict_data_saved["capture_thru_browser_path"], server="torrent")
 
 def menu_servers(item):
     logger.info()
@@ -896,20 +911,32 @@ def report_menu(item):
         itemlist.append(Item(channel=item.channel, action="", 
                     title="[COLOR limegreen]Ha terminado de generar el informe de fallo,[/COLOR]", 
                     thumbnail=thumb_next, folder=False))
-        itemlist.append(Item(channel=item.channel, action="", 
-                    title="[COLOR limegreen]Repórtelo en el Foro de Alfa: [/COLOR][COLOR yellow](pinche si Chrome)[/COLOR]", 
+        browser, res = call_browser(item, lookup=True)
+        if browser:
+            itemlist.append(Item(channel=item.channel, action="", 
+                    title="[COLOR limegreen]Repórtelo en el Foro de Alfa: [/COLOR][COLOR yellow](pinche para usar [I]%s[/I])[/COLOR]" % browser, 
                     thumbnail=thumb_next, 
-                    folder=False))        
-        itemlist.append(Item(channel=item.channel, action="call_chrome", 
-                    url='https://alfa-addon.com/foros/ayuda.12/', 
-                    title="**- [COLOR yellow]https://alfa-addon.com/foros/ayuda.12/[/COLOR] -**", 
-                    thumbnail=thumb_next, unify=False, folder=False))
-    
-        if item.one_use:
+                    folder=False))
+        else:
+            itemlist.append(Item(channel=item.channel, action="", 
+                    title="[COLOR limegreen]Repórtelo en el Foro de Alfa: [/COLOR]", 
+                    thumbnail=thumb_next, 
+                    folder=False))
+        if not browser:
             action = ''
             url = ''
         else:
-            action = 'call_chrome'
+            action = 'call_browser'
+            url='https://alfa-addon.com/foros/ayuda.12/'
+        itemlist.append(Item(channel=item.channel, action=action, url=url, 
+                    title="**- [COLOR yellow]https://alfa-addon.com/foros/ayuda.12/[/COLOR] -**", 
+                    thumbnail=thumb_next, unify=False, folder=False))
+    
+        if item.one_use or not browser:
+            action = ''
+            url = ''
+        else:
+            action = 'call_browser'
             url = item.url
         itemlist.append(Item(channel=item.channel, action=action, 
                     title="**- LOG: [COLOR gold]%s[/COLOR] -**" % item.url, url=url, 
@@ -1232,9 +1259,12 @@ def report_send(item, description='', fatal=False):
     return report_menu(item)
     
     
-def call_chrome(item):
+def call_browser(item, lookup=False):
     from lib import generictools
 
-    resultado = generictools.call_chrome(item.url)
+    if lookup:
+        browser, resultado = generictools.call_browser(item.url, lookup=lookup)
+    else:
+        browser, resultado = generictools.call_browser(item.url)
     
-    return resultado
+    return browser, resultado

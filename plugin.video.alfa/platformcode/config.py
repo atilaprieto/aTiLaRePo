@@ -64,7 +64,7 @@ def get_platform(full_version=False):
     code_db = {'10': 'MyVideos37.db', '11': 'MyVideos60.db', '12': 'MyVideos75.db',
                '13': 'MyVideos78.db', '14': 'MyVideos90.db', '15': 'MyVideos93.db',
                '16': 'MyVideos99.db', '17': 'MyVideos107.db', '18': 'MyVideos116.db', 
-               '19': 'MyVideos116.db'}
+               '19': 'MyVideos118.db'}
 
     num_version = xbmc.getInfoLabel('System.BuildVersion')
     num_version = re.match("\d+\.\d+", num_version).group(0)

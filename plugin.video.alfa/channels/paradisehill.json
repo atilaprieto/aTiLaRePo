@@ -1,0 +1,14 @@
+{
+  "id": "paradisehill",
+  "name": "paradisehill",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "https://i.postimg.cc/9Rpznk9T/paradisehill.png",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+  ]
+}

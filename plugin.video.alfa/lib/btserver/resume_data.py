@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from builtins import object
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 class ResumeData(object):
     def __init__(self, client):
         self.data = None

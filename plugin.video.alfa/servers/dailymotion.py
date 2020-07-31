@@ -7,7 +7,9 @@ from platformcode import logger
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
-    response = httptools.downloadpage(page_url)
+    global response
+
+    response = httptools.downloadpage(page_url, cookies=False)
     if "Contenido rechazado" in response.data:
         return False, "[Dailymotion] El archivo no existe o ha sido borrado"
     if response.code == 404:
@@ -18,13 +20,12 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
-    response = httptools.downloadpage(page_url, cookies=False)
     cookie = {'Cookie': response.headers["set-cookie"]}
     data = response.data.replace("\\", "")
     subtitle = scrapertools.find_single_match(data, '"subtitles":.*?"es":.*?urls":\["([^"]+)"')
     qualities = scrapertools.find_multiple_matches(data, '"([^"]+)":(\[\{"type":".*?\}\])')
     for calidad, urls in qualities:
-        patron = '"type":"(?:video|application)/([^"]+)","url":"([^"]+)"'
+        patron = '"type":"(?:video|application)\\/([^"]+)","url":"([^"]+)"'
         matches = scrapertools.find_multiple_matches(urls, patron)
         for stream_type, stream_url in matches:
             stream_type = stream_type.replace('x-mpegURL', 'm3u8')
@@ -33,7 +34,8 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                                                     follow_redirects=False).headers.get("location", stream_url)
             else:
                 data_m3u8 = httptools.downloadpage(stream_url).data
-                stream_url_http = scrapertools.find_single_match(data_m3u8, '(http:.*?\.m3u8)')
+                calidad = scrapertools.find_single_match(data_m3u8, r'NAME="([^"]+)"')
+                stream_url_http = scrapertools.find_single_match(data_m3u8, r'PROGRESSIVE-URI="([^"]+)"')
                 if stream_url_http:
                     stream_url = stream_url_http
             video_urls.append(["%sp .%s [dailymotion]" % (calidad, stream_type), stream_url, 0, subtitle])

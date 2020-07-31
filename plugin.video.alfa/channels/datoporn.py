@@ -72,7 +72,7 @@ def lista(item):
         title = '[COLOR yellow] %s [/COLOR] %s' % (duration , scrapedtitle)
         if "HD" in quality:
             title = '[COLOR yellow] %s [/COLOR] [COLOR red] HD [/COLOR] %s' % (duration , scrapedtitle)
-        itemlist.append(Item(channel=item.channel, action="play", title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
+        itemlist.append(item.clone(action="play", title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
                              fanart=scrapedthumbnail.replace("_t.jpg", ".jpg"), contentTitle=title, plot = ""))
     next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
     if "#" in next_page:

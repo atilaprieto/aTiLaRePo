@@ -33,9 +33,9 @@ def mainlist(item):
 
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append( Item(channel=item.channel, title="Nuevos" , action="lista", url=host))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="sub_menu", url=host))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Nuevos" , action="lista", url=host))
+    itemlist.append(item.clone(title="Canal" , action="sub_menu", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
 
     autoplay.show_option(item.channel, itemlist)
 
@@ -59,14 +59,14 @@ def sub_menu(item):
     logger.info()
 
     itemlist = list()
-    itemlist.append( Item(channel=item.channel, title="Bangbros" , action="categorias", url=host, id="menu-item-62819"))
-    itemlist.append( Item(channel=item.channel, title="Brazzers" , action="categorias", url=host, id="menu-item-817"))
-    itemlist.append( Item(channel=item.channel, title="Mofos" , action="categorias", url=host, id="menu-item-1707"))
-    itemlist.append( Item(channel=item.channel, title="Pornpros" , action="categorias", url=host, id="menu-item-3774"))
-    itemlist.append( Item(channel=item.channel, title="Realitykings" , action="categorias", url=host, id="menu-item-844"))
-    itemlist.append( Item(channel=item.channel, title="Sis Loves Me" , action="lista", url=host + "/videos4/sislovesme/"))
-    itemlist.append( Item(channel=item.channel, title="Teamskeet" , action="categorias", url=host, id="menu-item-1713"))
-    itemlist.append( Item(channel=item.channel, title="Networks" , action="categorias", url=host, id="menu-item-23036"))
+    itemlist.append(item.clone(title="Bangbros" , action="categorias", url=host, id="menu-item-62819"))
+    itemlist.append(item.clone(title="Brazzers" , action="categorias", url=host, id="menu-item-817"))
+    itemlist.append(item.clone(title="Mofos" , action="categorias", url=host, id="menu-item-1707"))
+    itemlist.append(item.clone(title="Pornpros" , action="categorias", url=host, id="menu-item-3774"))
+    itemlist.append(item.clone(title="Realitykings" , action="categorias", url=host, id="menu-item-844"))
+    itemlist.append(item.clone(title="Sis Loves Me" , action="lista", url=host + "/videos4/sislovesme/"))
+    itemlist.append(item.clone(title="Teamskeet" , action="categorias", url=host, id="menu-item-1713"))
+    itemlist.append(item.clone(title="Networks" , action="categorias", url=host, id="menu-item-23036"))
     return itemlist
 
 
@@ -81,7 +81,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedurl = urlparse.urljoin(item.url,scrapedurl)
         scrapedthumbnail = ""
-        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail , plot=scrapedplot) )
     return itemlist
 
@@ -111,7 +111,7 @@ def lista(item):
         stime =scrapertools.find_single_match(stime,'(\d+:\d+)')
         title = "[COLOR yellow]%s[/COLOR] %s" % (stime,stitle)
         plot = ""
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=url,
+        itemlist.append(item.clone(action="findvideos", title=title, contentTitle=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot=plot,))
     try:
         next_page = soup.find('a', class_='g1-delta g1-delta-1st next')['href']
@@ -128,6 +128,7 @@ def findvideos(item):
     soup = create_soup(item.url).find_all('iframe')
     for elem in soup:
         url = elem['src']
+        url = url.replace("dood.to", "dood.watch")
         itemlist.append(item.clone(action="play", title= "%s" , contentTitle=item.title, url=url)) 
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize()) 
     # Requerido para FilterTools

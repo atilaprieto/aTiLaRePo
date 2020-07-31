@@ -7,6 +7,7 @@ import re
 from channelselector import get_thumb
 from core import httptools
 from core import scrapertools
+from core import servertools
 from core import tmdb, jsontools
 from core.item import Item
 from platformcode import config, logger
@@ -16,7 +17,7 @@ from bs4 import BeautifulSoup
 
 host = 'https://www.entrepeliculasyseries.com/'
 
-IDIOMAS = {"lat": "LAT", "cas": "CAST", "sub": "VOSE"}
+IDIOMAS = {"lat": "LAT", "cas": "CAST", "sub": "VOSE", "esp": "CAST"}
 list_language = IDIOMAS.values()
 list_quality = []
 list_servers = ['mega', 'fembed', 'vidtodo', 'gvideo']
@@ -201,12 +202,12 @@ def episodesxseason(item):
                 if "href" not in elem.a.attrs:
                     continue
                 url = elem.a["href"]
-                title = elem.a.text
-                infoLabels["episode"] = scrapertools.find_single_match(title, "(\d+)")
+                episode = scrapertools.find_single_match(elem.a.text, r"(\d+)")
+                title = "%sx%s" % (infoLabels["season"], episode)
+                infoLabels["episode"] = episode
 
                 itemlist.append(Item(channel=item.channel, title=title, url=url, action="findvideos",
                                      infoLabels=infoLabels))
-
 
     tmdb.set_infoLabels_itemlist(itemlist, True)
 
@@ -219,20 +220,21 @@ def findvideos(item):
     itemlist = list()
 
     soup = create_soup(item.url)
-    matches = soup.find_all("ul", class_="menuPlayer")
 
+    matches = soup.find_all("div", class_=re.compile(r"col-sm-12 col-md-3 option-lang"))
     for elem in matches:
-        lang = re.sub("servidores-", '', elem["id"])
+
+        lang = (elem.find("span", class_="text-options")["id"]).replace("-option", "")
+
         for opt in elem.find_all("li", class_="option"):
-            server = re.sub(r'(ver o [\w]+) en ', '', opt["title"].lower())
+            server = re.sub(opt.find("noscript").text, "", opt.text).strip().lower().replace("| ", "")
+            url = opt["data-link"]
             if server == "google drive":
                 server = "gvideo"
-            if "publicidad" in server:
+            if server.lower() in ["descargar"]:
                 continue
-            url = opt.a["href"]
-
             itemlist.append(Item(channel=item.channel, title=server.capitalize(), url=url, server=server, action="play",
-                                 language=IDIOMAS.get(lang, 'LAT')))
+                                 language=IDIOMAS.get(lang, 'LAT'), infoLabels=item.infoLabels))
 
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language)
@@ -295,8 +297,15 @@ def newest(categoria):
 
 
 def play(item):
-    soup = create_soup(item.url)
-    url = soup.find("a", id="DownloadScript")["href"]
+    itemlist = list()
 
-    return [item.clone(url=url)]
+    data = httptools.downloadpage(item.url).data
+    url = scrapertools.find_single_match(data, 'window.location="([^"]+)"')
+    if not url.startswith("http"):
+        url = "https:" + url
+    item.server = ""
+    itemlist.append(item.clone(url=url))
+
+    itemlist = servertools.get_servers_itemlist(itemlist)
+    return itemlist
 

@@ -4,7 +4,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(?:http|s)://xhamster.com/(?:xembed.php\\?video=|embed/)([0-9]+)",
+        "pattern": "(?:http|s)://xhamster.com/(?:xembed.php\\?video=|embed/)([A-z0-9]+)",
         "url": "https://xhamster.com/embed/\\1"
       }
     ]

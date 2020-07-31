@@ -4,8 +4,8 @@
   "active": true,
   "adult": false,
   "language": ["cast", "lat"],
-  "fanart": "estrenosgo.png",
-  "thumbnail": "estrenosgo.png",
+  "fanart": "https://i.postimg.cc/mZ7hDBwx/estrenosgo.png",
+  "thumbnail": "https://i.postimg.cc/TKDNyRQY/estrenosgo.png",
   "banner": "estrenosgo.png",
   "categories": [
     "movie",

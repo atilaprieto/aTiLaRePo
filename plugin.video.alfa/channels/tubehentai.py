@@ -20,11 +20,11 @@ host = 'http://tubehentai.com'
 def mainlist(item):
     logger.info()
     itemlist = []
-    itemlist.append(Item(channel=item.channel, title="Novedades", action="lista", url=host + "/most-recent/"))
-    itemlist.append(Item(channel=item.channel, title="Mas visto", action="lista", url=host + "/most-viewed/"))
-    itemlist.append(Item(channel=item.channel, title="Mejor valorado", action="lista", url=host + "/top-rated/"))
+    itemlist.append(item.clone(title="Novedades", action="lista", url=host + "/most-recent/"))
+    itemlist.append(item.clone(title="Mas visto", action="lista", url=host + "/most-viewed/"))
+    itemlist.append(item.clone(title="Mejor valorado", action="lista", url=host + "/top-rated/"))
 
-    itemlist.append(Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 
 
@@ -52,7 +52,7 @@ def lista(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,duration,scrapedthumbnail in matches:
         title = "[COLOR yellow]%s[/COLOR] %s" % (duration, scrapedtitle)
-        itemlist.append(Item(channel=item.channel, action="play", title=title, url=scrapedurl, 
+        itemlist.append(item.clone(action="play", title=title, url=scrapedurl, 
                              fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, contentTitle = title))
     next_page = scrapertools.find_single_match(data,'<a rel=\'next\' title=\'Next\' href=\'([^\']+)\'')
     if next_page!="":
@@ -67,6 +67,6 @@ def play(item):
     data = httptools.downloadpage(item.url).data
     url = scrapertools.find_single_match(data, '<source src="([^"]+\.mp4)"')
     server = "Directo"
-    itemlist.append(Item(channel=item.channel, url=url, server=server, contentTitle=item.title))
+    itemlist.append(item.clone(url=url, server=server, contentTitle=item.title))
     return itemlist
 

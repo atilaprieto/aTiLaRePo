@@ -571,7 +571,7 @@ def set_content(content_type, silent=False):
                 if install:
                     try:
                         # Instalar metadata.themoviedb.org
-                        xbmc.executebuiltin('xbmc.installaddon(metadata.themoviedb.org)', True)
+                        xbmc.executebuiltin('InstallAddon(metadata.themoviedb.org)', True)
                         logger.info("Instalado el Scraper de películas de TheMovieDB")
                     except:
                         pass
@@ -580,7 +580,7 @@ def set_content(content_type, silent=False):
                 if not continuar:
                     msg_text = config.get_localized_string(60047)
             if continuar:
-                xbmc.executebuiltin('xbmc.addon.opensettings(metadata.themoviedb.org)', True)
+                xbmc.executebuiltin('Addon.OpenSettings(metadata.themoviedb.org)', True)
 
         # Instalar Universal Movie Scraper
         elif seleccion == 1:
@@ -594,7 +594,7 @@ def set_content(content_type, silent=False):
 
                 if install:
                     try:
-                        xbmc.executebuiltin('xbmc.installaddon(metadata.universal)', True)
+                        xbmc.executebuiltin('InstallAddon(metadata.universal)', True)
                         if xbmc.getCondVisibility('System.HasAddon(metadata.universal)'):
                             continuar = True
                     except:
@@ -604,7 +604,7 @@ def set_content(content_type, silent=False):
                 if not continuar:
                     msg_text = config.get_localized_string(70097)
             if continuar:
-                xbmc.executebuiltin('xbmc.addon.opensettings(metadata.universal)', True)
+                xbmc.executebuiltin('Addon.OpenSettings(metadata.universal)', True)
 
     else:  # SERIES
         scraper = [config.get_localized_string(70098), config.get_localized_string(70093)]
@@ -622,7 +622,7 @@ def set_content(content_type, silent=False):
                 if install:
                     try:
                         # Instalar metadata.tvdb.com
-                        xbmc.executebuiltin('xbmc.installaddon(metadata.tvdb.com)', True)
+                        xbmc.executebuiltin('InstallAddon(metadata.tvdb.com)', True)
                         logger.info("Instalado el Scraper de series de The TVDB")
                     except:
                         pass
@@ -631,7 +631,7 @@ def set_content(content_type, silent=False):
                 if not continuar:
                     msg_text = config.get_localized_string(70099)
             if continuar:
-                xbmc.executebuiltin('xbmc.addon.opensettings(metadata.tvdb.com)', True)
+                xbmc.executebuiltin('Addon.OpenSettings(metadata.tvdb.com)', True)
 
         # Instalar The Movie Database
         elif seleccion == 1:
@@ -646,7 +646,7 @@ def set_content(content_type, silent=False):
                 if install:
                     try:
                         # Instalar metadata.tvshows.themoviedb.org
-                        xbmc.executebuiltin('xbmc.installaddon(metadata.tvshows.themoviedb.org)', True)
+                        xbmc.executebuiltin('InstallAddon(metadata.tvshows.themoviedb.org)', True)
                         if xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
                             continuar = True
                     except:
@@ -656,7 +656,7 @@ def set_content(content_type, silent=False):
                 if not continuar:
                     msg_text = config.get_localized_string(60047)
             if continuar:
-                xbmc.executebuiltin('xbmc.addon.opensettings(metadata.tvshows.themoviedb.org)', True)
+                xbmc.executebuiltin('Addon.OpenSettings(metadata.tvshows.themoviedb.org)', True)
 
     idPath = 0
     idParentPath = 0
@@ -711,6 +711,7 @@ def set_content(content_type, silent=False):
         if content_type == 'movie':
             strContent = 'movies'
             scanRecursive = 2147483647
+            useFolderNames = 1
             if seleccion == -1 or seleccion == 0:
                 strScraper = 'metadata.themoviedb.org'
                 path_settings = xbmc.translatePath("special://profile/addon_data/metadata.themoviedb.org/settings.xml")
@@ -727,6 +728,7 @@ def set_content(content_type, silent=False):
         else:
             strContent = 'tvshows'
             scanRecursive = 0
+            useFolderNames = 0
             if seleccion == -1 or seleccion == 0:
                 strScraper = 'metadata.tvdb.com'
                 path_settings = xbmc.translatePath("special://profile/addon_data/metadata.tvdb.com/settings.xml")
@@ -749,9 +751,9 @@ def set_content(content_type, silent=False):
         if nun_records == 0:
             # Insertamos el scraper
             sql = 'INSERT INTO path (idPath, strPath, strContent, strScraper, scanRecursive, useFolderNames, ' \
-                  'strSettings, noUpdate, exclude, idParentPath) VALUES (%s, "%s", "%s", "%s", %s, 0, ' \
+                  'strSettings, noUpdate, exclude, idParentPath) VALUES (%s, "%s", "%s", "%s", %s, %s, ' \
                   '"%s", 0, 0, %s)' % (
-                      idPath, strPath, strContent, strScraper, scanRecursive, strSettings, idParentPath)
+                      idPath, strPath, strContent, strScraper, scanRecursive, useFolderNames, strSettings, idParentPath)
         else:
             if not silent:
                 # Preguntar si queremos configurar themoviedb.org como opcion por defecto
@@ -762,8 +764,8 @@ def set_content(content_type, silent=False):
             if actualizar:
                 # Actualizamos el scraper
                 idPath = records[0][0]
-                sql = 'UPDATE path SET strContent="%s", strScraper="%s", scanRecursive=%s, strSettings="%s" ' \
-                      'WHERE idPath=%s' % (strContent, strScraper, scanRecursive, strSettings, idPath)
+                sql = 'UPDATE path SET strContent="%s", strScraper="%s", scanRecursive=%s, useFolderNames=%s, strSettings="%s" ' \
+                      'WHERE idPath=%s' % (strContent, strScraper, scanRecursive, useFolderNames, strSettings, idPath)
 
         if sql:
             nun_records, records = execute_sql_kodi(sql)

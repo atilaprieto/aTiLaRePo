@@ -6,11 +6,15 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-host = 'https://seriemega.net/'
+# ~ host = 'https://seriemega.net/'
+host = 'https://seriemega.xyz/'
 
 def do_downloadpage(url, post=None):
     url = url.replace('seriemega.com', 'seriemega.net') # por si viene de enlaces guardados
+    url = url.replace('seriemega.net', 'seriemega.xyz') # por si viene de enlaces guardados
     data = httptools.downloadpage(url, post=post).data
+    # ~ data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://seriemega.net', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0'}).data
+    # ~ logger.debug(data)
     return data
 
 

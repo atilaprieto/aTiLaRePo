@@ -1,3 +1,26 @@
+6.8.3
+[fix] playback of some videos
+[fix] notifications for some languages |contrib: Mutronics|
+[fix] fix rating videos causing and error even though it succeeded
+[upd] cache javascript player url for4 hours, reduces http requests per play by 1
+[upd] use new settings format on Kodi 19
+[lang] el_gr strings |contrib: twilight0|
+[lang] hu_hu strings |contrib: thelacesz|
+
+6.8.2
+[fixup] recommendations with > 50 channels
+
+6.8.1
+[fix] playback failing
+[fix] viewing comments when logged in
+[fix] intermittent issue with Subscriptions
+[fix] encoding of video unavailable messages
+[upd] updates to recommendations
+[upd] update logging for Kodi 19
+[lang] fr_fr strings |contrib: alan7000|
+[lang] pl_pl strings |contrib: drrak|
+[lang] nl_nl strings |contrib: Markman-B|
+
 6.8.0
 [add] support for video comments, Comments in the More... dialog |contrib: doko-desuka|
 [add] simulate deprecated recommended home API |contrib: hedleyroos|

@@ -70,7 +70,7 @@ def movie_menu(item):
 
     itemlist.append(item.clone(title="Buscar",
                                action="search",
-                               url=host + "/suggest/?query=",
+                               url=host + "/suggest/",
                                type="m",
                                seccion='buscar'
                                ))
@@ -82,8 +82,8 @@ def search(item, texto):
     logger.info()
     if not item.type:
         item.type = "m"
-        item.url = host + "/suggest/?query="
-    item.url = item.url + texto
+        item.url = host + "/suggest/"
+    item.query = texto
     if texto != '':
         return sub_search(item)
     else:
@@ -93,28 +93,27 @@ def search(item, texto):
 def sub_search(item):
     logger.info()
     itemlist =[]
-    headers = {'Referer':host, 'X-Requested-With': 'XMLHttpRequest'}
-    dict_data = httptools.downloadpage(item.url, headers=headers).json
-    list =dict_data["data"] [item.type]
+    headers = {'Referer': host, 'X-Requested-With': 'XMLHttpRequest'}
+    dict_data = httptools.downloadpage(item.url, headers=headers, post="query=%s" % item.query).json
+    list = dict_data["data"][item.type]
 
-    if item.type == "m":
-        action = "findvideos"
-    else:
-        action = "seasons"
     for dict in list:
-        itemlist.append(item.clone(channel = item.channel,
-                             action = action,
-                             contentTitle = dict["title"],
-                             show = dict["title"],
-                             infoLabels={"year":dict["release_year"]},
-                             thumbnail = "http://static.pelisfox.tv/static/movie/" + dict["cover"],
-                             title = dict["title"] + " (" + dict["release_year"] + ")",
-                             url = host + dict["slug"]
-                             ))
+        title = re.sub(r" (\([^\)]+\))", "", dict["title"])
+        new_item = Item(channel=item.channel, thumbnail="https://static.noimg.net/movie/" + dict["cover"],
+                        title=title + " (" + dict["release_year"] + ")", url=host + dict["slug"],
+                        infoLabels={"year": dict["release_year"]})
+
+        if item.type == "m":
+            new_item.action = "findvideos"
+            new_item.contentTitle = title
+        else:
+            new_item.action = "seasons"
+            new_item.contentSerieName = title
+        itemlist.append(new_item)
+
     tmdb.set_infoLabels(itemlist, seekTmdb=True)
     return itemlist
 
-    
 
 def series_menu(item):
 
@@ -130,7 +129,7 @@ def series_menu(item):
 
     itemlist.append(item.clone(title="Buscar",
                                action="search",
-                               url=host + "/suggest/?query=",
+                               url=host + "/suggest/",
                                type="s",
                                seccion='buscar'
                                ))
@@ -314,6 +313,7 @@ def episodios(item):
 
     return itemlist
 
+
 def season_episodes(item):
     logger.info()
     itemlist = []
@@ -324,7 +324,7 @@ def season_episodes(item):
     season = str(item.infoLabels['season'])
     if int(season) <= 9:
         season = '0'+season
-    data = scrapertools.find_single_match(full_data, '</i>Temporada %s</div>(.*?)(?:down arrow|cuadre_comments)' % season)
+    data = scrapertools.find_single_match(full_data, '</i>Temporada %s</div>(.*?)(?:<div class="footer"|<div class="item-season">)' % season)
     patron = '<a href="([^"]+)" title=".*?i-play"><\/i> (.*?)<\/a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     infoLabels = item.infoLabels
@@ -387,7 +387,6 @@ def findvideos(item):
     logger.info()
     video_list = []
     CHANNEL_HEADERS.update({'Referer': item.url})
-    
     if item.contentType == 'movie':
         new_url = item.url.replace('/pelicula/', '/player/%s/' % item.contentType)
         new_url = re.sub('/p\d+/', '/', new_url)

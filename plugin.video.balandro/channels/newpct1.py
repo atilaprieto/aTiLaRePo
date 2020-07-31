@@ -68,38 +68,35 @@ def mainlist_pelis_clon(item):
         ['Películas en Latino', 'peliculas-latino/'],
         ['Películas en VO', 'peliculas-vo/'],
         ['Estrenos de cine', 'estrenos-de-cine/'],
-        ['Otras películas', 'otras-peliculas/'],
         ['Películas en HD', 'peliculas-hd/'],
+        ['Películas en HD FullBluRay 1080p', 'peliculas-hd/fullbluray-1080p/'],
+        ['Películas en HD BluRay 1080p', 'peliculas-hd/bluray-1080p/'],
+        ['Películas en HD MicroHD 1080p', 'peliculas-hd/microhd-1080p/'],
         ['Películas en X264', 'peliculas-x264-mkv/'],
-        ['Películas en 3D', 'peliculas-3d/']
+        ['Películas en 3D', 'peliculas-3d/'],
+        ['Películas en 4K UltraHD', 'peliculas-hd/4kultrahd/'],
+        ['Películas en 4K UHDremux', 'peliculas-hd/4k-uhdremux/'],
+        ['Películas en 4K UHDmicro', 'peliculas-hd/4k-uhdmicro/'],
+        ['Películas en 4K UHDrip', 'peliculas-hd/4k-uhdrip/'],
+        ['Películas en 4K Full UHD4K', 'peliculas-hd/full-uhd4k/'],
+        ['Películas en 4K Webrip', 'peliculas-hd/4k-webrip/']
     ]
         # ~ ['Otras películas', 'otras-peliculas/'],
-        # ~ ['FullBluRay 1080p', 'peliculas-hd/fullbluray-1080p/'],
-        # ~ ['BluRay 1080p', 'peliculas-hd/bluray-1080p/'],
-        # ~ ['BDremux 1080p', 'peliculas-hd/bdremux-1080p/'],
-        # ~ ['MicroHD 1080p', 'peliculas-hd/microhd-1080p/'],
-        # ~ ['4K UltraHD', 'peliculas-hd/4kultrahd/'],
-        # ~ ['4K UHDremux', 'peliculas-hd/4k-uhdremux/'],
-        # ~ ['4K UHDmicro', 'peliculas-hd/4k-uhdmicro/'],
-        # ~ ['4K UHDrip', 'peliculas-hd/4k-uhdrip/'],
-        # ~ ['4K Webrip', 'peliculas-hd/4k-webrip/'],
-        # ~ ['Full UHD4K', 'peliculas-hd/full-uhd4k/'],
+        # ~ ['Películas en BDremux 1080p', 'peliculas-hd/bdremux-1080p/'],
         # ~ ['Documentales', 'varios/'], # algunos documentales, pero la mayoría de enlaces son pdfs de revistas, etc.
 
     for enlace in enlaces:
         # ~ if item.title == 'planetatorrent' and 'x264' in enlace[1]: continue
 
         if item.title == 'pctnew' and 'otras-peliculas' in enlace[1]: continue
-        if item.title == 'pctnew' and 'peliculas-vo' in enlace[1]: continue
 
         if item.title == 'descargas2020' and 'otras-peliculas' in enlace[1]: continue
-        if item.title == 'descargas2020' and 'peliculas-vo' in enlace[1]: continue
 
         if item.title == 'pctreload' and 'otras-peliculas' in enlace[1]: continue
 
         itemlist.append(item.clone( title = enlace[0], action = 'list_all', url = item.url + enlace[1], search_type = 'movie' ))
 
-    if item.title == 'pctnew' or item.title == 'descargas2020':
+    if item.title == 'pctnew' or item.title == 'descargas2020' or item.title == 'pctreload':
         itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', url = item.url, search_type = 'movie' ))
 
     return itemlist
@@ -132,7 +129,7 @@ def mainlist_series_clon(item):
     for enlace in enlaces:
         itemlist.append(item.clone( title = enlace[0], action = 'list_all', url = item.url + enlace[1], search_type = 'tvshow' ))
 
-    if item.title == 'pctnew' or item.title == 'descargas2020':
+    if item.title == 'pctnew' or item.title == 'descargas2020' or item.title == 'pctreload':
         itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', url = item.url, search_type = 'tvshow' ))
 
     return itemlist
@@ -245,12 +242,12 @@ def extrae_show_s_e(title):
     show = ''; season = ''; episode = ''
 
     # ~ Blue Bloods  Temporada 9 Capitulo 9
-    datos = scrapertools.find_single_match(title, '(.*?) Temporada (\d+) Capitulo (\d+)')
+    datos = scrapertools.find_single_match(title, '(.*?) (?:Temporada|Temp\.) (\d+) (?:Capitulo|Cap\.) (\d+)')
     if datos: 
         show, season, episode = datos
     else:
         # ~ Vikings - Temporada 4 [HDTV 720p][Cap.410][V.O. Subt. Castellano]
-        datos = scrapertools.find_single_match(title, '(.*?) - Temporada (\d+).*?\[Cap\.(\d+)\]')
+        datos = scrapertools.find_single_match(title, '(.*?) - (?:Temporada|Temp\.) (\d+).*?\[Cap\.(\d+)\]')
         if datos:
             show, season, episode = datos
             if episode.startswith(season): episode = episode[len(season):]
@@ -259,6 +256,9 @@ def extrae_show_s_e(title):
             datos = scrapertools.find_single_match(title, '(.*?) Temporada[^0-9]*(\d+)[^C]*Capitulo[^0-9]*(\d+)')
             if datos:
                 show, season, episode = datos
+
+    # ~ Serie Benidorm Temp. 1 Capitulo 3 - Español Calidad [ HDTV ]
+    if show.startswith('Serie '): show = show.replace('Serie ', '')
 
     return show.strip(), season, episode
 
@@ -343,8 +343,9 @@ def findvideos(item):
     
     matches = re.compile(patron, re.DOTALL).findall(data)
     for servidor, idioma, calidad, url, tipo in matches:
+        if url.startswith('javascript:'): continue
         # ~ logger.debug('%s %s %s %s %s' % (tipo, servidor, url, idioma, calidad))
-        if 'descargar' in tipo.lower(): continue  # Descartar descargas directas
+        if 'descargar' in tipo.lower() and servidor != 'uptobox': continue  # Descartar descargas directas (menos uptobox)
         
         itemlist.append(Item(channel = item.channel, action = 'play',
                              title = '', url = url,
@@ -354,7 +355,6 @@ def findvideos(item):
     itemlist = servertools.get_servers_itemlist(itemlist)
     
     return itemlist
-
 
 
 def busqueda(item):

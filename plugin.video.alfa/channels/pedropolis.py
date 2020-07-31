@@ -118,9 +118,9 @@ def peliculas(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = '<div class="poster"> <img src="([^"]+)" alt="([^"]+)">.*?'    		# img, title
-    patron += '<div class="rating"><span class="[^"]+"></span>([^<]+).*?'  			# rating
-    patron += '<span class="quality">([^<]+)</span></div> <a href="([^"]+)">.*?'    # calidad, url
+    patron = '<div class="poster">[^<]+<img src="([^"]+)" alt="([^"]+)">[^<]+'    		# img, title
+    patron += '<div class="rating"><span class="[^"]+"></span>([^<]+)'  			# rating
+    patron += '.*?<span class="quality">([^<]+)</span> </div>.*?<a href="([^"]+)">.*?'    # calidad, url
     patron += '<span>([^<]+)</span>.*?'                                             # year
 
     matches = scrapertools.find_multiple_matches(data, patron)
@@ -333,6 +333,7 @@ def findvideos(item):
     patron = '<div id="option-(\d+)".*?<iframe.*?src="([^"]+)".*?</iframe>'  # lang, url
     matches = re.compile(patron, re.DOTALL).findall(data)
     for option, url in matches:
+
         lang = scrapertools.find_single_match(data, '<li><a class="options" href="#option-%s">.*?</b>(.*?)<span' % option)
         lang = lang.lower().strip()
         idioma = {'latino': '[COLOR cornflowerblue](LAT)[/COLOR]',

@@ -32,11 +32,11 @@ def mainlist(item):
 
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append( Item(channel=item.channel, title="Peliculas" , action="lista", url=host + "/free-full-porn-movies/"))
-    itemlist.append( Item(channel=item.channel, title="Videos" , action="lista", url=host + "/videos/"))
-    itemlist.append( Item(channel=item.channel, title="Canal" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
+    itemlist.append(item.clone(title="Peliculas" , action="lista", url=host + "/free-full-porn-movies/"))
+    itemlist.append(item.clone(title="Videos" , action="lista", url=host + "/videos/"))
+    itemlist.append(item.clone(title="Canal" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
+    itemlist.append(item.clone(title="Buscar", action="search"))
 
     autoplay.show_option(item.channel, itemlist)
 
@@ -72,7 +72,7 @@ def categorias(item):
             scrapedplot = ""
             scrapedthumbnail = ""
             scrapedurl = scrapedurl.replace ("http://freepornstreams.org/freepornst/stout.php?s=100,75,65:*&#038;u=" , "")
-            itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle, url=scrapedurl,
+            itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl,
                                    thumbnail=scrapedthumbnail, plot=scrapedplot) )
     return itemlist
 
@@ -95,12 +95,12 @@ def lista(item):
         thumbnail = scrapedthumbnail.replace("jpg#", "jpg")
         plot = ""
         if not "manyvids" in title:
-            itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl, thumbnail=thumbnail,
+            itemlist.append(item.clone(action="findvideos", title=title, url=scrapedurl, thumbnail=thumbnail,
                               fanart=thumbnail, plot=plot) )
     next_page = scrapertools.find_single_match(data, '<div class="nav-previous"><a href="([^"]+)"')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
-        itemlist.append(item.clone(action="lista", title="Página Siguiente >>", text_color="blue", url=next_page) )
+        itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
 

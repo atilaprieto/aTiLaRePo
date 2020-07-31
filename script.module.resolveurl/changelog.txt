@@ -1,17 +1,18 @@
-Version 5.0.47 (May 17, 2020)
+Version 5.1.0 (June 7, 2020)
 - Code Base Changes:
-    - None
+    - Change Init logging to debug level
+    - Addtional helper functions
 
 - Resolvers Added:
-    - abcvideo
-    - viduplayer
+    - Daxab
  
 - Resolvers Fixed/Updated:
-    - mystream
-    - vidmoly
+    - WStream
+    - FEmbed
+    - Debrid-link
 
 - Resolvers Removed
-    - none
+    - None
 
 - Languages Added/Updated
-    - none
+    - None
