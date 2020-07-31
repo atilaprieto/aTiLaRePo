@@ -123,11 +123,12 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.1.1" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.1.11" provider-name="Alfa Addon">
   <requires>
     <import addon="script.module.requests"/>
     <import addon="script.module.beautifulsoup4" version="4.5.3"/>
     <import addon="script.module.html5lib" version="0.999.0"/>
+    <import addon="script.alfa-update-helper" optional="true"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
@@ -135,8 +136,8 @@ You can clone the project and host it in your own server.
   <extension point="xbmc.addon.metadata">
     <summary lang="es">Navega con Kodi por páginas web.</summary>
     <assets>
-      <icon>resources/logo2.png</icon>
-      <fanart>resources/fanart1.jpg</fanart>
+      <icon>resources/icono_3.png</icon>
+      <fanart>resources/fanart1_2.jpg</fanart>
       <screenshot>resources/media/themes/ss/1.jpg</screenshot>
       <screenshot>resources/media/themes/ss/2.jpg</screenshot>
       <screenshot>resources/media/themes/ss/3.jpg</screenshot>
@@ -145,18 +146,14 @@ You can clone the project and host it in your own server.
       <news>[B]Estos son los cambios para esta versión:[/B]
 
       [COLOR green][B]Arreglos[/B][/COLOR]
-      ¤ Poseidonhd                        ¤ Cinemahd                               ¤ Dospelis
-      ¤ Rexpelis                              ¤ Seriemega                              ¤ Vidfast
-      ¤ Crunchyroll                         ¤ Cineclasicoonline                   ¤ Seriemega
-      ¤ Seriesflv                              ¤ Danimados                             ¤ Grantorrent
+      ¤ Areadocumental                        ¤ Estrenosdoramas                         ¤ HDFull
+      ¤ PoseidonHD                               ¤ Grantorrent
       ¤ +18
 
       [COLOR green][B]Novedades[/B][/COLOR]
-      ¤ Mejoras de rendimiento en Menús Contextuales            ¤ Cinetorrent (Latino)
       ¤ +18
 
-      Agradecimiento a @mac12m99 por su colaboración en esta versión
-
+      Agradecimientos a @DamianBacalov por su participación en esta versión
     </news>
     <description lang="es">Navega con Kodi por páginas web para ver sus videos de manera fácil.</description>
     <summary lang="en">Browse web pages using Kodi</summary>
@@ -173,7 +170,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.3.3" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.3.4" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -202,7 +199,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.15" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.16" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -219,9 +216,9 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Cinetux, Cuevana3, Dilo, Yape, Seriesmetro, Seriespapaya,
-    Grantorrent, Pelispedia, Tucineclasico, Documentalesonline.
-    Servidores modificados: Cloudvideo, VideoMega, Youtube, servers varios.
+    Canales modificados: Retroseriestv, Seriez, Cinetux, Allpeliculas, Newpct1, Dospelis,
+    Pelispedia, Seriesmetro, Pepecine, Playview, Seriemega, Tvvip, Cinefox.
+    Servidores modificados: Zembed, Vk, Cloudvideo, Mixdrop, Easyload, Megaup.
     </news>
 
     <assets>
@@ -312,7 +309,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.0.5" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.1.1" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -445,7 +442,7 @@ v.2.1.5
 	</extension>
 </addon>
 
-<addon id="plugin.video.palantir" name="[COLOR gold]Palantir[/COLOR]" version="0.0.77" provider-name="TierraMedia">
+<addon id="plugin.video.palantir" name="[COLOR gold]Palantir[/COLOR]" version="0.0.78" provider-name="TierraMedia">
   <requires>
     <import addon="xbmc.python" version="2.24.0"/>
     <import addon="script.module.simple.downloader" version="1.9.5"/>
@@ -463,9 +460,8 @@ v.2.1.5
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>TV</summary>
-    <news>[COLOR lime][B] versión 0.0.77 [/B][/COLOR]
-        - [Interno] Añadido Pelis por puntuación.
-        - [Interno] Posibilidad de cambiar el color a la puntuación.
+    <news>[COLOR lime][B] versión 0.0.78 [/B][/COLOR]
+        - [Interno] Añadida categoría Genéricos en documentales
     </news>
     <description>Visualiza el contenido de la nube, series, películas.</description>
     <disclaimer>[B][COLOR red]Todo el contenido disponible en este Addon esta sacado de servidores gratuitos, disponible en la red para todos los usuarios.[/B][/COLOR]</disclaimer>
@@ -591,7 +587,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.youtube" name="YouTube" version="6.8.0" provider-name="anxdpanic, bromix">
+<addon id="plugin.video.youtube" name="YouTube" version="6.8.3" provider-name="anxdpanic, bromix">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
         <import addon="script.module.six" version="1.11.0"/>
@@ -605,15 +601,13 @@ v.2.1.5
     <extension point="xbmc.python.module" library="resources/lib/"/>
     <extension point="xbmc.addon.metadata">
         <news>
-[add] support for video comments, Comments in the More... dialog |contrib: doko-desuka|
-[add] simulate deprecated recommended home API |contrib: hedleyroos|
-[fix] error caused by timestamp formatting
-[fix] fix Premiere's exiting after 5 seconds |contrib: jpfox156|
-[fix] playlists over json-rpc |contrib: JasperE84|
-[lang] de_de strings |contrib: tweimer|
+[fix] playback of some videos
+[fix] notifications for some languages |contrib: Mutronics|
+[fix] fix rating videos causing and error even though it succeeded
+[upd] cache javascript player url for 4 hours, reduces http requests per play by 1
+[upd] use new settings format on Kodi 19
 [lang] el_gr strings |contrib: twilight0|
-[lang] es_es strings |contrib: roliverosc|
-[lang] pt_pt strings |contrib: daniel3x|
+[lang] hu_hu strings |contrib: thelacesz|
         </news>
         <assets>
             <icon>icon.png</icon>
@@ -1104,6 +1098,117 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
+<addon	id="script.module.defusedxml"
+		name="defusedxml"
+		version="0.6.0"
+		provider-name="Christian Heimes">
+	<requires>
+		<import addon="xbmc.python" version="2.25.0"/>
+	</requires>
+	<extension
+		point="xbmc.python.module"
+		library="lib" />
+	<extension
+		point="xbmc.addon.metadata">
+		<summary lang="en_GB">defusedxml -- defusing XML bombs and other exploits</summary>
+		<description lang="en_GB">Packed for KODI from https://github.com/tiran/defusedxml</description>
+		<platform>all</platform>
+		<license>PSF</license>
+		<website>https://pypi.org/project/defusedxml/</website>
+		<source>https://github.com/tiran/defusedxml</source>
+		<assets>
+			<icon>icon.png</icon>
+		</assets>
+	</extension>
+</addon>
+
+<addon id="script.module.html5lib"
+       name="html5lib-python"
+       version="0.999.0"
+       provider-name="html5lib">
+  <requires>
+    <import addon="xbmc.python"
+    		version="2.1.0"/>
+    <import addon="script.module.six"
+                      version="1.4.1"
+                     optional="false"/>
+  </requires>
+  <extension point="xbmc.python.module"
+             library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <summary>Standards-compliant library for parsing and serializing HTML documents and fragments in Python.</summary>
+    <description>html5lib is a pure-python library for parsing HTML. It is designed to conform to the WHATWG HTML specification, as is implemented by all major web browsers.</description>
+    <platform>all</platform>
+    <license>MIT</license>
+    <source>https://github.com/html5lib/html5lib-python.git</source>
+    <website>https://github.com/html5lib/html5lib-python</website>
+  </extension>
+</addon>
+
+<addon id="script.module.inputstreamhelper" name="InputStream Helper" version="0.5.0" provider-name="emilsvennesson, dagwieers, mediaminister, horstle">
+  <requires>
+    <!--py3 compliant-->
+    <import addon="xbmc.python" version="2.25.0"/>
+    <import addon="script.module.pysocks" version="1.6.8" optional="true"/>
+  </requires>
+  <!-- This is needed to get an add-on icon -->
+  <extension point="xbmc.python.script" library="default.py">
+    <provides>executable</provides>
+  </extension>
+  <extension point="xbmc.python.module" library="lib"/>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Kodi InputStream and DRM playback made easy</summary>
+    <summary lang="de_DE">Kodi InputStream und DRM Wiedergabe einfach gemacht</summary>
+    <summary lang="el_GR">Βοηθός Inputstream για το Kodi και εύκολη αναπαραγωγή DRM</summary>
+    <summary lang="fr_FR">La lecture Kodi InputStream et DRM en toute simplicité</summary>
+    <summary lang="es_ES">Kodi InputStream y reproducción DRM echa fácil</summary>
+    <description lang="en_GB">A simple Kodi module that makes life easier for add-on developers relying on InputStream based add-ons and DRM playback.</description>
+    <description lang="de_DE">Dieses einfache Kodi-Modul macht das Leben für Addon Entwickler einfacher, die auf InputStream basierte Addons und DRM Wiedergabe angewiesen sind.</description>
+    <description lang="el_GR">Μία απλή μονάδα για το Kodi η οποία διευκολύνει την ζωή των προγραμματιστών οι οποίοι εξαρτώνται από τα πρόσθετσ InputStream και αναπαραγωγή τύπου DRM.</description>
+    <description lang="ru_RU">Простой модуль для Kodi, который облегчает жизнь разработчикам дополнений, с использованием InputStream дополнений и воспроизведения DRM контента.</description>
+    <description lang="fr_FR">Un simple module Kodi qui simplifie la vie des développeurs de modules complémentaires en s’appuyant sur des modules complémentaires basés sur InputStream et sur la lecture de DRM.</description>
+    <description lang="es_ES">Un módulo Kodi simple que hace la vida más fácil para los desarrolladores de complementos que dependen de complementos basados en InputStream y reproducción de DRM.</description>
+    <news>
+     v0.5.0 (2020-06-25)
+        - Extract Widevine CDM directly from Chrome OS, minimizing disk space usage and eliminating the need for root access
+        - Improve progress dialog while extracting Widevine CDM on ARM devices
+        - Support resuming interrupted downloads on unreliable internet connections
+        - Reshape InputStream Helper information dialog
+        - Updated Dutch, English, French, German, Greek, Hungarian, Romanian, Russian, Spanish and Swedish translations
+    </news>
+    <platform>all</platform>
+    <license>MIT</license>
+    <website>https://github.com/emilsvennesson/script.module.inputstreamhelper/wiki</website>
+    <source>https://github.com/emilsvennesson/script.module.inputstreamhelper</source>
+    <assets>
+      <icon>resources/icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+
+<addon id="script.module.kodi-six"
+       name="Kodi Six"
+       version="0.1.3"
+       provider-name="Roman V.M.">
+  <requires>
+    <import addon="xbmc.python" version="2.26.0"/>
+  </requires>
+  <extension point="xbmc.python.module" library="libs" />
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Wrappers around Kodi Python API for seamless Python 2/3 compatibility</summary>
+    <description lang="en_GB">Wrappers around Kodi Python API that normalize handling of textual and byte strings in Python 2 and 3.</description>
+    <platform>all</platform>
+    <license>GPL v.3</license>
+    <forum>https://forum.kodi.tv/showthread.php?tid=327883</forum>
+    <source>https://github.com/romanvm/kodi.six</source>
+    <assets>
+      <icon>icon.png</icon>
+    </assets>
+    <news>0.1.3:
+- Fix non-UTF-8 byte string decoding in Python 2.</news>
+  </extension>
+</addon>
+
 <addon id="script.module.liveresolver"
      name="LiveResolver"
      version="0.1.50"
@@ -1123,9 +1228,80 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="script.module.resolveurl" name="ResolveURL" version="5.0.47" provider-name="jsergio, gujal">
+<addon id="script.module.myconnpy"
+       name="MySQL Connector/Python"
+       version="1.1.7"
+       provider-name="MySQL">
     <requires>
-        <import addon="xbmc.python" version="2.1.0" />
+        <import addon="xbmc.python" version="2.1.0"/>
+    </requires>
+    <extension point="xbmc.python.module" library="lib"/>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">MySQL Connector/Python</summary>
+        <description lang="en">MySQL Connector/Python is implementing the MySQL Client/Server protocol completely in Python. This means you don't have to compile anything or MySQL (client library) doesn't even have to be installed on the machine.</description>
+        <license>GPLv2</license>
+        <platform>all</platform>
+        <website>http://dev.mysql.com/doc/connector-python/en/index.html</website>
+        <source>http://dev.mysql.com/downloads/connector/python/</source>
+    </extension>
+</addon>
+
+<addon id="script.module.pyaes"
+    name="PyAES"
+    version="1.6.1"
+    provider-name="ricmoo">
+
+    <requires>
+        <import addon="xbmc.python" version="2.26.0"/>
+    </requires>
+
+    <extension point="xbmc.python.module" library="lib" />
+
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en_GB">Pure-Python Implementation of the AES block-cipher and common modes of operation</summary>
+        <description lang="en_GB">A pure-Python implementation of the AES (FIPS-197) block-cipher algorithm and common modes of operation (CBC, CFB, CTR, ECB, OFB) with no dependencies beyond standard Python libraries. See README.md for API reference and details.</description>
+        <platform>all</platform>
+        <license>MIT</license>
+        <website>https://github.com/ricmoo/pyaes</website>
+        <source>https://github.com/ricmoo/pyaes</source>
+        <assets>
+            <icon>resources/icon.png</icon>
+        </assets>
+    </extension>
+</addon>
+
+<addon id="script.module.pyxbmct"
+   name="PyXBMCt"
+   version="1.3.1"
+   provider-name="Roman V.M.">
+  <requires>
+    <import addon="xbmc.python" version="2.26.0"/>
+    <import addon="script.module.six" />
+    <import addon="script.module.kodi-six" />
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en_GB">PyXBMCt UI framework</summary>
+    <description lang="en_GB">PyXBMCt is a mini-framework for simple XBMC addon UI buliding. It is similar to PyQt and provides parent windows, a number of UI controls (widgets) and a grid layout manager to place controls.</description>
+    <license>GNU GPL v.3</license>
+    <forum>https://forum.kodi.tv/showthread.php?tid=174859</forum>
+    <website>http://romanvm.github.io/script.module.pyxbmct/</website>
+    <email>roman1972@gmail.com</email>
+    <source>https://github.com/romanvm/script.module.pyxbmct</source>
+    <news>1.3.1:
+- Fix incompatibility with newer Python 3 Kodi builds
+- Replace future library with six for Python 3 compatibility</news>
+    <assets>
+      <icon>icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+
+<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.1" provider-name="gujal">
+    <requires>
+        <!-- <import addon="xbmc.python" version="3.0.0" /> -->
+        <import addon="script.module.six" version="0.0.1"/>
         <import addon="plugin.video.youtube" optional="true" />
         <import addon="script.module.python.twitch" optional="true" />
         <import addon="script.module.cryptopy" version="1.2.6" optional="true" />
@@ -1141,6 +1317,10 @@ You can clone the project and host it in your own server.
         <summary lang="el">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi.</summary>
         <description lang="en">Resolve common video host URL's to be playable in XBMC/Kodi, simplify addon development of video plugins requiring multi video hosts.</description>
         <description lang="hr">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju, pojednostavnjuje razvoj priključaka za video dodatke koji zahtjevaju višestruke video izvore.</description>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
     </extension>
 </addon>
 
@@ -1180,6 +1360,128 @@ You can clone the project and host it in your own server.
         <platform>all</platform>
         <summary lang="en">Proxy for f4m</summary>
         <description lang="en">Use this addon to play F4m v1 and v2 streams</description>
+    </extension>
+</addon>
+
+<addon id="service.xbmc.versioncheck" name="Version Check" version="0.5.6" provider-name="Team Kodi">
+    <requires>
+        <import addon="xbmc.python" version="2.14.0"/>
+    </requires>
+    <extension point="xbmc.service" library="resources/lib/runner.py" start="login"/>
+    <extension point="xbmc.addon.metadata">
+        <news>
+- add Kodi 18.8 stable release
+- add Kodi 19.0 alpha1 release
+        </news>
+        <assets>
+            <icon>icon.png</icon>
+        </assets>
+        <summary lang="be">Kodi Version Check checks if you are running latest released version.</summary>
+        <summary lang="bg">Проверява дали ползвате най-новата версия на Kodi.</summary>
+        <summary lang="ca">Kodi Version Check comprova si està utilitzant la última versió publicada.</summary>
+        <summary lang="cs">Kontrola verze Kodi, zkontroluje, zda používáte nejnovější vydanou verzi.</summary>
+        <summary lang="da">Kodi undersøger om du benytter den nyeste version.</summary>
+        <summary lang="de">Kodi Versionsprüfung prüft, ob die neuste Version von Kodi installiert ist.</summary>
+        <summary lang="el">Ο Έλεγχος Έκδοσης Kodi εξετάζει αν έχετε την πιο πρόσφατη έκδοση του προγράμματος.</summary>
+        <summary lang="en">Kodi Version Check checks if you are running latest released version.</summary>
+        <summary lang="en_NZ">Kodi Version Check checks if you are running latest released version.</summary>
+        <summary lang="en_US">Kodi Version Check checks if you are running latest released version.</summary>
+        <summary lang="es">Kodi Version Check comprueba si está ejecutando la última versión de Kodi.</summary>
+        <summary lang="es_MX">Comprobador de Version de Kodi comprueba si se esta ejecutando ultima version publicada.</summary>
+        <summary lang="fi">Kodi Version Check tarkistaa onko käyttämäsi uusin versio.</summary>
+        <summary lang="fr">Le contrôle de version de Kodi vérifie si la dernière version sortie est utilisée.</summary>
+        <summary lang="fr_CA">Le contrôleur de version Kodi vérifie si vous utilisez la dernière version parue.</summary>
+        <summary lang="gl">Kodi Version Check verifica se está a executar a última versión.</summary>
+        <summary lang="he">בודק גרסת Kodi מוודא אם אתה מריץ את הגרסה הרשמית האחרונה.</summary>
+        <summary lang="hr">Kodi provjeritelj inačice provjerava imate li posljednju inačicu izdanja.</summary>
+        <summary lang="hu">Az Kodi verzió ellenőrző megvizsgálja, hogy a legújabb kiadást futtatja-e.</summary>
+        <summary lang="id">Kodi Version Check mengecek apakah Anda menggunakan versi rilis terbaru.</summary>
+        <summary lang="is">Kodi Version Check athugar hvort þú sért að keyra nýjustu viðurkennda útgáfu.</summary>
+        <summary lang="it">Kodi Version Check verifica se hai l'ultima versione rilasciata</summary>
+        <summary lang="ko">Kodi Version Checks는 최신 정식 릴리즈 버전을 사용중인지 검사해줍니다.</summary>
+        <summary lang="lt">Kodi Version Check patikrina ar naudojate naujausią versiją.</summary>
+        <summary lang="nl">Kodi versie-check controleert of je de laatst beschikbare versie hebt.</summary>
+        <summary lang="no">Kodi Versjonsettersyn sjekker om du kjører den sist utgitte versjonen.</summary>
+        <summary lang="pl">Dodatek Version Check sprawdza czy używasz najnowszej wersji Kodi.</summary>
+        <summary lang="pt">O Kodi Version Check verifica se a sua versão de lançamento do Kodi está actualizada.</summary>
+        <summary lang="pt_BR">Kodi Version Check verifica se você está executando a versão mais recente.</summary>
+        <summary lang="ro">Verificare versiune Kodi verifică dacă folosiți ultima versiune lansată.</summary>
+        <summary lang="ru">Kodi Version Check проверяет если вы используете последнюю версию</summary>
+        <summary lang="sk">Kodi Kontrola verzií overuje, či používate najnovšiu vydanú verziu.</summary>
+        <summary lang="sl">Preverjanje različice Kodi preveri, če imate nameščeno nazadnje izdano različico.</summary>
+        <summary lang="sv">Kodi Version Check kontrollerar om du använder den senaste versionen.</summary>
+        <summary lang="tr">Kodi Sürüm Kontrol yayınlanmış son sürümü kullanıp kullanmadığınızı kontrol eder.</summary>
+        <summary lang="zh">Kodi 版本检查检查你使用的是否为最新发布的版本。</summary>
+        <description lang="be">Kodi Version Check only supports a number of platforms/distros as releases may differ between them. For more information visit the kodi.tv website.</description>
+        <description lang="bg">Kodi Version Check поддържа няколко платформи/дистрибуции. За повече информация посетете страницата www.kodi.tv</description>
+        <description lang="ca">Kodi Version Check només és compatible amb una sèrie de plataformes / distribucions ja que les ultimes versions poden ser diferents entre elles. Per obtenir més informació, visiteu el lloc web kodi.tv.</description>
+        <description lang="cs">Kontrola verze Kodi podporuje pouze několik platforem/distribucí a verze mezi nimi se můžou lišit. Pro více informací navštivte webové stránky kodi.tv.</description>
+        <description lang="da">Kodi kan kun undersøge for opdateringer for visse platforme/udgaver, da der kan være forskel. For mere information, besøg kodi.tv.</description>
+        <description lang="de">Kodi Versionsprüfung unterstützt nur ein paar Plattformen/Distributionen, da sich die jeweiligen Veröffentlichungen unterscheiden können. Für weitere Informationen besuchen Sie die kodi.tv-Webseite.</description>
+        <description lang="el">Ο Έλεγχος Έκδοσης Kodi υποστηρίζει μόνο ορισμένα λειτουργικά συστήματα/διανομές, καθώς οι εκδόσεις διαφέρουν για το καθένα. Για περισσότερες πληροφορίες επισκεφθείτε το kodi.tv</description>
+        <description lang="en">Kodi Version Check only supports a number of platforms/distros as releases may differ between them. For more information visit the kodi.tv website.</description>
+        <description lang="en_NZ">Kodi Version Check only supports a number of platforms/distros as releases may differ between them. For more information visit the kodi.tv website.</description>
+        <description lang="en_US">Kodi Version Check only supports a number of platforms/distros as releases may differ between them. For more information visit the kodi.tv website.</description>
+        <description lang="es">Kodi Version Check solo soporta un número limitado de plataformas/distribuciones, ya que los lanzamientos pueden diferir entre ellos. Para más información, visite la web de kodi.tv.</description>
+        <description lang="fi">Kodi Version Check tukee vain joitain alustoja/distroja koska julkaisut saattavat poiketa toisistaan. Saadaksesi lisätietoa, vieraile kodi.tv:ssä.</description>
+        <description lang="fr">Le contrôle de version de Kodi ne prend en charge qu'un certain nombre de plate-formes/distributions car les versions peuvent varier entre elles. Pour plus d'informations, consulter le site Web kodi.tv.</description>
+        <description lang="fr_CA">Le contrôleur de version Kodi ne prend en charge qu'un certain nombre de plate-formes/distributions car les versions peuvent varier entre elles. Pour plus d'informations, visitez le site Web kodi.tv.</description>
+        <description lang="gl">Kodi Version Check só soporta un número limitado de plataformas/distribucións, xa que os lanzamentos poden diferir entre eles. Para máis información visitar o sitio web de kodi.tv.</description>
+        <description lang="he">בודק גרסת Kodi תומך רק במספר פלטפורמות/הפצות מאחר שסימון הגרסאות שונה בין אחת לשניה. למידע נוסף בקר באתר kodi.tv.</description>
+        <description lang="hr">Kodi provjeritelj inačice samo podržava broj platformi/distribucija koliko to dopuštaju pojedina izdanja. Za više informacija posjetite kodi.tv web stranicu.</description>
+        <description lang="hu">Az Kodi verzió-ellenőrző csak néhány platformot / disztribúciót támogat, mert a kiadások között különbségek lehetnek. További információkért keresse fel az kodi.tv oldalt.</description>
+        <description lang="id">Kodi Version Check hanya mendukung beberapa platform/distro karena rilisnya mungkin berbeda-beda. Untuk informasi lebih lanjut kunjungi situs kodi.tv.</description>
+        <description lang="it">Kodi Version Check supporta un numero di piattaforme e distribuzioni diverse tra loro. Per più informazioni visita il sito kodi.tv</description>
+        <description lang="ko">Kodi Versio Check는 일부 플랫폼/배포본만을 지원합니다. 자세한 정보는 kodi.tv 웹사이트에서 확인하세요</description>
+        <description lang="lt">Kodi Version Check palaiko tik kelias platformas/distribucijas, nes leidimai tarp jų gali skirtis. Norėdami gauti daugiau informacijos, apsilankykite Kodi.tv puslapyje.</description>
+        <description lang="nl">Kodi versie check ondersteunt alleen een aantal platforms/distro`s omdat uitgaven verschillen tussen hen. Voor meer informatie bezoek de kodi.tv website.</description>
+        <description lang="no">Kodi Versjonsettersyn støtter kun noen plattformer/distribusjoner fordi utgivelser kan være forskjellige mellom dem. Besøk kodi.tv for mer informasjon.</description>
+        <description lang="pl">Dodatek Version Check wspiera tylko część platform i dystrybucji. Więcej informacji na stronie kodi.tv</description>
+        <description lang="pt">O Kodi Version Check suporta apenas algumas plataformas/distribuições, porque os lançamentos podem não ser sempre idênticos. Para mais informação, visite o site kodi.tv.</description>
+        <description lang="pt_BR">Verificador de versões do Kodi somente suporta algumas plataformas/distros em que os lançamentos podem diferenciar entre si. Para maiores informações visite o website kodi.tv.</description>
+        <description lang="ru">Проверка новых версий Kodi поддерживается только на ряде платформ/дистрибутивов и они могут различаться между собой. Для получения доп. информации посетите сайт kodi.tv</description>
+        <description lang="sl">Preverjanje različice Kodi podpira le nekatere platforme/distribucije, saj se izdaje med njimi lahko zelo razlikujejo. Za več informacij obiščite spletišče kodi.tv</description>
+        <description lang="sv">Kodi Version Check stöder endeast ett antal plattformar/distributioner eftersom utgivningar kan skilja mellan dessa. För mer information besök kodi.tv webplatsen.</description>
+        <description lang="tr">Kodi Sürüm Kontrol sürümler arasında değişiklik olduğu için sadece birkaç platform/dağıtım destekler. Daha fazla bilgi için kodi.tv web sitesini ziyaret edin.</description>
+        <description lang="zh">Kodi 版本检查只支持部分平台/发行版，它们之间的版本可能会有所不同。欲了解更多信息，请访问 kodi.tv 网站。</description>
+        <disclaimer lang="be">Feel free to use this script. For information visit kodi.tv</disclaimer>
+        <disclaimer lang="bg">Ползвайте скрипта свободно. За повече информация посетете www.kodi.tv</disclaimer>
+        <disclaimer lang="ca">Sigues lliure d'utilitzar aquest script. Per més informació visita kodi.tv</disclaimer>
+        <disclaimer lang="cs">Neváhejte použít tento skript. Pro více informací navštivte kodi.tv</disclaimer>
+        <disclaimer lang="da">Du er velkommen til at bruge dette script. For information, besøg kodi.tv</disclaimer>
+        <disclaimer lang="de">Zögern Sie nicht, dieses Skript zu verwenden. Für Informationen besuchen Sie kodi.tv</disclaimer>
+        <disclaimer lang="el">Χρησιμοποιήστε αυτό το script ελεύθερα. Για πληροφορίες επισκεφθείτε το kodi.tv</disclaimer>
+        <disclaimer lang="en">Feel free to use this script. For information visit kodi.tv</disclaimer>
+        <disclaimer lang="en_NZ">Feel free to use this script. For information visit kodi.tv</disclaimer>
+        <disclaimer lang="en_US">Feel free to use this script. For information visit kodi.tv</disclaimer>
+        <disclaimer lang="es">Puede usar libremente este programa. Para más información, visite kodi.tv</disclaimer>
+        <disclaimer lang="es_MX">Sientase libre de utilizar este script. Para mas información visita kodi.tv</disclaimer>
+        <disclaimer lang="fr">Utiliser ce script si désiré. Pour plus d'informations, consulter le site kodi.tv</disclaimer>
+        <disclaimer lang="fr_CA">N'hésitez pas à utiliser ce script. Pour plus d'informations visitez kodi.tv</disclaimer>
+        <disclaimer lang="gl">Síntase libre de usar este script, para máis información visitar kodi.tv.</disclaimer>
+        <disclaimer lang="he">תרגיש חופשי להשתמש בסקריפט זה. למידע נוסף בקר ב-kodi.tv</disclaimer>
+        <disclaimer lang="hr">Slobodno koristite ovu skriptu. Za više informacija posjetite kodi.tv</disclaimer>
+        <disclaimer lang="hu">Használja bátran ezt a szkriptet! Információkért keresse fel az kodi.tv oldalt!</disclaimer>
+        <disclaimer lang="id">Jangan sungkan menggunakan script ini. Untuk informasi hubungi kodi.tv</disclaimer>
+        <disclaimer lang="it">Usa liberamente lo script. Per informazioni visita kodi.tv</disclaimer>
+        <disclaimer lang="ko">이 스크립트를 자유롭게 사용하세요. 관련 정보는 kodi.tv를 방문하세요.</disclaimer>
+        <disclaimer lang="lt">Galite laisvai naudoti šį scenarijų. Apsilankykite kodi.tv, norėdami gauti daugiau informacijos.</disclaimer>
+        <disclaimer lang="nl">Gebruik dit script vrijblijvend. Voor meer informatie bezoek kodi.tv</disclaimer>
+        <disclaimer lang="no">Du har fri tillatelse til å benytte dette skriptet. Besøk kodi.tv for informasjon</disclaimer>
+        <disclaimer lang="pl">Zapraszamy do używania tego dodatku. Więcej informacji na stronie kodi.tv</disclaimer>
+        <disclaimer lang="pt">Esteja à vontade para usar este script. Para mais informação, visite kodi.tv.</disclaimer>
+        <disclaimer lang="pt_BR">Sinta-se livre para usar este script. Para maiores informações visite kodi.tv</disclaimer>
+        <disclaimer lang="ro">Simțiți-vă liberi să folosiți acest script. Pentru informații vizitați kodi.tv</disclaimer>
+        <disclaimer lang="ru">Используйте этот скрипт на свое усмотрение. Для информации посетите kodi.tv</disclaimer>
+        <disclaimer lang="sl">Izvolite uporabiti ta skript. Za dodatne informacije obiščite kodi.tv</disclaimer>
+        <disclaimer lang="sv">Använd gärna detta skript. För information, besök kodi.tv</disclaimer>
+        <disclaimer lang="tr">Bu betiği kullanmaktan çekinmeyin. Daha fazla bilgi için kodi.tv adresini ziyaret edin</disclaimer>
+        <disclaimer lang="zh">可放心使用此脚本，更多信息访问 kodi.tv</disclaimer>
+        <platform>all</platform>
+        <license>GPL-2.0-or-later, GPL-3.0-or-later, Apache-2.0</license>
+        <forum>https://forum.kodi.tv/showthread.php?tid=160228</forum>
+        <website>https://kodi.tv</website>
+        <source>https://github.com/XBMC-Addons/service.xbmc.versioncheck</source>
     </extension>
 </addon>
 </addons>
