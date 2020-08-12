@@ -232,7 +232,9 @@ def unhideload(url):
     logger.info()
     server_dict = {"ud": "https://waaw.tv/watch_video.php?v=",
                    "od": "https://www.fembed.com/v/",
-                   "ad": "https://uqload.com/embed-"}
+                   "ad": "https://uqload.com/embed-",
+                   "id": "https://waaw.tv/f/",
+                   "bd": "https://gounlimited.to/embed-"}
 
     server = server_dict[scrapertools.find_single_match(url, "(\wd)=")]
 

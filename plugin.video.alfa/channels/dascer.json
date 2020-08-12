@@ -1,0 +1,94 @@
+{
+  "id": "dascer",
+  "name": "Dascer",
+  "active": true,
+  "adult": false,
+  "language": ["cast"],
+  "thumbnail": "https://dascer.com/wp-content/uploads/2019/11/1LOGO-PLANO-2020.png",
+  "categories": [
+    "sport",
+    "torrent"
+  ],
+  "settings": [
+    {
+      "default": false, 
+      "enabled": false, 
+      "id": "include_in_global_search", 
+      "label": "Incluir en busqueda global", 
+      "type": "bool", 
+      "visible": false
+    }, 
+    {
+      "id": "pseudo_titulos",
+      "type": "bool",
+      "label": "Desea ver Pseudo títulos de ayuda?",
+      "default": true,
+      "enabled": true,
+      "visible": false
+    },
+    {
+      "id": "filter_languages",
+      "type": "list",
+      "label": "Mostrar enlaces en idioma...",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "No filtrar",
+        "CAST",
+        "LAT",
+        "VO",
+        "VOS",
+        "VOSE"
+      ]
+    },
+    {
+      "id": "download_connector",
+      "type": "list",
+      "label": "Preferencia de conector para Descargas o Autoplay",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "Torrent",
+        "Ok.ru",
+        "Mega",
+        "UpStream"
+      ]
+    },
+    {
+      "id": "timeout_downloadpage",
+      "type": "list",
+      "label": "Timeout (segs.) en descarga de páginas o verificación de servidores",
+      "default": 5,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "None",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "id": "include_in_newest_deportes",
+      "type": "bool",
+      "label": "Incluir en Novedades - Deportes",
+      "default": true,
+      "enabled": true,
+      "visible": false
+    }
+  ]
+}

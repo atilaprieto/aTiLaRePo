@@ -671,9 +671,10 @@ def set_context_commands(item, item_url, parent_item, **kwargs):
                 context_commands.append((config.get_localized_string(60354), "RunPlugin(%s?%s&%s)" %
                                          (sys.argv[0], item_url, 'channel=downloads&action=save_download&from_channel=' + item.channel + '&from_action=' + item.action)))
 
-            elif item.contentSerieName:
+            elif item.contentSerieName or (item.contentType in ["tvshow", "episode"] and item.infoLabels['tmdb_id'] == 'None'):
                 # Descargar serie
-                if item.contentType == "tvshow" or (item.contentType == "episode" and item.server == 'torrent'):
+                if item.contentType == "tvshow" or (item.contentType == "episode" and \
+                                             item.server == 'torrent' and item.infoLabels['tmdb_id'] != 'None'):
                     context_commands.append((config.get_localized_string(60355), "RunPlugin(%s?%s&%s)" %
                                              (sys.argv[0], item_url, 'channel=downloads&action=save_download&from_channel=' + channel_p + '&sub_action=tvshow' +
                                                   '&from_action=' + item.action)))
@@ -689,7 +690,8 @@ def set_context_commands(item, item_url, parent_item, **kwargs):
                                              (sys.argv[0], item_url, 'channel=downloads&action=save_download&from_channel=' + channel_p +
                                                   '&from_action=' + item.action)))
                 # Descargar temporada
-                if item.contentType == "season" or (item.contentType == "episode" and item.server == 'torrent'):
+                if item.contentType == "season" or (item.contentType == "episode" \
+                                              and item.server == 'torrent' and item.infoLabels['tmdb_id'] != 'None'):
                     context_commands.append((config.get_localized_string(60357), "RunPlugin(%s?%s&%s)" %
                                              (sys.argv[0], item_url, 'channel=downloads&action=save_download&from_channel=' + channel_p + '&sub_action=season' +
                                                   '&from_action=' + item.action)))

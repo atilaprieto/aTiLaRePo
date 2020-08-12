@@ -39,6 +39,8 @@ STATS_FILE = filetools.join(config.get_data_path(), "servers.json")
 TITLE_FILE = "[COLOR %s][%i%%][/COLOR] %s"
 TITLE_TVSHOW = "[COLOR %s][%i%%][/COLOR] %s [%s]"
 
+null = 'None'
+
 
 def mainlist(item):
     logger.info()
@@ -62,6 +64,7 @@ def mainlist(item):
         if not item.contentType == "tvshow":
             # Series
             if i.contentType == "episode":
+                if i.from_title and not i.contentSerieName: i.contentSerieName = i.from_title
                 # Comprobamos que la serie no este ya en el itemlist
                 if not [x for x in itemlist if x.contentSerieName == i.contentSerieName and x.contentChannel == i.contentChannel]:
 
@@ -100,7 +103,7 @@ def mainlist(item):
 
         # Listado dentro de una serie
         else:
-            if i.contentType == "episode" and i.contentSerieName == item.contentSerieName and i.contentChannel == item.contentChannel:
+            if i.contentType == "episode" and (i.contentSerieName == item.contentSerieName or i.from_title == item.contentSerieName) and i.contentChannel == item.contentChannel:
                 i.title = TITLE_FILE % (STATUS_COLORS[i.downloadStatus], i.downloadProgress,
                                         "%dx%0.2d: %s [%s] [%s]" % (i.contentSeason, i.contentEpisodeNumber, 
                                         i.contentTitle, scrapertools.find_single_match(i.infoLabels['aired'], '\d{4}'), 
@@ -183,7 +186,7 @@ def browser(item):
                     if not torr_client or not torrent_paths[torr_client]:
                         continue
                     path = re.sub('^\:\w+\:\s*', '', download_item.downloadFilename)
-                    if download_item.infoLabels['mediatype'] == 'movie':
+                    if download_item.infoLabels['mediatype'] == 'movie' or item.infoLabels["tmdb_id"] == null:
                         title = download_item.infoLabels['title']
                     else:
                          title = download_item.infoLabels['tvshowtitle']
@@ -588,12 +591,12 @@ def move_to_libray(item):
 
     if config.get_setting("library_add", "downloads") == True:
         if filetools.isfile(final_path):
-            if item.contentType == "movie" and item.infoLabels["tmdb_id"]:
+            if item.contentType == "movie" and item.infoLabels["tmdb_id"] and item.infoLabels["tmdb_id"] != null:
                 library_item = Item(title=config.get_localized_string(70228) % item.downloadFilename, channel="downloads",
                                     action="findvideos", infoLabels=item.infoLabels, url=final_path)
                 videolibrarytools.save_movie(library_item)
 
-            elif item.contentType == "episode" and item.infoLabels["tmdb_id"]:
+            elif item.contentType == "episode" and item.infoLabels["tmdb_id"] and item.infoLabels["tmdb_id"] != null:
                 library_item = Item(title=config.get_localized_string(70228) % item.downloadFilename, channel="downloads",
                                     action="findvideos", infoLabels=item.infoLabels, url=final_path)
                 tvshow = Item(channel="downloads", contentType="tvshow",
@@ -1096,14 +1099,18 @@ def get_episodes(item):
     
     sub_action = ["tvshow", "season", "unseen", "auto"]                         # Acciones especiales desde Findvideos
     SERIES = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_tvshows"))
+    head = ''
     nfo_json = {}
     serie_path = ''
     episode_local = False
     remote = False
     season = item.infoLabels['season']
     sesxepi = []
+    event = False
+    if item.infoLabels['tmdb_id'] and item.infoLabels['tmdb_id'] == null:
+        event = True                                                            # Si viene de un canal de deportes o similar
     
-    if not item.nfo and item.path and not item.path.endswith('.json'):
+    if not item.nfo and item.path and not item.path.endswith('.json') and not event:
         item.nfo = filetools.join(SERIES, item.path, 'tvshow.nfo')
     if item.nfo:
         head, nfo_json = videolibrarytools.read_nfo(item.nfo)                   #... tratamos de recuperar la info de la Serie
@@ -1150,7 +1157,7 @@ def get_episodes(item):
                 if not item.url_tvshow:
                     item.url_tvshow = item.url
             
-            if item.sub_action in ["auto"]:
+            if item.sub_action in ["auto"] and not config.get_setting('auto_download_new_all', item.contentChannel, default=False):
                 if not nfo_json: return []
                 
                 # Calculamos la última temporada disponible
@@ -1295,7 +1302,7 @@ def get_episodes(item):
         if episode.contentType == "episode":
 
             # Pasamos el id al episodio
-            if not episode.infoLabels["tmdb_id"]:
+            if not episode.infoLabels["tmdb_id"] or item.infoLabels["tmdb_id"] == null:
                 episode.infoLabels["tmdb_id"] = item.infoLabels["tmdb_id"]
 
             # Episodio, Temporada y Titulo
@@ -1306,7 +1313,7 @@ def get_episodes(item):
                     episode.contentEpisodeNumber = season_and_episode.split("x")[1]
 
             # Buscamos en tmdb
-            if item.infoLabels["tmdb_id"]:
+            if item.infoLabels["tmdb_id"] and item.infoLabels["tmdb_id"] != null:
                 scraper.find_and_set_infoLabels(episode)
 
             # Episodio, Temporada y Titulo
@@ -1327,7 +1334,8 @@ def get_episodes(item):
         from core import tmdb
         if len(itemlist) > 1:
             itemlist = sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))
-        tmdb.set_infoLabels(itemlist, True, idioma_busqueda='es,en')
+        if item.infoLabels["tmdb_id"] and item.infoLabels["tmdb_id"] != null:
+            tmdb.set_infoLabels(itemlist, True, idioma_busqueda='es,en')
     except:
         logger.error(traceback.format_exc(1))
 
@@ -1440,7 +1448,7 @@ def save_download_movie(item, silent=False):
             item.url = item.emergency_urls[0][0]
 
     result = ''
-    if not item.infoLabels["tmdb_id"] and not channeltools.is_adult(item.channel):
+    if not item.infoLabels["tmdb_id"] and item.infoLabels["tmdb_id"] != null and not channeltools.is_adult(item.channel):
         result = scraper.find_and_set_infoLabels(item)
     if not result:
         if not silent: progreso.close()
@@ -1467,13 +1475,15 @@ def save_download_movie(item, silent=False):
 
 
 def save_download_tvshow(item, silent=False):
+    if not item.contentSerieName and item.from_title:
+        item.contentSerieName = item.from_title
     logger.info("contentAction: %s | contentChannel: %s | contentType: %s | contentSerieName: %s | sub_action: %s" % (
         item.contentAction, item.contentChannel, item.contentType, item.contentSerieName, item.sub_action))
 
     if not silent: progreso = platformtools.dialog_progress(config.get_localized_string(30101), config.get_localized_string(70188))
 
     result = ''
-    if not item.infoLabels["tmdb_id"] and not channeltools.is_adult(item.channel):
+    if not item.infoLabels["tmdb_id"] and item.infoLabels["tmdb_id"] != null and not channeltools.is_adult(item.channel):
         result = scraper.find_and_set_infoLabels(item)
 
     item.downloadFilename = filetools.validate_path("%s [%s]" % (item.contentSerieName, item.contentChannel))

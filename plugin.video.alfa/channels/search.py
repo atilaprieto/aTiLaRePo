@@ -418,7 +418,7 @@ def setting_channel_new(item):
     ]
     presel_values = ['skip', 'actual', 'recom', 'freq', 'all', 'none', 'cast', 'lat']
 
-    categs = ['movie', 'tvshow', 'documentary', 'anime', 'vos', 'direct', 'torrent']
+    categs = ['movie', 'tvshow', 'documentary', 'anime', 'vos', 'direct', 'torrent', 'sport']
     if config.get_setting('adult_mode') > 0:
         categs.append('adult')
     for c in categs:

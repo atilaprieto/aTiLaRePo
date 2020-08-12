@@ -142,7 +142,7 @@ class Client(object):
         # Sesion
         self._cache = Cache(self.temp_path)
         self._ses = lt.session()
-        logger.info("***** 'Alfa BT Cliente Torrent: %s" % str(lt.version), force=True)
+        logger.info("***** Alfa BT Cliente Torrent: %s" % str(lt.version), force=True)
         #self._ses.listen_on(0, 0)                                              ### ALFA: it blocks repro of some .torrents
         # Cargamos el archivo de estado (si existe)
         """                                                                     ### ALFA: it blocks repro of some .torrents

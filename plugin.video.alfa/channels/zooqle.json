@@ -53,6 +53,14 @@
       "visible": true
     },
     {
+      "id": "auto_download_new_all",
+      "type": "bool",
+      "label": "Incluso si es una Temporada NUEVA?",
+      "default": false,
+      "enabled": true,
+      "visible": true
+    },
+    {
       "id": "filter_languages",
       "type": "list",
       "label": "Mostrar enlaces en idioma...",

@@ -21,7 +21,7 @@ list_servers = ['directo', 'rapidvideo', 'streamango', 'yourupload', 'mailru', '
 list_quality = ['default']
 
 
-HOST = "https://animeflv.net/"
+HOST = "https://www.animeflv.net/"
 
 def mainlist(item):
     logger.info()
@@ -81,7 +81,7 @@ def search(item, texto):
     
     texto = texto.replace(" ", "+")
     post = "value=%s&limit=100" % texto
-    
+
     try:
         dict_data = httptools.downloadpage(item.url, post=post).json
         for e in dict_data:

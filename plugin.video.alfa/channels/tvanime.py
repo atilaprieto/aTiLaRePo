@@ -70,11 +70,22 @@ def mainlist(item):
                               thumbnail='',
                               url=host + 'categoria/ona'))
 
-
     itemlist.append(Item(channel=item.channel, title="Especiales",
                               action="list_all",
                               thumbnail='',
                               url=host + 'categoria/especial'))
+
+    itemlist.append(Item(channel=item.channel, title="A - Z",
+                         action="section",
+                         thumbnail=get_thumb('alphabet', auto=True),
+                         url=host + 'animes',
+                         mode="letra"))
+
+    itemlist.append(Item(channel=item.channel, title="Generos",
+                         action="section",
+                         thumbnail=get_thumb('genres', auto=True),
+                         url=host + 'animes',
+                         mode="genero"))
 
     itemlist.append(Item(channel=item.channel, title="Buscar",
                                action="search",
@@ -150,6 +161,23 @@ def list_all(item):
                              ))
     tmdb.set_infoLabels(itemlist, seekTmdb=True)
     return itemlist
+
+
+def section(item):
+
+    itemlist = []
+
+    data = get_source(item.url)
+
+    patron = '<a class="dropdown-item" href="(/%s/[^"]+)">([^<]+)</a>' % item.mode
+
+    matches = re.compile(patron, re.DOTALL).findall(data)
+
+    for url, title in matches:
+        itemlist.append(Item(channel=item.channel, title=title, url=host + url, action="list_all"))
+
+    return itemlist
+
 
 def search(item, texto):
     logger.info()

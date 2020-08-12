@@ -23,7 +23,7 @@ list_servers = ['fastplay', 'flashx', 'vimeo']
 
 __channel__='allpeliculastv'
 
-host = "https://allpeliculas.tv"
+host = "https://allpeliculas.nu"
 
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)

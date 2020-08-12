@@ -57,7 +57,7 @@ def list_movies(item, silent=False):
                 
                 head_nfo, new_item = videolibrarytools.read_nfo(nfo_path)
 
-                if not new_item:                        #Si no ha leído bien el .nfo, pasamos a la siguiente
+                if not new_item or not isinstance(new_item.library_playcounts, dict):   #Si no ha leído bien el .nfo, pasamos a la siguiente
                     logger.error('.nfo erroneo en ' + str(nfo_path))
                     continue
                 
