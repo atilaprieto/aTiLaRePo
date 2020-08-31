@@ -108,6 +108,13 @@ def to_key(literal_or_identifier):
         else:
             return unicode(k)
 
+def is_iteration_statement(cand, comments=None):
+    if not isinstance(cand, dict):
+        # Multiple statements.
+        return False
+    return cand.get("type", "?") in {"ForStatement", "ForInStatement", "WhileStatement", "DoWhileStatement"}
+
+
 
 def trans(ele, standard=False, comments=None):
     """Translates esprima syntax tree to python by delegating to appropriate translating node"""
@@ -124,7 +131,7 @@ def trans(ele, standard=False, comments=None):
         raise
 
 
-def limited(func):
+def limited(func, comments=None):
     '''Decorator limiting resulting line length in order to avoid python parser stack overflow -
       If expression longer than LINE_LEN_LIMIT characters then it will be moved to upper line
      USE ONLY ON EXPRESSIONS!!! '''
@@ -183,7 +190,7 @@ def MemberExpression(type, computed, object, property, comments=None):
     return far_left + '.get(%s)' % prop
 
 
-def ThisExpression(type):
+def ThisExpression(type, comments=None):
     return 'var.get(u"this")'
 
 
@@ -288,7 +295,7 @@ def BinaryExpression(type, operator, left, right, comments=None):
 
 
 @limited
-def UpdateExpression(type, operator, argument, prefix):
+def UpdateExpression(type, operator, argument, prefix, comments=None):
     a = trans(
         argument, standard=True
     )  # also complex operation involving parsing of the result so no line length reducing here
@@ -440,8 +447,8 @@ def LabeledStatement(type, label, body, comments=None):
     # todo consider using smarter approach!
     inside = trans(body)
     defs = ''
-    if inside.startswith('while ') or inside.startswith(
-            'for ') or inside.startswith('#for'):
+    if is_iteration_statement(body) and (inside.startswith('while ') or inside.startswith(
+            'for ') or inside.startswith('#for')):
         # we have to add contine label as well...
         # 3 or 1 since #for loop type has more lines before real for.
         sep = 1 if not inside.startswith('#for') else 3

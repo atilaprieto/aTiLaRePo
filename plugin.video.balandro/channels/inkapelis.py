@@ -221,6 +221,7 @@ def corregir_servidor(servidor):
     servidor = servertools.corregir_servidor(servidor)
     if servidor == 'drive': return 'gvideo'
     elif servidor == 'drive [vip]': return 'gvideo'
+    elif servidor == 'playstp': return 'streamtape'
     elif servidor == 'descargar': return 'mega' # !? 1fichier
     elif servidor == 'vip': return 'directo'
     elif servidor == 'premium': return 'digiload'
@@ -283,6 +284,8 @@ def findvideos(item):
                 lembed = scrapertools.find_single_match(lnk, 'data-embed="([^"]+)')
                 ltype = scrapertools.find_single_match(lnk, 'data-type="([^"]+)')
                 servidor = scrapertools.find_single_match(lnk, 'title="([^".]+)').lower()
+                if not servidor:
+                    servidor = scrapertools.find_single_match(lnk, '<span class="serverx">([^<]+)').lower()
                 # ~ logger.info(servidor)
             
                 itemlist.append(Item( channel = item.channel, action = 'play', server = corregir_servidor(servidor), referer = url,
@@ -301,6 +304,10 @@ def findvideos(item):
 
     return itemlist
 
+# ~ https://players.inkapelis.me/edge-data/
+# ~ https://players.inkapelis.me/archive?url=amJQMGdFa0lISzF3eHNBY1ZMa29Cdz09
+# ~ https://hls.playerd.xyz/player.php?id=MTI3OQ
+
 def play(item):
     logger.info()
     itemlist = []
@@ -315,9 +322,14 @@ def play(item):
             if data.startswith('http'): item.url = data
             elif data.startswith('/'): item.url = item.lurl + data
         if not item.url: return itemlist
+        # ~ https://players.inkapelis.me/direct?dir=YH2lM9qloac09o6hbm.html
+        
+        item.url = item.url.replace('inkapelis.me/player?url=', 'inkapelis.me/player/?url=')
+        item.url = item.url.replace('inkapelis.me/fplayer?url=', 'inkapelis.me/redirector.php?url=')
 
     if 'playerd.xyz/' in item.url or 'inkapelis.me/' in item.url:
         resp = httptools.downloadpage(item.url, headers={'Referer':item.referer}, follow_redirects=False)
+        # ~ /playdir?dir=cVNSMlFPSkFxaUluU3FsbDNSVU5JdFMyN0dpOXArWnYxNncwUGhOOEh1ZW56Wk90a2tZRnZBQjNxYXRtaHBuUg==
         
         if 'refresh' in resp.headers:
             vurl = scrapertools.find_single_match(resp.headers['refresh'], ';\s*(.*)')
@@ -327,6 +339,7 @@ def play(item):
             # ~ logger.debug(resp.data)
             url = scrapertools.find_single_match(resp.data, '<iframe src="([^"]+)')
             if not url: url = scrapertools.find_single_match(resp.data, "window\.open\('([^']+)")
+            if not url: url = scrapertools.find_single_match(resp.data, 'location\.href = "([^"]+)')
             if url and url.startswith('/'): url = '/'.join(item.url.split('/')[:3]) + url
 
             if 'playerd.xyz/' in url or 'inkapelis.me/' in url:
@@ -340,6 +353,7 @@ def play(item):
                 else:
                     # ~ logger.debug(resp.data)
                     vurl = scrapertools.find_single_match(resp.data, 'downloadurl = "([^"]+)')
+                    if not vurl and 'player.php?id=' in url: vurl = url
 
             else:
                 if url: 
@@ -362,9 +376,22 @@ def play(item):
                             else:
                                 itemlist.append([lnk[2], lnk[0]])
 
+        if vurl and vurl.startswith('/'): vurl = '/'.join(item.url.split('/')[:3]) + vurl
+
     elif item.url.startswith('http'):
         vurl = item.url
 
+
+    if vurl and '/playdir' in vurl:
+        resp = httptools.downloadpage(vurl, headers={'Referer':item.url}, follow_redirects=False)
+        # ~ logger.debug(resp.data)
+        if 'refresh' in resp.headers:
+            vurl = scrapertools.find_single_match(resp.headers['refresh'], ';\s*(.*)')
+        elif 'location' in resp.headers:
+            vurl = resp.headers['location']
+        else:
+            vurl = None
+            # ~ logger.debug(resp.data)
 
     if vurl and 'player.php?id=' in vurl:
         resp = httptools.downloadpage(vurl, headers={'Referer':item.url}, follow_redirects=False)
@@ -451,7 +478,8 @@ def search(item, texto):
     logger.info("texto: %s" % texto)
     try:
         item.url = host + '?s=' + texto.replace(" ", "+")
-        return list_search(item)
+        # ~ return list_search(item)
+        return list_all(item)
     except:
         import sys
         for line in sys.exc_info():

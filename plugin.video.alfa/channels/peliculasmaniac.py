@@ -3,9 +3,11 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
-import urlparse
 
 from channels import autoplay
 from channels import filtertools
@@ -19,7 +21,7 @@ from platformcode import config, logger
 from channelselector import get_thumb
 
 IDIOMAS = {'ES': 'CAST', 'VOS': 'VOS','EN': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = ['720p', 'HD 1080p', '480p', '360p', '270p']
 list_servers = ['directo']
 

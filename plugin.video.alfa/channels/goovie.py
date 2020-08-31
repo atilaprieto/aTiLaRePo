@@ -3,8 +3,12 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
+
 from channelselector import get_thumb
 from core import httptools
 from core import jsontools
@@ -18,7 +22,7 @@ from platformcode import config, logger
 
 
 IDIOMAS = {'EspaL':'Cast', 'Español':'Cast', 'Latino':'Lat', 'Subtitulado':'VOSE', 'VSO':'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 
 CALIDADES = {'1080p':'1080','720p':'720','480p':'480','360p':'360'}
 
@@ -136,7 +140,7 @@ def list_all(item):
         url = scrapedurl
         filter_thumb = thumbnail.replace("https://image.tmdb.org/t/p/w154", "")
         filter_list = {"poster_path": filter_thumb}
-        filter_list = filter_list.items()
+        filter_list = list(filter_list.items())
         thumbnail = re.sub('p/w\d+', 'p/original', thumbnail)
         new_item = Item(channel=item.channel,
                         title=title,

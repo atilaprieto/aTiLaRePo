@@ -3,6 +3,10 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 
 from channelselector import get_thumb
@@ -17,7 +21,7 @@ from lib import jsunpack
 
 
 IDIOMAS = {'default': 'default'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = ['1080p', '720p', '360p']
 list_servers = ['uptobox', '1fichier', 'openload']
 
@@ -175,7 +179,10 @@ def listall(item):
         
         else:
             
-            y = scrapertools.find_single_match(scrapedtitle, '(\d{4})')
+            try:
+                y = int(scrapertools.find_single_match(scrapedtitle, '(\d{4})'))
+            except:
+                y = 0
             
             if y < 1900 or y > 2025:
                 y = "-"

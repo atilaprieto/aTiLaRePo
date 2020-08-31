@@ -7,11 +7,13 @@ from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
 # ~ host = 'https://seriemega.net/'
-host = 'https://seriemega.xyz/'
+# ~ host = 'https://seriemega.xyz/'
+host = 'https://seriemega.me/'
 
 def do_downloadpage(url, post=None):
     url = url.replace('seriemega.com', 'seriemega.net') # por si viene de enlaces guardados
     url = url.replace('seriemega.net', 'seriemega.xyz') # por si viene de enlaces guardados
+    url = url.replace('seriemega.xyz', 'seriemega.me') # por si viene de enlaces guardados
     data = httptools.downloadpage(url, post=post).data
     # ~ data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://seriemega.net', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0'}).data
     # ~ logger.debug(data)
@@ -191,7 +193,7 @@ def episodios(item):
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.replace(' ', '').replace('-', '').lower()
-    orden = ['cam', 'tsscreener', 'brscreener', 'dvdrip', 'hdrip', 'hd720', 'hd720p', 'hd1080', 'hd1080p']
+    orden = ['cam', 'ts', 'tsscreener', 'dvdscr', 'brscreener', 'dvdrip', 'hdrip', 'rhdtv', 'hd720', 'hd720p', 'hd1080', 'hd1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

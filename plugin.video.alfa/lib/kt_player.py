@@ -3,6 +3,14 @@
 # decode kt_player Alfa-addon
 # --------------------------------------------------------
 
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from .past.utils import old_div
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 def decode(video_url, license_code, _size=16):
     d = video_url.split("/")[1:]
     h = d[6][:2 * _size]
@@ -49,7 +57,7 @@ def e(license_code, _size):
         else:
             s += str(1)
 
-    p = int(len(s)/2)
+    p = int(old_div(len(s),2))
     n = int(s[:p + 1])
     m = int(s[p:])
 
@@ -65,7 +73,7 @@ def e(license_code, _size):
     s *= 2;
     s = str(s);
 
-    rate = _size / 2 + 2
+    rate = old_div(_size, 2) + 2
 
     res = ""
     for i in range(p+1):

@@ -198,7 +198,7 @@ def episodios(item):
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
-    orden = ['Cam', 'WEB-S', 'DVD-S', 'TS-HQ', 'DVD', 'DvdRip', 'HD']
+    orden = ['Cam', 'WEB-S', 'DVD-S', 'TS-HQ', 'DVD', 'DvdRip', 'HD', 'FullHD1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -240,11 +240,10 @@ def findvideos(item):
 
 
     itemlist = servertools.get_servers_itemlist(itemlist)
-
     # Dejar desconocidos como directos para resolverse en el play
     for it in itemlist:
-        if it.server == 'desconocido' and '//api.cuevana3' in it.url:
-            it.server = 'fembed' if '/fembed/?' in it.url else ''
+        if it.server == 'desconocido' and ('//api.cuevana3' in it.url or '//damedamehoy.' in it.url):
+            it.server = 'fembed' if '/fembed/?' in it.url else 'directo' if '//damedamehoy.' in it.url else ''
         elif it.server == 'desconocido' and 'openloadpremium.com/' in it.url:
             it.server = 'm3u8hls'
 
@@ -253,6 +252,15 @@ def findvideos(item):
 def play(item):
     logger.info()
     itemlist = []
+
+    if '//damedamehoy.' in item.url:
+        data = httptools.downloadpage(item.url).data
+        # ~ logger.debug(data)
+        url = scrapertools.find_single_match(data, 'file:\s*"([^"]+)')
+        if not url: return itemlist
+        itemlist.append(['mp4', url])
+        return itemlist
+
 
     if '//api.cuevana3' in item.url:
 

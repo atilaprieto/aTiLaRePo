@@ -1,10 +1,24 @@
-import BaseHTTPServer
-import urlparse
+# -*- coding: utf-8 -*-
+
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.request as urllib
+    import http.server as BaseHTTPServer
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib
+    import BaseHTTPServer
+
 import time
-import urllib
 import types
 import os
 import re
+
+from platformcode import logger
 
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -58,25 +72,28 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_pls(self.server._client.files)
             return False
 
+        if PY3:
+            filename = urllib.unquote(url)[1:]
+        else:
+            filename = urllib.unquote(url)[1:].decode("utf-8")
 
         if not self.server._client.file or urllib.unquote(url)[1:] != self.server._client.file.name:
             for f in self.server._client.files:
-                if f.name == urllib.unquote(url)[1:].decode("utf-8"):
+                if f.name == filename:
                     self.server._client.file = f
                     break
 
-
-        if self.server._client.file and urllib.unquote(url)[1:].decode("utf-8") == self.server._client.file.name:
+        if self.server._client.file and filename == self.server._client.file.name:
             range = False
-            self.offset=0
+            self.offset = 0
             size, mime = self._file_info()
             start, end = self.parse_range(self.headers.get('Range', ""))
             self.size = size
             
-            if start <> None:
+            if start != None:
                 if end == None: end = size - 1
-                self.offset=int(start)
-                self.size=int(end) - int(start) + 1
+                self.offset = int(start)
+                self.size = int(end) - int(start) + 1
                 range=(int(start), int(end), int(size))
             else:
                 range = None
@@ -89,12 +106,12 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
     def _file_info(self):
-        size=self.server._client.file.size
-        ext=os.path.splitext(self.server._client.file.name)[1]
-        mime=self.server._client.VIDEO_EXTS.get(ext)
+        size = self.server._client.file.size
+        ext = os.path.splitext(self.server._client.file.name)[1]
+        mime = self.server._client.VIDEO_EXTS.get(ext)
         if not mime:
-            mime='application/octet-stream'
-        return size,mime
+            mime = 'application/octet-stream'
+        return size, mime
 
 
     def send_resp_header(self, cont_type, size, range=False):
@@ -108,9 +125,9 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header('Accept-Ranges', 'bytes')
 
         if range:
-            if isinstance(range, (types.TupleType, types.ListType)) and len(range)==3:
+            if isinstance(range, (tuple, list)) and len(range) == 3:
                 self.send_header('Content-Range', 'bytes %d-%d/%d' % range)
-                self.send_header('Content-Length', range[1]-range[0]+1)
+                self.send_header('Content-Length', range[1] - range[0] + 1)
             else:
                 raise ValueError('Invalid range value')
         else:

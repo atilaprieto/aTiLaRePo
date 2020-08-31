@@ -135,13 +135,13 @@ def peliculas(item):
     itemlist = []
 
     data = do_downloadpage(item.url)
-    # ~ logger.debug(data)
+    logger.debug(data)
 
     # ~ patron = '<div class="home_post_cont[^"]*">\s*<a href="([^"]+)">'
     # ~ patron += '<img width="[^"]*" height="[^"]*" src="([^"]+)" class="[^"]*" alt="[^"]*" title="([^"]+)"'
     # ~ patron += '.*?&lt;p&gt;(.*?)&lt;/p&gt;&lt;'
     patron = '<div class="home_post_cont[^"]*">\s*<a href=([^>]+)>'
-    patron += '<img width=\d* height=\d* src=([^ ]+) class="[^"]*" alt="[^"]*" title="([^"]+)"'
+    patron += '<img width=\d* height=\d* src=([^ ]+) class="[^"]*" alt="[^"]*" loading=lazy title="([^"]+)"'
     patron += '.*?&lt;p&gt;(.*?)&lt;/p&gt;&lt;'
     matches = re.compile(patron, re.DOTALL).findall(data)
     

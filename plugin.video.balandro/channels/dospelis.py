@@ -29,7 +29,12 @@ def mainlist_pelis(item):
     
     itemlist.append(item.clone( title = 'Últimas películas', action = 'list_all', url = host + 'movies/', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Estrenos', action = 'list_all', url = host + 'genre/estrenos/', search_type = 'movie' ))
-    itemlist.append(item.clone( title = 'Destacadas', action = 'list_all', url = host + 'genre/destacadas/', search_type = 'movie' ))
+    # ~ f_y_m
+    # ~ itemlist.append(item.clone( title = 'Destacadas', action = 'list_all', url = host + 'genre/destacadas/', search_type = 'movie' ))
+
+    # ~ f_y_m
+    itemlist.append(item.clone( title = 'Tendencias', action = 'list_all', url = host + 'tendencias/?get=movies', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Calificaciones', action = 'list_all', url = host + 'calificaciones/?get=movies', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Castellano', action = 'list_all', url = host + 'genre/castellano/', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Latino', action = 'list_all', url = host + 'genre/latino/', search_type = 'movie' ))
@@ -49,6 +54,10 @@ def mainlist_series(item):
     
     itemlist.append(item.clone( title = 'Últimas series', action = 'list_all', url = host + 'tvshows/', search_type = 'tvshow' ))
     itemlist.append(item.clone( title = 'Últimos episodios', action = 'list_episodes', url = host + 'episodes/', search_type = 'tvshow' ))
+
+    # ~ f_y_m
+    itemlist.append(item.clone( title = 'Tendencias', action = 'list_all', url = host + 'tendencias/?get=tv', search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Calificaciones', action = 'list_all', url = host + 'calificaciones/?get=tv', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
@@ -187,8 +196,13 @@ def list_all(item):
 
         url = scrapertools.find_single_match(article, ' href="([^"]+)"')
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
+
         title = scrapertools.find_single_match(article, '<h4>([^<]+)</h4>')
-        year = scrapertools.find_single_match(article, '<span>([0-9]{4})</span>')
+        if not title: title = scrapertools.find_single_match(article, 'alt="([^"]+)')
+
+        year = scrapertools.find_single_match(article, '<span>(\d{4})</span>')
+        if not year: year = scrapertools.find_single_match(article, '<span>.*?,\s*(\d{4})</span>').strip()
+
         quality = scrapertools.find_single_match(article, '<span class="quality">([^<]+)</span>')
         plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<div class="texto">(.*?)</div>'))
 
@@ -283,7 +297,7 @@ def corregir_servidor(servidor):
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.lower().replace(' ', '').replace('-', '')
-    orden = ['cam', 'tsscreener', 'dvdscreener', 'brscreener', 'dvdrip', 'hd', 'hd720p', 'hd1080p']
+    orden = ['cam', 'tsscreener', 'dvdscreener', 'brscreener', 'dvdrip', 'hd', 'hdrip', '720p', 'hd720p', '1080p', 'hd1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -346,16 +360,17 @@ def play(item):
     itemlist = []
 
     if item.url:
-        data = do_downloadpage(item.url)
+        data = httptools.downloadpage(item.url).data
         # ~ logger.debug(data)
-        url = scrapertools.find_single_match(data, '<a id="link" href="([^"]+)')
+        url = scrapertools.find_single_match(data, '<a id="link".*?href="([^"]+)')
         if url: 
             itemlist.append(item.clone( url=servertools.normalize_url(item.server, url) ))
 
     else:
         post = urllib.urlencode( {'action': 'doo_player_ajax', 'post': item.dpost, 'nume': item.dnume, 'type': item.dtype} )
         data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':item.referer}).data
-        # ~ logger.debug(data)
+        logger.debug(data)
+
         url = scrapertools.find_single_match(data, "src='([^']+)")
         if not url: url = scrapertools.find_single_match(data, 'src="([^"]+)')
         if url: 
@@ -369,6 +384,7 @@ def play(item):
 
             elif 'streamcrypt.net/' in url: # Ej: https://streamcrypt.net/embed/streamz.cc/...
                 url = scrapertools.decode_streamcrypt(url)
+            logger.debug(url)
 
             if not url: return itemlist
             servidor = servertools.get_server_from_url(url)

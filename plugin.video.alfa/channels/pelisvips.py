@@ -3,7 +3,16 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
-import re, urllib
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from bs4 import BeautifulSoup
 from channels import autoplay, filtertools
@@ -21,14 +30,14 @@ unify = config.get_setting('unify')
 lquality = {'hd1080p': 'FHD', 'hd720p': 'HD', 'hdreal720': 'HD',
             'br screener': 'BR-S', 'ts screener': 'TS'}
 
-list_quality = lquality.values()
+list_quality = list(lquality.values())
 
 list_servers = ['directo', 'fembed', 'rapidvideo', 'mega', 'vidlox', 'streamango', 'openload']
 
 IDIOMAS = {'Latino': 'LAT', 'Castellano': 'CAST',
            'Subtitulado': 'VOSE', 'Subtitulada': 'VOSE'}
 
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 
 def mainlist(item):
     logger.info()
@@ -120,6 +129,7 @@ def list_search(item):
 
     for elem in matches:
         url = elem.a['href']
+        url = urlparse.urljoin(host, url)
         stitle = elem.a['title']
         thumbnail = elem.img['src']
         info = elem.find('p', class_='main-info-list').text.partition('Calidad:')
@@ -177,6 +187,7 @@ def list_all(item):
     for elem in matches:
         
         url = elem['href']
+        url = urlparse.urljoin(host, url)
         quality = elem.find('div', class_='_format').text.strip()
         thumbnail = elem.img['src']
         stitle = elem.img['alt']
@@ -218,6 +229,7 @@ def list_all(item):
                 
     try:
         next_page = soup.find('a', class_='nextpostslink')['href']
+        next_page = urlparse.urljoin(host, next_page)
     except:
         next_page = None
     if next_page:
@@ -232,6 +244,17 @@ def list_all(item):
 def findvideos(item):
     logger.info()
     itemlist = []
+    players = {'pelisvips': 'https://pelisvips.com', 
+               'stape': 'https://streamtape.com',
+               'stream': 'https://streamtape.com',
+               'netu': 'https://hqq.tv',
+               'up': 'https://upstream.to', 
+               'easy': 'https://easyload.io', 
+               'fembed': 'https://fembad.net',
+               'youtube': '',
+               'pelisup': 'https://www.pelisup.com',
+               'goo': 'https://gounlimited.to'}
+               
     # Descarga la pagina
     soup = create_soup(item.url).find('div', id='movie-player')
     matches = soup.find_all('li')
@@ -239,6 +262,15 @@ def findvideos(item):
     for elem in matches:
         title = "%s"
         url = elem.a['rel'][0]
+        if not url.startswith('http'):
+            server = elem.a['title'].lower()
+            if server not in str(players):
+                logger.error('Añadir a lista: %s' % server)
+                server = 'pelisvips'
+            if server == 'netu' and '.mp4' in url:
+                server = 'stape'
+            url = urlparse.urljoin(players[server], url)
+        
         info = elem.find('span', class_='optxt').text.partition('\n')
         
         slang = info[0].strip().replace('Español ', '')

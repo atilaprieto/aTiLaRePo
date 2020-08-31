@@ -3,8 +3,16 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urllib
 
 from core import httptools
 from core import scrapertools
@@ -23,7 +31,7 @@ __comprueba_enlaces__ = config.get_setting('comprueba_enlaces', 'animespace')
 __comprueba_enlaces_num__ = config.get_setting('comprueba_enlaces_num', 'animespace')
 
 IDIOMAS = {'VOSE': 'VOSE', 'Latino':'LAT', 'Castellano':'CAST'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['directo', 'openload', 'streamango']
 
@@ -254,7 +262,6 @@ def episodios(item):
 
 
 def findvideos(item):
-    import urllib
     logger.info()
 
     itemlist = []

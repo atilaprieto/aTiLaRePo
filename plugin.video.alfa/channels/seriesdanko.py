@@ -3,10 +3,13 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
 import re
-import urlparse
 import string
+
 from channels import filtertools
 from bs4 import BeautifulSoup
 from core import httptools
@@ -19,7 +22,7 @@ from platformcode import config, logger
 
 HOST = 'https://seriesdanko.net/'
 IDIOMAS = {'es': 'Español', 'la': 'Latino', 'vos': 'VOS', 'vo': 'VO', 'sub': 'VOSE', 'en': 'VO'}
-list_idiomas = IDIOMAS.values()
+list_idiomas = list(IDIOMAS.values())
 list_servers = ['powvideo', 'gamovideo', 'streamplay', 'flashx', 'nowvideo', 'thevideo']
 list_quality = []
 

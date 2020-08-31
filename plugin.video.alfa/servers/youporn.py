@@ -20,7 +20,7 @@ def test_video_exists(page_url):
 def get_video_url(page_url, video_password):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
-    patron  = '"format":"","quality":"([^"]+)","videoUrl":"([^"]+)"'
+    patron  = '"quality":"([^"]+)","format":"mp4","videoUrl":"([^"]+)"'
     matches = scrapertools.find_multiple_matches(data, patron)
     for quality, scrapedurl in matches:
         url =  scrapedurl.replace("\/", "/").replace("\u0026", "&")

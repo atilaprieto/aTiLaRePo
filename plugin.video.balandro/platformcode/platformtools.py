@@ -747,7 +747,7 @@ def play_video(item, parent_item, autoplay=False):
         
         # ~ Para evitar ERROR: CCurlFile::Stat - Failed: Peer certificate cannot be authenticated with given CA certificates(60)
         if item.server not in ['m3u8hls', 'zembed']:
-            if 'verifypeer=false' not in mediaurl: 
+            if 'verifypeer=false' not in mediaurl and 'googleusercontent' not in mediaurl: 
                 mediaurl += '|' if '|' not in mediaurl else '&'
                 mediaurl += 'verifypeer=false'
 

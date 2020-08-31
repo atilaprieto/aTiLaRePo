@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urllib
 
 from core import httptools
 from core import jsontools
@@ -90,7 +98,7 @@ def listado(item):
             contenttitle = title.replace("[TeamDragon] ", "").replace("[PuyaSubs!] ", "").replace("[Puya+] ", "")
             contenttitle = scrapertools.find_single_match(contenttitle,
                                                           "(.*?)(?:\s+\[|\s+–|\s+&#8211;| Episodio| [0-9]{2,3})")
-            filtro_tmdb = {"original_language": "ja"}.items()
+            filtro_tmdb = list({"original_language": "ja"}.items())
             itemlist.append(Item(channel=item.channel, action="findvideos", url=url, title=title, thumbnail=thumb,
                                  contentTitle=contenttitle, show=contenttitle, contentType=tipo,
                                  infoLabels={'filtro': filtro_tmdb}, text_color=color1))
@@ -123,7 +131,7 @@ def descargas(item):
         contenttitle = title.replace("[TeamDragon] ", "").replace("[PuyaSubs!] ", "") \
             .replace("[Puya+] ", "")
         contenttitle = re.sub(r'(\[[^\]]*\])', '', contenttitle).strip()
-        filtro_tmdb = {"original_language": "ja"}.items()
+        filtro_tmdb = list({"original_language": "ja"}.items())
         season = scrapertools.find_single_match(contenttitle,' S(\d+)')
         if season:
             contenttitle = contenttitle.replace(" S" + season, "")
@@ -173,7 +181,7 @@ def torrents(item):
         if "(" in contentTitle:
             contentTitle = contentTitle.split("(")[0]
         size = size.strip()
-        filtro_tmdb = {"original_language": "ja"}.items()
+        filtro_tmdb = list({"original_language": "ja"}.items())
         title += "  [COLOR %s][Seeds:%s[/COLOR]|[COLOR %s]Leech:%s[/COLOR]|%s]" % (
             color4, seeds, color5, leechers, size)
         url = "https://www.frozen-layer.com" + url
@@ -319,7 +327,10 @@ def carpeta(item):
         data = httptools.downloadpage(item.url, headers={"Referer": item.url}).data
         patron = "'_DRIVE_ivd'] = '(.*?)'"
         matches = scrapertools.find_single_match(data, patron)
-        data = data.decode('unicode-escape')
+        if PY3:
+            data = data.encode().decode('unicode-escape')
+        else:
+            data = data.decode('unicode-escape')
         data = urllib.unquote_plus(urllib.unquote_plus(data))
         newpatron = ',\["(.*?)",\[".*?,"(.*?)","video'
         newmatches = scrapertools.find_multiple_matches(data, newpatron)

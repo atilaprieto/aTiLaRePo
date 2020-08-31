@@ -1210,7 +1210,7 @@ def torrent_client_installed(show_tuple=False):
     from core import filetools
     from core import jsontools
     torrent_clients = jsontools.get_node_from_file("torrent.json", "clients", filetools.join(config.get_runtime_path(),
-                                                                                             "servers"))
+                                                                                             "servers"), display=False)
     torrent_options = []
     for client in torrent_clients:
         if xbmc.getCondVisibility('System.HasAddon("%s")' % client["id"]):

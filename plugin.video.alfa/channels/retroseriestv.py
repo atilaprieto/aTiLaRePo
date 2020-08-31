@@ -3,6 +3,10 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 from channelselector import get_thumb
 from core import httptools
@@ -139,6 +143,10 @@ def episodesxseason(item):
     patron = r'data-src="([^>]+)"></div><div class="numerando">%s+ - (\d+|\d+\/\d+)</div>' % season
     patron += '<div class="episodiotitle"><a href="([^"]+)">(.*?)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
+    
+    #logger.debug(patron)
+    #logger.debug(matches)
+    #logger.debug(data)
 
     for scrapedthumbnail, scrapedepi, scrapedurl, scrapedtitle in matches:
 
@@ -146,6 +154,7 @@ def episodesxseason(item):
             scrapedepi = scrapertools.find_single_match (scrapedepi, r'(\d+)\/\d+')
 
         title = '%sx%s - %s' % (season, scrapedepi, scrapedtitle)
+        scrapedepi = int(scrapedepi)
         infoLabels['episode'] = scrapedepi
         if scrapedepi > 0:
             itemlist.append(Item(channel=item.channel, title=title, url=scrapedurl, action='findvideos',

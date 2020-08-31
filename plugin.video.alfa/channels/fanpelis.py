@@ -3,9 +3,16 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urllib
-import urlparse
 
 from channelselector import get_thumb
 from core import httptools
@@ -163,7 +170,10 @@ def list_all(item):
     if item.texto != '':
         next_page = host + 'page/%s/' % (int(active_page) + 1)
     else:
-        next_page = item.url +'page/%s/' % (int (active_page) + 1)
+        if not 'page/' in item.url:
+            next_page = item.url +'page/%s/' % (int (active_page) + 1)
+        else:
+            next_page = re.sub(r'page\/\d+\/', 'page/%s/' % (int (active_page) + 1), item.url)
 
     if next_page:
 
@@ -232,7 +242,8 @@ def episodesxseason(item):
     for scrapedurl, scrapedtitle in matches:
         epi = str(ep)
         title = season + 'x%s - Episodio %s' % (epi, epi)
-        url = scrapedurl
+        #url = scrapedurl
+        url = urlparse.urljoin(host, scrapedurl)
         contentEpisodeNumber = epi
         item.infoLabels['episode'] = contentEpisodeNumber
         itemlist.append(item.clone(action='findvideos',
@@ -247,18 +258,25 @@ def episodesxseason(item):
 
 def findvideos(item):
     logger.info()
-    import urllib
 
     itemlist = []
     urls = []
+    players = {'Play': 'https://zplayer.live', 
+               'STP': 'https://streamtape.com',
+               'Fembed': 'https://fembad.net',
+               'Vipstream': 'https://upstream.to'}
 
     data = get_source(item.url)
     data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    patron = 'data-url="([^"]+)" class'
-
+    patron = 'data-url="([^"]+)" class="[^"]+">(.*?)<\/a'
+    
     matches = re.compile(patron, re.DOTALL).findall(data)
 
-    for url in matches:
+    for url, server in matches:
+        if not url.startswith('http'):
+            if server not in str(players):
+                server = 'Fembed'
+            url = urlparse.urljoin(players[server], url)
         if url not in urls:
             itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play', infoLabels=item.infoLabels))
             urls.append(url)

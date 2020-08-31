@@ -724,7 +724,7 @@ def play_multi_channel(item, itemlist):
                 channel_videos.append(video_item)
         elif is_active(actual_channel):
             channel_videos.append(video_item)
-            video_dict[actual_channel] = channel_videos
+        video_dict[actual_channel] = channel_videos
 
     for channel, videos in video_dict.items():
         item.contentChannel = channel

@@ -3,10 +3,16 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
-import re
 import sys
-import urllib
-import urlparse
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from channels import autoplay
 from channels import filtertools
@@ -99,7 +105,8 @@ def sub_search(item):
 
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
+    data = re.sub(r"\n|\r|\t|&nbsp;|<br>|\s{2}", "", data)
+    #data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)", "", response.data)
     data = scrapertools.find_single_match(data, '</h1>(.*?)</article></div></div>')
     patron = '<img src="([^"]+)" alt="([^"]+)".*?'
     patron += 'href="([^"]+)".*?'
@@ -130,16 +137,20 @@ def peliculas(item):
 
     data = httptools.downloadpage(item.url).data
     data = scrapertools.decodeHtmlentities(data)
+    data = re.sub(r"\n|\r|\t|&nbsp;|<br>|\s{2}", "", data)
     bloq = scrapertools.find_single_match(data, '</h1>(.*?)resppages')
-    # logger.info(data)
 
     # img, title
     patron = '<img src="([^"]+)" alt="([^"]+)".*?'
     patron += 'quality">([^<]+)<.*?'
     patron += 'href="([^"]+)".*?'
-    patron += 'span>(\d{4})<'
+    patron += 'span>.*?(\d{4})<'
 
     matches = scrapertools.find_multiple_matches(bloq, patron)
+    
+    #logger.info(patron)
+    #logger.info(matches)
+    #logger.info(bloq)
 
     for scrapedthumbnail, scrapedtitle, quality, scrapedurl, year in matches[item.page:item.page + 30]:
         title = '%s [COLOR yellowgreen](%s)[/COLOR]' % (scrapedtitle, quality)
@@ -187,7 +198,7 @@ def api_peliculas(item):
     itemlist = []
     json_data = httptools.downloadpage(item.url).json
 
-    for _id, val in json_data.items():
+    for _id, val in list(json_data.items()):
         url = val['url']
         title = val['title']
         thumbnail = val['img']
@@ -277,7 +288,7 @@ def temporadas(item):
             if i.infoLabels['title']:
                 # Si la temporada tiene nombre propio añadirselo al titulo del item
                 i.title += " - %s" % (i.infoLabels['title'])
-            if i.infoLabels.has_key('poster_path'):
+            if 'poster_path' in i.infoLabels:
                 # Si la temporada tiene poster propio remplazar al de la serie
                 i.thumbnail = i.infoLabels['poster_path']
 
@@ -333,7 +344,7 @@ def episodios(item):
                 # Si el capitulo tiene nombre propio añadirselo al titulo del item
                 i.title = "%sx%s %s" % (i.infoLabels['season'], i.infoLabels[
                     'episode'], i.infoLabels['title'])
-            if i.infoLabels.has_key('poster_path'):
+            if 'poster_path' in i.infoLabels:
                 # Si el capitulo tiene imagen propia remplazar al poster
                 i.thumbnail = i.infoLabels['poster_path']
 

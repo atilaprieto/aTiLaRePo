@@ -22,7 +22,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     media_url = scrapertools.find_single_match(data, '{type:"video/mp4",src:"([^"]+)"}')
     if not media_url:
         media_url = scrapertools.find_single_match(data, '"file":"([^"]+)')
-    logger.info("media_url=" + media_url)
+    if not media_url:
+        media_url = scrapertools.find_single_match(data, 'src:"([^"]+)')
+    media_url +=  "|verifypeer=false&referer=%s" %page_url
     video_urls = list()
     video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:] + " [mp4upload]", media_url])
     for video_url in video_urls:

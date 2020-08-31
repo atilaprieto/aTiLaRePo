@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 from core import httptools
 from core import scrapertools
 from core import servertools

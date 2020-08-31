@@ -76,10 +76,13 @@ def lista(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron = 'data-src="([^"]+)" alt="([^"]+)".*?<h2><a href="([^"]+)">.*?' \
-             '<div class="duracion"><span class="ico-duracion sprite"></span> ([^"]+) min</div>'
+    patron = '<div class="muestra-canal">.*?'
+    patron += 'href="([^"]+)".*?'
+    patron += 'data-stats-video-name="([^"]+)".*?'
+    patron += 'data-src="([^"]+)".*?'
+    patron += '</span> ([^"]+) min</div>'
     matches = scrapertools.find_multiple_matches(data, patron)
-    for scrapedthumbnail, scrapedtitle, scrapedurl, duration in matches:
+    for scrapedurl, scrapedtitle, scrapedthumbnail, duration in matches:
         title = "[COLOR yellow] %s  [/COLOR] %s" % (duration, scrapedtitle)
         url = host + scrapedurl
         itemlist.append(item.clone(action="play", title=title, url=url, contentTitle=title,

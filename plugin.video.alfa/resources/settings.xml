@@ -122,6 +122,11 @@
                  values="[COLOR white]white[/COLOR]|[COLOR cyan]cyan[/COLOR]|[COLOR deepskyblue]deepskyblue[/COLOR]|[COLOR firebrick]firebrick[/COLOR]|[COLOR gold]gold[/COLOR]|[COLOR goldenrod]goldenrod[/COLOR]|[COLOR hotpink]hotpink[/COLOR]|[COLOR limegreen]limegreen[/COLOR]|[COLOR orange]orange[/COLOR]|[COLOR orchid]orchid[/COLOR]|[COLOR red]red[/COLOR]|[COLOR salmon]salmon[/COLOR]|[COLOR yellow]yellow[/COLOR]"
                  default="white" visible="eq(-16,true)+eq(-19,true)+eq(-18,false)"/>
     </category>
+    <category label="Alfa Assistant">
+        <setting label="Opciones para Alfa Assistant" type="lsep"/>
+        <setting id="assistant_mode" label="Dispositivo a utilizar" type="labelenum" values="este|otro" default="este"/>
+        <setting id="assistant_custom_address" label="    IP manual" type="ipaddress" visible="eq(-1,otro)"/>
+    </category>
     <category label="70149">
         <setting label="70150" type="lsep"/>
         <setting id="infoplus" type="bool" label="70151" default="true"/>

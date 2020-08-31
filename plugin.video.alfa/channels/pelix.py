@@ -3,9 +3,16 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urllib
-import base64
 
 from channelselector import get_thumb
 from core import httptools
@@ -21,9 +28,9 @@ from platformcode import config, logger
 
 
 IDIOMAS = {'6': 'Latino', '7': 'Castellano'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 CALIDADES = {'1': '1080p', '3': '720p', '4':'720p'}
-list_quality = CALIDADES.values()
+list_quality = list(CALIDADES.values())
 
 list_servers = [
     'openload',
@@ -115,7 +122,6 @@ def section(item):
 
 def list_all(item):
     logger.info()
-    import urllib
     itemlist = []
     if item.page == 0:
         data = get_source(item.url+item.path)
@@ -132,6 +138,10 @@ def list_all(item):
     patron = '<div class="base-used">.*?<a href="([^"]+)">.*?<img class="img-thumbnail".*?src="([^"]+)".*?'
     patron += r'<h2>([^<]+)</h2><p class="year">(\d{4})</p>'
     matches = re.compile(patron, re.DOTALL).findall(data)
+    
+    #logger.debug(patron)
+    #logger.debug(matches)
+    #logger.debug(data)
 
     for scrapedurl, scrapedthumbnail, scrapedtitle, year in matches:
 

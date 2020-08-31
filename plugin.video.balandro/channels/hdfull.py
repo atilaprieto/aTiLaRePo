@@ -6,9 +6,12 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, jsontools, servertools, tmdb
 
-
+# ~ host = "https://hdfull.tv"
+# ~ host = "https://hdfull.me"
 # ~ host = "https://hdfull.io"
-host = "https://hdfull.lv"
+# ~ host = "https://hdfull.lv"
+
+host = "https://hdfull.la"
 
 perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (40) para que la subpaginación interna no se descompense
 
@@ -36,10 +39,12 @@ perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web
     # ~ return proxytools.configurar_proxies_canal(item.channel, host)
 
 def do_downloadpage(url, post=None):
-    url = url.replace('hdfull.tv', 'hdfull.me') # por si viene de enlaces guardados
-    url = url.replace('hdfull.me', 'hdfull.io') # por si viene de enlaces guardados
-    url = url.replace('hdfull.io', 'hdfull.lv') # por si viene de enlaces guardados
-    data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://hdfull.lv', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:77.0) Gecko/20100101 Firefox/77.0'}).data
+    url = url.replace('hdfull.tv', 'hdfull.la') # por si viene de enlaces guardados
+    url = url.replace('hdfull.me', 'hdfull.la') # por si viene de enlaces guardados
+    url = url.replace('hdfull.io', 'hdfull.la') # por si viene de enlaces guardados
+    url = url.replace('hdfull.lv', 'hdfull.la') # por si viene de enlaces guardados
+    # ~ data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://hdfull.la', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:77.0) Gecko/20100101 Firefox/77.0'}).data
+    data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://hdfull.la', 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}).data
     # ~ data = httptools.downloadpage_proxy('hdfull', url, post=post).data
     return data
 
@@ -52,7 +57,7 @@ def mainlist(item):
     itemlist.append(item.clone( title = 'Series', action = 'mainlist_series' ))
 
     itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
-    
+
     # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
 
@@ -95,7 +100,6 @@ def mainlist_series(item):
     return itemlist
 
 
-
 def generos(item):
     logger.info()
     itemlist = []
@@ -123,7 +127,6 @@ def series_abc(item):
     return itemlist
 
 
-
 def detectar_idiomas(txt):
     languages = []
     if '/spa.png' in txt: languages.append('Esp')
@@ -132,10 +135,11 @@ def detectar_idiomas(txt):
     if '/eng.png' in txt: languages.append('Eng')
     return languages
 
+
 def list_all(item):
     logger.info()
     itemlist = []
-    
+
     if not item.page: item.page = 0
 
     if item.search_post:
@@ -156,7 +160,7 @@ def list_all(item):
     num_matches = len(matches)
 
     for url, thumb, langs, title in matches[item.page * perpage:]:
-        
+
         title = title.strip()
         languages = detectar_idiomas(langs)
         tipo = 'movie' if '/pelicula/' in url else 'tvshow'
@@ -197,9 +201,9 @@ def temporadas(item):
 
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
-    
+
     sid = scrapertools.find_single_match(data, "var sid = '([^']+)';")
-    
+
     patron = 'itemprop="season"[^>]*>'
     patron += '\s*<a href=\'([^\']+)\'[^>]*>\s*<img class="[^"]*"\s+original-title="([^"]+)"\s+alt="[^"]*"\s+src="([^"]+)"[^>]*>'
     patron += '\s*<h5[^>]*>([^<]+)</h5>'
@@ -241,10 +245,10 @@ def episodios(item):
     for epi in data:
         tit = epi['title']['es'] if 'es' in epi['title'] and epi['title']['es'] != '' else epi['title']['en'] if 'en' in epi['title'] else ''
         titulo = '%sx%s %s' % (epi['season'], epi['episode'], tit)
-        
+
         langs = ['VOSE' if idio == 'ESPSUB' else idio.capitalize() for idio in epi['languages']]
         if langs: titulo += ' [COLOR %s][%s][/COLOR]' % (color_lang, ','.join(langs))
-        
+
         thumb = host + '/tthumb/220x124/' + epi['thumbnail']
         url = item.url + '/episodio-' + epi['episode']
 
@@ -261,6 +265,7 @@ def puntuar_calidad(txt):
     orden = ['CAM', 'TS', 'DVDSCR', 'DVDRIP', 'HDTV', 'RHDTV', 'HD720', 'HD1080']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
+
 
 def findvideos(item):
     logger.info()
@@ -344,12 +349,12 @@ def list_episodes(item):
 
         tit = epi['title']['es'] if 'es' in epi['title'] and epi['title']['es'] != '' else epi['title']['en'] if 'en' in epi['title'] else ''
         titulo = '%s %sx%s %s' % (show, epi['season'], epi['episode'], tit)
-        
+
         langs = ['VOSE' if idio == 'ESPSUB' else idio.capitalize() for idio in epi['languages']]
         if langs: titulo += ' [COLOR %s][%s][/COLOR]' % (color_lang, ','.join(langs))
-        
+
         thumb = host + '/tthumb/220x124/' + epi['thumbnail']
-        
+
         url_serie = host + '/serie/' + epi['show']['permalink']
         url_tempo = url_serie + '/temporada-' + epi['season']
         url = url_tempo + '/episodio-' + epi['episode']
@@ -372,7 +377,6 @@ def list_episodes(item):
     return itemlist
 
 
-## --------------------------------------------------------------------------------
 ## --------------------------------------------------------------------------------
 
 # Desobfuscación de datos en findvideos

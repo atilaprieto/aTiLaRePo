@@ -132,7 +132,7 @@ def listado(item):                                                              
             patron = '<div\s*class="elementor-widget-container">\s*<div\s*class='
             patron += '"elementor-image">\s*<a\s*href="([^"]+)">\s*<img\s*(?:width="[^"]+"\s*'
             patron += 'height="[^"]+"\s*)?src="([^"]+)"\s*class="attachment-medium_large\s*'
-            patron += 'size-medium_large"\s*alt="[^"]*"\s*srcset=.*?<h4\s*class='
+            patron += 'size-medium_large"\s*alt="[^"]*"\s*(?:loading="[^"]*"\s*)?srcset=.*?<h4\s*class='
             patron += '"elementor-heading[^>]+>\s*<a\s*href="[^"]+">\s*(.*?)\s*<\/a>\s*<\/h4>'
         else:
             patron = '<article\s*class="[^>]+>\s*<div\s*class="elementor-post__card">\s*'

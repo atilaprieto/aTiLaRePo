@@ -176,7 +176,7 @@ def play(item):
     # ~ logger.info(url)
     if url:
         servidor = servertools.get_server_from_url(url)
-        if servidor and servidor != 'directo':
+        if servidor and (servidor != 'directo' or 'googleusercontent' in url):
             url = servertools.normalize_url(servidor, url)
             itemlist.append(item.clone( url=url, server=servidor ))
 

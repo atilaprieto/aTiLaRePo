@@ -3,8 +3,18 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urllib
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib
+
 import re
-import urllib, urlparse
 
 from core import httptools
 from core import scrapertools
@@ -21,7 +31,7 @@ host = "https://hitokin.net/"
 
 
 IDIOMAS = {'VOSE': 'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['directo', 'okru', 'fembed', 'yourupload', 'rapidvideo', 'streamango']
 

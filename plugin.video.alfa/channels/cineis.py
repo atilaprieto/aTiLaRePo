@@ -3,6 +3,11 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+from builtins import range
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 from channelselector import get_thumb
 from core import httptools
@@ -18,7 +23,7 @@ from bs4 import BeautifulSoup
 host = 'https://cine.is/'
 
 IDIOMAS = {"latino": "LAT", "subtitulado": "VOSE"}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['mega', 'fembed', 'vidtodo', 'gvideo']
 

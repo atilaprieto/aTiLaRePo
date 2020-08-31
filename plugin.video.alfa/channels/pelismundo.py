@@ -5,6 +5,15 @@
 # https://github.com/alfa-addon
 # ------------------------------------------------------------
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
 from core import httptools
 from core import scrapertools
 from core import servertools
@@ -98,7 +107,7 @@ def sub_search(item):
             title += " (" + scrapedquality + ")"
         idiomas_disponibles = []
         idiomas_disponibles1 = ""
-        for lang in idiomas.keys():
+        for lang in list(idiomas.keys()):
             if lang in scrapedlanguages:
                 idiomas_disponibles.append(idiomas[lang])
         if idiomas_disponibles:
@@ -113,7 +122,7 @@ def sub_search(item):
                              quality = scrapedquality,
                              language = idiomas_disponibles,
                              infoLabels={"year": year},
-                             url = scrapedurl
+                             url = urlparse.urljoin(host, scrapedurlurl)
                              ))
     tmdb.set_infoLabels(itemlist)
     url_pagina = scrapertools.find_single_match(data, 'next" href="([^"]+)')
@@ -138,7 +147,7 @@ def filtro(item):
         logger.debug('la url: %s' %url)
         itemlist.append(item.clone(action = "peliculas",
                                    title = title.title(),
-                                   url = url
+                                   url = urlparse.urljoin(host, url)
                                    ))
     return itemlist
 
@@ -167,7 +176,7 @@ def peliculas(item):
         if scrapedquality:
             title += " (" + scrapedquality + ")"
         idiomas_disponibles = []
-        for lang in idiomas.keys():
+        for lang in list(idiomas.keys()):
             if lang in scrapedlanguages:
                 idiomas_disponibles.append(idiomas[lang])
         idiomas_disponibles1 = ""
@@ -183,10 +192,10 @@ def peliculas(item):
                              quality = scrapedquality,
                              language = idiomas_disponibles,
                              infoLabels={"year": year},
-                             url = scrapedurl
+                             url = urlparse.urljoin(host, scrapedurl)
                              ))
     tmdb.set_infoLabels(itemlist)
-    url_pagina = scrapertools.find_single_match(data, 'next" href="([^"]+)')
+    url_pagina = urlparse.urljoin(host, scrapertools.find_single_match(data, 'next" href="([^"]+)'))
     if url_pagina != "":
         pagina = "Pagina: " + scrapertools.find_single_match(url_pagina, "page/([0-9]+)")
         itemlist.append(Item(channel = item.channel, action = "peliculas", title = pagina, url = url_pagina))
@@ -196,11 +205,32 @@ def peliculas(item):
 def findvideos(item):
     logger.info()
     itemlist = []
+    players = {'pelisvips': 'https://pelisvips.com', 
+               'stape': 'https://streamtape.com',
+               'stream': 'https://streamtape.com',
+               'netu': 'https://hqq.tv',
+               'up': 'https://upstream.to', 
+               'easy': 'https://easyload.io', 
+               'fembed': 'https://fembad.net',
+               'youtube': '',
+               'pelisup': 'https://www.pelisup.com',
+               'goo': 'https://gounlimited.to'}
+               
     data = httptools.downloadpage(item.url).data
-    patron  = '(?is)hand" rel="([^"]+)".*?'
+    patron  = '(?is)hand"\s*rel="([^"]+)"\s*'
+    patron += 'class="[^"]+"\s*title="([^"]+)".*?'
     patron += 'optxt"><span>([^<]+)</span>'
     matches = scrapertools.find_multiple_matches(data, patron)
-    for scrapedurl, scrapedlanguage in matches:
+    
+    for scrapedurl, server, scrapedlanguage in matches:
+        if not scrapedurl.startswith('http'):
+            server = server.lower()
+            if server not in str(players):
+                logger.error('Añadir a lista: %s' % server)
+                server = 'pelisvips'
+            if server == 'netu' and '.mp4' in scrapedurl:
+                server = 'stape'
+            scrapedurl = urlparse.urljoin(players[server], scrapedurl)
         if "youtube" in scrapedurl:
             scrapedurl += "&"
         title = "Ver en: %s " + "(" + scrapedlanguage + ")"
@@ -212,6 +242,8 @@ def findvideos(item):
             id = scrapertools.find_single_match(scrapedurl, '.com/v/(\w+)')
             post = "r=&d=www.pelisup.com"
             d1 = httptools.downloadpage("https://www.pelisup.com/api/source/%s" %id, post=post).json
+            if not d1['success']:
+                continue
             d1 = d1["data"]
             for data in d1:
                 title = "Ver en: %s " + "(" + data["label"] + ") (" + scrapedlanguage + ")"

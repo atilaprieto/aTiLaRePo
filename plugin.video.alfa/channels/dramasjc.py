@@ -3,8 +3,12 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
+
 from channelselector import get_thumb
 from core import httptools
 from core import scrapertools
@@ -19,7 +23,7 @@ from channels import filtertools
 host = 'https://www.dramasjc.com/'
 
 IDIOMAS = {'VOSE': 'VOSE', 'VO':'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['okru', 'mailru', 'openload']
 

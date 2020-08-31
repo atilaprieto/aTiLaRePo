@@ -91,6 +91,7 @@ def check_addon_updates(verbose=False):
             logger.info('No se encuentran actualizaciones del addon')
             if verbose:
                 platformtools.dialog_notification('Alfa ya está actualizado', 'No hay ninguna actualización urgente')
+            check_update_to_others(verbose=verbose)                             # Comprueba las actualuzaciones de otros productos
             return False
 
         data = jsontools.load(data)
@@ -98,6 +99,7 @@ def check_addon_updates(verbose=False):
             logger.info('No hay actualizaciones del addon')
             if verbose:
                 platformtools.dialog_notification('Alfa ya está actualizado', 'No hay ninguna actualización urgente')
+            check_update_to_others(verbose=verbose)                             # Comprueba las actualuzaciones de otros productos
             return False
 
         # Comprobar versión que tiene instalada el usuario con versión de la actualización
@@ -107,6 +109,7 @@ def check_addon_updates(verbose=False):
             logger.info('No hay actualizaciones para la versión %s del addon' % current_version)
             if verbose:
                 platformtools.dialog_notification('Alfa ya está actualizado', 'No hay ninguna actualización urgente')
+            check_update_to_others(verbose=verbose)                             # Comprueba las actualuzaciones de otros productos
             return False
 
         if os.path.exists(last_fix_json):
@@ -117,6 +120,7 @@ def check_addon_updates(verbose=False):
                     logger.info('Ya está actualizado con los últimos cambios. Versión %s.fix%d' % (data['addon_version'], data['fix_version']))
                     if verbose:
                         platformtools.dialog_notification('Alfa ya está actualizado', 'Versión %s.fix%d' % (data['addon_version'], data['fix_version']))
+                    check_update_to_others(verbose=verbose)                             # Comprueba las actualuzaciones de otros productos
                     return False
             except:
                 if lastfix:
@@ -157,8 +161,7 @@ def check_addon_updates(verbose=False):
         if verbose:
             platformtools.dialog_notification('Alfa actualizado a', 'Versión %s.fix%d' % (data['addon_version'], data['fix_version']))
         
-        check_update_to_others(verbose=verbose)
-        
+        check_update_to_others(verbose=verbose)                                 # Comprueba las actualuzaciones de otros productos
         return True
 
     except:
@@ -166,6 +169,7 @@ def check_addon_updates(verbose=False):
         logger.error(traceback.format_exc())
         if verbose:
             platformtools.dialog_notification('Alfa actualizaciones', 'Error al comprobar actualizaciones')
+        check_update_to_others(verbose=verbose)                                 # Comprueba las actualuzaciones de otros productos
         return False
 
 
@@ -189,6 +193,13 @@ def check_update_to_others(verbose=False):
                 logger.info('%s updated' % folder)
     except:
         logger.error('Error al actualizar OTROS paquetes')
+        logger.error(traceback.format_exc())
+        
+    try:
+        from lib import alfa_assistant
+        res, addonid = alfa_assistant.update_alfa_assistant()
+    except:
+        logger.error("Alfa Assistant.  Error en actualización")
         logger.error(traceback.format_exc())
 
 

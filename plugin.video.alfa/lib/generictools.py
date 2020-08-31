@@ -52,7 +52,7 @@ def downloadpage(url, post=None, headers=None, random_headers=False, replace_hea
                  only_headers=False, referer=None, follow_redirects=True, timeout=None, 
                  proxy=True, proxy_web=False, proxy_addr_forced={}, forced_proxy=None, 
                  proxy_retries=1, CF=False, file=None, filename=None, ignore_response_code=True, 
-                 alfa_s=False, decode_code=None, json=False, s2=None, patron='', quote_rep=False, 
+                 alfa_s=False, decode_code='', json=False, s2=None, patron='', quote_rep=False, 
                  no_comments=True, item={}, itemlist=[]):
     
     # Función "wraper" que puede ser llamada desde los canales para descargar páginas de forma unificada y evitar
@@ -82,7 +82,7 @@ def downloadpage(url, post=None, headers=None, random_headers=False, replace_hea
     try:
         response = httptools.downloadpage(url, post=post, headers=headers, random_headers=random_headers, 
                                           replace_headers=replace_headers, only_headers=only_headers, 
-                                          follow_redirects=follow_redirects, 
+                                          follow_redirects=follow_redirects, encoding=decode_code, 
                                           timeout=timeout, proxy=proxy, proxy_web=proxy_web, 
                                           proxy_addr_forced=proxy_addr_forced, forced_proxy=forced_proxy, 
                                           proxy_retries=proxy_retries, CF=CF, file=file, filename=filename, 
@@ -94,7 +94,7 @@ def downloadpage(url, post=None, headers=None, random_headers=False, replace_hea
                 data = response.data
             success = response.sucess
             code = response.code
-            if decode_code is None and response.encoding is not None:
+            if decode_code is not None and response.encoding is not None:
                 decode_code = response.encoding
             if success and only_headers:
                 data = response.headers
@@ -1692,7 +1692,7 @@ def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torr
                         referer=referer, post=post, torrents_path=torrents_path, \
                         timeout=timeout, lookup=lookup, data_torrent=True, headers=headers)
         elif local_torr:
-            torrent_file = filetools.read(local_torr)
+            torrent_file = filetools.read(local_torr, mode='rb')
             torrents_path = local_torr
         
         if not torrents_path or torrents_path == 'CF_BLOCKED':
@@ -1731,6 +1731,8 @@ def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torr
                 return (size, torrent_f)
             return size                                         #Si hay un error, devolvemos el "size" y "torrent" vacíos
 
+        if PY3 and isinstance(torrent_file, bytes):                             # Convertimos a String para poder hacer el decode
+            torrent_file = "".join(chr(x) for x in torrent_file)
         torrent_f = decode(torrent_file)                                        #decodificamos el .torrent
 
         #si sólo tiene un archivo, tomamos la longitud y la convertimos a una unidad legible, si no dará error
@@ -3203,10 +3205,24 @@ def call_browser(url, download_path=None, lookup=False, strict=False, wait=False
                 command = ['pm', 'list', 'packages']
                 p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 PM_LIST, error_cmd = p.communicate()
+                if PY3 and isinstance(PM_LIST, bytes):
+                    PM_LIST = PM_LIST.decode()
                 PM_LIST = PM_LIST.replace('\n', ', ')
             except:
-                PM_LIST = ''
-                logger.error(traceback.format_exc())
+                logger.error(command)
+                logger.error(traceback.format_exc(1))
+                try:
+                    command = ['su', '-c', 'pm list packages']
+                    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    PM_LIST, error_cmd = p.communicate()
+                    if PY3 and isinstance(PM_LIST, bytes):
+                        PM_LIST = PM_LIST.decode()
+                    PM_LIST = PM_LIST.replace('\n', ', ')
+                except:
+                    PM_LIST = ''
+                    logger.error(command)
+                    logger.error(traceback.format_exc(1))
+                
             logger.info('PACKAGE LIST: %s' % PM_LIST, force=True)
 
             PREF_PATHS = [ANDROID_STORAGE + '/emulated/0/Android/data']

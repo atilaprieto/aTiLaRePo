@@ -144,7 +144,7 @@ def findvideos(item):
     for player in matches:
         post = "&video-player=%s" % player
         data = httptools.downloadpage(item.url, post = post).data
-        url = scrapertools.find_single_match(data, '<meta property="og:video:url" content="([^"]+)"')
+        url = scrapertools.find_single_match(data, ".src = '([^']+)'")
         if not url.startswith("http"):
             url = "https:%s" % url
         if "api.gounlimited" in url:

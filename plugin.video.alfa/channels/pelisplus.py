@@ -3,8 +3,12 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
+
 from channels import autoplay
 from channels import filtertools
 from core import httptools

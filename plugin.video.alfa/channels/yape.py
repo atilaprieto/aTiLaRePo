@@ -3,6 +3,10 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 from channelselector import get_thumb
 from channels import autoplay
 from channels import filtertools
@@ -17,8 +21,8 @@ from platformcode import config, logger, platformtools
 idio = {'https://cdn.yape.nu//languajes/la.png': 'LAT','https://cdn.yape.nu//languajes/es.png': 'ESP','https://cdn.yape.nu//languajes/en_es.png': 'VOSE'}
 cali = {'TS Screnner': 'TS Screnner', 'HD 1080p': 'HD 1080p','TS Screener HQ':'TS Screener HQ', 'BR Screnner':'BR Screnner','HD Rip':'HD Rip','DVD Screnner':'DVD Screnner', 'DVD Rip':'DVD Rip', 'HD 720':'HD 720'}
 
-list_language = idio.values()
-list_quality = cali.values()
+list_language = list(idio.values())
+list_quality = list(cali.values())
 list_servers = ['streamango', 'powvideo', 'openload', 'streamplay', 'vidoza', 'clipwaching']
 
 

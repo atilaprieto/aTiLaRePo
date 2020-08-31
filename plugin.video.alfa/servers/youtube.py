@@ -180,6 +180,8 @@ def extract_videos(video_id):
     url = 'https://www.youtube.com/get_video_info?video_id=%s&eurl=https://youtube.googleapis.com/v/%s&ssl_stream=1' % \
           (video_id, video_id)
     data = httptools.downloadpage(url).data
+    if PY3 and isinstance(data, bytes):
+        data = data.decode('utf-8')
 
     video_urls = []
     params = dict(urlparse.parse_qsl(data))

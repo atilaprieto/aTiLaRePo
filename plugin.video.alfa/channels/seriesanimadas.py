@@ -3,8 +3,11 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
 import base64
 
 from channelselector import get_thumb
@@ -21,7 +24,7 @@ from platformcode import config, logger
 
 
 IDIOMAS = {'latino': 'LAT', 'audio latino': 'LAT', 'sub español':'VOSE', 'subtitulado':'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 
 list_quality = []
 
@@ -189,10 +192,12 @@ def new_episodes(item):
     patron = '<div class="card-episodie shadow-sm"><a href="([^"]+)".*?data-src="([^"]+)" alt="([^"]+)">'
 
     matches = re.compile(patron, re.DOTALL).findall(data)
+    
+    #logger.debug(matches)
 
     for scrapedurl, scrapedthumb, scrapedtitle in matches:
         
-        pat = r'^(.*?)\s*Episodio\s*(\d+)\s*(.*)'
+        pat = r'^(.*?)\s*(?:Episodio)?\s*(\d+)\s*(.*)'
         ctitle, ep, lang = scrapertools.find_single_match(scrapedtitle, pat)
         if len(ep) == 1:
             ep = '0'+ep

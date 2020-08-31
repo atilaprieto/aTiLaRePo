@@ -26,6 +26,11 @@ import traceback
 from core import filetools, scrapertools
 from platformcode import logger, config, platformtools
 
+if PY3:
+    FF = b'\n'
+else:
+    FF = '\n'
+
 
 def get_environment():
     """
@@ -39,20 +44,40 @@ def get_environment():
         
         environment = config.get_platform(full_version=True)
         environment['num_version'] = str(environment['num_version'])
-        environment['python_version'] = str(platform.python_version())
-        
+        environment['python_version'] = '%s (%s, %s)' % (str(platform.python_version()), \
+                    str(sys.api_version), str(platform.python_implementation()))
         environment['os_release'] = str(platform.release())
+        environment['prod_model'] = ''
+        try:
+            import multiprocessing
+            environment['proc_num'] = ' (%sx)' % str(multiprocessing.cpu_count())
+        except:
+            environment['proc_num'] = ''
+        
         if xbmc.getCondVisibility("system.platform.Windows"):
             try:
-                if platform._syscmd_ver()[2]:
+                if platform.platform():
+                    environment['os_release'] = str(platform.platform()).replace('Windows-', '')
+                elif platform._syscmd_ver()[2]:
                     environment['os_release'] = str(platform._syscmd_ver()[2])
+                
+                command = ["wmic", "cpu", "get", "name"]
+                p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
+                output_cmd, error_cmd = p.communicate()
+                if PY3 and isinstance(output_cmd, bytes):
+                    output_cmd = output_cmd.decode()
+                output_cmd = re.sub(r'\n|\r|\s{2}', '', output_cmd)
+                environment['prod_model'] = str(scrapertools.find_single_match(output_cmd, \
+                                '\w+.*?(?i)(?:Intel\(R\))?(?:\s*Core\(TM\))\s*(.*?CPU.*?)\s*(?:\@|$)'))
             except:
                 pass
-        environment['prod_model'] = ''
+        
         if xbmc.getCondVisibility("system.platform.Android"):
             environment['os_name'] = 'Android'
             try:
-                for label_a in subprocess.check_output('getprop').split('\n'):
+                for label_a in subprocess.check_output('getprop').split(FF):
+                    if PY3 and isinstance(label_a, bytes):
+                        label_a = label_a.decode()
                     if 'build.version.release' in label_a:
                         environment['os_release'] = str(scrapertools.find_single_match(label_a, ':\s*\[(.*?)\]$'))
                     if 'product.model' in label_a:
@@ -67,11 +92,34 @@ def get_environment():
                 except:
                     pass
         
+        elif xbmc.getCondVisibility("system.platform.Linux"):
+            environment['os_name'] = 'Linux'
+            try:
+                for label_a in subprocess.check_output('hostnamectl').split(FF):
+                    if PY3 and isinstance(label_a, bytes):
+                        label_a = label_a.decode()
+                    if 'Operating' in label_a:
+                        environment['os_release'] = str(scrapertools.find_single_match(label_a, 'Operating\s*S\w+:\s*(.*?)\s*$'))
+                        break
+                        
+                for label_a in subprocess.check_output(['cat', '/proc/cpuinfo']).split(FF):
+                    if PY3 and isinstance(label_a, bytes):
+                        label_a = label_a.decode()
+                    if 'model name' in label_a:
+                        environment['prod_model'] = str(scrapertools.find_single_match(label_a, \
+                                'model.*?:\s*(?i)(?:Intel\(R\))?(?:\s*Core\(TM\))\s*(.*?CPU.*?)\s*(?:\@|$)'))
+                        break
+            except:
+                pass
+
         elif xbmc.getCondVisibility("system.platform.Linux.RaspberryPi"):
             environment['os_name'] = 'RaspberryPi'
+        
         else:
             environment['os_name'] = str(platform.system())
 
+        if not environment['os_release']: environment['os_release'] = str(platform.release())
+        if environment['proc_num'] and environment['prod_model']: environment['prod_model'] += environment['proc_num']
         environment['machine'] = str(platform.machine())
         environment['architecture'] = str(sys.maxsize > 2 ** 32 and "64-bit" or "32-bit")
         environment['language'] = str(xbmc.getInfoLabel('System.Language'))
@@ -368,8 +416,8 @@ def list_env(environment={}):
     logger.info(os.environ)
     logger.info("----------------------------------------------")
 
-    logger.info(environment['os_name'] + ' ' + environment['prod_model'] + ' ' + 
-                environment['os_release'] + ' ' + environment['machine'] + ' ' + 
+    logger.info(environment['os_name'] + ' ' + environment['os_release'] + ' ' + 
+                environment['prod_model'] + ' ' + environment['machine'] + ' ' + 
                 environment['architecture'] + ' ' + environment['language'])
     
     logger.info('Kodi ' + environment['num_version'] + ', Vídeo: ' + 
@@ -455,7 +503,7 @@ def paint_env(item, environment={}):
     Muestra los datos especificos de la instalación de [COLOR yellow]Kodi[/COLOR]:
         - Versión de Kodi
         - Base de Datos de Vídeo
-        - Versión de Python
+        - Versión de Python (API, Fuente)
     """
     cpu = """\
     Muestra los datos consumo actual de [COLOR yellow]CPU(s)[/COLOR]
@@ -525,8 +573,8 @@ def paint_env(item, environment={}):
                     action="", plot=cabecera, thumbnail=thumb, folder=False)) 
 
     itemlist.append(Item(channel=item.channel, title='[COLOR yellow]%s[/COLOR]' % 
-                    environment['os_name'] + ' ' + environment['prod_model'] + ' ' + 
-                    environment['os_release'] + ' '  + environment['machine'] + ' ' + 
+                    environment['os_name'] + ' ' + environment['os_release'] + ' ' + 
+                    environment['prod_model'] + ' '  + environment['machine'] + ' ' + 
                     environment['architecture'] + ' ' + environment['language'], 
                     action="", plot=plataform, thumbnail=thumb, folder=False))
     

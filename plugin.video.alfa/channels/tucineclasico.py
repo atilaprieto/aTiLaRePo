@@ -2,7 +2,13 @@
 # -*- Channel TuCineClasico -*-
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
+
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
+
 from core import tmdb
 from core import httptools
 from core.item import Item
@@ -14,7 +20,7 @@ from platformcode import config, logger
 from channels import filtertools, autoplay
 
 IDIOMAS = {'es': 'CAST', 'en': 'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['supervideo']
 
@@ -105,6 +111,8 @@ def section(item):
     elif item.title == "Años":
         matches = soup.find("ul", class_="releases")
 
+    if not matches: return itemlist
+        
     for elem in matches.find_all("li"):
         url = elem.a["href"]
         title = elem.a.text
@@ -130,9 +138,10 @@ def findvideos(item):
         doo_url = "%swp-admin/admin-ajax.php" % host
         lang = elem.find("span", class_="flag").img["src"]
         lang = scrapertools.find_single_match(lang, r"flags/([^\.]+)\.png")
-        data = httptools.downloadpage(doo_url, post=post, headers=headers).data
-        if not data:
+        response = httptools.downloadpage(doo_url, post=post, headers=headers, ignore_response_code=True)
+        if not response.sucess:
             continue
+        data = response.data
         url = BeautifulSoup(data, "html5lib").find("iframe")["src"]
 
         itemlist.append(Item(channel=item.channel, title='%s', action='play', url=url,

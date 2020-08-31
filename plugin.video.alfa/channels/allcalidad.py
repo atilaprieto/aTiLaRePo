@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 from channelselector import get_thumb
 from channels import autoplay
 from channels import filtertools
@@ -12,7 +16,7 @@ from platformcode import config, logger
 
 
 IDIOMAS = {'Latino': 'Latino'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['fembed', 'streamtape', 'fastplay', 'gvideo', 'netutv', 'Jawcloud']
 
@@ -20,6 +24,7 @@ list_servers = ['fembed', 'streamtape', 'fastplay', 'gvideo', 'netutv', 'Jawclou
 __channel__='allcalidad'
 
 host = "https://allcalidad.la"
+encoding = None
 
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
@@ -43,14 +48,14 @@ def mainlist(item):
 def favorites(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    data = httptools.downloadpage(item.url, encoding=encoding).data
     patron  = '(?s)short_overlay.*?<a href="([^"]+)'
     patron += '.*?img.*?src="([^"]+)'
     patron += '.*?title="([^"]+).*?'
     matches = scrapertools.find_multiple_matches(data, patron)
     for url, thumbnail, titulo in matches:
         idioma = "Latino"
-        mtitulo = titulo + " (" + idioma + ")"
+        mtitulo = scrapertools.htmlclean(titulo + " (" + idioma + ")")
         itemlist.append(item.clone(channel = item.channel,
                                    action = "findvideos",
                                    title = mtitulo,
@@ -105,7 +110,7 @@ def search(item, texto):
 def generos_years(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    data = httptools.downloadpage(item.url, encoding=encoding).data
     patron = '(?s)%s(.*?)</ul></div>' %item.extra
     bloque = scrapertools.find_single_match(data, patron)
     patron  = 'href="([^"]+)'
@@ -124,15 +129,15 @@ def generos_years(item):
 def peliculas(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    data = httptools.downloadpage(item.url, encoding=encoding).data
     matches = scrapertools.find_multiple_matches(data, '(?s)shortstory cf(.*?)rate_post')
     for datos in matches:
         url = scrapertools.find_single_match(datos, 'href="([^"]+)')
-        titulo = scrapertools.find_single_match(datos, 'short_header">([^<]+)').strip()
+        titulo = scrapertools.htmlclean(scrapertools.find_single_match(datos, 'short_header">([^<]+)').strip())
         datapostid = scrapertools.find_single_match(datos, 'data-postid="([^"]+)')
         thumbnail = scrapertools.find_single_match(datos, 'img w.*?src="([^"]+)')
         post = 'action=get_movie_details&postID=%s' %datapostid
-        data1 = httptools.downloadpage(host + "/wp-admin/admin-ajax.php", post=post).data
+        data1 = httptools.downloadpage(host + "/wp-admin/admin-ajax.php", post=post, encoding=encoding).data
         idioma = "Latino"
         mtitulo = titulo + " (" + idioma + ")"
         year = scrapertools.find_single_match(data1, "Año:.*?(\d{4})")
@@ -162,10 +167,10 @@ def findvideos(item):
     itemlist = []
     encontrado = []
     
-    data = httptools.downloadpage(item.url).data
+    data = httptools.downloadpage(item.url, encoding=encoding).data
 
     match = scrapertools.find_single_match(data, "<link rel='shortlink'.*?=([^']+)" )
-    data1 = httptools.downloadpage(host + "/wp-json/elifilms/movies?id=" + match).json
+    data1 = httptools.downloadpage(host + "/wp-json/elifilms/movies?id=" + match, encoding=encoding).json
     for url in data1["data"]["server_list"]:
         url1 = clear_url(url["link"])
         if url1 in encontrado or "youtube.com" in url1:

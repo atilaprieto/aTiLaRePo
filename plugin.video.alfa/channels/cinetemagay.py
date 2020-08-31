@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import os
 import re
 
@@ -114,7 +118,10 @@ def detail(item):
         descripcion = re.sub("<[^>]+>", " ", descripcion)
         descripcion = descripcion
         try:
-            plot = unicode(descripcion, "utf-8").encode("iso-8859-1")
+            if PY3:
+                plot = plot.encode().decode('iso-8859-1')
+            else:
+                plot = unicode(descripcion, "utf-8").encode("iso-8859-1")
         except:
             plot = descripcion
 

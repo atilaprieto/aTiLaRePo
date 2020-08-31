@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
-import urlparse
 
 from channels import autoplay
 from channels import filtertools
@@ -16,7 +18,7 @@ from platformcode import config, logger
 from channelselector import get_thumb
 
 IDIOMAS = {'Latino': 'LAT', 'Castellano': 'CAST', 'Subtitulado': 'VOSE', 'Ingles': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = ['HD 720p', 'HD 1080p', '480p', '360p']
 list_servers = ['cinemaupload']
 
@@ -293,7 +295,6 @@ def newest(categoria):
         if itemlist[-1].title == 'Siguiente >>>':
             itemlist.pop()
     except:
-        import sys
         for line in sys.exc_info():
             logger.error("{0}".format(line))
         return []

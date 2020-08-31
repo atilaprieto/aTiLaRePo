@@ -240,13 +240,20 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
     video_exists = True
     error_messages = []
     opciones = []
+    proxy_data = dict()
+    url_proxy = url
+
+    if httptools.channel_proxy_list(url):
+        url_proxy, proxy_data, opt = httptools.check_proxy(url, forced_proxy=None, force_proxy_get=True)
+        if not proxy_data[web_name]:
+            url_proxy = url
 
     # Si el vídeo es "directo" o "local", no hay que buscar más
     if server == "directo" or server == "local":
         if isinstance(video_password, list):
             return video_password, len(video_password) > 0, "<br/>".join(error_messages)
         logger.info("Server: %s, la url es la buena" % server)
-        video_urls.append(["%s [%s]" % (urlparse.urlparse(url)[2][-4:], server), url])
+        video_urls.append(["%s [%s]" % (urlparse.urlparse(url)[2][-4:], server), url_proxy])
 
     # Averigua la URL del vídeo
     else:
@@ -763,6 +770,8 @@ def check_video_link(url, server, timeout=3):
         except:
             logger.info("[check_video_link] No se puede comprobar ahora! %s %s" % (server, url))
             resultado = "??"
+            import traceback
+            logger.error(traceback.format_exc())
 
         finally:
             httptools.HTTPTOOLS_DEFAULT_DOWNLOAD_TIMEOUT = ant_timeout  # Restaurar tiempo de descarga

@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 
 from channels import renumbertools
@@ -14,7 +18,7 @@ from platformcode import config, logger
 from channels import autoplay
 
 IDIOMAS = {'latino': 'Latino'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_servers = [
                 'okru',
                 'rapidvideo'

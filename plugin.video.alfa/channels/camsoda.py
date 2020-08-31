@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,re
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+import re
 
 from platformcode import config, logger
 from core import scrapertools

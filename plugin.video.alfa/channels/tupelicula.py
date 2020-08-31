@@ -3,8 +3,12 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
-import re
 import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+import re
+
 from channels import autoplay
 from channels import filtertools
 from core import httptools
@@ -18,7 +22,7 @@ from channelselector import get_thumb
 host = 'http://www.tupelicula.tv/'
 
 IDIOMAS = {'la_la': 'LAT', 'es_es':'CAST', 'en_es':'VOSE', 'en_en':'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['xdrive', 'bitertv', 'okru']
 

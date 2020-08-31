@@ -248,7 +248,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.1.12" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.2.0" provider-name="Alfa Addon">
   <requires>
     <import addon="script.module.requests"/>
     <import addon="script.module.beautifulsoup4" version="4.5.3"/>
@@ -271,13 +271,14 @@ You can clone the project and host it in your own server.
       <news>[B]Estos son los cambios para esta versión:[/B]
 
       [COLOR green][B]Arreglos[/B][/COLOR]
-      ¤ Allpeliculastv                        ¤ Rexpelis                         ¤ Animeflv
-      ¤ HDfull                                    ¤ Pepecine                       ¤ Tvanime
-      ¤ Ultrapeliculashd
+      ¤ HDfull                                 ¤ Simpsons-latino                         ¤ Maspeliculas
+      ¤ Animeid                             ¤ Pepecine                                     ¤ Replis
+      ¤ Rexpelis                             ¤ Migración final a Kodi 19
+      ¤ 18+
 
       [COLOR green][B]Novedades[/B][/COLOR]
       ¤ Dascer (deportes del Motor)           ¤ Pelispanda (torrent LAT)
-      ¤ Libtorrent 1.2.8: Windows, Linux x86 y ARM
+      ¤ 18+                                     ¤ Libtorrent 1.2.9: Windows, Linux x86 y ARM
 
     </news>
     <description lang="es">Navega con Kodi por páginas web para ver sus videos de manera fácil.</description>
@@ -324,7 +325,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.16" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.18" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -341,9 +342,8 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Retroseriestv, Seriez, Cinetux, Allpeliculas, Newpct1, Dospelis,
-    Pelispedia, Seriesmetro, Pepecine, Playview, Seriemega, Tvvip, Cinefox.
-    Servidores modificados: Zembed, Vk, Cloudvideo, Mixdrop, Easyload, Megaup.
+    Canales modificados: Inkapelis, Pepecine, Pelispedia, Hdfull, Seriemega, Cuevana3, Torrentdivx.
+    Servidores modificados: Digiload, Gloria, Uploadsmobi.
     </news>
 
     <assets>
@@ -1159,13 +1159,14 @@ v.2.1.5
 </addon>
 
 <addon id="script.luar"
-  version="0.4.2"
+  version="0.6.2"
   name="Luar"
   provider-name="The Dreamers">
   <requires>
-    <!--import addon="xbmc.python" version="2.25.0"/-->
     <import addon="script.module.six" version="1.11.0"/>
     <import addon="script.module.requests"/>
+    <import addon="resource.language.es_es"/>
+    <import addon="script.module.pycryptodome" optional="true"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>executable</provides>
@@ -1440,7 +1441,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.1" provider-name="gujal">
+<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.6" provider-name="gujal">
     <requires>
         <!-- <import addon="xbmc.python" version="3.0.0" /> -->
         <import addon="script.module.six" version="0.0.1"/>
@@ -1453,12 +1454,12 @@ You can clone the project and host it in your own server.
     <extension point="xbmc.python.pluginsource" library="lib/default.py" />
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
-        <summary lang="en">Resolve common video host URL's to be playable in XBMC/Kodi.</summary>
-        <summary lang="es">Resolver enlaces a videos de sitios populares para poder reproducirlos en XBMC/Kodi.</summary>
-        <summary lang="hr">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju.</summary>
-        <summary lang="el">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi.</summary>
-        <description lang="en">Resolve common video host URL's to be playable in XBMC/Kodi, simplify addon development of video plugins requiring multi video hosts.</description>
-        <description lang="hr">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju, pojednostavnjuje razvoj priključaka za video dodatke koji zahtjevaju višestruke video izvore.</description>
+        <summary lang="en_GB">Resolve common video host URL's to be playable in XBMC/Kodi.</summary>
+        <summary lang="es_ES">Resolver enlaces a videos de sitios populares para poder reproducirlos en XBMC/Kodi.</summary>
+        <summary lang="hr_HR">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju.</summary>
+        <summary lang="el_GR">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi.</summary>
+        <description lang="en_GB">Resolve common video host URL's to be playable in XBMC/Kodi, simplify addon development of video plugins requiring multi video hosts.</description>
+        <description lang="hr_HR">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju, pojednostavnjuje razvoj priključaka za video dodatke koji zahtjevaju višestruke video izvore.</description>
         <assets>
             <icon>icon.png</icon>
             <fanart>fanart.jpg</fanart>

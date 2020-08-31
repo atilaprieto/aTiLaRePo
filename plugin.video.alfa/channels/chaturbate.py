@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
+import os, re
 
 from platformcode import config, logger
 from core import scrapertools
@@ -66,7 +75,7 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    data = data.replace("\u0022" , "\"").replace("\u002D", "-")
+    data = data.replace("\\u0022" , '"').replace("\\u002D", "-")
     url = scrapertools.find_single_match(data, '"hls_source"\: "([^"]+)"')
     itemlist.append(item.clone(action="play", url=url))
     return itemlist

@@ -3,6 +3,11 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the BDamian (Based on channels from Alfa Develop Group) -*-
 
+from builtins import map
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 
 from channels import autoplay
@@ -21,7 +26,7 @@ host = 'https://www.estrenosdoramas.net/'
 
 IDIOMAS = {'Latino': 'LAT', 'Vo':'VO', 'Vose': 'VOSE'}
 IDIOMA = "no filtrar"
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['openload', 'streamango', 'netutv', 'okru', 'mp4upload']
 
@@ -296,7 +301,6 @@ def findvideos(item):
 
 def search(item, texto):
     logger.info()
-    import urllib
     itemlist = []
     texto = texto.replace(" ", "+")
     item.url = item.url + texto

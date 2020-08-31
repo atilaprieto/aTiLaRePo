@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
 import base64
 
 from core import httptools
@@ -49,7 +52,7 @@ audio_color = {'LAT': '[COLOR limegreen][LAT][/COLOR]',
 IDIOMAS = {'latino': 'LAT', 'espanol': 'CAST', 'castellano': 'CAST',
            'subtitulado': 'VOSE', 'subtitulo': 'VOSE'}
 
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 
 list_quality = ['BRRip', 'HDRip', 'DVD-R', 'HDTv-rip', 'BR-Screener',
                 'WEB-S', 'TS-HQ', 'TS-Screener']
@@ -141,7 +144,7 @@ def lista(item):
         thumbnail = re.sub('p/w\d+', "p/original", scrapedthumbnail)
         filter_thumb = re.sub('(.*?)/w\d+', "", scrapedthumbnail)
         filter_list = {"poster_path": filter_thumb}
-        infoLabels = {'filtro': filter_list.items()}
+        infoLabels = {'filtro': list(filter_list.items())}
 
         year = scrapertools.find_single_match(url, '-(\d{4})')
         if year:

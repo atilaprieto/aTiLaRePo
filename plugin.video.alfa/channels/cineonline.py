@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-import re, urllib, urlparse
+
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urllib
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib
+
+import re
 
 from channels import autoplay
 from platformcode import config, logger, platformtools
@@ -12,7 +24,7 @@ from channels import filtertools
 host = 'https://www.cine-online.eu'
 
 IDIOMAS = {'Español': 'ESP', 'Cast': 'ESP', 'Latino': 'LAT', 'Lat': 'LAT', 'Subtitulado': 'VOSE', 'Sub': 'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_servers = ['Streamango', 'Vidoza', 'Openload', 'Streamcherry', 'Netutv']
 # list_quality = ['Brscreener', 'HD', 'TS']
 list_quality = []

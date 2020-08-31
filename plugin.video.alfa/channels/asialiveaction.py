@@ -1,7 +1,15 @@
 # -*- coding: UTF-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urlparse
 
 from channels import autoplay
 from channels import filtertools
@@ -17,7 +25,7 @@ from platformcode import config, logger
 host = "https://asialiveaction.com"
 
 IDIOMAS = {'Japones': 'Japones'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['gvideo', 'openload','streamango']
 

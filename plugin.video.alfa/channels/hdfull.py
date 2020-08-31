@@ -30,7 +30,7 @@ from channels import filtertools
 from platformcode import platformtools
 from channelselector import get_thumb
 
-host = "https://hdfull.la"
+host = "https://hdfull.lv"
 
 _silence = config.get_setting('silence_mode', channel='hdfull')
 show_langs = config.get_setting('show_langs', channel='hdfull')
@@ -151,7 +151,7 @@ def menupeliculas(item):
     
     itemlist.append(
         Item(channel=item.channel, action="fichas", title="Últimas Películas",
-             url=host + "/peliculas", text_bold=True,
+             url=host + "/movies", text_bold=True,
              thumbnail=get_thumb('last', auto=True)))
     
     itemlist.append(

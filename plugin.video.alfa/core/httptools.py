@@ -52,7 +52,7 @@ ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
 # Headers por defecto, si no se especifica nada
 default_headers = dict()
 #default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/79.0.3945.117"
-default_headers["User-Agent"] = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36"
+default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
 default_headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
 default_headers["Accept-Language"] = "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"
 default_headers["Accept-Charset"] = "UTF-8"
@@ -276,6 +276,7 @@ def check_proxy(url, **opt):
     proxy_web = opt.get('proxy_web', False)
     proxy_addr_forced = opt.get('proxy_addr_forced', None)
     forced_proxy = opt.get('forced_proxy', None)
+    force_proxy_get = opt.get('force_proxy_get', False)
 
     try:
         if (proxy or proxy_web) and (forced_proxy or proxy_addr_forced or
@@ -319,7 +320,7 @@ def check_proxy(url, **opt):
             if proxy_web and proxy_data['web_name']:
                 if opt.get('post', None): proxy_data['log'] = '(POST) ' + proxy_data['log']
                 url, opt['post'], headers_proxy, proxy_data['web_name'] = \
-                    proxytools.set_proxy_web(url, proxy_data['web_name'], post=opt.get('post', None))
+                    proxytools.set_proxy_web(url, proxy_data['web_name'], post=opt.get('post', None), force_proxy_get=force_proxy_get)
                 if proxy_data['web_name']:
                     proxy_data['stat'] = ', Proxy Web ' + proxy_data['log']
                     if headers_proxy:
@@ -606,9 +607,12 @@ def downloadpage(url, **opt):
         response['data'] = req.content
         try:
             response['encoding'] = None
-            if req.encoding is not None:
+            if req.encoding is not None and opt.get('encoding', '') is not None:
                 response['encoding'] = str(req.encoding).lower()
-            encoding = response['encoding']
+            if opt.get('encoding', '') and opt.get('encoding', '') is not None:
+                encoding = opt["encoding"]
+            else:
+                encoding = response['encoding']
             if not encoding:
                 encoding = 'utf-8'
             if PY3 and isinstance(response['data'], bytes) and 'Content-Type' in req.headers \
@@ -620,8 +624,9 @@ def downloadpage(url, **opt):
             logger.error(traceback.format_exc(1))
         try:
             if PY3 and isinstance(response['data'], bytes) and 'Content-Type' in req.headers \
-                        and (not 'application' in req.headers['Content-Type'] \
-                        or 'javascript' in req.headers['Content-Type']):
+                        and not ('application' in req.headers['Content-Type'] \
+                        or 'javascript' in req.headers['Content-Type'] \
+                        or 'image' in req.headers['Content-Type']):
                 response['data'] = "".join(chr(x) for x in bytes(response['data']))
         except:
             import traceback
@@ -645,7 +650,8 @@ def downloadpage(url, **opt):
         if not response['data']:
             response['data'] = ''
         try:
-            if 'Content-Type' in req.headers and 'bittorrent' not in req.headers['Content-Type']:
+            if 'Content-Type' in req.headers and 'bittorrent' not in req.headers['Content-Type'] \
+                        and opt.get('json_to_utf8', True):
                 response['json'] = to_utf8(req.json())
             else:
                 response['json'] = dict()

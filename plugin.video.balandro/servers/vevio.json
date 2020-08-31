@@ -9,7 +9,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(vev.io/(?:embed/|)[a-zA-Z0-9]+)",
+        "pattern": "(vev.(?:io|red)/(?:embed/|)[a-zA-Z0-9]+)",
         "url": "https://\\1"
       }
     ]

@@ -96,11 +96,10 @@ def lista(item):
     patron += '<img src="([^"]+)".*?'
     patron += '<span class="thumb__duration">([^<]+)<.*?'
     patron += '<span>([^<]+)<.*?'
-    patron += '<span class="thumb__bage">([^<]+)<.*?'
-    patron += 'class="thumb-models__link">([^<]+)<'
+    patron += '<span class="thumb__bage">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedthumbnail,time,scrapedtitle,quality,model in matches:
-        title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] (%s) %s" % (time, quality, model, scrapedtitle)
+    for scrapedurl,scrapedthumbnail,time,scrapedtitle,quality in matches:
+        title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s" % (time, quality, scrapedtitle)
         thumbnail = scrapedthumbnail
         url = urlparse.urljoin(item.url,scrapedurl)
         plot = ""

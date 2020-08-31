@@ -43,8 +43,7 @@ item.channel = channel_py
 categoria = channel_py.capitalize()
 clone_list_random = []                                                          #Iniciamos la lista aleatoria de clones
 host = ''
-#decode_code = 'iso-8859-1'
-decode_code = None
+decode_code = ''
 page_url = 'pg/1'
 
 #Código para permitir usar un único canal para todas las webs clones de NewPct1

@@ -21,6 +21,8 @@ def test_video_exists(page_url):
         return True, "" # desactivada verificación pq se encalla!
 
     response = httptools.downloadpage(page_url, headers={"Referer": page_url})
+    if PY3 and isinstance(response.data, bytes):
+        response.data = response.data.decode('utf-8')
     global page
     page = response
 

@@ -3,6 +3,10 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import codecs
 from channelselector import get_thumb
 from channels import autoplay
@@ -16,7 +20,7 @@ from platformcode import config, logger
 
 
 IDIOMAS = {'Latino': 'Latino'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['fastplay', 'flashx', 'vimeo']
 

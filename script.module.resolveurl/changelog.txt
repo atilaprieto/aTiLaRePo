@@ -1,15 +1,14 @@
-Version 5.1.0 (June 7, 2020)
+Version 5.1.6 (August 16, 2020)
 - Code Base Changes:
-    - Change Init logging to debug level
-    - Addtional helper functions
+    - None
 
 - Resolvers Added:
-    - Daxab
+    - Doodstream
+    - Vidup
+    - Vidbom
  
 - Resolvers Fixed/Updated:
-    - WStream
-    - FEmbed
-    - Debrid-link
+    - vidstreaming
 
 - Resolvers Removed
     - None

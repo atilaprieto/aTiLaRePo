@@ -3,7 +3,12 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
+
 from channelselector import get_thumb
 from channels import autoplay
 from channels import filtertools
@@ -22,7 +27,7 @@ list_servers = ['fembed', 'verystream','directo', 'fastplay', 'digiloaded']
 
 __channel__='rexpelis'
 
-host = "https://rexpelis.biz"
+host = "https://www.rexpelis.biz"
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
 except:

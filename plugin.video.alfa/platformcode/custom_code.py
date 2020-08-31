@@ -15,6 +15,7 @@ import xbmcgui
 import threading
 import subprocess
 import time
+import os
 
 from platformcode import config, logger, platformtools
 
@@ -177,13 +178,12 @@ def verify_script_alfa_update_helper():
         
         # Si no lo hay, descargamos el Script desde Bitbucket y lo salvamos a disco
         url = 'https://bitbucket.org/alfa_addon/alfa-repo/raw/master/script.alfa-update-helper/%s' % package
-        response = httptools.downloadpage(url, ignore_response_code=True, alfa_s=True)
+        response = httptools.downloadpage(url, ignore_response_code=True, alfa_s=True, json_to_utf8=False)
         if response.code == 200:
             zip_data = response.data
             addons_path = xbmc.translatePath("special://home/addons")
             pkg_updated = filetools.join(addons_path, 'packages', package)
-            with open(pkg_updated, "wb") as f:
-                f.write(zip_data)
+            res = filetools.write(pkg_updated, zip_data, mode='wb')
             
             # Verificamos el .zip
             ret = None
@@ -199,7 +199,7 @@ def verify_script_alfa_update_helper():
                 with ZipFile(pkg_updated, "r") as zf:
                     zf.extractall(addons_path)
 
-                logger.info("Installiing %s" % package)
+                logger.info("Installing %s" % package)
                 xbmc.executebuiltin('UpdateLocalAddons')
                 time.sleep(2)
                 method = "Addons.SetAddonEnabled"
@@ -408,6 +408,8 @@ def update_libtorrent():
                         command = ['ls', '-l', unrar]
                         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                         output_cmd, error_cmd = p.communicate()
+                        if PY3 and isinstance(output_cmd, bytes):
+                            output_cmd = output_cmd.decode()
                         xbmc.log('######## UnRAR file: %s' % str(output_cmd), xbmc.LOGNOTICE)
                     except:
                         xbmc.log('######## UnRAR ERROR in path: %s' % str(unrar), xbmc.LOGNOTICE)

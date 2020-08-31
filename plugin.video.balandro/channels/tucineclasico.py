@@ -119,7 +119,7 @@ def get_url(dpost, dnume, dtype, referer):
     itemlist = []
 
     post = {'action': 'doo_player_ajax', 'post': dpost, 'nume': dnume, 'type': dtype}
-    data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':referer}).data
+    data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':referer}, raise_weberror=False).data
     # ~ logger.debug(data)
 
     url = scrapertools.find_single_match(data, "(?i) src='([^']+)")
@@ -151,6 +151,7 @@ def findvideos(item):
             url = get_url(dpost, dnume, dtype, item.url)
 
         if not url: continue
+        # ~ logger.info(url)
         servidor = servertools.get_server_from_url(url)
         if not servidor or servidor == 'directo': continue
         url = servertools.normalize_url(servidor, url)

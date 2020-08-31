@@ -3,8 +3,12 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
 import re
+
 from channels import filtertools
 from bs4 import BeautifulSoup
 from core import httptools
@@ -15,7 +19,6 @@ from core import tmdb
 from channels import autoplay
 from platformcode import config, logger
 from channelselector import get_thumb
-import sys
 
 
 host = 'https://aniyet.com/'

@@ -98,5 +98,5 @@ def play(item):
         if "High" in quality: quality = "360p"
         if "Low" in quality: quality = "250p"
         itemlist.append(['.mp4 %s' %quality, url])
-    return itemlist
+    return itemlist[::-1]
 

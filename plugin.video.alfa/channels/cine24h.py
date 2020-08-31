@@ -3,9 +3,16 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
-import re
 import sys
-import urlparse
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
+import re
 
 from channels import autoplay
 from channels import filtertools
@@ -47,7 +54,7 @@ fanart_host = parameters['fanart']
 thumbnail_host = parameters['thumbnail']
 
 IDIOMAS = {'Latino': 'LAT', 'Castellano': 'CAST'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['rapidvideo', 'streamango', 'openload', 'streamcherry']
 
@@ -249,7 +256,7 @@ def temporadas(item):
             if i.infoLabels['title']:
                 # Si la temporada tiene nombre propio añadirselo al titulo del item
                 i.title += " - %s" % (i.infoLabels['title'])
-            if i.infoLabels.has_key('poster_path'):
+            if 'poster_path' in i.infoLabels:
                 # Si la temporada tiene poster propio remplazar al de la serie
                 i.thumbnail = i.infoLabels['poster_path']
 
@@ -306,7 +313,7 @@ def episodios(item):
                 # Si el capitulo tiene nombre propio añadirselo al titulo del item
                 i.title = "%sx%s %s" % (i.infoLabels['season'], i.infoLabels[
                     'episode'], i.infoLabels['title'])
-            if i.infoLabels.has_key('poster_path'):
+            if 'poster_path' in i.infoLabels:
                 # Si el capitulo tiene imagen propia remplazar al poster
                 i.thumbnail = i.infoLabels['poster_path']
 

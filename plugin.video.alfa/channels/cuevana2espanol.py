@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
-import re
-import urllib
-from channelselector import get_thumb
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
+
+import re
+
+from channelselector import get_thumb
 from core.item import Item
 from core import httptools
 from core import jsontools
@@ -122,7 +131,7 @@ def byLetter(item):
     json = jsontools.load(raw)
     #logger.info(nonce)
     if 'error' not in json:
-        for movie in json.items():
+        for movie in list(json.items()):
             data = movie[1]
             itemTitle = data['title']
             year = data.get('year', '-')

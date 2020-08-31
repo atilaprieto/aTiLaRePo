@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urlparse
 
 from channels import renumbertools
 from core import httptools
@@ -16,7 +24,7 @@ from channels import filtertools
 
 
 IDIOMAS = {'LAT': 'LAT','SUB': 'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_servers = ['directo', 'rapidvideo', 'streamango', 'yourupload', 'mailru', 'netutv', 'okru']
 list_quality = ['default']
 
@@ -300,7 +308,7 @@ def findvideos(item):
     
     videos_json = jsontools.load(videos)
     
-    for video_lang in videos_json.items():
+    for video_lang in list(videos_json.items()):
         language = IDIOMAS.get(video_lang[0], video_lang[0])
         matches = scrapertools.find_multiple_matches(str(video_lang[1]), "code': '(.*?)'")
         

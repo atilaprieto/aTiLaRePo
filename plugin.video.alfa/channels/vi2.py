@@ -3,6 +3,10 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 import base64
 
@@ -263,7 +267,7 @@ def findvideos(item):
         title = ''
         link_type = ''
         server = ''
-        url = base64.b64decode(url).decode('utf-8')
+        url = base64.b64decode(url.encode('utf8')).decode('utf8')
 
         if 'torrent' in url:
             if item.link_type == 'torrent' or item.type == 'all':

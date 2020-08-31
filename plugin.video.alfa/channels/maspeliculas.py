@@ -3,13 +3,20 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+from __future__ import division
+from past.utils import old_div
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
+import base64
+import string
+
 from bs4 import BeautifulSoup
 from channelselector import get_thumb
 from core import httptools
 from core import scrapertools
-import base64
-import string
 from core import servertools
 from core.item import Item
 from platformcode import config, logger
@@ -19,7 +26,7 @@ from core import tmdb
 host = "https://maspeliculas.net/"
 
 IDIOMAS = {'castellano': 'CAST', 'latino': 'LAT', 'sub': 'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['openload',  'rapidvideo', 'clipwatching', 'verystream', 'okru']
 
@@ -174,7 +181,6 @@ def findvideos(item):
 
     data = httptools.downloadpage(item.url).data
     data = scrapertools.unescape(data)
-
     soup = BeautifulSoup(data, "html5lib", from_encoding="utf-8")
     lang = soup.find_all("b")
     lang_list = get_langs(lang)
@@ -268,7 +274,7 @@ def decrypt(var, val):
             if c not in string.ascii_letters:
                 d += c
             else:
-                n = (ord(c)) / 97
+                n = old_div((ord(c)), 97)
                 x = 26 if (ord(c.lower()) - 83) % 26 == 0 else (ord(c.lower()) - 83) % 26
                 d += chr(x + 96) if n != 0 else chr(x+64)
     return d

@@ -125,7 +125,9 @@ def lista(item):
     return itemlist
 
 def play(item):
-    logger.info(item)
-    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
+    logger.info()
+    itemlist = []
+    itemlist.append(item.clone(action="play", title= "%s", contentTitle = item.title, url=item.url))
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
 

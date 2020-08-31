@@ -24,8 +24,8 @@
         "url": "\\1"
       },
       {
-        "pattern": "(https://datoporn.co/embed-[A-z0-9-]+.html)",
-        "url": "\\1"
+        "pattern": "(?:http|https)://datoporn.(?:co|com)/(embed-[A-z0-9-]+.html)",
+        "url": "https://dato.porn/\\1"
       },
       {
         "pattern": "(https://www.porn00.org/[A-z0-9-]+/)",

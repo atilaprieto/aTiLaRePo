@@ -3,7 +3,12 @@
 # -*- Created for Alfa-addon -*-
 # -*- By Sculkurt -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
+
 from channelselector import get_thumb
 from core import httptools
 from core import scrapertools

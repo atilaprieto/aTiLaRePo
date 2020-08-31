@@ -6,9 +6,18 @@ from platformcode import config, logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-HOST = 'https://allpeliculas.tv/'
+# ~ f_y_m
+# ~ HOST = 'https://allpeliculas.tv/'
+HOST = 'https://allpeliculas.nu/'
 
 perpage = 18 # preferiblemente un múltiplo de los elementos que salen en la web (6x6=36) para que la subpaginación interna no se descompense
+
+
+def do_downloadpage(url, post=None, headers=None):
+    # ~ f_y_m  por si viene de enlaces guardados
+    url = url.replace('allpeliculas.tv', 'allpeliculas.nu')
+    data = httptools.downloadpage(url, post=post, headers=headers).data
+    return data
 
 
 def mainlist(item):
@@ -17,7 +26,7 @@ def mainlist(item):
 def mainlist_pelis(item):
     logger.info()
     itemlist = []
-    
+
     itemlist.append(item.clone( title='Últimas actualizadas', action='list_all', url=HOST ))
     # ~ itemlist.append(item.clone( title='Estrenos', action='list_all', url=HOST + 'genero/estrenos/' ))
     # ~ itemlist.append(item.clone( title='Netflix', action='list_all', url=HOST + 'genero/netflix/' ))
@@ -38,10 +47,10 @@ def generos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(HOST).data
+    data = do_downloadpage(HOST)
 
     bloque = scrapertools.find_single_match(data, 'Géneros</a>\s*<ul(.*?)</ul>')
-    
+
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)')
     for url, title in matches:
         if 'genero/estrenos/' in url or 'genero/netflix/' in url: continue
@@ -53,8 +62,9 @@ def generos(item):
     itemlist.append(item.clone( action = 'list_all', title = 'Biografía', url = HOST + 'genero/biografia/' ))
     itemlist.append(item.clone( action = 'list_all', title = 'Historia', url = HOST + 'genero/historia/' ))
     itemlist.append(item.clone( action = 'list_all', title = 'Western', url = HOST + 'genero/western/' ))
-    
+
     return sorted(itemlist, key=lambda it: it.title)
+
 
 def anios(item):
     logger.info()
@@ -67,7 +77,6 @@ def anios(item):
         itemlist.append(item.clone( title=str(x), url= HOST + 'pelicula/year_relase/' + str(x) + '/', action='list_all' ))
 
     return itemlist
-
 
 
 def list_all(item): 
@@ -91,7 +100,7 @@ def list_all(item):
         post_q = post_q.replace('}', ',"s":"%s"}' % aux)
 
     post = {'action':'loadmore', 'page':item.page, 'query':post_q}
-    data = httptools.downloadpage(HOST+'wp-admin/admin-ajax.php', post=post).data
+    data = do_downloadpage(HOST + 'wp-admin/admin-ajax.php', post=post)
     # ~ logger.debug(data)
 
     matches = re.compile('<div class="col-mt-5 postsh">\s*<div class="poster-media-card">\s*<a(.*?)</a>', re.DOTALL).findall(data)
@@ -125,7 +134,6 @@ def list_all(item):
     return itemlist
 
 
-
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.replace(' ', '').replace('-', '').lower()
@@ -136,10 +144,10 @@ def puntuar_calidad(txt):
 def findvideos(item):
     logger.info()
     itemlist = []
-    
+
     IDIOMAS = {'Español': 'Esp', 'Latino': 'Lat', 'Subtitulado': 'VOSE'}
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     # Enlaces en embeds
@@ -160,11 +168,12 @@ def findvideos(item):
         if not url: 
             logger.info('No detectada url. %s %s' % (cod, urlcod))
             continue
-        
+
         servidor = servertools.get_server_from_url(url)
         if not servidor or (servidor == 'directo' and 'storage.googleapis.com/' not in url): 
             logger.info('No detectado servidor, url: %s' % url)
             continue
+
         url = servertools.normalize_url(servidor, url)
 
         qlty = scrapertools.find_single_match(resto, '([^>]+)</div>$')
@@ -193,7 +202,6 @@ def findvideos(item):
                        ))
 
     return itemlist
-
 
 
 def search(item, texto):

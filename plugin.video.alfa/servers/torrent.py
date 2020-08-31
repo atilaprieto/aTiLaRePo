@@ -4,7 +4,6 @@
 from builtins import range
 import sys
 PY3 = False
-VFS = True
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int; VFS = False
 
 if PY3:
@@ -42,6 +41,8 @@ extensions_list = ['.aaf', '.3gp', '.asf', '.avi', '.flv', '.mpeg',
                    '.mpe', '.mp4', '.ogg', '.rar', '.wmv', '.zip']
 
 CF_BLOCKING_ERRORS = ['Detected a Cloudflare version 2']
+
+VFS = True
 
 trackers = [
         "udp://tracker.openbittorrent.com:80/announce",
@@ -500,6 +501,8 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
     torrent_file = ''
     t_hash = ''
     url_save = url
+    PK = 'PK'
+    if PY3: PK = bytes(PK, 'utf-8')
     if referer:
         headers.update({'Content-Type': 'application/x-www-form-urlencoded', 'Referer': referer})   #Necesario para el Post del .Torrent
     
@@ -546,16 +549,13 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
                     return (torrents_path, torrent_file)
                 return torrents_path                                            #Si hay un error, devolvemos el "path" vacío
         elif not url.startswith("http"):
-            torrent_file = filetools.read(url, silent=True, vfs=VFS)
+            torrent_file = filetools.read(url, silent=True, mode='rb', vfs=VFS)
             if not torrent_file:
                 logger.error('No es un archivo Torrent: ' + url)
                 torrents_path = ''
                 if data_torrent:
                     return (torrents_path, torrent_file)
                 return torrents_path                                            #Si hay un error, devolvemos el "path" vacío
-            torrent_file_uncoded = torrent_file
-            if PY3 and isinstance(torrent_file, bytes):
-                torrent_file = "".join(chr(x) for x in bytes(torrent_file_uncoded))
         else:
             if lookup:
                 proxy_retries = 0
@@ -595,12 +595,9 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
             
             else:
                 torrent_file = response.data
-            torrent_file_uncoded = torrent_file
-            if PY3 and isinstance(torrent_file, bytes):
-                torrent_file = "".join(chr(x) for x in bytes(torrent_file_uncoded))
 
         #Si es un archivo .ZIP tratamos de extraer el contenido
-        if torrent_file.startswith("PK"):
+        if torrent_file.startswith(PK):
             logger.info('Es un archivo .ZIP: ' + url)
             
             torrents_path_zip = filetools.join(videolibrary_path, 'temp_torrents_zip')  #Carpeta de trabajo
@@ -612,7 +609,7 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
             time.sleep(1)                                                       #Hay que esperar, porque si no da error
             filetools.mkdir(torrents_path_zip)                                  #La creamos de nuevo
             
-            if filetools.write(torrents_path_zip_file, torrent_file_uncoded, vfs=VFS):  #Salvamos el .zip
+            if filetools.write(torrents_path_zip_file, torrent_file, vfs=VFS):  #Salvamos el .zip
                 torrent_file = ''                                               #Borramos el contenido en memoria
                 try:                                                            #Extraemos el .zip
                     from core import ziptools
@@ -627,15 +624,14 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
                     for file in files:
                         if file.endswith(".torrent"):
                             input_file = filetools.join(root, file)             #nombre del .torrent
-                            torrent_file = filetools.read(input_file, vfs=VFS)  #leemos el .torrent
-                    torrent_file_uncoded = torrent_file
-                    if PY3 and isinstance(torrent_file, bytes):
-                        torrent_file = "".join(chr(x) for x in bytes(torrent_file_uncoded))
+                            torrent_file = filetools.read(input_file, mode='rb', vfs=VFS)  #leemos el .torrent
 
             filetools.rmdirtree(torrents_path_zip)                              #Borramos la carpeta temporal
 
         #Si no es un archivo .torrent (RAR, HTML,..., vacío) damos error
-        if not scrapertools.find_single_match(torrent_file, '^d\d+:.*?\d+:'):
+        patron = '^d\d+:.*?\d+:'
+        if PY3: patron = bytes(patron, 'utf-8')
+        if not scrapertools.find_single_match(torrent_file, patron):
             logger.error('No es un archivo Torrent: ' + url)
             torrents_path = ''
             if data_torrent:
@@ -646,7 +642,7 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
         try:
             import bencode, hashlib
             
-            decodedDict = bencode.bdecode(torrent_file_uncoded)
+            decodedDict = bencode.bdecode(torrent_file)
             if not PY3:
                 t_hash = hashlib.sha1(bencode.bencode(decodedDict[b"info"])).hexdigest()
             else:
@@ -660,7 +656,7 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
         
         #Salvamos el .torrent
         if not lookup:
-            if not url_save.startswith("http") and not torrent_file.startswith("PK") and filetools.isfile(url_save):
+            if not url_save.startswith("http") and not torrent_file.startswith(PK) and filetools.isfile(url_save):
                 if url_save != torrents_path:
                     ret = filetools.copy(url_save, torrents_path_encode, silent=True)
                     if capture_path and capture_path in url_save:
@@ -668,7 +664,7 @@ def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=1
                 else:
                     ret = True
             else:
-                ret = filetools.write(torrents_path_encode, torrent_file_uncoded, silent=True, vfs=VFS)
+                ret = filetools.write(torrents_path_encode, torrent_file, silent=True, vfs=VFS)
             if not ret:
                 logger.error('ERROR: Archivo .torrent no escrito: ' + torrents_path_encode)
                 torrents_path = ''                                              #Si hay un error, devolvemos el "path" vacío
@@ -720,7 +716,7 @@ def capture_thru_browser(url, capture_path, response, VFS):
             logger.error('No se ha encontrado .torrent descargado')
             return (torrents_path, torrent_file)
 
-    torrent_file = filetools.read(filetools.join(capture_path, file), silent=True, vfs=VFS)
+    torrent_file = filetools.read(filetools.join(capture_path, file), mode='rb', silent=True, vfs=VFS)
     torrents_path = filetools.join(capture_path, file)
 
     return (torrents_path, torrent_file)

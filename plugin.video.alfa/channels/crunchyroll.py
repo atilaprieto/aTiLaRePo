@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urllib
 
 from core import httptools
 from core import scrapertools
@@ -164,9 +172,12 @@ def lista(item):
         elif not item.proxy:
             url = host + url
         thumb = urllib.unquote(thumb.replace("/browse.php?u=", "").replace("_thumb", "_full").replace("&amp;b=4", ""))
-        scrapedtitle = "%s (%s)" % (title, videos.strip())
+        scrapedtitle = scrapertools.htmlclean("%s (%s)" % (title, videos.strip()))
         plot = scrapertools.find_single_match(data, '%s"\).data.*?description":"([^"]+)"' % id)
-        plot = unicode(plot, 'unicode-escape', "ignore")
+        if PY3:
+            plot = plot.encode().decode('unicode-escape', "ignore")
+        else:
+            plot = unicode(plot, 'unicode-escape', "ignore")
         itemlist.append(item.clone(action="episodios", url=url, title=scrapedtitle, thumbnail=thumb,
                                    contentTitle=title, contentSerieName=title, infoLabels={'plot': plot},
                                    text_color=color2))
@@ -184,7 +195,7 @@ def episodios(item):
 
     data = get_source(item.url).data
     data = re.sub(r'\n|\t|\s{2,}', '', data)
-    logger.error(data)
+    #logger.error(data)
     patron = '<li id="showview_videos.*?href="([^"]+)".*?(?:src|data-thumbnailUrl)="([^"]+)".*?media_id="([^"]+)"' \
              'style="width:(.*?)%.*?<span class="series-title.*?>\s*(.*?)</span>.*?<p class="short-desc".*?>' \
              '\s*(.*?)</p>.*?description":"(.*?)"'
@@ -219,7 +230,7 @@ def episodios(item):
                     _season += 1
                     
                 title = '%sx%s' %  (_season, episode)
-                title = "     %s - %s" % (title, subt)
+                title = scrapertools.htmlclean("     %s - %s" % (title, subt))
 
                 if not episode:
                     title = "     %s" % (scrapedtitle)
@@ -229,7 +240,10 @@ def episodios(item):
                 
                 if visto.strip() != "0":
                     title += " [COLOR %s][V][/COLOR]" % color5
-                plot = unicode(plot, 'unicode-escape', "ignore")
+                if PY3:
+                    plot = plot.encode().decode('unicode-escape', "ignore")
+                else:
+                    plot = unicode(plot, 'unicode-escape', "ignore")
                 if not thumb.startswith('http'):
                     thumb = host+thumb
 
@@ -255,12 +269,15 @@ def episodios(item):
             
             episode = scrapertools.find_single_match(title, '(\d+)')
             title = '1x%s' % episode
-            title = "%s - %s" % (title, subt)
+            title = scrapertools.htmlclean("%s - %s" % (title, subt))
             
             if visto.strip() != "0":
                 title += " [COLOR %s][V][/COLOR]" % color5
             
-            plot = unicode(plot, 'unicode-escape', "ignore")
+            if PY3:
+                plot = plot.encode().decode('unicode-escape', "ignore")
+            else:
+                plot = unicode(plot, 'unicode-escape', "ignore")
             
             if not thumb.startswith('http'):
                 thumb = host+thumb

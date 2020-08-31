@@ -1,19 +1,27 @@
 # -*- coding: utf-8 -*-
 
-from platformcode import config, logger
+from platformcode import config, logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, servertools, jsontools, tmdb
 
+
 # ~ f_y_m
-# ~ host = 'https://pepecine.me'
-# ~ host = 'https://verencasa.com'
-# ~ host = 'https://pepecine.tv'
-# ~ host = 'https://pepecine.to'
+# http://  https://  pepecine.net    www.pepecine.net   Redirecionan a la vigente
+
+# http://  https://  pepecine.com    www.pepecine.com
+# http://  https://  pepecine.me     www.pepecine.me
+# http://  https://  pepecine.to     www.pepecine.to
+# http://  https://  pepecine.tv     www.pepecine.tv
+# http://  https://  pepecinehd.com  www.pepecinehd.com
+# http://  https://  verencasa.com   www.verencasa.com
 
 host = 'https://verencasa.com'
 
-# ~ f_y_m
-host_latest = 'https://verencasa.com'
+host_change_pral = 'pepecine.tv'
+host_change_last = 'verencasa.com'
+host_change_list = 'pepecine.tv' # .to
+
+referer = 'https://pepecine.to'
 
 ruta_pelis  = '/browse?type=movie'
 ruta_series = '/browse?type=series'
@@ -28,23 +36,59 @@ ruta_series = '/browse?type=series'
     # ~ from core import proxytools
     # ~ return proxytools.configurar_proxies_canal(item.channel, host)
 
+
 def do_downloadpage(url, post=None):
     # ~ f_y_m
-    url = url.replace('pepecine.me', 'verencasa.com') # por si viene de enlaces guardados
-    url = url.replace('pepecine.tv', 'verencasa.com') # por si viene de enlaces guardados
-    url = url.replace('pepecine.to', 'verencasa.com') # por si viene de enlaces guardados
+    headers = {}
+    headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0'
 
-    # ~ f_y_m
-    # ~ if not '/last/' in url:
-        # ~ url = url.replace('verencasa.com', 'pepecine.to') # por si viene de enlaces guardados
+    # Solo para Últimas películas y Series
+    if '/last/' in url:
+        refer_last = host + '/'
+        refer_last = refer_last.replace('verencasa.com', host_change_pral)
+        headers['Referer'] = refer_last
 
-    # ~ data = httptools.downloadpage(url, post=post, headers={'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:77.0) Gecko/20100101 Firefox/77.0'}).data
-    # ~ data = httptools.downloadpage(url, post=post, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'}).data
-    # ~ data = httptools.downloadpage(url, post=post, headers={'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36'}).data
-    # ~ data = httptools.downloadpage_proxy('pepecine', url, post=post).data
+        if 'verencasa' in url:
+            url = url.replace('verencasa.com', host_change_last)
+        elif 'pepecinehd' in url:
+            url = url.replace('pepecinehd.com', host_change_last)
+        else:
+            url = url.replace('pepecine.to', host_change_last)
+            url = url.replace('pepecine.tv', host_change_last)
 
-    # ~ f_y_m
-    data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://verencasa.com', 'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36'}).data
+    # Solo para Listas de películas y Series
+    elif '/secure/lists/' in url:
+        refer_list = url.replace('/secure/lists/', '/lists/')
+        refer_list = refer_list.replace('.php', '')
+        refer_list = refer_list.replace('?sortBy=pivot.order&sortDir=asc', '')
+
+        refer_list = refer_list.replace('verencasa.com', host_change_list)
+        headers['Referer'] = refer_list.replace('pepecine.tv', 'pepecine.to')
+
+        if 'verencasa' in url:
+            url = url.replace('verencasa.com', host_change_list)
+        elif 'pepecinehd' in url:
+            url = url.replace('pepecinehd.com', host_change_list)
+        else:
+            url = url.replace('pepecine.to', host_change_list)
+            url = url.replace('pepecine.tv', host_change_list)
+        
+        if not 'verencasa' in url: url = url.replace('.php', '')
+
+    else:
+        # ~ por si viene de enlaces guardados
+        headers['Referer'] = referer
+
+        if 'verencasa' in url:
+            url = url.replace('verencasa.com', host_change_pral)
+        elif 'pepecinehd' in url:
+            url = url.replace('pepecinehd.com', host_change_pral)
+        else:
+            url = url.replace('pepecine.to', host_change_pral)
+            url = url.replace('pepecine.tv', host_change_pral)
+
+    data = httptools.downloadpage(url, post=post, headers=headers).data
+    # ~ data = httptools.downloadpage_proxy('pepecine', url, post=post, headers=headers).data
 
     return data
 
@@ -59,6 +103,7 @@ def mainlist(item):
     itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
     # ~ itemlist.append(item_configurar_proxies(item))
+
     return itemlist
 
 
@@ -69,8 +114,7 @@ def mainlist_pelis(item):
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
     if not descartar_xxx:
-        # ~ f_y_m
-        itemlist.append(item.clone( title = 'Últimas películas', action = 'list_latest', url = host_latest + '/last/estrenos-peliculas-online.php', search_type = 'movie' ))
+        itemlist.append(item.clone( title = 'Últimas películas', action = 'list_latest', url = host + '/last/estrenos-peliculas-online.php', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Las más populares', action = 'list_all', url = host + ruta_pelis, orden = 'popularity:desc', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Las más valoradas', action = 'list_all', url = host + ruta_pelis, orden = 'user_score:desc', search_type = 'movie' ))
@@ -80,19 +124,20 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Por calificación de edad', action = 'edades', search_type = 'movie' ))
 
-    itemlist.append(item.clone( title = 'Listas de películas', action = 'listas', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Listas de películas', action = 'listas', url = host, search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
     # ~ itemlist.append(item_configurar_proxies(item))
+
     return itemlist
+
 
 def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    # ~ f_y_m
-    itemlist.append(item.clone( title = 'Últimos episodios', action = 'list_latest', url = host_latest + '/last/estrenos-episodios-online.php', search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Últimos episodios', action = 'list_latest', url = host + '/last/estrenos-episodios-online.php', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Las más populares', action = 'list_all', url = host + ruta_series, orden = 'popularity:desc', search_type = 'tvshow' ))
     itemlist.append(item.clone( title = 'Las más valoradas', action = 'list_all', url = host + ruta_series, orden = 'user_score:desc', search_type = 'tvshow' ))
@@ -101,11 +146,12 @@ def mainlist_series(item):
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'tvshow' ))
     itemlist.append(item.clone( title = 'Por calificación de edad', action = 'edades', search_type = 'tvshow' ))
 
-    itemlist.append(item.clone( title = 'Listas de series', action = 'listas', search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Listas de series', action = 'listas', url = host, search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
     # ~ itemlist.append(item_configurar_proxies(item))
+
     return itemlist
 
 
@@ -125,6 +171,7 @@ def generos(item):
         itemlist.append(item.clone( action = 'list_all', title = 'xxx / adultos', url = host + ruta_pelis, calificacion = 'nc-17' ))
 
     return itemlist
+
 
 def edades(item):
     logger.info()
@@ -203,7 +250,6 @@ def sub_search(item):
     return itemlist
 
 
-
 def list_all(item):
     logger.info()
     itemlist=[]
@@ -221,6 +267,7 @@ def list_all(item):
 
     data = do_downloadpage(url)
     # ~ logger.debug(data)
+
     dict_data = jsontools.load(data)
 
     if 'pagination' not in dict_data: return itemlist
@@ -296,6 +343,7 @@ def episodios(item):
 
     return itemlist
 
+
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     if txt == None: txt = '?'
@@ -304,11 +352,13 @@ def puntuar_calidad(txt):
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
+
 def _extraer_idioma(lang):
     if 'Castellano' in lang: return 'Esp'
     if 'Latino' in lang: return 'Lat'
     if 'Subtitulado' in lang: return 'VOSE'
     return 'VO'
+
 
 def findvideos(item):
     logger.info()
@@ -352,6 +402,8 @@ def findvideos(item):
 
     itemlist = servertools.get_servers_itemlist(itemlist)
 
+    # ~ for it in itemlist: logger.info('%s %s %s' % (it.server, it.language, it.url))
+
     return itemlist
 
 
@@ -381,7 +433,7 @@ def list_latest(item):
         title = scrapertools.find_single_match(elemento, ' alt="([^"]+)')
         language = scrapertools.find_single_match(elemento, '<div class="s7">([^<]+)')
 
-        if '-z' in language: continue # descartar descargas directas
+        # ~ if '-z' in language: continue # descartar descargas directas
         # ~ lang = _extraer_idioma(language) # No se muestran los idiomas pq sólo se indican los modificados y normalmente hay más, por lo que puede llevar a engaño.
 
         if item.search_type == 'movie':
@@ -425,7 +477,6 @@ def list_latest(item):
     return itemlist
 
 
-
 def listas(item):
     logger.info()
     itemlist = []
@@ -466,13 +517,15 @@ def listas(item):
         ]
 
     for numero, nombre in seleccion:
-        itemlist.append(item.clone( title = nombre, action = 'list_list', 
-                                    # ~ f_y_m
-                                    url = host + '/secure/lists/' + numero + '.php?sortBy=pivot.order&sortDir=asc' )) # verencasa.
-                                    # ~ url = host + '/secure/lists/' + numero + '?sortBy=pivot.order&sortDir=asc' )) # pepecine.
+        url = host + '/secure/lists/' + numero
 
-    # ~ f_y_m
-    # ~ return itemlist
+        if 'verencasa' in url:
+            url = url + '.php'
+
+        url = url + '?sortBy=pivot.order&sortDir=asc'
+
+        itemlist.append(item.clone( title = nombre, action = 'list_list', url = url))
+
     return sorted(itemlist, key=lambda it: it.title)
 
 

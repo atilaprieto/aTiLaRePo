@@ -6,11 +6,28 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
+
 HOST = 'https://pelisvips.com/'
 
 IDIOMAS = {'es_es':'Esp', 'la_la':'Lat', 'en_es':'VOSE', 'en_en':'VO', 
            'castellano':'Esp', 'latino':'Lat', 'subtitulada':'VOSE', 
            'es':'Esp', 'la':'Lat', 'sub':'VOSE'}
+
+
+def item_configurar_proxies(item):
+    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + HOST + ' necesitarás un proxy.'
+    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, HOST)
+
+def do_downloadpage(url, post=None):
+    # ~ data = httptools.downloadpage(url).data
+    data = httptools.downloadpage_proxy('pelisvips', url, post=post, headers={'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36'}).data
+
+    return data
 
 
 def mainlist(item):
@@ -23,8 +40,6 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title='Últimas actualizadas', action='list_all', url=HOST ))
 
     itemlist.append(item.clone( title='Estrenos', action='list_all', url=HOST + 'genero/estrenos/' ))
-    itemlist.append(item.clone( title='Recomendadas', action='list_all', url=HOST + 'genero/recomendadas/' ))
-    itemlist.append(item.clone( title='En cartelera', action='list_all', url=HOST + 'genero/cartelera/' ))
     itemlist.append(item.clone( title='Netflix', action='list_all', url=HOST + 'genero/netflix/' ))
 
     itemlist.append(item.clone( title='Castellano', action='list_all', url=HOST + 'ver-idioma/castellano/' ))
@@ -35,6 +50,8 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title = 'Por calidad', action = 'calidades', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
+
+    itemlist.append(item_configurar_proxies(item))
 
     return itemlist
 
@@ -50,21 +67,20 @@ def calidades(item):
 
     return itemlist
 
+
 def generos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(HOST).data
+    data = do_downloadpage(HOST)
 
     bloque = scrapertools.find_single_match(data, '>Películas por género</div>(.*?)</div>')
 
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"><span class="icon"></span>([^<]+)')
     for url, title in matches:
         if 'genero/estrenos/' in url: continue
-        if 'genero/nueva-calidad/' in url: continue
-        if 'genero/recomendadas/' in url: continue
-        if 'genero/cartelera/' in url: continue
-        if 'genero/netflix/' in url: continue
+        elif 'genero/nueva-calidad/' in url: continue
+        elif 'genero/netflix/' in url: continue
 
         itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
@@ -75,7 +91,7 @@ def list_all(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     bloque = scrapertools.find_single_match(data, '<div id="movie-list"(.*?)<ul>')
 
@@ -97,7 +113,7 @@ def list_all(item):
         if ' / ' in title: title_alt = title.split(' / ')[0].strip()
         elif ' (' in title: title_alt = title.split(' (')[0].strip()
         else: title_alt = ''
-        
+
         langs = scrapertools.find_multiple_matches(match, 'flags/([^.]+)')
 
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
@@ -117,7 +133,7 @@ def findvideos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     for lang in ['la', 'es', 'sub']:
@@ -146,12 +162,13 @@ def findvideos(item):
 
     return itemlist
 
+
 def play(item):
     logger.info()
     itemlist = []
 
     if HOST in item.url:
-        data = httptools.downloadpage(item.url).data
+        data = do_downloadpage(item.url)
         # ~ logger.debug(data)
         url = scrapertools.find_single_match(data, "sources:.*?'file':\s*'([^']+)")
         if url:
@@ -159,7 +176,7 @@ def play(item):
             if servidor and servidor != 'directo' or 'storage.googleapis.com/' in url:
                 url = servertools.normalize_url(servidor, url)
                 itemlist.append(item.clone( url=url, server=servidor ))
-        
+
     elif item.server and item.url:
         itemlist.append(item.clone())
 
@@ -170,7 +187,7 @@ def list_search(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     matches = re.compile('<li class="itemlist"(.*?)</li>', re.DOTALL).findall(data)
 
@@ -205,6 +222,7 @@ def list_search(item):
         itemlist.append(item.clone( title='>> Página siguiente', action='list_search', url = next_page ))
 
     return itemlist
+
 
 def search(item, texto):
     logger.info("texto: %s" % texto)

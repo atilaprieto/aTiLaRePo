@@ -2,8 +2,14 @@
 # -*- Channel Simpsons-latino -*-
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
+
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 import base64
+
 from core import tmdb
 from core import httptools
 from core.item import Item
@@ -16,7 +22,7 @@ from channels import filtertools, autoplay
 
 
 IDIOMAS = {'latino': 'LAT'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['fembed', 'vidcloud']
 
@@ -114,7 +120,6 @@ def findvideos(item):
     player_data = soup.find("div", class_="item get_player_content")["data-player-content"]
     player = scrapertools.find_single_match(player_data, 'iframe src="([^"]+)"')
     soup = create_soup(player, referer=item.url)
-
     matches = soup.find_all("a", class_="button-xlarge")
     if matches:
         for elem in matches:

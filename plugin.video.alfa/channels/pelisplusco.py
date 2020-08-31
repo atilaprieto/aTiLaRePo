@@ -3,8 +3,17 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urllib
+
 from platformcode import logger
 from platformcode import config
 from core import scrapertools
@@ -17,7 +26,7 @@ from core import tmdb
 
 
 IDIOMAS = {'latino':'Lat', 'castellano':'Cast', 'subtitulado':'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = ['360p', '480p', '720p', '1080p']
 list_servers = ['mailru', 'openload',  'streamango', 'estream']
 

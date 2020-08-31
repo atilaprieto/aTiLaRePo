@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 from core import httptools
 from core import scrapertools
 from core import servertools
@@ -62,7 +66,7 @@ def categories(item):
     categories = scrapertools.find_multiple_matches( block, pattern )
 
     for category in categories:
-        url = URL_BROWSE + '/0/all/' + category + '/0/latest' if item.opt == "genre" else URL_BROWSE + '/0/' + category + '/all/0/latest'
+        url = URL_BROWSE + '/0/all/' + category + '/0/latest/0/all' if item.opt == "genre" else URL_BROWSE + '/0/' + category + '/all/0/latest/0/all'
 
         itemList.append( Item( action = "movies",
                                channel = item.channel,
@@ -89,12 +93,13 @@ def movies(item):
         if item.opt == 1:
             scrapedthumbnail = URL + scrapedthumbnail
         infoLabels['year'] = year
+        title = scrapertools.htmlclean(scrapedtitle)
 
-        itemlist.append(Item(action = "findvideo",
+        itemlist.append(Item(action = "findvideos",
                             channel = item.channel,
-                            contentTitle = scrapedtitle,
+                            contentTitle = title,
                             infoLabels = infoLabels,
-                            title = scrapedtitle + ' (' + year + ')',
+                            title = title + ' (' + year + ')',
                             thumbnail = scrapedthumbnail,
                             url = scrapedurl
                             ))
@@ -116,7 +121,7 @@ def movies(item):
 
     return itemlist
 
-def findvideo(item):
+def findvideos(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
 

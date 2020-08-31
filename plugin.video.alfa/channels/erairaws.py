@@ -3,8 +3,18 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urllib
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib
+
 import re
-import urllib, urlparse
 
 from core import httptools
 from core import scrapertools
@@ -25,7 +35,7 @@ IDIOMAS = {'fr':'Francés', 'de':'Alemán',  'it': 'Italiano',
            }
 
 
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 
 list_quality = ['1080p', '720p', '480p']
 list_servers = ['directo', 'torrent']
@@ -97,8 +107,8 @@ def get_source(url, post=None, host=host, get_url=False):
         import base64
         headers = {'Referer': url}
         u = url.split(host)[1]
-        u = base64.b64encode(u.encode('utf-8'))
-        h = base64.b64encode(host.encode('utf-8'))
+        u = base64.b64encode(u.encode('utf-8')).decode('utf8')
+        h = base64.b64encode(host.encode('utf-8')).decode('utf8')
         url = 'https://ddgu.ddos-guard.net/ddgu/'
         post = urllib.urlencode({'u': u, 'h': h, 'p': ''})
         page = httptools.downloadpage(url, post=post, ignore_response_code=True, headers=headers)

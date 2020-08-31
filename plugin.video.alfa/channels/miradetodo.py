@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 
 from core import httptools
@@ -41,7 +45,7 @@ tcalidad = {"FULL HD": "https://s18.postimg.cc/qszt3n6tl/fullhd.png",
             "HD": "https://s27.postimg.cc/m2dhhkrur/image.png",
             "SD": "https://s29.postimg.cc/l66t2pfqf/image.png"
             }
-host = 'http://miradetodo.net/'
+host = 'http://miradetodo.co/'
 
 
 def mainlist(item):
@@ -200,14 +204,15 @@ def seccion(item):
     logger.info()
     itemlist = []
     data = get_source(item.url)
+    
     if item.seccion == 'generos-pelicula':
         patron = '<li class=cat-item cat-item-.*?><a href=(.*?) >(.*?<\/a> <span>.*?)<\/span><\/li>'
     elif item.seccion == 'generos-serie':
         patron = '<li class=cat-item cat-item-.*?><a href=(.*?\/series-genero\/.*?) >(.*?<\/a> <span>.*?)<\/span><\/li>'
     elif item.seccion in ['fecha-estreno', 'series-lanzamiento']:
-        patron = '<li><a href=http:\/\/miradetodo\.io\/fecha-estreno(.*?)>(.*?)<\/a>'
+        patron = '<li><a\s*href=http\w*:\/\/miradetodo\.\w+\/fecha-estreno(.*?)>(.*?)<\/a>'
     elif item.seccion == 'calidad':
-        patron = '<li><a href=http:\/\/miradetodo\.io\/calidad(.*?)>(.*?)<\/a>'
+        patron = '<li><a href=http\w*:\/\/miradetodo\.\w+\/calidad(.*?)>(.*?)<\/a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle in matches:
         thumbnail = ''
@@ -221,7 +226,7 @@ def seccion(item):
             title = title + ' (%s)' % cantidad
         elif item.seccion in ['series-lanzamiento', 'fecha-estreno', 'calidad']:
             title = scrapedtitle
-            url = 'http://miradetodo.io/%s%s' % (item.seccion, scrapedurl)
+            url = '%s%s%s' % (host, item.seccion, scrapedurl)
             if item.seccion == 'calidad' and title in tcalidad:
                 thumbnail = tcalidad[title]
 
@@ -336,7 +341,7 @@ def findvideos(item):
             video_data = get_source(video)
             if sub == '' and 'sub' in lang:
                 sub_file = scrapertools.find_single_match(video, '&sub=([^+]+)')
-                sub = 'http://miradetodo.io/stream/subt/%s' % sub_file
+                sub = '%sstream/subt/%s' % (host, sub_file)
                                 
             if 'openload' in video or 'your' in video:
                 new_url= scrapertools.find_single_match(video_data,'<li><a href=(.*?srt)><span')

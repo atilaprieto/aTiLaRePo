@@ -79,7 +79,7 @@ def lista(item):
     patron = '<div class="item  ">.*?'
     patron += '<a href="([^"]+)" title="([^"]+)".*?'
     patron += 'data-original="([^"]+)".*?'
-    patron += 'title="Watch Later"(.*?)</div>.*?'
+    patron += 'title="(?:Watch Later|Ver más tarde)"(.*?)</div>.*?'
     patron += '<div class="duration">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail,quality,time in matches:

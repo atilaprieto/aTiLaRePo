@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from past.utils import old_div
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-# import urllib
 
 from core import jsontools as json
 from core import scrapertools
@@ -69,9 +73,9 @@ def videos(item):
         pid= scrapertools.find_single_match(str(th2),"'pid': '([^']+)',")
         start= scrapertools.find_single_match(str(th2),"'start': (\d+),")
 
-        horas=int(segundos/3600)
+        horas=int(old_div(segundos,3600))
         segundos-=horas*3600
-        minutos=int(segundos/60)
+        minutos=int(old_div(segundos,60))
         segundos-=minutos*60
         if segundos < 10:
             segundos = "0%s" %segundos

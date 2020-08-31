@@ -1,6 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import urlparse, re
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urllib
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib
+
+import re
 
 from channels import autoplay
 from channels import filtertools
@@ -15,7 +26,7 @@ from channelselector import get_thumb
 servers = {'ul': 'uploaded', 'ok': 'okru', 'hqq': 'netu', 'waaw': 'netu',
           'drive': 'gvideo', 'mp4': 'gvideo', 'api': 'gvideo'}
 IDIOMAS = {'Latino': 'LAT', 'Español': 'CAST', 'SUB': 'VOSE', 'Subtitulado': 'VOSE', 'Inglés':'VO' }
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['directo', 'rapidvideo', 'streamango', 'okru', 'vidoza', 'openload', 'powvideo']
 
@@ -203,10 +214,12 @@ def destacadas(item):
     item.text_color = color2
     data = httptools.downloadpage(item.url).data
     bloque = scrapertools.find_single_match(data, 'peliculas_destacadas.*?class="letter_home"')
+    
     patron = '(?s)href="([^"]+)".*?'
     patron += 'alt="([^"]+)".*?'
     patron += 'src="([^"]+)'
     matches = scrapertools.find_multiple_matches(bloque, patron)
+    logger.error(matches)
     for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
         #scrapedurl = CHANNEL_HOST + scrapedurl
         url = urlparse.urljoin(CHANNEL_HOST, scrapedurl)
@@ -231,8 +244,9 @@ def generos(item):
     for scrapedurl, scrapedtitle in matches:
         #scrapedurl = CHANNEL_HOST + scrapedurl
         url = urlparse.urljoin(CHANNEL_HOST, scrapedurl)
-        scrapedtitle = scrapertools.htmlclean(scrapedtitle).strip()
-        scrapedtitle = unicode(scrapedtitle, "utf8").capitalize().encode("utf8")
+        scrapedtitle = scrapertools.htmlclean(scrapedtitle).strip().capitalize()
+        if not PY3:
+            scrapedtitle = unicode(scrapedtitle, "utf8").encode("utf8")
         if scrapedtitle == "Erotico" and config.get_setting("adult_mode") == 0:
             continue
         itemlist.append(item.clone(action="peliculas", title=scrapedtitle, url=url))
@@ -249,7 +263,6 @@ def idioma(item):
 
 
 def findvideos(item):
-    import urllib
     logger.info()
     itemlist=[]
     qual_fix = ''

@@ -47,14 +47,16 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     patron = '<a href="((?:http|https)://tubehentai.com/video/[^"]+)" title="([^"]+)".*?'
-    patron += '<span class="icon -time">.*?<span class="item__stat-label">([^<]+)</span>.*?'
+    patron += '<span>([^<]+)</span>.*?'
     patron += '<img src="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,duration,scrapedthumbnail in matches:
         title = "[COLOR yellow]%s[/COLOR] %s" % (duration, scrapedtitle)
         itemlist.append(item.clone(action="play", title=title, url=scrapedurl, 
                              fanart=scrapedthumbnail, thumbnail=scrapedthumbnail, contentTitle = title))
-    next_page = scrapertools.find_single_match(data,'<a rel=\'next\' title=\'Next\' href=\'([^\']+)\'')
+                             
+                             # <a href='page2.html' class="next">Next &raquo;</a>	
+    next_page = scrapertools.find_single_match(data,'<a href=\'([^\']+)\' class="next"')
     if next_page!="":
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )

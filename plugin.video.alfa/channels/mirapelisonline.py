@@ -3,9 +3,18 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urllib
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib
+
 import re
-import urllib
-import urlparse
 
 from channelselector import get_thumb
 from core import httptools
@@ -18,7 +27,7 @@ from channels import autoplay
 from channels import filtertools
 
 IDIOMAS = {'mx': 'LAT', 'es': 'CAST', 'en': 'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['gvideo', 'openload', 'rapidvideo', 'directo']
 

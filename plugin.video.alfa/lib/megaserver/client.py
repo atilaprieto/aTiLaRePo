@@ -1,16 +1,32 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import division
+from __future__ import print_function
+from builtins import range
+from builtins import object
+from past.utils import old_div
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
+
 import base64
 import json
 import random
 import struct
 import time
-import urllib
-from core import httptools
 from threading import Thread
 
-from file import File
-from handler import Handler
+from core import httptools
 from platformcode import logger
-from server import Server
+
+from .file import File
+from .handler import Handler
+from .server import Server
 
 
 class Client(object):
@@ -102,7 +118,7 @@ class Client(object):
                     return files
 
             except:
-                print traceback.format_exc()
+                logger.error(traceback.format_exc())
                 pass
 
         return files
@@ -170,7 +186,7 @@ class Client(object):
     def str_to_a32(self,b):
       if len(b) % 4: # Add padding, we need a string with a length multiple of 4
         b += '\0' * (4 - len(b) % 4)
-      return struct.unpack('>%dI' % (len(b) / 4), b)
+      return struct.unpack('>%dI' % (old_div(len(b), 4)), b)
 
     def base64_to_a32(self,s):
       return self.str_to_a32(self.base64urldecode(s))
@@ -181,20 +197,19 @@ class Client(object):
     def aes_cbc_decrypt(self, data, key):
       try:
           from Cryptodome.Cipher import AES
-          decryptor = AES.new(key, AES.MODE_CBC, '\0' * 16)
       except:
           from Crypto.Cipher import AES
-          decryptor = AES.new(key, AES.MODE_CBC, '\0' * 16)
+      decryptor = AES.new(key, AES.MODE_CBC, b'\0' * 16)
       return decryptor.decrypt(data)
 
     def aes_cbc_decrypt_a32(self,data, key):
       return self.str_to_a32(self.aes_cbc_decrypt(self.a32_to_str(data), self.a32_to_str(key)))
 
     def decrypt_key(self,a, key):
-      return sum((self.aes_cbc_decrypt_a32(a[i:i+4], key) for i in xrange(0, len(a), 4)), ())
+      return sum((self.aes_cbc_decrypt_a32(a[i:i+4], key) for i in range(0, len(a), 4)), ())
 
     def dec_attr(self, attr, key):
-      attr = self.aes_cbc_decrypt(attr, self.a32_to_str(key)).rstrip('\0')
-      if not attr.endswith("}"):
-        attr = attr.rsplit("}", 1)[0] + "}"
-      return json.loads(attr[4:]) if attr[:6] == 'MEGA{"' else False
+      attr = self.aes_cbc_decrypt(attr, self.a32_to_str(key)).rstrip(b'\0')
+      if not attr.endswith(b"}"):
+        attr = attr.rsplit(b"}", 1)[0] + b"}"
+      return json.loads(attr[4:]) if attr[:6] == b'MEGA{"' else False

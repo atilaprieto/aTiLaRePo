@@ -64,7 +64,7 @@ def getmainlist(view="thumb_"):
                          category=config.get_localized_string(30104), viewmode="list"))
 
     itemlist.append(Item(title=config.get_localized_string(30104) + " (" + config.get_localized_string(20000) +" " + config.get_addon_version(with_fix=False) + ")", channel="help", action="mainlist",
-                         thumbnail=get_thumb("help.png", view),
+                         thumbnail=os.path.join(config.get_runtime_path(), "resources", 'Screenshot.jpg'),
                          category=config.get_localized_string(30104), viewmode="list"))
 
     from lib import generictools

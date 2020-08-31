@@ -8,7 +8,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "flashx.co/([A-z0-9]+)\\.(jsp|html)",
+        "pattern": "flashx.(?:co|net)/([A-z0-9]+)\\.(jsp|html)",
         "url": "https://www.flashx.co/\\1.\\2"
       },
      {

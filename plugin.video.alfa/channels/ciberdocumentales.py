@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 
 from core import httptools
@@ -53,10 +57,10 @@ def lista(item):
         url = host + scrapedurl
         thumbnail = host + scrapedthumbnail
         plot = scrapertools.htmlclean(scrapedplot)
-        plot = plot.decode('iso8859-1').encode('utf-8')
-        contentTitle = scrapedtitle
+        if not PY3: plot = plot.decode('iso-8859-1').encode('utf-8')
+        contentTitle = scrapertools.htmlclean(scrapedtitle)
         title = contentTitle
-        title = title.decode('iso8859-1').encode('utf-8')
+        if not PY3: title = title.decode('iso-8859-1').encode('utf-8')
         fanart = ''
         itemlist.append(
             Item(channel=item.channel, action='findvideos', title=title, url=url, thumbnail=thumbnail, plot=plot,
@@ -88,7 +92,7 @@ def generos(item):
         url = host + scrapedurl
 
         itemlist.append(
-            Item(channel=item.channel, action="lista", title=title, contentTitle=item.title, url=url, thumbnail=thumbnail,
+            Item(channel=item.channel, action="lista", title=title, contentTitle=title, url=url, thumbnail=thumbnail,
                  fanart=fanart))
     return itemlist
 

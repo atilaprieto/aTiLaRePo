@@ -38,10 +38,10 @@ if not xbmc_vfs:
         # Python 2.4 No compatible con modulo samba, hay que revisar
 
 # Windows es "mbcs" linux, osx, android es "utf8"
-if os.name == "nt":
+if not PY3 and os.name == "nt":
     fs_encoding = ""
 else:
-    fs_encoding = "utf8"
+    fs_encoding = "utf-8"
 
 
 
@@ -91,7 +91,7 @@ def encode(path, _samba=False):
             path = path.encode(fs_encoding, "ignore")
     
     if PY3 and isinstance(path, bytes):
-        path = path.decode('utf-8')
+        path = path.decode(fs_encoding)
 
     return path
 
@@ -116,12 +116,12 @@ def decode(path):
         path = path.encode("utf-8", "ignore")
     
     if PY3 and isinstance(path, bytes):
-        path = path.decode('utf-8')
+        path = path.decode(fs_encoding)
     
     return path
 
 
-def read(path, linea_inicio=0, total_lineas=None, whence=0, silent=False, vfs=True):
+def read(path, linea_inicio=0, total_lineas=None, whence=0, mode='r', silent=False, vfs=True):
     """
     Lee el contenido de un archivo y devuelve los datos
     @param path: ruta del fichero
@@ -131,11 +131,12 @@ def read(path, linea_inicio=0, total_lineas=None, whence=0, silent=False, vfs=Tr
     @param total_lineas: numero maximo de lineas a leer. Si es None o superior al total de lineas se leera el
         fichero hasta el final.
     @type total_lineas: int positivo
-    @rtype: str
+    @rtype: str, bytes, bytesarray
     @return: datos que contiene el fichero
     """
     path = encode(path)
     try:
+        mode_open = mode.replace('s', '')
         if not isinstance(linea_inicio, int):
             try:
                 linea_inicio = int(linea_inicio)
@@ -148,7 +149,17 @@ def read(path, linea_inicio=0, total_lineas=None, whence=0, silent=False, vfs=Tr
             except:
                 logger.error('Read: ERROR de total_lineas: %s' % str(total_lineas))
                 total_lineas = None
+        
         if xbmc_vfs and vfs:
+            if 'r' in mode and '+' in mode:
+                mode = mode.replace('r', 'w').replace('+', '')
+                mode_open = mode.replace('r', 'w').replace('+', '')
+                logger.debug('Open MODE cambiado a: %s' % mode)
+            if 'a' in mode:
+                mode = mode.replace('a', 'w').replace('+', '')
+                mode_open = mode.replace('a', 'w').replace('+', '')
+                logger.debug('Open MODE cambiado a: %s' % mode)
+                
             if not exists(path): return False
             f = xbmcvfs.File(path, "rb")
             if linea_inicio > 0:
@@ -161,12 +172,35 @@ def read(path, linea_inicio=0, total_lineas=None, whence=0, silent=False, vfs=Tr
                 logger.debug('POSICIÓN de comienzo de lectura, tell(): %s' % f.seek(0, 1))
             if total_lineas == None:
                 total_lineas = 0
-            data = f.read(total_lineas)
-            return "".join(data)
+            if mode in ['r', 'ra']:
+                try:
+                    data = f.read(total_lineas)
+                except Exception as e:
+                    if "codec can't decode" in str(e):
+                        mode = 'rbs'
+                        f.seek(linea_inicio, whence)
+                        logger.error(str(e) + '.  Intentaremos leerlo en "mode=rbs", bytes a string')
+                    else:
+                        raise Exception(e)
+            if mode not in ['r', 'ra']:
+                data = f.readBytes(total_lineas)
+            f.close()
+            if mode in ['r', 'ra']:
+                return "".join(data)
+            elif mode in ['rbs', 'rabs'] and isinstance(data, (bytes, bytearray)):
+                return "".join(chr(x) for x in data)
+            elif mode in ['rb', 'rab'] and isinstance(data, bytearray):
+                return bytes(data)
+            else:
+                return data
+
         elif path.lower().startswith("smb://"):
             f = samba.smb_open(path, "rb")
+        
+        elif PY3 and mode in ['r', 'ra']:
+            f = open(path, mode_open, encoding=fs_encoding)
         else:
-            f = open(path, "rb")
+            f = open(path, mode_open)
 
         data = []
         for x, line in enumerate(f):
@@ -175,14 +209,20 @@ def read(path, linea_inicio=0, total_lineas=None, whence=0, silent=False, vfs=Tr
             data.append(line)
         f.close()
     except:
+        logger.error("ERROR al leer el archivo: %s" % path)
         if not silent:
-            logger.error("ERROR al leer el archivo: %s" % path)
             logger.error(traceback.format_exc())
+        try:
+            f.close()
+        except:
+            pass
         return False
 
     else:
-        if not PY3:
+        if not PY3 or mode in ['r', 'ra']:
             return "".join(data)
+        elif mode in ['rbs', 'rabs'] and isinstance(data, (bytes, bytearray)):
+            return "".join(chr(x) for x in data)
         else:
             return b"".join(data)
 
@@ -193,28 +233,52 @@ def write(path, data, mode="wb", silent=False, vfs=True):
     @param path: ruta del archivo a guardar
     @type path: str
     @param data: datos a guardar
-    @type data: str
+    @type data: str, bytes, bytesarray
     @rtype: bool
     @return: devuelve True si se ha escrito correctamente o False si ha dado un error
     """
     path = encode(path)
     try:
+        mode_open = mode.replace('s', '')
         if xbmc_vfs and vfs:
-            f = xbmcvfs.File(path, mode)
+            if 'r' in mode and '+' in mode:
+                mode = mode.replace('r', 'w').replace('+', '')
+                mode_open = mode.replace('r', 'w').replace('+', '')
+                logger.debug('Open MODE cambiado a: %s' % mode)
+            if 'a' in mode:
+                mode = mode.replace('a', 'w').replace('+', '')
+                mode_open = mode.replace('a', 'w').replace('+', '')
+                logger.debug('Open MODE cambiado a: %s' % mode)
+                
+            if mode not in ['w', 'a'] and PY3 and isinstance(data, str):
+                data = bytearray(list(ord(x) for x in data))
+            elif isinstance(data, bytes):
+                data = bytearray(data)
+            f = xbmcvfs.File(path, mode_open)
             result = f.write(data)
             f.close()
             return bool(result)
+        
         elif path.lower().startswith("smb://"):
-            f = samba.smb_open(path, mode)
+            f = samba.smb_open(path, "wb")
+        
+        elif PY3 and mode in ['w', 'a']:
+            f = open(path, mode_open, encoding=fs_encoding)
         else:
-            f = open(path, mode)
+            f = open(path, mode_open)
+        
+        if mode not in ['w', 'a'] and PY3 and isinstance(data, str):
+            data = bytes(list(ord(x) for x in data))
 
         f.write(data)
         f.close()
     except:
         logger.error("ERROR al guardar el archivo: %s" % path)
-        if not silent:
-            logger.error(traceback.format_exc())
+        logger.error(traceback.format_exc())
+        try:
+            f.close()
+        except:
+            pass
         return False
     else:
         return True
@@ -230,6 +294,7 @@ def file_open(path, mode="r", silent=False, vfs=True):
     """
     path = encode(path)
     try:
+        mode = mode.replace('s', '')
         if xbmc_vfs and vfs:
             if 'r' in mode and '+' in mode:
                 mode = mode.replace('r', 'w').replace('+', '')
@@ -238,10 +303,15 @@ def file_open(path, mode="r", silent=False, vfs=True):
                 mode = mode.replace('a', 'w').replace('+', '')
                 logger.debug('Open MODE cambiado a: %s' % mode)
             return xbmcvfs.File(path, mode)
+        
         elif path.lower().startswith("smb://"):
             return samba.smb_open(path, mode)
+        
+        elif PY3 and mode in ['r', 'ra']:
+            return open(path, mode, encoding=fs_encoding)
         else:
             return open(path, mode)
+    
     except:
         logger.error("ERROR al abrir el archivo: %s, %s" % (path, mode))
         if not silent:

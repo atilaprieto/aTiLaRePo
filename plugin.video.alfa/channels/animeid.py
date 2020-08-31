@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urlparse
 
 from core import httptools
 from core import jsontools
@@ -15,7 +23,7 @@ from channels import renumbertools, autoplay
 CHANNEL_HOST = "https://www.animeid.tv/"
 
 IDIOMAS = {'Latino': 'LAT', 'VOSE': 'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['animeid']
 
@@ -74,7 +82,7 @@ def search(item, texto):
         data = httptools.downloadpage(item.url, headers=headers).data
         data = data.replace("\\", "")
         patron = '{"id":"([^"]+)","text":"([^"]+)","date":"[^"]*","image":"([^"]+)","link":"([^"]+)"}'
-        matches = re.compile(patron, re.DOTALL).findall(data)
+        matches = scrapertools.find_multiple_matches(data, patron)
 
         for id, scrapedtitle, scrapedthumbnail, scrapedurl in matches:
             title = scrapedtitle
@@ -105,7 +113,7 @@ def novedades_series(item):
     data = httptools.downloadpage(item.url).data
     data = scrapertools.find_single_match(data, '<ol class="reciente tab" data-tab="2">(.*?)</section>')
     patronvideos = '(?s)<a href="([^"]+)">.*?tipo\d+">([^<]+)</span>.*?<strong>([^<]+)</strong>'
-    matches = re.compile(patronvideos, re.DOTALL).findall(data)
+    matches = scrapertools.find_multiple_matches(data, patronvideos)
     for url, tipo, title in matches:
         scrapedtitle = title + " (" + tipo + ")"
         scrapedurl = urlparse.urljoin(item.url, url)
@@ -122,7 +130,7 @@ def novedades_episodios(item):
     logger.info()
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
-    data = scrapertools.find_single_match(data, '<section class="lastcap">(.*?)</section>')
+    data = scrapertools.find_single_match(data, '(?is)<section class="lastcap">(.*?)</section>')
     patronvideos = '<article><a href="([^"]+)"><header>([^<]+).*?src="([^"]+)" class="cove'
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
     itemlist = []
@@ -256,7 +264,11 @@ def findvideos(item):
     data = httptools.downloadpage(item.url).data
     url_anterior = scrapertools.find_single_match(data, '<li class="b"><a href="([^"]+)">« Capítulo anterior')
     url_siguiente = scrapertools.find_single_match(data, '<li class="b"><a href="([^"]+)">Siguiente capítulo »')
-    data = scrapertools.find_single_match(data, '<ul id="partes">(.*?)</ul>').decode("unicode-escape")
+    data = scrapertools.find_single_match(data, '<ul id="partes">(.*?)</ul>').replace('\\u0022', '')
+    if PY3:
+        data = data.encode().decode('unicode-escape')
+    else:
+        data = data.decode("unicode-escape")
     data = data.replace("\\/", "/").replace("%3A", ":").replace("%2F", "/")
     patron = '(https://www.animeid.tv/stream/[^/]+/\d+.[a-z0-9]+)'
     matches = scrapertools.find_multiple_matches(data, patron)
@@ -289,3 +301,15 @@ def findvideos(item):
     autoplay.start(itemlist, item)
 
     return itemlist
+
+
+def play(item):
+    if "vid=" in item.url:
+        data = httptools.downloadpage(item.url).data
+        logger.info("Intel11 %s" %data)
+        url = scrapertools.find_single_match(data, '(?is)SRC="([^"]+)')
+        logger.info("Intel22 %s" %url)
+        if "clipwatching" in url:
+            item.server = "clipwatching"
+            item.url = url
+    return [item]

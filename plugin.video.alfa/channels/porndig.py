@@ -128,9 +128,9 @@ def lista(item):
     if item.post:
         post = item.post
     if "pornstars" in item.url:
-        post = "main_category_id=1&type=post&name=pornstar_related_videos&filters[filter_type]=ctr&filters[filter_period]=&filters[filter_quality][]=27&content_id=%s&offset=%s" % (item.value,offset)
+        post = "main_category_id=1&type=post&name=pornstar_related_videos&filters[filter_type]=ctr&filters[filter_period]=&filters[filter_quality][]=270&content_id=%s&offset=%s" % (item.value,offset)
     else:
-        post = "main_category_id=1&type=post&name=all_videos&filters[filter_type]=%s&filters[filter_period]=month&category_id[]=%s&offset=%s" % (item.value,item.category,offset)
+        post = "main_category_id=1&type=post&name=multifilter_videos&filters[filter_type]=%s&filters[filter_period]=month&category_id[]=%s&offset=%s" % (item.value,item.category,offset)
     if "studio" in item.url:
         post = "main_category_id=1&type=post&name=studio_related_videos&filters[filter_type]=ctr&filters[filter_period]=&filters[filter_quality][]=270&content_id=%s&offset=%s" % (item.value,offset)
     if "search" in item.url:
@@ -141,7 +141,7 @@ def lista(item):
         url = elem['href']
         stitle = elem['alt']
         thumbnail = elem.img['data-src']
-        stime = elem.find('span', class_='pull-left').text.strip()
+        stime = elem.find('div', class_='bubble').text.strip()
         quality = elem.find('i', class_='pull-right')['class'][1].replace("icon-ic_19_qlt_", "")
         if stime:
             title = "[COLOR yellow]%s[/COLOR] %s" % (stime,stitle)

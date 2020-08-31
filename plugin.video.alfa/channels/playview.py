@@ -3,8 +3,17 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urllib
+
 from channels import autoplay
 from channels import filtertools
 from core import httptools
@@ -17,7 +26,7 @@ from channelselector import get_thumb
 
 
 IDIOMAS = {'Latino':'Lat', 'Español':'Cast', 'Subtitulado':'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = ['HD 1080p', 'HD 720p', 'DVDRIP', 'CAM']
 list_servers = ['openload', 'vidoza', 'clipwatching', 'fastplay', 'flashx', 'gamovideo', 'powvideo', 'streamango',
                 'streamcherry', 'rapidvideo']

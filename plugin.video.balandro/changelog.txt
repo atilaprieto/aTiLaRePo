@@ -1,6 +1,15 @@
 Balandro changelog
 ==================
 
+1.4.18:
+    Canales modificados: Inkapelis, Pepecine, Pelispedia, Hdfull, Seriemega, Cuevana3, Torrentdivx.
+    Servidores modificados: Digiload, Gloria, Uploadsmobi.
+
+1.4.17:
+    Canales modificados: Pepecine, Seriemega, Hdfull, Pelisvips, Grantorrent, Torrentdivx, 
+    Pelispedia, Dospelis.
+    Servidores modificados: Aparat, Openplay, Easyload, Fastplay, Videoko, Gloria.
+
 1.4.16:
     Canales modificados: Retroseriestv, Seriez, Cinetux, Allpeliculas, Newpct1, Dospelis,
     Pelispedia, Seriesmetro, Pepecine, Playview, Seriemega, Tvvip, Cinefox.

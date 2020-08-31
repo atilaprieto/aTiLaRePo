@@ -2,7 +2,14 @@
 # -*- Channel Destotal -*-
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
+
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
+import codecs
+
 from core import tmdb
 from core import httptools
 from core.item import Item
@@ -14,7 +21,7 @@ from platformcode import config, logger
 from channels import filtertools, autoplay
 
 IDIOMAS = {'espanol': 'CAST', 'castellano': 'CAST', 'latino': 'LAT', 'sub': 'VOSE'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['openload',  'streamango', 'videoob', 'rapidvideo', 'okru']
 
@@ -274,6 +281,6 @@ def unhideload(url):
     server = server_dict[scrapertools.find_single_match(url, "(\wd)=")]
     hash_ = url.split("=")[1].split("&")[0]
     inv = hash_[::-1]
-    result = inv.decode('hex')
+    result = codecs.decode(inv, "hex").decode("utf-8")
     url = "%s%s" % (server, result)
     return url

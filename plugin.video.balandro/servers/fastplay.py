@@ -8,6 +8,8 @@ from lib import jsunpack
 def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
+    
+    page_url = page_url.replace('fastplay.cc/', 'fastplay.to/')
 
     data = httptools.downloadpage(page_url).data
     # ~ logger.debug(data)
@@ -24,7 +26,8 @@ def get_video_url(page_url, url_referer=''):
     # Detección de subtítulos
     subtitulo = scrapertools.find_single_match(data, 'tracks\s*:\s*\[{file:"(.*?)"')
     if "http" not in subtitulo and subtitulo != '':
-        subtitulo = "http://fastplay.cc" + subtitulo
+        # ~ subtitulo = "http://fastplay.cc" + subtitulo
+        subtitulo = "http://fastplay.to" + subtitulo
 
     if videos:
         for video_url, video_calidad in videos:

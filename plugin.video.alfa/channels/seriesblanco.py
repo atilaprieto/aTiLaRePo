@@ -3,6 +3,10 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
 
 from channels import autoplay
@@ -18,7 +22,7 @@ from channelselector import get_thumb
 host = 'http://seriesblanco.org/'
 
 IDIOMAS = {'es': 'Cast', 'la': 'Lat', 'vos': 'VOSE', 'vo': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = ['SD', 'Micro-HD-720p', '720p', 'HDitunes', 'Micro-HD-1080p' ]
 list_servers = ['powvideo','yourupload', 'openload', 'gamovideo', 'flashx', 'clipwatching', 'streamango', 'streamcloud']
 

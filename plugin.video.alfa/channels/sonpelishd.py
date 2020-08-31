@@ -3,7 +3,17 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
+
 import re
+import base64
 
 from core import httptools
 from core import scrapertools
@@ -160,9 +170,8 @@ def findvideos(item):
         new_data = get_source(surl)
         b_url = scrapertools.find_single_match(new_data, 'var hash=([^;]+)')
 
-        import base64, urllib
         try:
-            url = base64.b64decode(b_url)
+            url = base64.b64decode(b_url.encode('utf8')).decode('utf8')
             url = urllib.unquote(url)
         except:
             continue

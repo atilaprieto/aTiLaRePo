@@ -271,7 +271,7 @@ def findvideos(item):
         server = elem.find("p", class_="AAIco-dns").text
         if server.lower() == "embed":
             server = "Mystream"
-        lang = elem.find("p", class_="AAIco-language").text
+        lang = elem.find("p", class_="AAIco-language").text.split(' ')[1]
         qlty = elem.find("p", class_="AAIco-equalizer").text
         title = "%s [%s]" % (server, lang)
         itemlist.append(Item(channel=item.channel, title=title, url=url, action='play',

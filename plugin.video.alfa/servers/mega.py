@@ -58,7 +58,7 @@ def test_video_exists(page_url):
             req_api = json.loads(req_api)[0]
         except:
             req_api = json.loads(req_api)
-    logger.error(req_api)
+    logger.debug(req_api)
     if isinstance(req_api, (int, long)):
         if req_api in codes:
             msg = codes[req_api]
@@ -66,6 +66,7 @@ def test_video_exists(page_url):
     else:
         #Comprobación limite cuota restante
         from megaserver import Client
+        global c
         c = Client(url=page_url, is_playing_fnc=platformtools.is_playing)
         global files
         files = c.get_files()
@@ -77,6 +78,7 @@ def test_video_exists(page_url):
             return False, "Error codigo %s" % str(files)
 
         return True, ""
+
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     page_url = page_url.replace('/embed#', '/#')

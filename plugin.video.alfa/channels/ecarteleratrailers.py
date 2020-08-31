@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+
 import re
-import urlparse
 
 from core import scrapertools
 from core.item import Item
@@ -20,21 +28,23 @@ def mainlist(item):
     # Descarga la página
     # ------------------------------------------------------
     data = httptools.downloadpage(item.url).data
-    # logger.info(data)
 
     # ------------------------------------------------------
     # Extrae las películas
     # ------------------------------------------------------
     patron = '<div class="viditem"[^<]+'
-    patron += '<div class="fimg"><a href="([^"]+)"><img alt="([^"]+)" src="([^"]+)"/><p class="length">([^<]+)</p></a></div[^<]+'
+    patron += '<div class="fimg"><a href="([^"]+)"><img alt="([^"]+)"\s*src="([^"]+)"\s*/><p class="length">([^<]+)</p></a></div[^<]+'
     patron += '<div class="fcnt"[^<]+'
     patron += '<h4><a[^<]+</a></h4[^<]+'
     patron += '<p class="desc">([^<]+)</p>'
+    
+    #logger.info(patron)
+    #logger.info(data)
 
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle, scrapedthumbnail, duration, scrapedplot in matches:
-        title = scrapedtitle + " (" + duration + ")"
+        title = scrapertools.htmlclean(scrapedtitle + " (" + duration + ")")
         url = scrapedurl
         thumbnail = scrapedthumbnail
         #mejora imagen
@@ -60,7 +70,7 @@ def mainlist(item):
 
         # Añade al listado de XBMC
         itemlist.append(Item(channel=item.channel, action="mainlist", title=scrapedtitle, url=scrapedurl,
-                             thumbnail=scrapedthumbnail, plot=scrapedplot, server="directo", folder=True,
+                             thumbnail=scrapedthumbnail, server="directo", folder=True,
                              viewmode="movie_with_plot"))
 
     return itemlist

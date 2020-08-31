@@ -8,15 +8,16 @@ from core import scrapertools
 from platformcode import logger
 
 
-# def test_video_exists(page_url):
-    # data = httptools.downloadpage(page_url).data
-    # if "File was deleted" in data or "eliminado" in data\
-       # or "no está disponible" in data or "Page Not Found" in data:
-        # return False, "[pornhub] El video ha sido borrado o no existe"
-    # return True, ""
+def test_video_exists(page_url):
+    logger.info("(page_url='%s')" % page_url)
+    data = httptools.downloadpage(page_url).data
+    if "has been disabled" in data or "ha sido deshabilitado" in data:
+        return False, "[pornhub] El video ha sido borrado o no existe"
+    return True, ""
+
 
 def get_video_url(page_url, user="", password="", video_password=""):
-    logger.info()
+    logger.info("(page_url='%s')" % page_url)
     video_urls = []
     data = httptools.downloadpage(page_url).data
     data = scrapertools.find_single_match(data, '<div id="vpContentContainer">(.*?)</script>')

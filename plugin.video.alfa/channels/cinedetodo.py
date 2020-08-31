@@ -3,10 +3,19 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
-import re
 import sys
-import urllib
-import urlparse, base64
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urllib
+else:
+    import urlparse                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib
+
+import re
+import base64
 
 from core import httptools
 from core import scrapertools
@@ -310,7 +319,7 @@ def temporadas(item):
             if i.infoLabels['title']:
                 # Si la temporada tiene nombre propio añadirselo al titulo del item
                 i.title += " - %s" % (i.infoLabels['title'])
-            if i.infoLabels.has_key('poster_path'):
+            if 'poster_path' in i.infoLabels:
                 # Si la temporada tiene poster propio remplazar al de la serie
                 i.thumbnail = i.infoLabels['poster_path']
 

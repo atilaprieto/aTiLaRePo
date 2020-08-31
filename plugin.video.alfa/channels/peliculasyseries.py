@@ -3,8 +3,11 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
 import base64
 
 from channelselector import get_thumb
@@ -22,7 +25,7 @@ from platformcode import config, logger
 
 IDIOMAS = {'la': 'Latino', 'lat':'Latino', 'cas':'Castellano','es': 'Castellano', 'vs': 'VOSE', 'vos':'VOSE', 'vo':'VO',
            'ori':'VO', 'so':'VOS', 'sor':'VOS'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 
 list_quality = ['TS','Screener','DVDRip','HDRip', 'HDTV', 'micro720', 'micro1080']
 

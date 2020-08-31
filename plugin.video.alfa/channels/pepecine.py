@@ -3,8 +3,11 @@
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
 
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
 import re
-import urllib
 
 from channelselector import get_thumb
 from core import httptools
@@ -18,11 +21,12 @@ from channels import autoplay
 from platformcode import config, logger
 
 IDIOMAS = {'la': 'LAT', 'es': 'CAST', 'sub': 'VOSE', 'si': 'VOS', 'en': 'VO'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['rapidvideo', 'verystream', 'streamplay']
 
-host = 'https://pepecine.to/'
+host = 'https://pepecine.tv/'
+referer = 'https://pepecine.to'
 
 
 def mainlist(item):
@@ -97,7 +101,7 @@ def list_news(item):
     listed = []
     next = False
 
-    data = get_source(item.url)
+    data = get_source(item.url, referer=referer)
 
     patron = '<td><a href=([^ ]+) target="_parent"><img src=([^ ]+) class="s8" alt="([^"]+)"'
 
@@ -117,7 +121,7 @@ def list_news(item):
         if item.news_type == 'movies':
             filter_thumb = thumb.replace("https://image.tmdb.org/t/p/w185_and_h278_bestv2", "")
             filter_list = {"poster_path": filter_thumb.strip()}
-            filter_list = filter_list.items()
+            filter_list = list(filter_list.items())
             infoLabels['filtro'] = filter_list
             url = '%ssecure/titles/%s?titleId=%s' % (host, id, id)
         else:
@@ -167,7 +171,7 @@ def list_all(item):
 
     itemlist = []
 
-    json_data = httptools.downloadpage(item.url).json
+    json_data = httptools.downloadpage(item.url, headers={'Referer': referer}).json
     if len(json_data) > 0:
         for elem in json_data['pagination']['data']:
             year = elem['year']
@@ -226,7 +230,7 @@ def seasons(item):
     itemlist = []
     infoLabels = item.infoLabels
 
-    json_data = httptools.downloadpage(item.url).json
+    json_data = httptools.downloadpage(item.url, headers={'Referer': referer}).json
 
     if len(json_data) > 0:
         for elem in json_data['title']['seasons']:
@@ -262,7 +266,7 @@ def episodesxseason(item):
     itemlist = []
     infoLabels = item.infoLabels
 
-    json_data = httptools.downloadpage(item.url).json
+    json_data = httptools.downloadpage(item.url, headers={'Referer': referer}).json
 
     if len(json_data) > 0:
         for elem in json_data['title']['season']['episodes']:
@@ -285,7 +289,7 @@ def findvideos(item):
 
     itemlist = []
     is_tvshow = False
-    json_data = httptools.downloadpage(item.url).json
+    json_data = httptools.downloadpage(item.url, headers={'Referer': referer}).json
 
     if len(json_data) > 0:
         videos_info = json_data['title']['videos']
@@ -346,7 +350,7 @@ def search_results(item):
     series_list = []
     movies_list = []
 
-    json_data = httptools.downloadpage(item.url).json
+    json_data = httptools.downloadpage(item.url, headers={'Referer': referer}).json
 
     if json_data.get('results', ''):
         for elem in json_data['results']:
