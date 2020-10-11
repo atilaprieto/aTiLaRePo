@@ -321,9 +321,18 @@ def findvideos(item):
         dpost = scrapertools.find_single_match(enlace, "data-post='([^']+)")
         dnume = scrapertools.find_single_match(enlace, "data-nume='([^']+)")
         if dnume == 'trailer': continue
-        servidor = corregir_servidor(scrapertools.find_single_match(enlace, "<span class='server'>([^<.]+)"))
         if not dtype or not dpost or not dnume: continue
+
+        servidor = scrapertools.find_single_match(enlace, "<span class='server'>([^<.]+)")
         lang = scrapertools.find_single_match(enlace, "/img/flags/([^.']+)").lower()
+        if not servidor or not lang:
+            # ~ <span class='title'>Subtitulado / STREAMTAPE</span>
+            aux = scrapertools.find_single_match(enlace, "<span class='title'>([^<]+)")
+            if '/' in aux:
+                if not lang: lang = aux.split('/')[0].strip().lower()
+                if not servidor: servidor = aux.split('/')[1]
+
+        servidor = corregir_servidor(servidor)
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
                               title = '', dtype = dtype, dpost = dpost, dnume = dnume, referer = item.url,

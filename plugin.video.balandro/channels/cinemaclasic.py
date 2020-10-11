@@ -60,7 +60,8 @@ def anios(item):
     for url, title in matches:
         itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
-    for ano in range(1967, 1914, -1):
+    # ~ for ano in range(1967, 1914, -1):
+    for ano in range(2017, 1914, -1):
         itemlist.append(item.clone( action = 'list_all', title = str(ano), url = host + 'ano/' + str(ano) + '/' ))
 
     return itemlist
@@ -169,7 +170,7 @@ def extraer_embeds(data):
     itemlist = []
 
     for tipo in ['iframe', 'source']:
-        matches = scrapertools.find_multiple_matches(data, '<%s.*? src="([^"]+)' % tipo)
+        matches = scrapertools.find_multiple_matches(data, '(?i)<%s.*? src=(?:"|\')([^"\']+)' % tipo)
         for url in matches:
             if 'facebook.com' in url or 'twitter.com' in url or 'google.com' in url: continue
             if '.us.archive.org' in url: servidor = 'directo'
@@ -192,7 +193,7 @@ def findvideos(item):
     logger.info()
     itemlist = []
     
-    IDIOMAS = {'spanish':'Esp', 'vose':'VOSE'}
+    IDIOMAS = {'spanish':'Esp', 'vose':'VOSE', 'latino':'Lat'}
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
@@ -226,7 +227,7 @@ def findvideos(item):
                 continue
                 
             tds = scrapertools.find_multiple_matches(enlace, '<td>(.*?)</td>')
-            lang = tds[1].lower()
+            lang = tds[1].lower().replace('.','')
             other = 'hace ' + tds[3]
             # ~ other += ', ' + tipo
 

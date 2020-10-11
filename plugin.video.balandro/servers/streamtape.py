@@ -6,11 +6,20 @@ from platformcode import logger
 
 def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
+
+    page_url = page_url.replace('streamtape.com/v/', 'streamtape.com/e/')
+    video_urls = get_aux(page_url)
+    
+    if len(video_urls) == 0:
+        page_url = page_url.replace('streamtape.com/e/', 'streamtape.com/v/')
+        video_urls = get_aux(page_url)
+
+    return video_urls
+
+def get_aux(page_url):
     video_urls = []
-
-    page_url = page_url.replace('streamtape.com/e/', 'streamtape.com/v/')
-
-    data = httptools.downloadpage(page_url).data
+    
+    data = httptools.downloadpage(page_url, headers={'Referer': page_url}).data
     # ~ logger.debug(data)
     
     url = scrapertools.find_single_match(data, '<div id="videolink"[^>]*>(.*?)</div>')
@@ -20,4 +29,3 @@ def get_video_url(page_url, url_referer=''):
         video_urls.append(['mp4', url])
 
     return video_urls
-

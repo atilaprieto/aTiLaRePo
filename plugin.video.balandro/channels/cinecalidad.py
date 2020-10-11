@@ -7,7 +7,8 @@ from core.item import Item
 from core import httptools, scrapertools, tmdb
 
 
-DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.to/', 'https://www1.cinecalidad.top/']
+# ~ DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.to/', 'https://www1.cinecalidad.top/']
+DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.to/', 'https://www.cinecalidad.im/']
 
 def host_by_lang(lang=''):
     if lang == '': # si no se especifica idioma, obtenerlo de las preferencias de idioma del usuario
@@ -135,17 +136,18 @@ def peliculas(item):
     itemlist = []
 
     data = do_downloadpage(item.url)
-    logger.debug(data)
+    # ~ logger.debug(data)
 
     # ~ patron = '<div class="home_post_cont[^"]*">\s*<a href="([^"]+)">'
     # ~ patron += '<img width="[^"]*" height="[^"]*" src="([^"]+)" class="[^"]*" alt="[^"]*" title="([^"]+)"'
     # ~ patron += '.*?&lt;p&gt;(.*?)&lt;/p&gt;&lt;'
     patron = '<div class="home_post_cont[^"]*">\s*<a href=([^>]+)>'
-    patron += '<img width=\d* height=\d* src=([^ ]+) class="[^"]*" alt="[^"]*" loading=lazy title="([^"]+)"'
+    patron += '<img width=\d* height=\d* src=([^ ]+) class="[^"]*" alt="[^"]*" (?:loading=lazy |)title="([^"]+)"'
     patron += '.*?&lt;p&gt;(.*?)&lt;/p&gt;&lt;'
     matches = re.compile(patron, re.DOTALL).findall(data)
     
     for url, thumb, title, plot in matches:
+        if url.startswith('/'): url = host_by_lang('Lat')+url[1:]
         title = re.sub('&lt;!--.*?--&gt;', '', title)
         m = re.match(r"^(.*?)\((\d+)\)$", title)
         if m: 

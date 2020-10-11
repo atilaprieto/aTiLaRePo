@@ -10,8 +10,7 @@ from core import httptools, scrapertools, jsontools, servertools, tmdb
 # ~ host = "https://hdfull.me"
 # ~ host = "https://hdfull.io"
 # ~ host = "https://hdfull.lv"
-
-host = "https://hdfull.la"
+host = "https://hdfull.la/"
 
 perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (40) para que la subpaginación interna no se descompense
 
@@ -38,13 +37,18 @@ perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web
     # ~ from core import proxytools
     # ~ return proxytools.configurar_proxies_canal(item.channel, host)
 
-def do_downloadpage(url, post=None):
+def do_downloadpage(url, post=None, referer=None):
     url = url.replace('hdfull.tv', 'hdfull.la') # por si viene de enlaces guardados
     url = url.replace('hdfull.me', 'hdfull.la') # por si viene de enlaces guardados
     url = url.replace('hdfull.io', 'hdfull.la') # por si viene de enlaces guardados
     url = url.replace('hdfull.lv', 'hdfull.la') # por si viene de enlaces guardados
-    # ~ data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://hdfull.la', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:77.0) Gecko/20100101 Firefox/77.0'}).data
-    data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://hdfull.la', 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}).data
+    if not referer: referer = host
+    # ~ if not referer: referer = host+'peliculas-actualizadas'
+
+    # ~ data = httptools.downloadpage(url, post=post, headers={'Referer': host}).data
+    # ~ data = httptools.downloadpage(url, post=post, headers={'Referer': host, 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}).data
+    data = httptools.downloadpage(url, post=post, headers={'Referer': referer, 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36'}).data
+
     # ~ data = httptools.downloadpage_proxy('hdfull', url, post=post).data
     return data
 
@@ -66,12 +70,14 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( action='list_all', title='Últimas actualizadas (40)', url=host+'/peliculas-actualizadas', search_type='movie' ))
-    itemlist.append(item.clone( action='list_all', title='Últimos estrenos (40)', url=host+'/peliculas-estreno', search_type='movie' ))
+    itemlist.append(item.clone( action='list_all', title='Últimas actualizadas (40)', url=host+'peliculas-actualizadas', search_type='movie' ))
+    itemlist.append(item.clone( action='list_all', title='Últimos estrenos (40)', url=host+'peliculas-estreno', search_type='movie' ))
 
-    itemlist.append(item.clone( action='list_all', title='Lista por fecha', url=host+'/peliculas/date', search_type='movie' ))
-    itemlist.append(item.clone( action='list_all', title='Lista por rating IMDB', url=host+'/peliculas/imdb_rating', search_type='movie' ))
-    itemlist.append(item.clone( action='list_all', title='Lista por título', url=host+'/peliculas/abc', search_type='movie' ))
+    # ~ itemlist.append(item.clone( action='list_all', title='Últimas Novedades', url=host+'/peliculas', search_type='movie' )) # == 'Lista por fecha'
+
+    itemlist.append(item.clone( action='list_all', title='Lista por fecha', url=host+'peliculas/date', search_type='movie' ))
+    itemlist.append(item.clone( action='list_all', title='Lista por rating IMDB', url=host+'peliculas/imdb_rating', search_type='movie' ))
+    itemlist.append(item.clone( action='list_all', title='Lista por título', url=host+'peliculas/abc', search_type='movie' ))
 
     itemlist.append(item.clone( action='generos', title='Por género', search_type='movie' ))
 
@@ -84,8 +90,8 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( action='list_all', title='Últimas por fecha (40)', url=host+'/series/date', search_type='tvshow' ))
-    itemlist.append(item.clone( action='list_all', title='Primeras por rating IMDB (40)', url=host+'/series/imdb_rating', search_type='tvshow' ))
+    itemlist.append(item.clone( action='list_all', title='Últimas por fecha (40)', url=host+'series/date', search_type='tvshow' ))
+    itemlist.append(item.clone( action='list_all', title='Primeras por rating IMDB (40)', url=host+'series/imdb_rating', search_type='tvshow' ))
 
     itemlist.append(item.clone( action='series_abc', title='Lista por letra A-Z', search_type='tvshow' ))
     itemlist.append(item.clone( action='generos', title='Lista por género', search_type='tvshow' ))
@@ -122,7 +128,7 @@ def series_abc(item):
     itemlist = []
 
     for letra in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ9':
-        itemlist.append(item.clone( title=letra if letra != '9' else '#', url=host+'/series/abc/'+letra, action='list_all' ))
+        itemlist.append(item.clone( title=letra if letra != '9' else '#', url=host+'series/abc/'+letra, action='list_all' ))
 
     return itemlist
 
@@ -216,11 +222,11 @@ def temporadas(item):
         titulo = title
         if retitle != title: titulo += ' - ' + retitle
 
-        itemlist.append(item.clone( action='episodios', url=url, title=titulo, thumbnail=thumb, sid=sid,
+        itemlist.append(item.clone( action='episodios', url=url, title=titulo, thumbnail=thumb, sid=sid, referer=item.url,
                                     contentType='season', contentSeason=numtempo ))
 
     if len(itemlist) == 0: # Alguna serie de una sola temporada que no la tiene identificada
-        itemlist.append(item.clone( action='episodios', url=item.url+'/temporada-1', title='Temporada 1', sid=sid,
+        itemlist.append(item.clone( action='episodios', url=item.url+'/temporada-1', title='Temporada 1', sid=sid, referer=item.url,
                                     contentType='season', contentSeason=1 ))
 
     tmdb.set_infoLabels(itemlist)
@@ -239,17 +245,18 @@ def episodios(item):
         if not item.sid: return itemlist
 
     post = 'action=season&show=%s&season=%s' % (item.sid, item.contentSeason)
-    data = jsontools.load(do_downloadpage(host + '/a/episodes', post=post))
+    data = jsontools.load(do_downloadpage(host + 'a/episodes', post=post, referer=item.referer))
     # ~ logger.debug(data)
 
     for epi in data:
-        tit = epi['title']['es'] if 'es' in epi['title'] and epi['title']['es'] != '' else epi['title']['en'] if 'en' in epi['title'] else ''
+        logger.debug(epi)
+        tit = epi['title']['es'] if 'es' in epi['title'] and epi['title']['es'] else epi['title']['en'] if 'en' in epi['title'] and epi['title']['en'] else ''
         titulo = '%sx%s %s' % (epi['season'], epi['episode'], tit)
 
         langs = ['VOSE' if idio == 'ESPSUB' else idio.capitalize() for idio in epi['languages']]
         if langs: titulo += ' [COLOR %s][%s][/COLOR]' % (color_lang, ','.join(langs))
 
-        thumb = host + '/tthumb/220x124/' + epi['thumbnail']
+        thumb = host + 'tthumb/220x124/' + epi['thumbnail']
         url = item.url + '/episodio-' + epi['episode']
 
         itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb,
@@ -271,10 +278,15 @@ def findvideos(item):
     logger.info()
     itemlist = []
 
-    data_js = do_downloadpage(host+'/templates/hdfull/js/jquery.hdfull.view.min.js')
+    data_js = do_downloadpage(host+'templates/hdfull/js/jquery.hdfull.view.min.js')
+    # ~ logger.debug(data_js)
     key = scrapertools.find_single_match(data_js, 'JSON.parse\(atob.*?substrings\((.*?)\)')
+    if not key: 
+        key = scrapertools.find_single_match(data_js, 'JSON.*?\]\((0x[0-9a-f]+)\)\);')
+        if key: key = int(key, 16)
+        else: key = scrapertools.find_single_match(data_js, 'JSON.*?\]\(([0-9]+)\)\);')
 
-    data_js = do_downloadpage(host+'/js/providers.js')
+    data_js = do_downloadpage(host+'js/providers.js')
     try:
         from lib import balandroresolver
         provs = balandroresolver.hdfull_providers(data_js)
@@ -286,7 +298,6 @@ def findvideos(item):
     # ~ logger.debug(data)
     data_obf = scrapertools.find_single_match(data, "var ad\s*=\s*'([^']+)")
     data_decrypt = jsontools.load(obfs(base64.b64decode(data_obf), 126 - int(key)))
-    # ~ logger.debug(data_decrypt)
 
     matches = []
     for match in data_decrypt:
@@ -322,7 +333,7 @@ def search(item, texto):
         data = do_downloadpage(host)
         magic = scrapertools.find_single_match(data, "name='__csrf_magic'\s*value=\"([^\"]+)")
         item.search_post = '__csrf_magic=%s&menu=search&query=%s' % (magic, texto.replace(' ','+'))
-        item.url = host + '/buscar'
+        item.url = host + 'buscar'
         if item.search_type == '': item.search_type = 'all'
         return list_all(item)
     except:
@@ -341,7 +352,7 @@ def list_episodes(item):
     if not item.desde: item.desde = 0
 
     post = 'action=%s&start=%d&limit=%d&elang=ALL' % (item.opcion, item.desde, perpage)
-    data = jsontools.load(do_downloadpage(host + '/a/episodes', post=post))
+    data = jsontools.load(do_downloadpage(host + 'a/episodes', post=post, referer=host+'episodios'))
     # ~ logger.debug(data)
 
     for epi in data:
@@ -353,9 +364,9 @@ def list_episodes(item):
         langs = ['VOSE' if idio == 'ESPSUB' else idio.capitalize() for idio in epi['languages']]
         if langs: titulo += ' [COLOR %s][%s][/COLOR]' % (color_lang, ','.join(langs))
 
-        thumb = host + '/tthumb/220x124/' + epi['thumbnail']
+        thumb = host + 'tthumb/220x124/' + epi['thumbnail']
 
-        url_serie = host + '/serie/' + epi['show']['permalink']
+        url_serie = host + 'serie/' + epi['show']['permalink']
         url_tempo = url_serie + '/temporada-' + epi['season']
         url = url_tempo + '/episodio-' + epi['episode']
 

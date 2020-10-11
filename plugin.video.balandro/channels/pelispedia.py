@@ -337,8 +337,10 @@ def play(item):
                 itemlist.append(item.clone( url=url, server=servidor ))
 
     elif 'stream-mx.com/' in item.url:
-        item.url = item.url.replace('v=2&', '') + '&sub=&ver=si'
-        data = httptools.downloadpage(item.url, headers={'Referer': item.referer}).data
+        fid = scrapertools.find_single_match(item.url, "id=([^&]+)")
+        if not fid: return itemlist
+        url = 'https://stream-mx.com/player.php?id=%s&v=2&ver=si' % fid
+        data = httptools.downloadpage(url, headers={'Referer': item.referer}).data
         # ~ logger.debug(data)
         bloque = scrapertools.find_single_match(data, '"sources":\s*\[(.*?)\]')
         for enlace in scrapertools.find_multiple_matches(bloque, "\{(.*?)\}"):

@@ -2,19 +2,25 @@
 
 from core import httptools, scrapertools
 from platformcode import logger
-
+from lib import jsunpack
 
 def get_video_url(page_url, url_referer=''):
     logger.info("url=" + page_url)
     video_urls = []
     
-    resp = httptools.downloadpage(page_url)
-    # ~ logger.debug(resp.data)
+    data = httptools.downloadpage(page_url).data
+    # ~ logger.debug(data)
     
-    if 'no longer exists' in resp.data or 'to copyright issues' in resp.data:
+    if 'no longer exists' in data or 'to copyright issues' in data:
         return 'El archivo ha sido eliminado o no existe'
 
-    data = scrapertools.find_single_match(resp.data, 'sources:\s*\[(.*?)\]')
+    if 'sources:' not in data:
+        packed = scrapertools.find_single_match(data, "eval\((function\(p,a,c,k.*?)\)\s*</script>")
+        if not packed: return video_urls
+        data = jsunpack.unpack(packed)
+        # ~ logger.debug(data)
+
+    data = scrapertools.find_single_match(data, 'sources:\s*\[(.*?)\]')
     
     matches = scrapertools.find_multiple_matches(data, '"(http[^"]+)"')
     for url in matches:

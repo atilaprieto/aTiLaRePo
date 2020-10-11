@@ -142,26 +142,31 @@ def findvideos(item):
     matches = scrapertools.find_multiple_matches(bloque, "<li id='player-option-(\d+)'(.*?)</li>")
     for optnum, enlace in matches:
         # ~ logger.debug(enlace)
-        url = scrapertools.find_single_match(data, "<div id='source-player-%s' class='source-box'><div class='pframe'><iframe src=\"([^\"]+)" % optnum)
-        if not url:
+        
+        lang = scrapertools.find_single_match(enlace, "/img/flags/([^.']+)").lower()
+
+        bloque = scrapertools.find_single_match(data, "<div id='source-player-%s' class='source-box'><div class='pframe'>(.*?)</div></div>" % optnum)
+        # ~ logger.debug(bloque)
+        
+        urls = scrapertools.find_multiple_matches(bloque, '(?i)<iframe.*? src=(?:"|\')([^"\']+)')
+        if not urls:
             dtype = scrapertools.find_single_match(enlace, "data-type='([^']+)")
             dpost = scrapertools.find_single_match(enlace, "data-post='([^']+)")
             dnume = scrapertools.find_single_match(enlace, "data-nume='([^']+)")
             if not dtype or not dpost or not dnume or dnume == 'trailer': continue
-            url = get_url(dpost, dnume, dtype, item.url)
+            urls = [get_url(dpost, dnume, dtype, item.url)]
 
-        if not url: continue
-        # ~ logger.info(url)
-        servidor = servertools.get_server_from_url(url)
-        if not servidor or servidor == 'directo': continue
-        url = servertools.normalize_url(servidor, url)
+        for url in urls:
+            if not url: continue
+            # ~ logger.info(url)
+            servidor = servertools.get_server_from_url(url)
+            if not servidor or servidor == 'directo': continue
+            url = servertools.normalize_url(servidor, url)
 
-        lang = scrapertools.find_single_match(enlace, "/img/flags/([^.']+)").lower()
-
-        itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
-                              title = '', url = url,
-                              language = IDIOMAS.get(lang, lang)
-                       ))
+            itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
+                                  title = '', url = url,
+                                  language = IDIOMAS.get(lang, lang)
+                           ))
 
     return itemlist
 

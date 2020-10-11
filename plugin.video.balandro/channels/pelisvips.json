@@ -11,5 +11,5 @@
   "categories": ["movie"],
   "language": ["cast", "lat", "vose"],
 
-  "notes": "Películas por idioma, por género, por calidad, Estrenos, Netflix."
+  "notes": "Películas por idioma, por género, por calidad, Estrenos, Netflix. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

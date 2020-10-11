@@ -134,7 +134,7 @@ def findvideos(item):
         else: lang = 'VO'
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = '',
-                              title = '', url = url,
+                              title = '', url = url, referer = item.url,
                               language = lang, quality = qlty
                        ))
 

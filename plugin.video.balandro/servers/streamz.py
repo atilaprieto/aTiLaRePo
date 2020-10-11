@@ -7,8 +7,8 @@ from lib import jsunpack
 def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
-
-    page_url = page_url.replace('streamz.cc/', 'streamz.vg/')
+    
+    page_url = page_url.replace('streamz.cc/', 'streamz.vg/').replace('streamz.ws/', 'streamz.vg/')
     
     data = httptools.downloadpage(page_url).data
     # ~ logger.debug(data)
@@ -18,7 +18,7 @@ def get_video_url(page_url, url_referer=''):
     packeds = scrapertools.find_multiple_matches(data, "function\(p,a,c,k.*?</script>")
     for packed in packeds:
         unpacked = jsunpack.unpack(packed)
-        # ~ logger.info(unpacked)
+        logger.info(unpacked)
         url = scrapertools.find_single_match(unpacked.replace("\\'", "'"), "src:'([^']+)")
         if url and url.startswith('http') and 'getlink' in url:
             lbl = scrapertools.find_single_match(unpacked, 'var (\w+)')

@@ -16,7 +16,7 @@
         "url": "https://\\1"
       },
       {
-        "pattern": "mega(?:.co|).nz/file/([A-Za-z0-9\\-\\_\\#\\!]+)",
+        "pattern": "mega(?:.co|).nz/(?:file|embed)/([A-Za-z0-9\\-\\_\\#\\!]+)",
         "url": "https://mega.nz/embed#!\\1"
       }
     ]

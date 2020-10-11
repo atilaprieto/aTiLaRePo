@@ -296,7 +296,7 @@ def findvideos(item):
                 # ~ servidor = 'directo' if it['reproductor_nombre'] == 'SuperVideo' else it['reproductor_nombre'].lower()
                 servidor = 'directo' if it['reproductor_nombre'] in ['SuperVideo', 'FastPlayer'] else it['reproductor_nombre'].lower()
                 itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
-                                      title = '', url = 'https://directv.clivertv.com/getFile.php?hash='+it['token'],
+                                      title = '', url = 'https://directv.clivertv.to/getFile.php?hash='+it['token'],
                                       language = IDIOMAS.get(lang, lang), other = it['reproductor_nombre'] if servidor == 'directo' else ''
                                ))
 
@@ -322,10 +322,10 @@ def play(item):
     logger.info()
     itemlist = []
 
-    if item.url.startswith('https://directv.clivertv.com/getFile.php'):
+    if item.url.startswith('https://directv.clivertv.to/getFile.php'):
         url = item.url.split('?')[0]
         post = item.url.split('?')[1]
-        data = httptools.downloadpage(url, post=post).data.replace('\\/', '/')
+        data = httptools.downloadpage(url, post=post, headers={'Referer': host}).data.replace('\\/', '/')
         # ~ logger.debug(data)
         try:
             dom, vid = scrapertools.find_single_match(data, '(https://[^/]+)/player/([^&]+)')

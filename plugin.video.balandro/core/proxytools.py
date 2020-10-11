@@ -157,12 +157,14 @@ def _buscar_proxies(canal, url):
             proxies.append(prox+':'+puerto)
 
     elif provider == 'proxyservers.pro':
-        url_provider = 'https://es.proxyservers.pro/proxy/list'
+        url_provider = 'https://es.proxyservers.pro/proxy/list?__path2query_param__='
+        url_provider += '/protocol/' + ('https' if url.startswith('https') else 'http')
         if tipo_proxy != '': url_provider += '/anonymity/' + tipo_proxy
         if pais_proxy != '': url_provider += '/country/' + pais_proxy
-        url_provider += '/protocol/' + ('https' if url.startswith('https') else 'http')
+        url_provider += '/order/updated/order_dir/desc/page/1'
 
         resp = httptools.downloadpage(url_provider, raise_weberror=False)
+        # ~ logger.debug(resp.data)
         
         chash = scrapertools.find_single_match(resp.data, "var chash\s*=\s*'([^']+)")
         def decode_puerto(t, e):
@@ -174,7 +176,7 @@ def _buscar_proxies(canal, url):
             return ''.join(a)
 
         proxies = []
-        enlaces = scrapertools.find_multiple_matches(resp.data, '(\d+\.\d+\.\d+\.\d+)</a></td><td><span class="port" data-port="([^"]+)')
+        enlaces = scrapertools.find_multiple_matches(resp.data, '(\d+\.\d+\.\d+\.\d+)</a>\s*</td>\s*<td><span class="port" data-port="([^"]+)')
         for prox, puerto in enlaces:
             proxies.append(prox + ':' + decode_puerto(puerto, chash))
                                                           

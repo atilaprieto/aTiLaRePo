@@ -173,7 +173,7 @@ def play(item):
         url = scrapertools.find_single_match(data, "sources:.*?'file':\s*'([^']+)")
         if url:
             servidor = servertools.get_server_from_url(url)
-            if servidor and servidor != 'directo' or 'storage.googleapis.com/' in url:
+            if (servidor and servidor != 'directo') or 'storage.googleapis.com/' in url or 'googleusercontent.com/' in url:
                 url = servertools.normalize_url(servidor, url)
                 itemlist.append(item.clone( url=url, server=servidor ))
 

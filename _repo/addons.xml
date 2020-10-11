@@ -325,7 +325,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.18" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.21" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -342,8 +342,8 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Inkapelis, Pepecine, Pelispedia, Hdfull, Seriemega, Cuevana3, Torrentdivx.
-    Servidores modificados: Digiload, Gloria, Uploadsmobi.
+    Canales modificados: Hdfull, Pepecine, Seriemega, Cuevana3, Seriesflix.
+    Servidores modificados: Upstream, Vup, Playtube, Gloria, Streamz.
     </news>
 
     <assets>
@@ -386,6 +386,110 @@ You can clone the project and host it in your own server.
 		<platform>all</platform>
         <website></website>
         <video_guide></video_guide>
+	</extension>
+</addon>
+
+<addon
+	id="plugin.video.chopocine" version="4" name="[B][COLOR white]CHOPO[COLOR gold]CINE[/COLOR][/B]" provider-name="equipo tvchopo">
+	<requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+	<import addon="script.module.addon.common" version="2.0.0"/>
+	<import addon="script.module.pycryptodome" version="3.4.3"/>
+    <import addon="script.module.beautifulsoup" version="3.2.1"/>
+    <import addon="script.module.simple.downloader" version="0.9.4"/>
+    <import addon="script.module.beautifulsoup4" />
+    <import addon="script.module.requests" />
+    <import addon="script.module.httplib2" />
+    <import addon="script.module.liveresolver" version="0.1.24" optional="true"/>
+    <import addon="script.module.youtube.dl" optional="true"/>
+    <import addon="plugin.video.youtube" />
+    <import addon="script.module.urlresolver" />
+	<import addon="script.module.resolveurl" optional="true"/>
+	<import addon="script.module.simplejson" />
+    <import addon="script.module.livestreamer" optional="true"/>
+    <import addon="script.module.pyamf" optional="true"/>
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	</extension>
+
+	 <extension point="xbmc.addon.repository" name="tvchopo">
+        <info>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml</info>
+        <checksum>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml.md5</checksum>
+        <datadir zip="true">https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/</datadir>
+    </extension>
+
+
+	<extension point="xbmc.addon.metadata">
+                <platform>all</platform>
+		<summary lang="en">chopocine</summary>
+		<summary lang="da">chopocine</summary>
+		<description lang="en">[B][LOWERCASE][CAPITALIZE][COLOR white]addon de cine de la familia tvchopo[COLOR aqua]                   agradecimientos a jesus  de pelis a la carta por los tutoriales... a titan con sus ayudas y su codigo para los colores.. y a todos los que me hayan podido ayudar muchisimas gracias a todos                                                                     para cualquier consulta o problema  unete  a nuestro grupo de telegram [COLOR yellow]@tvchopo[/COLOR][/CAPITALIZE][/LOWERCASE][/B]</description>
+		<website></website>
+		<license>GPL 2.0</license>
+		<platform>all</platform>
+<assets>
+        <icon>icon.gif</icon>
+  <screenshot>resources/screenshots/screenshot1.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot2.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot3.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot4.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot5.jpg</screenshot>
+        <fanart>fanart.png</fanart>
+    </assets>
+		<language>es</language>
+	</extension>
+</addon>
+
+<addon
+	id="plugin.video.choposeries" version="3.0" name="[B][COLOR white]CHOPO[COLOR gold]SERIES 3.0[/COLOR][/B]" provider-name="equipo tvchopo">
+	<requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+	<import addon="script.module.addon.common" version="2.0.0"/>
+	<import addon="script.module.pycryptodome" version="3.4.3"/>
+    <import addon="script.module.beautifulsoup" version="3.2.1"/>
+    <import addon="script.module.simple.downloader" version="0.9.4"/>
+    <import addon="script.module.beautifulsoup4" />
+    <import addon="script.module.requests" />
+    <import addon="script.module.httplib2" />
+    <import addon="script.module.liveresolver" version="0.1.24" optional="true"/>
+    <import addon="script.module.youtube.dl" optional="true"/>
+    <import addon="plugin.video.youtube" />
+    <import addon="script.module.urlresolver" />
+	<import addon="script.module.resolveurl" optional="true"/>
+	<import addon="script.module.simplejson" />
+    <import addon="script.module.livestreamer" optional="true"/>
+    <import addon="script.module.pyamf" optional="true"/>
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	</extension>
+
+	 <extension point="xbmc.addon.repository" name="tvchopo">
+        <info>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml</info>
+        <checksum>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml.md5</checksum>
+        <datadir zip="true">https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/</datadir>
+    </extension>
+
+
+	<extension point="xbmc.addon.metadata">
+                <platform>all</platform>
+		<summary lang="en">choposeries</summary>
+		<summary lang="da">choposeries</summary>
+		<description lang="en">[B][LOWERCASE][CAPITALIZE][COLOR white]addon de series de la familia tvchopo[COLOR aqua]                   agradecimientos a jesus  de pelis a la carta por los tutoriales... a titan con sus ayudas y su codigo para los colores.. y a todos los que me hayan podido ayudar muchisimas gracias a todos                                                                     para cualquier consulta o problema  unete  a nuestro grupo de telegram [COLOR yellow]@tvchopo[/COLOR][/CAPITALIZE][/LOWERCASE][/B]</description>
+		<website></website>
+		<license>GPL 2.0</license>
+		<platform>all</platform>
+<assets>
+        <icon>icon.gif</icon>
+  <screenshot>resources/screenshots/screenshot1.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot2.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot3.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot4.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot5.jpg</screenshot>
+        <fanart>fanart.png</fanart>
+    </assets>
+		<language>es</language>
 	</extension>
 </addon>
 
@@ -451,7 +555,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.1.1" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.1.4" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -572,11 +676,10 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.mitele" name="MITELE" version="1.1.7" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.mitele" name="MITELE" version="1.1.9" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
-		<import addon="script.module.urlresolver" />
 		<import addon="script.module.resolveurl" />
 	</requires>
 	<extension point="xbmc.python.pluginsource" library="default.py">
@@ -691,7 +794,7 @@ v.2.1.5
 
 <addon id="plugin.video.tvchopo"
        name="[B][LOWERCASE][CAPITALIZE][COLOR white]Tv[COLOR gold]chopo[/CAPITALIZE][/LOWERCASE][/B][/COLOR]"
-       version="17"
+       version="19"
        provider-name="equipo-chopo">
  <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -745,7 +848,63 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.youtube" name="YouTube" version="6.8.3" provider-name="anxdpanic, bromix">
+<addon id="plugin.video.Tvchopo.Kids"
+       name="[B][LOWERCASE][CAPITALIZE][COLOR white]TVCHOPO[COLOR gold] KIDS[/CAPITALIZE][/LOWERCASE][/B][/COLOR]"
+       version="11"
+       provider-name="equipo-chopo">
+ <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.beautifulsoup" version="3.2.1"/>
+    <import addon="script.module.simple.downloader" version="0.9.4"/>
+    <import addon="script.module.beautifulsoup4" />
+    <import addon="script.module.requests" />
+    <import addon="script.module.httplib2" />
+    <import addon="script.module.liveresolver" version="0.1.24" optional="true"/>
+    <import addon="script.module.youtube.dl" optional="true"/>
+    <import addon="plugin.video.youtube" />
+    <import addon="script.module.urlresolver" />
+	<import addon="script.module.resolveurl" optional="true"/>
+	<import addon="script.module.simplejson" />
+    <import addon="script.module.livestreamer" optional="true"/>
+    <import addon="script.module.pyamf" optional="true"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+
+ <extension point="xbmc.addon.repository" name="tvchoco Jose">
+        <info>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml</info>
+        <checksum>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml.md5</checksum>
+        <datadir zip="true">https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/</datadir>
+    </extension>
+
+
+
+
+  <extension point="xbmc.addon.metadata">
+    <summary>Tvchopo.Kids addon familiar</summary>
+    <description>
+        addon Tvchopo.Kids no contiene ningun material propio..
+		todo el contenido es enlazado a las webs mas conocidas
+		de internet.....
+
+	tvchopo ni se vender ni se cobra ni acepta donaciones... si ha sido ese el caso  ha sido usted estafado,...para mas informacion entra en nuestro grupo de telegram @tvchopo
+
+    </description>
+    <platform>all</platform>
+	<assets>
+        <icon>icon.gif</icon>
+  <screenshot>resources/screenshots/screenshot1.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot2.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot3.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot4.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot5.jpg</screenshot>
+        <fanart>fanart.gif</fanart>
+    </assets>
+  </extension>
+</addon>
+
+<addon id="plugin.video.youtube" name="YouTube" version="6.8.5" provider-name="anxdpanic, bromix">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
         <import addon="script.module.six" version="1.11.0"/>
@@ -759,13 +918,12 @@ v.2.1.5
     <extension point="xbmc.python.module" library="resources/lib/"/>
     <extension point="xbmc.addon.metadata">
         <news>
-[fix] playback of some videos
-[fix] notifications for some languages |contrib: Mutronics|
-[fix] fix rating videos causing and error even though it succeeded
-[upd] cache javascript player url for 4 hours, reduces http requests per play by 1
-[upd] use new settings format on Kodi 19
-[lang] el_gr strings |contrib: twilight0|
-[lang] hu_hu strings |contrib: thelacesz|
+[fix] playback of purchased movies |contrib: MisterD81|
+[fix] notifications for some languages on Kodi 19
+[fix] searching for some languages
+[fix] loading on some versions of python 3
+[fix] some videos failing to play with an Invalid URL exception
+[upd] use xbmcvfs.translatePath if available, clean up for Kodi 19
         </news>
         <assets>
             <icon>icon.png</icon>
@@ -816,8 +974,7 @@ v.2.1.5
         <license>GPL-2.0-only</license>
         <forum>https://ytaddon.page.link/forum</forum>
         <website>https://www.youtube.com</website>
-        <email>ytplugin at datanet dot ws</email>
-        <source>https://github.com/jdf76/plugin.video.youtube</source>
+        <source>https://github.com/anxdpanic/plugin.video.youtube</source>
         <reuselanguageinvoker>true</reuselanguageinvoker>
     </extension>
 </addon>
@@ -1207,6 +1364,29 @@ v.2.1.5
   </extension>
 </addon>
 
+<addon id="script.module.addon.common"
+	     name="Common addon methods"
+	     version="2.0.0"
+	     provider-name="Eldorado (original: t0mm0)">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Collection of commonly used addon routines</summary>
+    <description lang="en">Collection of commonly used addon routines to simplify addon development.</description>
+    <disclaimer lang="en"></disclaimer>
+    <language></language>
+    <platform>all</platform>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <forum></forum>
+    <website></website>
+    <email></email>
+    <source></source>
+  </extension>
+</addon>
+
 <addon id="script.module.clouddrive.common" name="Cloud Drive Common Module" version="1.2.12" provider-name="Carlos Guzman (cguZZman)">
 	<requires>
 		<import addon="xbmc.python" version="2.25.0" />
@@ -1457,7 +1637,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.6" provider-name="gujal">
+<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.10" provider-name="gujal">
     <requires>
         <!-- <import addon="xbmc.python" version="3.0.0" /> -->
         <import addon="script.module.six" version="0.0.1"/>
@@ -1475,7 +1655,10 @@ You can clone the project and host it in your own server.
         <summary lang="hr_HR">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju.</summary>
         <summary lang="el_GR">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi.</summary>
         <description lang="en_GB">Resolve common video host URL's to be playable in XBMC/Kodi, simplify addon development of video plugins requiring multi video hosts.</description>
+        <description lang="el_GR">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi, απλοποίηση της ανάπτυξης των προσθέτων που χρησιμοποιούν πολλαπλούς εξυπηρετητές για υλικό βίντεο</description>
         <description lang="hr_HR">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju, pojednostavnjuje razvoj priključaka za video dodatke koji zahtjevaju višestruke video izvore.</description>
+        <disclaimer lang="en_GB">This script only resolves video content from legitimate file lockers without prejudice. If this script is being used by 3rd parties to resolve content that you feel infringes upon your Intellectual Property then please take your complaints to the actual website or developer linking to such content and not here. This script in no way searches for any content whatsoever.</disclaimer>
+        <disclaimer lang="el_GR">Το ανωτέρο σενάριο το μόνο που κάνει είναι να επιλύει οπτικοακουστικό περιεχόμενο από νόμιμες πηγές χωρίς προκατάληψη. Εάν το ανωτέρο σενάριο χρησιμοποιηθεί από τρίτους ώστε να επιλύσει περιεχόμενο το οποίο σας προκαλεί αντίδραση ότι παραβιάζει την πνευματική σας ιδιοκτησία παρακαλώ μεταφέρετε τα παραπονά σας στον ιστότοπο τον οποίο βρίσκεται το εν λόγω περιεχόμενο η τον δημιουργό ο οποίος πραγματοποιεί την σύνδεση και όχι εδω. Το σενάριο αυτό ουδεμία περίπτωση πραγματοποιεί αναζήτηση περιεχομένου.</disclaimer>
         <assets>
             <icon>icon.png</icon>
             <fanart>fanart.jpg</fanart>
@@ -1483,7 +1666,7 @@ You can clone the project and host it in your own server.
     </extension>
 </addon>
 
-<addon id="script.module.urlresolver" name="URLResolver" version="5.1.6" provider-name="tvaddons">
+<addon id="script.module.urlresolver" name="URLResolver" version="5.1.10" provider-name="tvaddons">
     <requires>
         <!-- <import addon="xbmc.python" version="3.0.0" /> -->
         <import addon="script.module.six" version="0.0.1"/>
@@ -1497,12 +1680,15 @@ You can clone the project and host it in your own server.
     <extension point="xbmc.python.pluginsource" library="lib/default.py" />
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
-        <summary lang="en">Resolve common video host URL's to be playable in XBMC/Kodi.</summary>
-        <summary lang="es">Resolver enlaces a videos de sitios populares para poder reproducirlos en XBMC/Kodi.</summary>
-        <summary lang="hr">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju.</summary>
-        <summary lang="el">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi.</summary>
-        <description lang="en">Resolve common video host URL's to be playable in XBMC/Kodi, simplify addon development of video plugins requiring multi video hosts.</description>
-        <description lang="hr">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju, pojednostavnjuje razvoj priključaka za video dodatke koji zahtjevaju višestruke video izvore.</description>
+        <summary lang="en_GB">Resolve common video host URL's to be playable in XBMC/Kodi.</summary>
+        <summary lang="es_ES">Resolver enlaces a videos de sitios populares para poder reproducirlos en XBMC/Kodi.</summary>
+        <summary lang="hr_HR">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju.</summary>
+        <summary lang="el_GR">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi.</summary>
+        <description lang="en_GB">Resolve common video host URL's to be playable in XBMC/Kodi, simplify addon development of video plugins requiring multi video hosts.</description>
+        <description lang="el_GR">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi, απλοποίηση της ανάπτυξης των προσθέτων που χρησιμοποιούν πολλαπλούς εξυπηρετητές για υλικό βίντεο</description>
+        <description lang="hr_HR">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju, pojednostavnjuje razvoj priključaka za video dodatke koji zahtjevaju višestruke video izvore.</description>
+        <disclaimer lang="en_GB">This script only resolves video content from legitimate file lockers without prejudice. If this script is being used by 3rd parties to resolve content that you feel infringes upon your Intellectual Property then please take your complaints to the actual website or developer linking to such content and not here. This script in no way searches for any content whatsoever.</disclaimer>
+        <disclaimer lang="el_GR">Το ανωτέρο σενάριο το μόνο που κάνει είναι να επιλύει οπτικοακουστικό περιεχόμενο από νόμιμες πηγές χωρίς προκατάληψη. Εάν το ανωτέρο σενάριο χρησιμοποιηθεί από τρίτους ώστε να επιλύσει περιεχόμενο το οποίο σας προκαλεί αντίδραση ότι παραβιάζει την πνευματική σας ιδιοκτησία παρακαλώ μεταφέρετε τα παραπονά σας στον ιστότοπο τον οποίο βρίσκεται το εν λόγω περιεχόμενο η τον δημιουργό ο οποίος πραγματοποιεί την σύνδεση και όχι εδω. Το σενάριο αυτό ουδεμία περίπτωση πραγματοποιεί αναζήτηση περιεχομένου.</disclaimer>
         <forum>https://www.tvaddons.co/forums</forum>
         <website>https://www.tvaddons.co</website>
     </extension>
@@ -1524,15 +1710,17 @@ You can clone the project and host it in your own server.
     </extension>
 </addon>
 
-<addon id="service.xbmc.versioncheck" name="Version Check" version="0.5.6" provider-name="Team Kodi">
+<addon id="service.xbmc.versioncheck" name="Version Check" version="0.5.8" provider-name="Team Kodi">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
     </requires>
     <extension point="xbmc.service" library="resources/lib/runner.py" start="login"/>
     <extension point="xbmc.addon.metadata">
         <news>
-- add Kodi 18.8 stable release
-- add Kodi 19.0 alpha1 release
+- add Kodi 19.0 alpha2 release
+- use xbmcvfs for translatePath for matrix
+- fix platforms where subprocess is not available
+- fix dialogs on Kodi 19
         </news>
         <assets>
             <icon>icon.png</icon>

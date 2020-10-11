@@ -3,7 +3,7 @@
   "name": "CineOnline",
   "thumbnail": "cineonline.jpg",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["all", "movie", "tvshow"],

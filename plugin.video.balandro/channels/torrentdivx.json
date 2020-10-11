@@ -3,7 +3,7 @@
   "name": "TorrentDivx",
   "thumbnail": "torrentdivx.png",
 
-  "active": false,
+  "active": true,
 
   "searchable": true,
   "search_types": ["all", "movie", "tvshow"],
@@ -11,5 +11,5 @@
   "categories": ["movie", "tvshow", "torrent"],
   "language": ["cast", "lat", "vose"],
 
-  "notes": "Películas y algunas series, con enlaces torrent exclusivamente, por géneros, idiomas y calidades."
+  "notes": "Películas y algunas series, con enlaces torrent exclusivamente, por géneros, idiomas y calidades. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

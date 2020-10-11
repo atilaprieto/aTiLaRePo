@@ -201,7 +201,7 @@ def findvideos(item):
         if servidor == 'Servidor': continue
         server = scrapertools.find_single_match(servidor, 'domain=(?:www.|dl.|)([a-z0-9]+)')
         server = servertools.corregir_servidor(server)
-        url = scrapertools.find_single_match(enlace, " href='([^']+)'")
+        url = scrapertools.find_single_match(enlace, " href='([^']+)'").strip()
         if not url.startswith('http'): url = host + url[1:]
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = server.lower(), referer = item.url,

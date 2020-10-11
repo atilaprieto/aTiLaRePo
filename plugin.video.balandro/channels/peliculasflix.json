@@ -1,0 +1,15 @@
+{
+  "id": "peliculasflix",
+  "name": "PeliculasFlix",
+  "thumbnail": "peliculasflix.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast", "lat", "vose"],
+
+  "notes": "Películas por idiomas, géneros y productoras."
+}

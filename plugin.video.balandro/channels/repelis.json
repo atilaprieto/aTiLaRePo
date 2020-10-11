@@ -1,0 +1,15 @@
+{
+  "id": "repelis",
+  "name": "RePelis",
+  "thumbnail": "repelis.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast", "lat", "vose"],
+
+  "notes": "Acceso por separado a Castellano, Latino y Subtitulado. Películas por género."
+}

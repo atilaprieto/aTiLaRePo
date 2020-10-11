@@ -2,14 +2,13 @@
   "id": "vidtodo",
   "name": "Vidtodo",
  
-  "active": false,
-  "notes": "Requiere recaptcha",
+  "active": true,
 
   "find_videos": {
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(vidtodoo|vidtodo|vidto-do|vidtudu|vidtoply).com/(?:embed-|)([A-z0-9]+)",
+        "pattern": "(vidtodoo|vidtodo|vidto-do|vidtudu|vidtoply|vixtodo|vidtobo).com/(?:embed-|)([A-z0-9]+)",
         "url": "https://\\1.com/\\2"
       }
     ]

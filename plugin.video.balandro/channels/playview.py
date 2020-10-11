@@ -192,6 +192,12 @@ def puntuar_calidad(txt):
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
+# Si hay excepciones concretas de este canal, añadir aquí, si son genéricas añadir en servertools.corregir_servidor
+def corregir_servidor(servidor):
+    servidor = servertools.corregir_servidor(servidor)
+    if servidor == 'youtvgratis': return 'fembed'
+    return servidor
+
 def findvideos(item):
     logger.info()
     itemlist = []
@@ -223,9 +229,7 @@ def findvideos(item):
             # ~ logger.debug('%s %s %s %s' % (calidad, linkid, lang, servidor))
             servidor = servidor.replace('https://', '').replace('http://', '').replace('www.', '').lower()
             servidor = servidor.split('.', 1)[0]
-            if servidor == 'vev': servidor = 'vevio'
-            elif servidor == 'ok': servidor = 'okru'
-            elif servidor == 'youtvgratis': servidor = 'fembed'
+            servidor = corregir_servidor(servidor)
             calidad = calidad.replace('(', '').replace(')', '').strip()
             
             itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
@@ -256,6 +260,7 @@ def play(item):
 
     if url.startswith(host):
         url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
+        # ~ logger.debug(url)
         if url and 'http' not in url:
             if item.server == 'jetload': url = 'https://jetload.net/e/' + url
             else: url = None

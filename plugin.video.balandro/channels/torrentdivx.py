@@ -11,10 +11,22 @@ HOST = 'https://www.torrentdivx.com/'
 
 perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (5x8=40) para que la subpaginación interna no se descompense
 
+def item_configurar_proxies(item):
+    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + HOST + ' necesitarás un proxy.'
+    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, HOST)
+
+
 def do_downloadpage(url, post=None, headers=None):
     # ~ url = url.replace('https://www.torrentdivx.com/', 'https://www.esdivx.nl/') # por si viene de enlaces guardados
     url = url.replace('https://www.esdivx.nl/', 'https://www.torrentdivx.com/') # por si viene de enlaces guardados
-    data = httptools.downloadpage(url, post=post, headers=headers).data
+
+    # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
+    data = httptools.downloadpage_proxy('torrentdivx', url, post=post, headers={'Referer': HOST, 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0'}).data
     return data
 
 
@@ -28,6 +40,7 @@ def mainlist(item):
 
     itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 def mainlist_pelis(item):
@@ -50,6 +63,7 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 def mainlist_series(item):
@@ -60,6 +74,7 @@ def mainlist_series(item):
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 

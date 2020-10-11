@@ -1,0 +1,15 @@
+{
+  "id": "estrenoscinesaa",
+  "name": "EstrenosCinesaa",
+  "thumbnail": "estrenoscinesaa.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": [ "movie" ],
+  "language": ["cast"],
+
+  "notes": "Peliculas en Castellano, por géneros."
+}

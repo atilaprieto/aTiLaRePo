@@ -1,6 +1,20 @@
 Balandro changelog
 ==================
 
+1.4.21:
+    Canales modificados: Hdfull, Pepecine, Seriemega, Cuevana3, Seriesflix.
+    Servidores modificados: Upstream, Vup, Playtube, Gloria, Streamz.
+
+1.4.20:
+    Nuevos canales: Estrenoscinesaa, Peliculasflix, Seriesflix, Repelis, Movidy.
+    Canales modificados: Torrentdivx, Newpct1, Cinemaclasic, Tucineclasico, Dospelis, 
+    Cliver, Hdfull.
+    Servidores modificados: Mega, Doodstream, Jwp, Aparat, Streamtape, Mystream, Vidtodo.
+
+1.4.19:
+    Canales modificados: Hdfull, Cinecalidad, Torrentdivx, Newpct1, Cinemaclasic, Pepecine.
+    Servidores modificados: Tnencloud, Filesim, Doodstream, Streamz.
+
 1.4.18:
     Canales modificados: Inkapelis, Pepecine, Pelispedia, Hdfull, Seriemega, Cuevana3, Torrentdivx.
     Servidores modificados: Digiload, Gloria, Uploadsmobi.

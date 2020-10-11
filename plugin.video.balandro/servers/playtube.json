@@ -1,0 +1,17 @@
+{
+  "id": "playtube",
+  "name": "Playtube",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "https://playtube.ws/([A-z0-9]+)",
+        "url": "https://playtube.ws/\\1"
+      }
+    ]
+  }
+
+}

@@ -1,22 +1,36 @@
 ﻿# -*- coding: utf-8 -*-
 
-import re
+import re, base64
 
 from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
+
 # ~ host = 'https://seriemega.net/'
 # ~ host = 'https://seriemega.xyz/'
-host = 'https://seriemega.me/'
+# ~ host = 'https://seriemega.me/'
+host = 'https://seriesgratismega.xyz/'
+
+
+def item_configurar_proxies(item):
+    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
+    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, host)
+
 
 def do_downloadpage(url, post=None):
     url = url.replace('seriemega.com', 'seriemega.net') # por si viene de enlaces guardados
     url = url.replace('seriemega.net', 'seriemega.xyz') # por si viene de enlaces guardados
     url = url.replace('seriemega.xyz', 'seriemega.me') # por si viene de enlaces guardados
+    url = url.replace('seriemega.me', 'seriesgratismega.xyz') # por si viene de enlaces guardados
+
     data = httptools.downloadpage(url, post=post).data
-    # ~ data = httptools.downloadpage(url, post=post, headers={'Referer': 'https://seriemega.net', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0'}).data
-    # ~ logger.debug(data)
+    # ~ data = httptools.downloadpage_proxy('seriemega', url, post=post).data
     return data
 
 
@@ -29,6 +43,7 @@ def mainlist(item):
 
     itemlist.append(item.clone ( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
+    # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -42,6 +57,7 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone ( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
+    # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -55,6 +71,7 @@ def mainlist_series(item):
 
     itemlist.append(item.clone ( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
+    # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -106,6 +123,7 @@ def list_all(item):
     itemlist = []
 
     data = do_downloadpage(item.url)
+    # ~ logger.debug(data)
 
     matches = re.compile('<article(.*?)</article>', re.DOTALL).findall(data)
     for article in matches:
@@ -123,7 +141,7 @@ def list_all(item):
 
         if tipo == 'movie':
             qlty = scrapertools.find_single_match(article, '<span class="Qlty">([^<]+)')
-            
+
             itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, qualities=qlty, fmt_sufijo=sufijo, 
                                         contentType='movie', contentTitle=title, infoLabels={'year': year} ))
         else:
@@ -144,12 +162,13 @@ def temporadas(item):
     itemlist = []
 
     data = do_downloadpage(item.url)
-    
+    logger.debug(data)
+
     matches = re.compile(' data-tab="(\d+)"', re.DOTALL).findall(data)
     for numtempo in matches:
         itemlist.append(item.clone( action='episodios', title='Temporada %s' % numtempo,
                                     contentType='season', contentSeason=numtempo ))
-        
+
     tmdb.set_infoLabels(itemlist)
 
     return itemlist
@@ -189,7 +208,6 @@ def episodios(item):
     return itemlist
 
 
-
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     txt = txt.replace(' ', '').replace('-', '').lower()
@@ -208,7 +226,7 @@ def normalize_server(server):
 def findvideos(item):
     logger.info()
     itemlist = []
-    
+
     IDIOMAS = {'español': 'Esp', 'castellano': 'Esp','latino': 'Lat', 'subespañol': 'VOSE', 'subtitulado': 'VOSE', 'sub': 'VO'}
 
     data = do_downloadpage(item.url)
@@ -242,33 +260,45 @@ def findvideos(item):
 
     # Enlaces en descargas
     if '<div class="TPTblCn">' in data:
-        bloque = scrapertools.find_single_match(data, '<div class="TPTblCn">(.*?)</table>')
-        bloque = scrapertools.decodeHtmlentities(bloque)
-        matches = re.compile('<tr>(.*?)</tr>', re.DOTALL).findall(bloque)
-        for lin in matches:
-            if '<th' in lin: continue
-            url = scrapertools.find_single_match(lin, ' href="([^"]+)')
-            server = scrapertools.find_single_match(lin, ' alt="Descargar ([^"]+)').strip().lower()
-            lang = scrapertools.find_single_match(lin, ' alt="Imagen ([^"]+)').strip().lower()
-            qlty = scrapertools.find_multiple_matches(lin, '<span>(.*?)</span>')[-1].strip()
-            if not url or not server: continue
-            server = normalize_server(server)
-            if server == 'mega': continue # van a través de un acortador con recaptcha
-            
-            itemlist.append(Item( channel = item.channel, action = 'play', server = normalize_server(server), referer = item.url,
-                                  title = '', url = url, 
-                                  language = IDIOMAS.get(lang, lang), quality = qlty, quality_num = puntuar_calidad(qlty) #, other = 'download'
-                           ))
+        bloques = scrapertools.find_multiple_matches(data, '<div class="TPTblCn">(.*?)</table>')
+        for bloque in bloques:
+            bloque = scrapertools.decodeHtmlentities(bloque)
+            bloque = re.sub('<!--.*?-->', '', bloque, flags=re.DOTALL)
+            matches = re.compile('<tr>(.*?)</tr>', re.DOTALL).findall(bloque)
+            for lin in matches:
+                if '<th' in lin: continue
+                url = scrapertools.find_single_match(lin, ' href="([^"]+)')
+                server = scrapertools.find_single_match(lin, ' alt="Descargar ([^"]+)').strip().lower()
+                lang = scrapertools.find_single_match(lin, ' alt="Imagen ([^"]+)').strip().lower()
+                qlty = scrapertools.find_multiple_matches(lin, '<span>(.*?)</span>')[-1].strip()
+                if not url or not server: continue
+                server = normalize_server(server)
+                if server == 'mega': continue # van a través de un acortador con recaptcha
+                # ~ logger.info('%s %s' % (server, url))
+
+                itemlist.append(Item( channel = item.channel, action = 'play', server = normalize_server(server), referer = item.url,
+                                      title = '', url = url, 
+                                      language = IDIOMAS.get(lang, lang), quality = qlty, quality_num = puntuar_calidad(qlty) #, other = 'download'
+                               ))
 
     return itemlist
+
 
 def play(item):
     logger.info()
     itemlist = []
-    
     item.url = item.url.replace('&#038;', '&')
-    if 'trdownload=' in item.url:
+
+    if '/o.php?l=' in item.url:
+        url = scrapertools.find_single_match(item.url, '/o\.php\?l=(.*)$')
+        for i in range(9):
+            url = base64.b64decode(url)
+            if url.startswith('http'): break
+        if not url.startswith('http'): return itemlist
+    
+    elif 'trdownload=' in item.url:
         url = httptools.downloadpage(item.url, headers={'Referer': item.referer}, follow_redirects=False, only_headers=True).headers.get('location', '')
+
     else:
         data = httptools.downloadpage(item.url, headers={'Referer': item.referer}).data
         # ~ logger.debug(data)
@@ -279,7 +309,6 @@ def play(item):
         url = url.replace('https://uptostream/', 'https://uptostream.com/') # corregir url errónea en algunos links
         url = url.replace('https://www.seriemega.site/', 'https://www.fembed.com/')
 
-    if url:
         servidor = servertools.get_server_from_url(url)
         if servidor and servidor != 'directo':
             url = servertools.normalize_url(servidor, url)
