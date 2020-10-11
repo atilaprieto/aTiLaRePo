@@ -19,11 +19,7 @@ import json
 import xbmc
 import xbmcaddon
 import six
-
-LOGDEBUG = xbmc.LOGDEBUG
-LOGERROR = xbmc.LOGERROR
-LOGWARNING = xbmc.LOGWARNING
-LOGINFO = xbmc.LOGINFO if six.PY3 else xbmc.LOGNOTICE
+from xbmc import LOGDEBUG, LOGERROR, LOGNOTICE, LOGWARNING
 
 addonsmr = xbmcaddon.Addon('script.module.urlresolver')
 
@@ -74,7 +70,7 @@ class Logger(object):
                 return
             elif level == LOGDEBUG:
                 if self.__addon_debug:
-                    level = LOGINFO
+                    level = LOGNOTICE
                 else:
                     return
 
@@ -94,7 +90,7 @@ class Logger(object):
         self.log(msg, level=LOGDEBUG)
 
     def log_notice(self, msg):
-        self.log(msg, level=LOGINFO)
+        self.log(msg, level=LOGNOTICE)
 
     def log_warning(self, msg):
         self.log(msg, level=LOGWARNING)

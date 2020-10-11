@@ -1,6 +1,5 @@
 """
-    Linksnappy plugin for URLResolver
-    Version 4 (improved logging, replace quote_plus with quote, various bug fixes)
+    Linksnappy plugin for URLResolver, version 3
     Copyright (C) 2020 Twilight0
 
     This program is free software: you can redistribute it and/or modify
@@ -97,7 +96,7 @@ class LinksnappyResolver(UrlResolver):
         self.patterns = None
         self.net = common.Net
         self.headers = {'User-Agent': USER_AGENT}
-        self.verify = True
+        self.verify = False
 
         if exists(self.cookie_file):
 
@@ -334,7 +333,7 @@ class LinksnappyResolver(UrlResolver):
 
         else:
 
-            media_id = urllib_parse.quote(media_id)
+            media_id = urllib_parse.quote_plus(media_id)
 
         try:
 
@@ -379,9 +378,9 @@ class LinksnappyResolver(UrlResolver):
         try:
 
             if media_id.startswith('magnet:'):
-                response = self.net().http_GET(torrents_addmagnet.format(urllib_parse.quote(media_id))).content
+                response = self.net().http_GET(torrents_addmagnet.format(urllib_parse.quote_plus(media_id))).content
             else:
-                response = self.net().http_GET(torrents_addurl.format(urllib_parse.quote(media_id))).content
+                response = self.net().http_GET(torrents_addurl.format(urllib_parse.quote_plus(media_id))).content
 
             result = json.loads(response)
 
@@ -397,15 +396,11 @@ class LinksnappyResolver(UrlResolver):
 
                     if error:
 
-                        logger.log_debug(
-                            '(Linksnappy) Error at self.__create_transfer: {0}, response output: {1}'.format(error, result)
-                        )
+                        logger.log_debug('(Linksnappy) Error at line 395: {0}'.format(error))
 
                 else:
 
-                    raise ResolverError(
-                        '(Linksnappy) Unexpected response received when attempting to add a torrent, response received: {0}'.format(result)
-                    )
+                    raise ResolverError('(Linksnappy) Unexpected response received when attempting to add a torrent')
 
             else:
 
@@ -417,11 +412,7 @@ class LinksnappyResolver(UrlResolver):
 
                     if error:
 
-                        logger.log_debug(
-                            '(Linksnappy) Error at self.__create_transfer: {0}, complete response output: {1}'.format(
-                                error, result
-                            )
-                        )
+                        logger.log_debug('(Linksnappy) error at line 411: {0}'.format(error))
 
                 else:
 
@@ -602,7 +593,7 @@ class LinksnappyResolver(UrlResolver):
 
             else:
 
-                response = self.net().http_GET(linkgen.format(urllib_parse.quote('{"link":"%s"}' % media_id))).content
+                response = self.net().http_GET(linkgen.format(urllib_parse.quote_plus('{"link":"%s"}' % media_id))).content
 
             result = json.loads(response)
 
@@ -638,15 +629,10 @@ class LinksnappyResolver(UrlResolver):
                     except Exception:
 
                         try:
-
+                            logger.log_debug('(Linksnappy) SSL verification failed, attempting to generate link without validation')
+                            stream = self.net(ssl_verify=False).http_HEAD(link).get_url()
                             self.verify = False
-                            logger.log_debug(
-                                '(Linksnappy) SSL verification failed, attempting to generate link without validation'
-                            )
-                            stream = self.net(ssl_verify=self.verify).http_HEAD(link).get_url()
-
                         except Exception:
-
                             raise ResolverError('(Linksnappy) Failed to produce playable link')
 
                     return stream
@@ -657,10 +643,7 @@ class LinksnappyResolver(UrlResolver):
 
             else:
 
-                try:
-                    stream = result.get('links')[0]
-                except Exception:
-                    raise ValueError('unexpected result: {0}'.format(result))
+                stream = result.get('links')[0]
 
                 if stream['status'] != 'OK':
 
@@ -897,10 +880,7 @@ class LinksnappyResolver(UrlResolver):
 
             self.set_setting('username', '')
             self.set_setting('password', '')
-            try:
-                remove(self.cookie_file)
-            except Exception:
-                pass
+            remove(self.cookie_file)
 
             raise ResolverError('(Linksnappy) Error: {0}'.format(res.get('error')))
 

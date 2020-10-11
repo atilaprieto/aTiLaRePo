@@ -495,7 +495,7 @@ You can clone the project and host it in your own server.
 
 <addon id="plugin.video.cristalazul"
        name="[B][/B][COLOR aqua]CRISTAL AZUL[/COLOR]"
-       version="0.0.9"
+       version="0.0.11"
        provider-name="PICAPAU, LOURDES, SUPERTOPO, LUISMA">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -794,7 +794,7 @@ v.2.1.5
 
 <addon id="plugin.video.tvchopo"
        name="[B][LOWERCASE][CAPITALIZE][COLOR white]Tv[COLOR gold]chopo[/CAPITALIZE][/LOWERCASE][/B][/COLOR]"
-       version="19"
+       version="20"
        provider-name="equipo-chopo">
  <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1666,7 +1666,7 @@ You can clone the project and host it in your own server.
     </extension>
 </addon>
 
-<addon id="script.module.urlresolver" name="URLResolver" version="5.1.10" provider-name="tvaddons">
+<addon id="script.module.urlresolver" name="URLResolver" version="5.1.9" provider-name="tvaddons">
     <requires>
         <!-- <import addon="xbmc.python" version="3.0.0" /> -->
         <import addon="script.module.six" version="0.0.1"/>
@@ -1674,7 +1674,6 @@ You can clone the project and host it in your own server.
         <import addon="script.module.python.twitch" optional="true" />
         <import addon="script.module.cryptopy" version="1.2.6" optional="true" />
         <import addon="plugin.video.gdrive" optional="true" />
-        <import addon="plugin.program.indigo" />
     </requires>
     <extension point="xbmc.python.module" library="lib" />
     <extension point="xbmc.python.pluginsource" library="lib/default.py" />
