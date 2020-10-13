@@ -18,6 +18,12 @@ import traceback
 from core import scrapertools
 from platformcode import platformtools, logger
 
+try:
+    import xbmc
+    KODI = True
+except:
+    KODI = False
+    
 xbmc_vfs = True                                                 # False para desactivar XbmcVFS, True para activar
 if xbmc_vfs:
     try:
@@ -53,6 +59,9 @@ def validate_path(path):
     @rtype: str
     @return: devuelve la cadena sin los caracteres no permitidos
     """
+    if not path:
+        path = ''
+
     chars = ":*?<>|"
     if scrapertools.find_single_match(path, '(^\w+:\/\/)'):
         protocolo = scrapertools.find_single_match(path, '(^\w+:\/\/)')
@@ -70,6 +79,78 @@ def validate_path(path):
         return unidad + ''.join([c for c in path if c not in chars])
 
 
+def translatePath(path):
+    """
+    Kodi 19: xbmc.translatePath is deprecated and might be removed in future kodi versions. Please use xbmcvfs.translatePath instead.
+    @param path: cadena con path special://
+    @type path: str
+    @rtype: str
+    @return: devuelve la cadena con el path real
+    """
+    if not path:
+        return ''
+
+    if PY3 and xbmc_vfs:
+        if PY3 and isinstance(path, bytes):
+            path = path.decode(fs_encoding)
+        path = xbmcvfs.translatePath(path)
+        if isinstance(path, bytes):
+            path = path.decode(fs_encoding)
+    
+    elif KODI:
+        path = xbmc.translatePath(path)
+        
+    return path
+
+
+def makeLegalFilename(path):
+    """
+    Kodi 19: xbmc.makeLegalFilename is deprecated and might be removed in future kodi versions. Please use xbmcvfs.makeLegalFilename instead.
+    @param path: cadena a convertir platform specific
+    @type path: str
+    @rtype: str
+    @return: devuelve la cadena con el path ajustado
+    """
+    if not path:
+        return ''
+
+    if PY3 and xbmc_vfs:
+        if PY3 and isinstance(path, bytes):
+            path = path.decode(fs_encoding)
+        path = xbmcvfs.makeLegalFilename(path)
+        if isinstance(path, bytes):
+            path = path.decode(fs_encoding)
+    
+    elif KODI:
+        path = xbmc.makeLegalFilename(path)
+        
+    return path
+
+
+def validatePath(path):
+    """
+    Kodi 19: xbmc.validatePath is deprecated and might be removed in future kodi versions. Please use xbmcvfs.validatePath instead.
+    @param path: cadena a convertir platform specific
+    @type path: str
+    @rtype: str
+    @return: devuelve la cadena con el path ajustado
+    """
+    if not path:
+        return ''
+
+    if PY3 and xbmc_vfs:
+        if PY3 and isinstance(path, bytes):
+            path = path.decode(fs_encoding)
+        path = xbmcvfs.validatePath(path)
+        if isinstance(path, bytes):
+            path = path.decode(fs_encoding)
+    
+    elif KODI:
+        path = xbmc.validatePath(path)
+        
+    return path
+
+
 def encode(path, _samba=False):
     """
     Codifica una ruta según el sistema operativo que estemos utilizando.
@@ -81,6 +162,12 @@ def encode(path, _samba=False):
     @rtype: str
     @return ruta codificada en juego de caracteres del sistema o utf-8 si samba
     """
+    if not path:
+        return ''
+    
+    if path.startswith("special://"):
+        path = translatePath(path)
+    
     if not isinstance(path, unicode):
         path = unicode(path, "utf-8", "ignore")
 
@@ -89,7 +176,7 @@ def encode(path, _samba=False):
     else:
         if fs_encoding:
             path = path.encode(fs_encoding, "ignore")
-    
+            
     if PY3 and isinstance(path, bytes):
         path = path.decode(fs_encoding)
 
@@ -105,6 +192,9 @@ def decode(path):
     @rtype: str
     @return: ruta codificado en UTF-8
     """
+    if not path:
+        return ''
+    
     if isinstance(path, list):
         for x in range(len(path)):
             if not isinstance(path[x], unicode):
@@ -227,7 +317,7 @@ def read(path, linea_inicio=0, total_lineas=None, whence=0, mode='r', silent=Fal
             return b"".join(data)
 
 
-def write(path, data, mode="wb", silent=False, vfs=True):
+def write(path, data, mode="wb", silent=False, vfs=True, ch_mod=''):
     """
     Guarda los datos en un archivo
     @param path: ruta del archivo a guardar
@@ -255,9 +345,11 @@ def write(path, data, mode="wb", silent=False, vfs=True):
             elif isinstance(data, bytes):
                 data = bytearray(data)
             f = xbmcvfs.File(path, mode_open)
-            result = f.write(data)
+            result = bool(f.write(data))
             f.close()
-            return bool(result)
+            if result and ch_mod:
+                result = chmod(path, ch_mod, silent=silent)
+            return result
         
         elif path.lower().startswith("smb://"):
             f = samba.smb_open(path, "wb")
@@ -339,9 +431,122 @@ def file_stat(path, silent=False, vfs=True):
         if not silent:
             logger.error(traceback.format_exc())
         return False
+        
+
+def file_info(path, silent=False, vfs=True):
+    """
+    Info de un archivo o carpeta
+    @param path: ruta
+    @type path: str
+    @rtype: str
+    @return: Info de un archivo o carpeta
+    """
+    path = encode(path)
+    try:
+        if xbmc_vfs and vfs:
+            if not exists(path): return False
+            import datetime
+            
+            stat = xbmcvfs.Stat(path)
+
+            # Diccionario de permisos y tipos de archivos
+            dic_perm = {'7':'rwx', '6':'rw-', '5':'r-x', '4':'r--', '3':'-wx', '2':'-w-', '1':'--x', '0':'---'}
+            dic_type = {'01':'-', '02':'l', '03':'m', '04':'d'}
+            perm = str(oct(stat.st_mode()))                                     # Convertimos desde Octal los permisos y tipos de archivos
+            if perm.startswith('0o'): perm = perm.replace('o', '')
+            if perm.endswith('L'): perm = perm[:-1]
+            file_type = dic_type.get(perm[:2], '')                              # Lo pasamos por diccionario de tipos de archivo
+            perm = perm[-3:]
+            perm = ''.join(dic_perm.get(x,x) for x in perm)                     # Lo pasamos por diccionario de permisos
+            
+            try:                                                                # Esta función NO está soportada en todas las plataformas
+                import pwd
+                uid = scrapertools.find_single_match(str(pwd.getpwuid(stat.st_uid())), "pw_name='([^']+)'")
+                if not uid: uid = stat.st_uid()
+                gid = scrapertools.find_single_match(str(pwd.getpwuid(stat.st_gid())), "pw_name='([^']+)'")
+                if not gid: gid = stat.st_gid()
+            except:
+                uid = stat.st_uid()
+                gid = stat.st_gid()
+            
+            try:                                                                # Puede haber errores en la fecha
+                mod_time = stat.st_mtime()
+                mod_time = datetime.datetime.fromtimestamp(mod_time).strftime('%Y-%m-%d %H:%M')
+            except:
+                mod_time = '0000-00-00 00:00'                                   # Fecha en caso de error
+            
+            # Construimos la respuesta
+            res = '%s%s  %s  %s  %s  %s  %s  %s' % (file_type, perm, stat.st_nlink(), uid, gid, stat.st_size(), mod_time, path)
+            
+            # Y la pasamos por encode, está en unicode en Py2.  En el caso de Windows con Py2 hay que hacer una verificación adicional
+            res = encode(res)
+            if not PY3 and isinstance(res, unicode):
+                res = res.encode("utf-8", "ignore")
+            return res
+        raise
+    except:
+        logger.error("File_Stat no soportado: %s" % path)
+        if not silent:
+            logger.error(traceback.format_exc())
+        return False
 
 
-def rename(path, new_name, silent=False, strict=False, vfs=True):
+def chmod(path, ch_mod, su=False, silent=False):
+    """
+    Cambia los permisos de un archivo o carpeta en sistemas Linux y derivados
+    @param path: ruta
+    @type path: str
+    @param ch_mod: permisos
+    @type ch_mod: str
+    @param su: super-user, con diferentes variantes según plataforma
+    @type su: bool
+    @rtype: str
+    @return: File-Info de un archivo o carpeta
+    """
+    path = encode(path)
+    res = False
+    error_cmd = True
+    
+    if KODI and xbmc.getCondVisibility("system.platform.windows"):
+        if not silent:
+            logger.info('Command ERROR: CHMOD no soportado en esta plataforma', force=True)
+    else:
+        try:
+            import subprocess
+            from platformcode import config
+            if not su:
+                command = ['chmod', ch_mod, path]
+                if not silent:
+                    logger.info('Command: %s' % str(command), force=True)
+                p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                output_cmd, error_cmd = p.communicate()
+            elif su and config.is_rooted(silent=True) == 'rooted':
+                for subcmd in ['-c', '-0']:
+                    for cmdtype in [['chmod', ch_mod, path], ['chmod %s %s' % (ch_mod, path)]]:
+                        command = ['su', subcmd] + cmdtype
+                        output_cmd, error_cmd = config.su_command(command, silent=silent)
+                        if not error_cmd:
+                            break
+                    if not error_cmd:
+                        break
+                else:
+                    raise
+            
+            if not silent and error_cmd:
+                logger.error('Command ERROR: %s, %s' % (str(command), str(error_cmd)))
+        except:
+            if not silent:
+                logger.error(traceback.format_exc())
+            
+    # Pedir file_info del archivo o carpeta
+    res = file_info(path, silent=silent)
+    if not silent:
+        logger.info('File-stat: %s' % str(res), force=True)
+    
+    return res
+
+
+def rename(path, new_name, silent=False, strict=False, vfs=True, ch_mod=''):
     """
     Renombra un archivo o carpeta
     @param path: ruta del fichero o carpeta a renombrar
@@ -358,16 +563,17 @@ def rename(path, new_name, silent=False, strict=False, vfs=True):
             if path_end.endswith('/') or path_end.endswith('\\'):
                 path_end = path_end[:-1]
             dest = encode(join(dirname(path_end), new_name))
-            result = xbmcvfs.rename(path, dest)
+            result = bool(xbmcvfs.rename(path, dest))
             if not result and not strict:
-                logger.error("ERROR al RENOMBRAR el archivo: %s.  Copiando y borrando" % path)
                 if not silent:
-                    dialogo = platformtools.dialog_progress("Copiando archivo", "")
-                result = xbmcvfs.copy(path, dest)
+                    logger.error("ERROR al RENOMBRAR el archivo: %s.  Copiando y borrando" % path)
+                result = bool(copy(path, dest, su=True))
                 if not result:
                     return False
                 xbmcvfs.delete(path)
-            return bool(result)
+            if result and ch_mod:
+                result = chmod(dest, ch_mod, silent=silent)
+            return result
         elif path.lower().startswith("smb://"):
             new_name = encode(new_name, True)
             samba.rename(path, join(dirname(path), new_name))
@@ -384,7 +590,7 @@ def rename(path, new_name, silent=False, strict=False, vfs=True):
         return True
 
 
-def move(path, dest, silent=False, strict=False, vfs=True):
+def move(path, dest, silent=False, strict=False, vfs=True, ch_mod=''):
     """
     Mueve un archivo
     @param path: ruta del fichero a mover
@@ -399,16 +605,18 @@ def move(path, dest, silent=False, strict=False, vfs=True):
             if not exists(path): return False
             path = encode(path)
             dest = encode(dest)
-            result = xbmcvfs.rename(path, dest)
+            result = bool(xbmcvfs.rename(path, dest))
             if not result and not strict:
-                logger.error("ERROR al MOVER el archivo: %s.  Copiando y borrando" % path)
                 if not silent:
-                    dialogo = platformtools.dialog_progress("Copiando archivo", "")
-                result = xbmcvfs.copy(path, dest)
+                    logger.error("ERROR al MOVER el archivo: %s.  Copiando y borrando" % path)
+                result = bool(copy(path, dest, su=True))
                 if not result:
                     return False
                 xbmcvfs.delete(path)
-            return bool(result)
+            if result and ch_mod:
+                result = chmod(dest, ch_mod, silent=silent)
+            return result
+        
         # samba/samba
         elif path.lower().startswith("smb://") and dest.lower().startswith("smb://"):
             dest = encode(dest, True)
@@ -434,7 +642,7 @@ def move(path, dest, silent=False, strict=False, vfs=True):
         return True
 
 
-def copy(path, dest, silent=False, vfs=True):
+def copy(path, dest, silent=False, vfs=True, ch_mod='', su=False):
     """
     Copia un archivo
     @param path: ruta del fichero a copiar
@@ -451,8 +659,31 @@ def copy(path, dest, silent=False, vfs=True):
             path = encode(path)
             dest = encode(dest)
             if not silent:
-                dialogo = platformtools.dialog_progress("Copiando archivo", "")
-            return bool(xbmcvfs.copy(path, dest))
+                logger.info("Copiando archivo %s a %s" % (path, dest), force=True)
+            result = bool(xbmcvfs.copy(path, dest))
+            
+            # Si la copia no ha funcionado y se ha especificado su=True, se intenta el comando CP vía SU del sistema
+            from platformcode import config
+            if not result and su and config.is_rooted(silent=True) == 'rooted':
+                error_cmd = True
+                for subcmd in ['-c', '-0']:
+                    for cmdtype in [['cp', path, dest], ['cp %s %s' % (path, dest)]]:
+                        command = ['su', subcmd] + cmdtype
+                        output_cmd, error_cmd = config.su_command(command, silent=silent)
+                        if not error_cmd:
+                            break
+                    if not error_cmd:
+                        result = True
+                        break
+                else:
+                    logger.error('Sin PERMISOS ROOT: %s' % str(command))
+                    result = False
+            elif result:
+                su = ''
+                
+            if result and ch_mod:
+                result = chmod(dest, ch_mod, silent=silent, su=su)
+            return result
         
         fo = file_open(path, "rb")
         fd = file_open(dest, "wb")
@@ -600,9 +831,9 @@ def getsize(path, silent=False, vfs=True):
         return long(0)
 
 
-def remove(path, silent=False, vfs=True):
+def remove(path, silent=False, vfs=True, su=False):
     """
-    Elimina un archivo
+    Elimina un archivo, con alternativa de usar SU
     @param path: ruta del fichero a eliminar
     @type path: str
     @rtype: bool
@@ -611,7 +842,26 @@ def remove(path, silent=False, vfs=True):
     path = encode(path)
     try:
         if xbmc_vfs and vfs:
-            return bool(xbmcvfs.delete(path))
+            result = bool(xbmcvfs.delete(path))
+        
+            # Si el borrado no ha funcionado y se especificado su=True, se intenta el comando RM vía SU del sistema
+            from platformcode import config
+            if not result and su and config.is_rooted(silent=True) == 'rooted':
+                error_cmd = True
+                for subcmd in ['-c', '-0']:
+                    for cmdtype in [['rm', path], ['rm %s' % path]]:
+                        command = ['su', subcmd] + cmdtype
+                        output_cmd, error_cmd = config.su_command(command, silent=silent)
+                        if not error_cmd:
+                            break
+                    if not error_cmd:
+                        result = True
+                        break
+                else:
+                    logger.error('Sin PERMISOS ROOT: %s' % str(command))
+                    result = False
+            return result
+        
         elif path.lower().startswith("smb://"):
             samba.remove(path)
         else:
@@ -620,7 +870,6 @@ def remove(path, silent=False, vfs=True):
         logger.error("ERROR al eliminar el archivo: %s" % path)
         if not silent:
             logger.error(traceback.format_exc())
-            platformtools.dialog_notification("Error al eliminar el archivo", path)
         return False
     else:
         return True
@@ -694,7 +943,7 @@ def rmdir(path, silent=False, vfs=True):
         return True
 
 
-def mkdir(path, silent=False, vfs=True):
+def mkdir(path, silent=False, vfs=True, ch_mod=''):
     """
     Crea un directorio
     @param path: ruta a crear
@@ -712,6 +961,8 @@ def mkdir(path, silent=False, vfs=True):
                 import time
                 time.sleep(0.1)
                 result = exists(path)
+            if result and ch_mod:
+                result = chmod(path, ch_mod, silent=silent)
             return result
         elif path.lower().startswith("smb://"):
             samba.mkdir(path)
@@ -782,7 +1033,7 @@ def walk_vfs(top, topdown=True, onerror=None):
         yield top, dirs, nondirs
 
 
-def listdir(path, silent=False, vfs=True):
+def listdir(path, silent=False, vfs=True, file_inf=False):
     """
     Lista un directorio
     @param path: Directorio a listar, debe ser un str "UTF-8"
@@ -795,9 +1046,22 @@ def listdir(path, silent=False, vfs=True):
     try:
         if xbmc_vfs and vfs:
             dirs, files = xbmcvfs.listdir(path)
-            return dirs + files
+            res = sorted(dirs) + sorted(files)
+            if file_inf:
+                path = join(path, ' ').rstrip()
+                ls_la = []
+                for file in res:
+                    file_ext = file_info(join(path, file)).replace(path, '')
+                    if file_ext:
+                        ls_la += [file_ext]
+                    else:
+                        ls_la += ['%s%s  %s  %s  %s  %s  %s  %s' % ('#', '#', '#', '#', '#', '#', '#', file)]
+                res = ls_la
+            return res
+        
         elif path.lower().startswith("smb://"):
             return decode(samba.listdir(path))
+        
         else:
             return decode(os.listdir(path))
     except:
@@ -815,7 +1079,7 @@ def join(*paths):
     @return: la ruta concatenada
     """
     list_path = []
-    if paths[0].startswith("/"):
+    if encode(paths[0]).startswith("/"):
         list_path.append("")
 
     for path in paths:
@@ -838,6 +1102,7 @@ def split(path, vfs=True):
     @return: (dirname, basename)
     @rtype: tuple
     """
+    path = encode(path)
     if scrapertools.find_single_match(path, '(^\w+:\/\/)'):
         protocol = scrapertools.find_single_match(path, '(^\w+:\/\/)')
         if '/' not in path[6:]:
@@ -855,6 +1120,7 @@ def basename(path, vfs=True):
     @return: fichero de la ruta
     @rtype: str
     """
+    path = encode(path)
     return split(path)[1]
 
 
@@ -866,6 +1132,7 @@ def dirname(path, vfs=True):
     @return: directorio de la ruta
     @rtype: str
     """
+    path = encode(path)
     return split(path)[0]
 
 

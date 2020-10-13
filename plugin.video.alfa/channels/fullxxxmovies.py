@@ -92,17 +92,20 @@ def lista(item):
     logger.info()
     itemlist = []
     soup = create_soup(item.url)
-    matches = soup.find_all('article', class_='post')
+    matches = soup.find_all("article", id=re.compile(r"^post-\d+"))
     for elem in matches:
-        url = elem.a['href']
-        title = elem.find('header',  class_='entry-header').text
+        parte = elem.find('h1', class_='entry-title')
+        url = parte.a['href']
+        title = parte.a.text
+        if "Siterip" in title or "manyvids" in title:
+            title = "[COLOR red]%s[/COLOR]" %title
         thumbnail = elem.img['src']
         plot = ""
-        if not "ubiqfile" in url or not "siterip" in url:
-            itemlist.append(item.clone(action="findvideos", title=title, url=url, 
+        itemlist.append(item.clone(action="findvideos", title=title, url=url, 
                                   thumbnail=thumbnail, fanart=thumbnail, plot=plot) )
-    next_page = soup.find('a', class_='next')['href']
-    if next_page!="":
+    next_page = soup.find('div', class_='nav-previous')
+    if next_page:
+        next_page = next_page.a['href']
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist

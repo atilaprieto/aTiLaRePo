@@ -2,31 +2,26 @@
 # -*- Channel PoseidonHD -*-
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
 import re
+from bs4 import BeautifulSoup
+
 from core import tmdb
 from core import httptools
 from core.item import Item
 from core import servertools
 from core import scrapertools
 from core import jsontools
-from bs4 import BeautifulSoup
 from channelselector import get_thumb
 from platformcode import config, logger
 from channels import filtertools, autoplay
-import sys
-
-PY3 = False
-if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
-
-if PY3:
-    import urllib.parse as urllib
-else:
-    import urllib                                               # Usamos el nativo de PY2 que es más rápido
 
 IDIOMAS = {'mx': 'Latino', 'dk': 'Latino', 'es': 'Castellano', 'en': 'VOSE', 'gb': 'VOSE', 'de': 'Alemán',
            "Latino": "Latino", "Español": "Castellano", "Subtitulado": "VOSE"}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 
 list_quality = []
 
@@ -35,7 +30,7 @@ list_servers = [
     'fembed'
     ]
 
-host = 'https://poseidonhdd.com/'
+host = 'https://tekilaz.org/'
 
 
 def mainlist(item):
@@ -143,8 +138,9 @@ def list_all(item):
     itemlist = list()
 
     soup = create_soup(item.url)
-
     matches = soup.find("section", class_="section movies")
+    if not matches:
+        matches = soup.find("div", id="aa-movies")
     for elem in matches.find_all("article", class_=re.compile(r"post (?:dfx|fcl|movies)")):
 
         type = item.type
@@ -297,18 +293,20 @@ def play(item):
     logger.info()
 
     itemlist = list()
-    data = create_soup(item.url).find("input")["value"]
-    base_url = "%sr.php" % host
-    post = {"data": data}
-    url = httptools.downloadpage(base_url, post=post).url
-    if "fs.poseidonhdd.com" in url:
-        api_url = "%sapi.php" % host.replace("https://", "https://fs.")
-        v_id = scrapertools.find_single_match(url, r"\?h=([A-z0-9]+)")
-        post = {"h": v_id}
-        url = httptools.downloadpage(api_url, post=post, allow_redirects=False).json["url"]
-
-    itemlist.append(item.clone(url=url, server=""))
-    itemlist = servertools.get_servers_itemlist(itemlist)
+    try:
+        data = create_soup(item.url).find("input")["value"]
+        base_url = "%sr.php" % host
+        post = {"data": data}
+        url = httptools.downloadpage(base_url, post=post).url
+        if "fs.poseidonhdd.com" in url:
+            api_url = "%sr.php" % host.replace("https://", "https://fs.")
+            v_id = scrapertools.find_single_match(url, r"\?h=([A-z0-9]+)")
+            post = {"h": v_id}
+            url = httptools.downloadpage(api_url, post=post).url
+        itemlist.append(item.clone(url=url, server=""))
+        itemlist = servertools.get_servers_itemlist(itemlist)
+    except:
+        pass
 
     return itemlist
 

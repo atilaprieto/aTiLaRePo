@@ -25,7 +25,7 @@ list_servers = ['directo']
 list_quality = ['default']
 
 
-HOST = "https://animeflv.ru/"
+HOST = "https://www.animeflv.ru/"
 
 
 def mainlist(item):
@@ -265,9 +265,6 @@ def findvideos(item):
     for url in matches:
         xserver = scrapertools.find_single_match(url, 's=([a-zA-Z0-9]+)')
         source = HOST + "get_video_info_v2?s=%s" % xserver
-        #TODO reactivar despues de resolver problema Hydrax
-        if xserver == 'hserver':
-            continue
         link = get_link(source, url)
         if link:
             itemlist.append(Item(channel=item.channel, action="play", url=link, 
@@ -280,7 +277,7 @@ def findvideos(item):
 
     return itemlist
 
-def get_link(url, referer):
+def get_link(source, referer):
     logger.info()
     itemlist = []
     
@@ -289,7 +286,7 @@ def get_link(url, referer):
     post = "embed_id=%s" % _id
 
     
-    dict_data = httptools.downloadpage(url, post=post,  headers=headers).json
+    dict_data = httptools.downloadpage(source, post=post,  headers=headers).json
     frame_src = scrapertools.find_single_match(dict_data["value"], 'iframe src="([^"]+)"')
     
     try:
@@ -297,21 +294,28 @@ def get_link(url, referer):
     except:
         logger.error('Problema con headers???')
         return ''
-   
-    #TODO descurbir como reproducir esta lista en kodi
-    '''if 'hydrax.net' in new_data:
+
+
+    if 'hydrax.net' in new_data:
         slug = scrapertools.find_single_match(new_data, '"slug","value":"([^"]+)"')
         post = "slug=%s&dataType=mp4" % slug
-        ua = "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Mobile Safari/537.36"
+        #based on https://github.com/thorio/KGrabber/issues/35#issuecomment-667401636
+        data = httptools.downloadpage("https://ping.iamcdn.net/", post=post).json
+        url = data.get("url", '')
+        if url:
+            import base64
+            url = "https://www.%s" % base64.b64decode(url[-1:]+url[:-1])
+            url += '|Referer=https://playhydrax.com/?v=%s&verifypeer=false' % slug
         
-        data = httptools.downloadpage("https://multi.hydrax.net/guest", post=post, headers={"User-Agent": ua}).data
-
-        url = scrapertools.find_single_match(data, '"link":"([^"]+)"')
-        url += '|User-Agent=%s' % ua
-        
-        return url'''
-
-    url = scrapertools.find_single_match(new_data, '(?:"file":|var urlVideo = )"([^"]+)"')
+        return url
+    
+    new_data = new_data.replace("'", '"')
+    patron = '"file":'
+    
+    if 's=fserver' in source:
+        patron = r'window.open\('
+    
+    url = scrapertools.find_single_match(new_data, patron+'"([^"]+)"')
 
     url = url.replace("\\","")
     url += "|User-Agent=%s" % httptools.get_user_agent()

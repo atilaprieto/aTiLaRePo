@@ -1,7 +1,7 @@
 {
   "id": "retroseriestv",
   "name": "RetroSeriesTV",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["lat"],
   "thumbnail": "https://retroseriestv.com/wp-content/uploads/2017/04/Logo3-5.png",

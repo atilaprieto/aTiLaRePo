@@ -1,0 +1,15 @@
+{
+  "id": "teenieporn",
+  "name": "teenieporn",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "https://cdn1.images.teenieporn.com/dart/logo.png",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+  ]
+}
+

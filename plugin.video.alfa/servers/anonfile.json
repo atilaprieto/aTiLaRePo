@@ -4,7 +4,7 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(https://(?:anonfile|bayfiles).com/\\w+)",
+        "pattern": "(https://(?:anonfiles|bayfiles).com/\\w+)",
         "url": "\\1"
       }
     ]

@@ -4,11 +4,11 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(https://(?:hdzog|tubepornclassic).com/embed/[0-9]+)",
+        "pattern": "(https://hdzog.com/embed/[0-9]+)",
         "url": "\\1"
       },
       {
-        "pattern": "(https://tubepornclassic.com/videos/[0-9]+/[A-z0-9-]+/)",
+        "pattern": "(https://upornia.com/videos/[0-9]+/[A-z0-9-]+/)",
         "url": "\\1"
       }
     ]

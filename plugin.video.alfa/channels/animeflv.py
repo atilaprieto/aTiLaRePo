@@ -29,7 +29,7 @@ list_servers = ['directo', 'rapidvideo', 'streamango', 'yourupload', 'mailru', '
 list_quality = ['default']
 
 
-HOST = "https://www.animeflv.net/"
+HOST = "https://www3.animeflv.net/"
 
 def mainlist(item):
     logger.info()
@@ -319,18 +319,11 @@ def findvideos(item):
             if 'redirector' in source:
                 new_data = httptools.downloadpage(source).data
                 url = scrapertools.find_single_match(new_data, 'window.location.href = "([^"]+)"')
-            elif 'animeflv.net/embed' in source:
-                source = source.replace('embed', 'check')
-               
-                try:
-                    new_data = httptools.downloadpage(source).data
-                    json_data = jsontools.load(new_data)
-                    url = json_data['file']
-                except:
-                    continue
-            #Parche por error tipografico en web(RV)
-            elif 'e/http' in source:
-                url = url.split('/e/')[1]
+            elif 'animeflv.net/embed' in source or 'gocdn.html' in source:
+                source = source.replace('embed', 'check').replace('gocdn.html#', 'gocdn.php?v=')
+                json_data = httptools.downloadpage(source).json
+                url = json_data.get('file', '')
+            
             url = url.replace('embedsito', 'fembed')
 
             itemlist.append(Item(channel=item.channel, url=url, title='%s'+lang, 

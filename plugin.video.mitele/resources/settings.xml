@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="Descargas">
+        <setting id="download_dir" type="folder" label="Directorio para las descargas" default="" />
+    </category>
+</settings>

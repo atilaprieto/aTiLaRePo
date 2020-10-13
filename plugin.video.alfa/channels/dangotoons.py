@@ -68,15 +68,15 @@ def mainlist(item):
         "channel": item.channel}
     categories = [
         {"data" :{"title": "Todos", "url": host+"/catalogo.php"}, "category_dict":category_all},
-        {"data" :{"title": "Anime", "url": host+"/catalogo.php?t=anime&g=&o=0"}, "category_dict":category_series},
-        {"data" :{"title": "Series Animadas", "url": host+"/catalogo.php?t=series-animadas&g=&o=0"}, 
+        {"data" :{"title": "Anime", "url": host+"/catalogo.php?t=anime&g=&o=3"}, "category_dict":category_series},
+        {"data" :{"title": "Series Animadas", "url": host+"/catalogo.php?t=series-animadas&g=&o=3"}, 
             "category_dict":category_series},
-        {"data" :{"title": "Series Animadas Adolescentes", "url": host+"/catalogo.php?t=series-animadas-r&g=&o=0"}, 
+        {"data" :{"title": "Series Animadas Adolescentes", "url": host+"/catalogo.php?t=series-animadas-r&g=&o=3"}, 
             "category_dict":category_series},
-        {"data" :{"title": "Series Live Action", "url": host+"/catalogo.php?t=series-actores&g=&o=0"}, 
+        {"data" :{"title": "Series Live Action", "url": host+"/catalogo.php?t=series-actores&g=&o=3"}, 
             "category_dict":category_series},
-        {"data" :{"title": "Peliculas", "url": host+"/catalogo.php?t=peliculas&g=&o=0"}, "category_dict":category_movies},
-        {"data" :{"title": "Especiales", "url": host+"/catalogo.php?t=especiales&g=&o=0"}, "category_dict":category_movies}
+        {"data" :{"title": "Peliculas", "url": host+"/catalogo.php?t=peliculas&g=&o=3"}, "category_dict":category_movies},
+        {"data" :{"title": "Especiales", "url": host+"/catalogo.php?t=especiales&g=&o=3"}, "category_dict":category_movies}
     ]
 
     for category in categories:
@@ -130,7 +130,10 @@ def list_all(item):
         last = len(matches)
     for elem in matches[first:last]:
         scrapedurl = elem.a["href"]
-        scrapedthumbnail = elem.img["data-src"]
+        try:
+            scrapedthumbnail = elem.img["data-src"]
+        except:
+            scrapedthumbnail = ''
         scrapedtitle = elem.a.p.text
         scrapedplot = elem.find("span", class_="mini").text
         if item.category == "series":
@@ -148,7 +151,7 @@ def list_all(item):
 
     if url_next_page and len(matches) > 26:
         itemlist.append(Item(channel=item.channel, title="[COLOR cyan]Página Siguiente >>[/COLOR]", url=url_next_page, action='list_all',
-            first=first))
+            first=first, category = item.category))
     return itemlist
 
 def seasons(item):
@@ -162,14 +165,15 @@ def seasons(item):
     if len(matches) == 0:
         title = "Temporada 1"
         infoLabels['season'] = 1
-        itemlist.append(Item(channel=item.channel, title=title, contentSerieName=item.tile,
+        itemlist.append(Item(channel=item.channel, title=title, contentSerieName=item.title,
             url=item.url, plot=item.plot, thumbnail=item.thumbnail,
             action="episodesxseason", context=item.context, infoLabels=infoLabels))
     else:
-        for elem in matches:
+        for n, elem in enumerate(matches):
+            n = n+1
             title = elem.find("div", class_="titulo").text
-            infoLabels['season'] = title.split(" ")[1]
-            itemlist.append(Item(channel=item.channel, title=title, contentSerieName=item.tile,
+            infoLabels['season'] = n
+            itemlist.append(Item(channel=item.channel, title=title, contentSerieName=item.title,
                 url=item.url, plot=item.plot, thumbnail=item.thumbnail,
                 action="episodesxseason", context=item.context, infoLabels=infoLabels))
     if config.get_videolibrary_support() and len(itemlist) > 0 and not item.extra:
@@ -193,12 +197,16 @@ def episodesxseason(item):
                 continue
             episodes = elem.find("div", class_="cajaCapitulos")
     infoLabels = item.infoLabels
-    for episode in episodes.find_all("li"):
+    
+    for n, episode in enumerate(episodes.find_all("li")):
         scrapedurl = "/"+episode.a["href"]
         scrapedtitle = episode.a.text
         infoLabels['episode'] = scrapedtitle.split(" - ")[0].split(": ")[1]
+        #Parche para animes
+        if infoLabels['season'] > 1 and n < 1 and infoLabels['episode'] > 1:
+            infoLabels.update({'season': 1})
         title = "{}x{:02d} - {}".format(infoLabels['season'],infoLabels['episode'],scrapedtitle.split(" - ")[1])
-        itemlist.append(Item(channel=item.channel, title=title, contentSerieName=item.tile,
+        itemlist.append(Item(channel=item.channel, title=title, contentSerieName=item.title,
             url=host + scrapedurl, plot=item.plot, thumbnail=item.thumbnail,
             action="findvideos", context=item.context, infoLabels=infoLabels))
     tmdb.set_infoLabels_itemlist(itemlist, True)

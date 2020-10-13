@@ -173,7 +173,7 @@ def findvideos(item):
     data1 = httptools.downloadpage(host + "/wp-json/elifilms/movies?id=" + match, encoding=encoding).json
     for url in data1["data"]["server_list"]:
         url1 = clear_url(url["link"])
-        if url1 in encontrado or "youtube.com" in url1:
+        if url1 in encontrado or "youtube.com" in url1 or "search" in url1:
             continue
         encontrado.append(url1)
         itemlist.append(Item(
@@ -191,10 +191,9 @@ def findvideos(item):
     
     for url, srv in matches:
         url = clear_url(url)
-        if url in encontrado or ".srt" in url:
+        if url in encontrado or ".srt" in url or "search" in url:
             continue
         encontrado.append(url)
-
         new_item= Item(channel=item.channel, url=url, title='%s', action="play", contentTitle=item.contentTitle, contentThumbnail=item.thumbnail,
                        infoLabels=item.infoLabels, language="Latino")
         if "torrent" in srv.lower():

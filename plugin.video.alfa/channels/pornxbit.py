@@ -32,7 +32,7 @@ def mainlist(item):
     itemlist.append(item.clone(title="PornStar" , action="categorias", url=host + "/actors/"))
     # itemlist.append(item.clone(title="Canal" , action="categorias", url=host + "/sites/?sort_by=avg_videos_popularity&from=01"))
 
-    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories/?sort_by=avg_videos_popularity&from=01"))
+    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories/"))
     itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
 

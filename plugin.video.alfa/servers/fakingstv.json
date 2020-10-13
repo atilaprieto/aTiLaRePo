@@ -6,6 +6,10 @@
       {
         "pattern": "http://tv.fakings.com/embed/([a-z0-9A-Z]+)/",
         "url": "http://tv.fakings.com/embed/\\1/"
+      },
+      {
+        "pattern": "(https://tv.fakings.com/tools/player/\\?file=[a-z0-9-]+)",
+        "url": "\\1"
       }
     ]
   },

@@ -5,6 +5,7 @@
 
 from core import httptools
 from core import scrapertools
+from lib import jsunpack
 from platformcode import logger
 import sys
 PY3 = False
@@ -14,7 +15,7 @@ def test_video_exists(page_url):
     global data
     logger.info("(page_url='%s')" % page_url)
     data = httptools.downloadpage(page_url, add_referer=True).data
-    if "Page not found" in data:
+    if "File is no longer available" in data:
         return False, "[ZPlayer] El fichero no existe o ha sido borrado"
     return True, ""
 
@@ -22,15 +23,28 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
-    patron = '"file": "([^"]+)",.*?"type": "([^"]+)"'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    for video_url, ext in matches:
-        ref = scrapertools.find_single_match(video_url, '(.*?&)') + "shared=%s" % page_url
-        headers = {"Referer":page_url}
-        if "redirect"  in video_url: 
-            url = httptools.downloadpage(video_url, headers=headers, follow_redirects=False, only_headers=True).headers.get("location", "")
-            url += "|Referer=%s" %page_url
-        else:
-            url = video_url + "|Referer=%s" % ref
-        video_urls.append(["[zplayer] %s" % ext, url])
+    pat = r'tracks:\[\{\s*file:"([^"]+)"'
+    sub = scrapertools.find_single_match(data, pat)
+    
+    if not 'v2.zplayer' in page_url:
+        patron = '"file": "([^"]+)",.*?"type": "([^"]+)"'
+        matches = scrapertools.find_multiple_matches(data, patron)
+        for video_url, ext in matches:
+            ref = scrapertools.find_single_match(video_url, '(.*?&)') + "shared=%s" % page_url
+            headers = {"Referer":page_url}
+            if "redirect"  in video_url: 
+                url = httptools.downloadpage(video_url, headers=headers, follow_redirects=False, only_headers=True).headers.get("location", "")
+                url += "|Referer=%s" %page_url
+            else:
+                url = video_url + "|Referer=%s" % ref
+            video_urls.append(["[zplayer] %s" % ext, url, 0, sub])
+    else:
+        packed = scrapertools.find_single_match(data, "text/javascript'>(eval.*?)\s*</script>")
+        unpacked = jsunpack.unpack(packed)
+        patron = r'sources:\[\{\s*file:"([^"]+)"'
+        matches = scrapertools.find_multiple_matches(unpacked, patron)
+        for video_url in matches:
+            ext = video_url[-4:]
+
+            video_urls.append(["[zplayer] %s" % ext, video_url, 0, sub])
     return video_urls

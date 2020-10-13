@@ -248,8 +248,9 @@ def findvideos(item):
     for srv in json_data:
         lang = srv["idioma"].lower()
         url = scrapertools.find_single_match(srv["enlace"], "id=([^?]+)")
-        itemlist.append(Item(channel=item.channel, title='%s', url=url, action="play",
-                             language=IDIOMAS.get(lang, 'LAT'), infoLabels=item.infoLabels))
+        if url:
+            itemlist.append(Item(channel=item.channel, title='%s', url=url, action="play",
+                                 language=IDIOMAS.get(lang, 'LAT'), infoLabels=item.infoLabels))
 
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server.capitalize())
 

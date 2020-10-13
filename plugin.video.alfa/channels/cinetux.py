@@ -201,7 +201,7 @@ def peliculas(item):
 
     tmdb.set_infoLabels(itemlist, __modo_grafico__)
     # Extrae el paginador
-    next_page_link = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)')
+    next_page_link = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span class="icon-chevron-right">')
     if next_page_link:
         itemlist.append(item.clone(action="peliculas", title=">> Página siguiente", url=next_page_link,
                                    text_color=color3))
@@ -213,7 +213,7 @@ def destacadas(item):
     itemlist = []
     item.text_color = color2
     data = httptools.downloadpage(item.url).data
-    bloque = scrapertools.find_single_match(data, 'peliculas_destacadas.*?class="letter_home"')
+    bloque = scrapertools.find_single_match(data, 'div class="content"(.*?)div class="pagination')
     
     patron = '(?s)href="([^"]+)".*?'
     patron += 'alt="([^"]+)".*?'
@@ -227,7 +227,7 @@ def destacadas(item):
                               url=url, thumbnail=scrapedthumbnail,
                               contentType="movie"
                               ))
-    next_page_link = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
+    next_page_link = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span class="icon-chevron-right">')
     if next_page_link:
         itemlist.append(
             item.clone(action="destacadas", title=">> Página siguiente", url=next_page_link, text_color=color3))

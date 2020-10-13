@@ -175,10 +175,11 @@ def findvideos(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl in matches:
-        enc_url = scrapertools.find_single_match(scrapedurl, r'hs=(.*)$')
-        url = urllib.unquote(base64.b64decode(rot13(enc_url)))
-        if url != '':
-            itemlist.append(Item(channel=item.channel, title='%s', url=url, action='play'))
+        #enc_url = scrapertools.find_single_match(scrapedurl, r'hs=(.*)$')
+        #url = urllib.unquote(base64.b64decode(rot13(enc_url)))
+        #if url != '':
+        if scrapedurl != '':
+            itemlist.append(Item(channel=item.channel, title='%s', url=scrapedurl, action='play'))
 
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server.capitalize())
 

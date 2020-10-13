@@ -161,24 +161,20 @@ def episodesxseason(item):
     infoLabels = item.infoLabels
 
     for elem in soup.find_all("tr"):
-
         language = list()
-        try:
-            season_episode = scrapertools.find_single_match(elem.a.text, "(\d+x\d+)").split("x")
-            title = "%sx%s - Episodio %s" % (season_episode[0], season_episode[1], season_episode[1])
-            if int(season_episode[0]) != item.infoLabels["season"]:
-                continue
-            url = elem.a["href"]
+        season_episode = scrapertools.find_single_match(elem.a.text, "(\d+x\d+)").split("x")
+        title = "%sx%s - Episodio %s" % (season_episode[0], season_episode[1], season_episode[1])
+        if int(season_episode[0]) != item.infoLabels["season"]:
+            continue
+        url = elem.a["href"]
 
-            for lang in elem.find_all("img"):
-                language.append(IDIOMAS[scrapertools.find_single_match(lang["data-lazy-src"], "language/([^\.]+)\.png")])
+        for lang in elem.find_all("img"):
+            language.append(IDIOMAS[scrapertools.find_single_match(lang["src"], "language/([^\.]+)\.png")])
 
-            infoLabels["episode"] = season_episode[1]
+        infoLabels["episode"] = season_episode[1]
 
-            itemlist.append(Item(channel=item.channel, title=title, url=url, action="findvideos",
-                                 language=language, infoLabels=infoLabels))
-        except:
-            pass
+        itemlist.append(Item(channel=item.channel, title=title, url=url, action="findvideos",
+                             language=language, infoLabels=infoLabels))
 
     itemlist = filtertools.get_links(itemlist, item, list_idiomas, list_quality)
     tmdb.set_infoLabels_itemlist(itemlist, True)

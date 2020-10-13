@@ -1,11 +1,11 @@
 {
-  "active": false,
+  "active": true,
   "find_videos": {
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "vidtodo(?:o|).com/([a-z0-9]+)",
-        "url": "http://vidtodo.com/\\1"
+        "pattern": "(?:v|w)idto(?:d|b)o.com/(?:embed-|)([a-z0-9]+)(?:.html|)",
+        "url": "https://vidtodo.com/\\1"
       }
     ]
   },

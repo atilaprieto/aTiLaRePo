@@ -11,7 +11,7 @@ else:
 
 import re
 
-from platformcode import config, logger
+from platformcode import config, logger, platformtools
 from core import scrapertools
 from core import servertools
 from core.item import Item
@@ -19,20 +19,25 @@ from core import httptools
 from bs4 import BeautifulSoup
 from channels import filtertools
 from channels import autoplay
+from lib import alfa_assistant
+import ssl
 
 IDIOMAS = {'vo': 'VO'}
 list_language = list(IDIOMAS.values())
 list_quality = ['default']
 list_servers = ['gounlimited']
 
-host = 'https://www.porndish.com'
+host = 'https://www.porndish.com/'
 
 def mainlist(item):
+    if ssl.OPENSSL_VERSION_INFO < (1, 1, 1):
+        if not alfa_assistant.open_alfa_assistant():
+            platformtools.dialog_ok("Alfa Assistant: Error", "NECESITAS la app Alfa Assistant para ver este canal")
+            return
     logger.info()
     itemlist = []
-
+    
     autoplay.init(item.channel, list_servers, list_quality)
-
     itemlist.append(item.clone(title="Nuevos" , action="lista", url=host))
     itemlist.append(item.clone(title="Canal" , action="sub_menu", url=host))
     itemlist.append(item.clone(title="Buscar", action="search"))
@@ -86,16 +91,32 @@ def categorias(item):
     return itemlist
 
 
-def create_soup(url, referer=None, unescape=False):
+
+def create_soup(url):
     logger.info()
-    if referer:
-        data = httptools.downloadpage(url, headers={'Referer': referer}).data
-    else:
-        data = httptools.downloadpage(url).data
-    if unescape:
-        data = scrapertools.unescape(data)
-    soup = BeautifulSoup(data, "html5lib", from_encoding="utf-8")
-    return soup
+    data = ""
+    if ssl.OPENSSL_VERSION_INFO >= (1, 1, 1):
+        response = httptools.downloadpage(url + "|verifypeer=false", ignore_response_code=True)
+        if response.sucess:
+            data = response.data
+    elif alfa_assistant.open_alfa_assistant():
+        data = alfa_assistant.get_source_by_page_finished(url, 5, closeAfter=True)
+        if not data:
+            platformtools.dialog_ok("Alfa Assistant: Error", "ACTIVE la app Alfa Assistant para continuar")
+            data = alfa_assistant.get_source_by_page_finished(url, 5, closeAfter=True)
+            if not data:
+                return False
+        data = alfa_assistant.find_htmlsource_by_url_pattern(data, url)
+        if isinstance(data, dict):
+            data = data.get('source', '')
+            if not data:
+                return False
+    if data:
+        soup = BeautifulSoup(data, "html5lib", from_encoding="utf-8")
+        return soup
+    
+    return False
+    
 
 
 def lista(item):
@@ -105,11 +126,8 @@ def lista(item):
     matches = soup.find_all('article', class_='entry-tpl-grid')
     for elem in matches:
         url = elem.a['href']
-        stitle = elem.img['alt']
-        thumbnail = elem.img['data-lazy-src']
-        stime = elem.find('time', class_='entry-date').text
-        stime =scrapertools.find_single_match(stime,'(\d+:\d+)')
-        title = "[COLOR yellow]%s[/COLOR] %s" % (stime,stitle)
+        title = elem.img['alt']
+        thumbnail = elem.img['src']
         plot = ""
         itemlist.append(item.clone(action="findvideos", title=title, contentTitle=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot=plot,))
@@ -125,11 +143,16 @@ def lista(item):
 def findvideos(item):
     logger.info()
     itemlist = []
-    soup = create_soup(item.url).find_all('iframe')
-    for elem in soup:
-        url = elem['src']
-        url = url.replace("dood.to", "dood.watch")
-        itemlist.append(item.clone(action="play", title= "%s" , contentTitle=item.title, url=url)) 
+    soup = create_soup(item.url)
+    if not soup:
+        return itemlist
+    soup = soup.find('div', class_='entry-content')
+    matches = soup.find_all('p')
+    for elem in matches:
+        url = elem.find('iframe')
+        if url:
+            url= url['src']
+            itemlist.append(item.clone(action="play", title= "%s" , contentTitle=item.title, url=url)) 
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize()) 
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)

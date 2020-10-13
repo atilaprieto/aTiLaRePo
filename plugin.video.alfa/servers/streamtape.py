@@ -12,15 +12,18 @@ PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
 
+
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
     global data
 
-    data = httptools.downloadpage(page_url)
+    referer = {"Referer": page_url}
 
-    if "Video not found" in data.data:
+    data = httptools.downloadpage(page_url, headers=referer).data
+
+    if "Video not found" in data:
         return False, "[streamtape] El archivo no existe o ha sido borrado"
-    data = data.data
+
     return True, ""
 
 

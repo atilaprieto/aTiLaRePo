@@ -304,6 +304,8 @@ def evpKDF(passwd, salt, key_size=8, iv_size=4, iterations=1, hash_algorithm="md
     target_key_size = key_size + iv_size
     derived_bytes = ""
     number_of_derived_words = 0
+    if PY3:
+        passwd = bytes(list(ord(x) for x in passwd))
     block = None
     hasher = hashlib.new(hash_algorithm)
     while number_of_derived_words < target_key_size:
@@ -320,7 +322,10 @@ def evpKDF(passwd, salt, key_size=8, iv_size=4, iterations=1, hash_algorithm="md
             block = hasher.digest()
             hasher = hashlib.new(hash_algorithm)
 
-        derived_bytes += block[0: min(len(block), (target_key_size - number_of_derived_words) * 4)]
+        if PY3:
+            derived_bytes += "".join(chr(x) for x in block[0: min(len(block), (target_key_size - number_of_derived_words) * 4)])
+        else:
+            derived_bytes += block[0: min(len(block), (target_key_size - number_of_derived_words) * 4)]
 
         number_of_derived_words += old_div(len(block),4)
 

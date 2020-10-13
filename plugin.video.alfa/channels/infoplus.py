@@ -2254,7 +2254,7 @@ class Trailer(xbmcgui.WindowXMLDialog):
         elif action == ACTION_SELECT_ITEM:
             xbmc.executebuiltin('PlayerControl(Play)')
         elif action == 199 or action == ACTION_SHOW_FULLSCREEN or action == 9:
-            xbmc.log("tuprimalafachaaa")
+            logger.info("tuprimalafachaaa", force=True)
         if action == 13:
             self.close()
 
@@ -2359,10 +2359,10 @@ def get_fonts(skin):
     if not fonts:
         from core import filetools
         try:
-            data_font = filetools.read(xbmc.translatePath(filetools.join('special://skin/1080i', 'Font.xml')), "r")
+            data_font = filetools.read(filetools.join('special://skin/1080i', 'Font.xml'), "r")
         except:
             try:
-                data_font = filetools.read(xbmc.translatePath(filetools.join('special://skin/720p', 'Font.xml')), "r")
+                data_font = filetools.read(filetools.join('special://skin/720p', 'Font.xml'), "r")
             except:
                 pass
 

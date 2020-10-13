@@ -11,6 +11,8 @@ def test_video_exists(page_url):
     data = httptools.downloadpage(page_url).data
     if "File Not Found" in data or "File was deleted" in data:
         return False, config.get_localized_string(70292) % "ClipWatching"
+    if "Video is processing now." in data:
+        return False, "Intentelo más tarde: Video procesándose"
     return True, ""
 
 def get_video_url(page_url, user="", password="", video_password=""):

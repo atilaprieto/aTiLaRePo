@@ -898,6 +898,8 @@ def download_from_server(item, silent=False):
             item.downloadStatus = result["downloadStatus"]
             result["downloadCompleted"] = 0
             item.downloadCompleted = result["downloadCompleted"]
+            if item.post or item.post is None or item.post_back: result["post"] = item.post
+            if item.post or item.post is None or item.post_back: result["post_back"] = item.post_back
             return result
         
         import xbmcgui
@@ -932,6 +934,8 @@ def download_from_server(item, silent=False):
             result["downloadStatus"] = item.downloadStatus
         item.downloadStatus = result["downloadStatus"]
         result["downloadCompleted"] = 0
+        if item.post or item.post is None or item.post_back: result["post"] = item.post
+        if item.post or item.post is None or item.post_back: result["post_back"] = item.post_back
         item.downloadCompleted = result["downloadCompleted"]
         item.downloadStatus = result["downloadStatus"]
         item.downloadProgress = result["downloadProgress"]
@@ -946,6 +950,8 @@ def download_from_server(item, silent=False):
         result["downloadProgress"] = item.downloadProgress
         result["downloadQueued"] = item.downloadQueued
         result["downloadServer"] = item.downloadServer
+        if item.post or item.post is None or item.post_back: result["post"] = item.post
+        if item.post or item.post is None or item.post_back: result["post_back"] = item.post_back
 
         return result
     
@@ -1016,6 +1022,9 @@ def download_from_best_server(item, silent=False):
 
     # Recorremos el listado de servers, hasta encontrar uno que funcione
     for play_item in play_items:
+        if not play_item.post and item.post:
+            item.post_back = item.post
+            item.post = None
         play_item = item.clone(**play_item.__dict__)
         play_item.contentAction = play_item.action
         play_item.infoLabels = item.infoLabels
@@ -1395,6 +1404,13 @@ def save_download(item, silent=False):
     item.contentAction = item.action
     if item.contentAction in ['get_seasons', 'update_tvshow']:
         item.contentAction = 'episodios'
+        
+    if item.sub_action in ['tvshow', 'season']:
+        item.contentAction = 'episodios'
+        if item.server:
+            del item.server
+        if item.alive:
+            del item.alive
 
     if item.contentType in ["tvshow", "episode", "season"]:
         save_download_tvshow(item, silent=silent)

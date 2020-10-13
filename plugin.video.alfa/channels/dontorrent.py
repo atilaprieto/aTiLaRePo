@@ -101,7 +101,7 @@ def submenu(item):
     thumb_genero = get_thumb("genres.png")
     thumb_anno = get_thumb("years.png")
 
-    patron = '<h1\s*class="list-group-item top"\s*style="[^"]+">.*?<\/h1>\s*(.*?)<\/span><\/div>'
+    patron = '<h1\s*class="list-group-item top"\s*style="[^"]+">.*?<\/h1>\s*(.*?)<\/span>(?:<\/a><div|<\/div>)'
     data, success, code, item, itemlist = generictools.downloadpage(item.url, timeout=timeout, s2=False, 
                                           patron=patron, item=item, itemlist=[])    # Descargamos la página
 
@@ -437,12 +437,12 @@ def listado(item):                                                              
             
             #Adaptamos la parte de listado desde menú para que guarde la coherencia con el resto
             if not scrapedquality and item.extra2 == 'submenu':
-                if scrapertools.find_single_match(scrapedurl, '-\d{3,10}-\d{3,10}(.*?).htm'):
-                    title = scrapertools.find_single_match(scrapedurl, '-\d{3,10}-\d{3,10}(.*?).htm')\
+                if scrapertools.find_single_match(scrapedurl, '[-|\/]\d{3,10}[-|\/]\d{3,10}[-|\/]*(.*?)(?:.htm|$)'):
+                    title = scrapertools.find_single_match(scrapedurl, '[-|\/]\d{3,10}[-|\/]\d{3,10}[-|\/]*(.*?)(?:.htm|$)')\
                                 .replace('-', ' ').replace('_', ' ')
                     title = re.sub('\d+\s*[t|T]emporada', '', title)
                 else:
-                    title = scrapertools.find_single_match(scrapedurl, '-\d{3,10}-(.*?).htm')\
+                    title = scrapertools.find_single_match(scrapedurl, '[-|\/]\d{3,10}[-|\/](.*?)(?:.htm|$)')\
                                 .replace('-', ' ').replace('_', ' ')
                 if not title:
                     title = scrapedurl
@@ -829,6 +829,10 @@ def findvideos(item):
             itemlist.append(Item(channel=item.channel, url=host, 
                         title="[COLOR red][B]NO hay elementos con el idioma seleccionado[/B][/COLOR]", 
                         thumbnail=thumb_separador, folder=False))
+        
+        if len(itemlist_t) == 0:
+            if len(itemlist) == 0 or (len(itemlist) > 0 and itemlist[-1].server != 'torrent'):
+                return []
         itemlist.extend(itemlist_t)                                             #Pintar pantalla con todo si no hay filtrado
     
     # Requerido para AutoPlay
@@ -1149,7 +1153,7 @@ def newest(categoria):
             item.action = "novedades"
             itemlist = novedades(item)
 
-        if ">> Página siguiente" in itemlist[-1].title or "Pagina siguiente >>" in itemlist[-1].title:
+        if len(itemlist) > 0 and (">> Página siguiente" in itemlist[-1].title or "Pagina siguiente >>" in itemlist[-1].title):
             itemlist.pop()
 
     # Se captura la excepción, para no interrumpir al canal novedades si un canal falla

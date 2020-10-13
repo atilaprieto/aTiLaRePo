@@ -18,13 +18,15 @@ from core import httptools
 from core.item import Item
 from channels import filtertools
 from channels import autoplay
+from bs4 import BeautifulSoup
+
 
 IDIOMAS = {'vo': 'VO'}
 list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['gounlimited']
 
-######    SOLO DESCARGAS
+######    Muchas DESCARGAS
 host = 'http://xxxstreams.org' #es http://freepornstreams.org
 
 def mainlist(item):
@@ -33,7 +35,7 @@ def mainlist(item):
 
     autoplay.init(item.channel, list_servers, list_quality)
 
-    itemlist.append(item.clone(title="Peliculas" , action="lista", url= host + "/full-porn-movie-stream/"))
+    itemlist.append(item.clone(title="Peliculas" , action="lista", url= host + "/full-adult-movies/new-releases/"))
     itemlist.append(item.clone(title="Videos" , action="lista", url=host + "/new-porn-streaming/"))
     itemlist.append(item.clone(title="Canal" , action="categorias", url=host))
     # itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
@@ -78,28 +80,35 @@ def categorias(item):
     return itemlist
 
 
+def create_soup(url, referer=None, unescape=False):
+    logger.info()
+    if referer:
+        data = httptools.downloadpage(url, headers={'Referer': referer}).data
+    else:
+        data = httptools.downloadpage(url).data
+    if unescape:
+        data = scrapertools.unescape(data)
+    soup = BeautifulSoup(data, "html5lib", from_encoding="utf-8")
+    return soup
+
+
 def lista(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
-    patron = '<div class="entry-content">.*?'
-    patron += '<img src="([^"]+)".*?'
-    patron += '<a href="([^<]+)".*?'
-    patron += '<span class="screen-reader-text">(.*?)</span>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedthumbnail,scrapedurl,scrapedtitle in matches:
-        scrapedplot = ""
-        if '/HD' in scrapedtitle : title= "[COLOR red]HD[/COLOR] %s" % scrapedtitle
-        elif 'SD' in scrapedtitle : title= "[COLOR red]SD[/COLOR] %s" % scrapedtitle
-        elif 'FullHD' in scrapedtitle : title= "[COLOR red]FullHD[/COLOR] %s" % scrapedtitle
-        elif '1080' in scrapedtitle : title= "[COLOR red]1080p[/COLOR] %s" % scrapedtitle
-        else: title = scrapedtitle
-        if not "MANYVIDS" in title or not "UBIQFILE" in title:
-            itemlist.append(item.clone(action="findvideos", title=title, contentTitle=title, url=scrapedurl,
-                               fanart=scrapedthumbnail, thumbnail=scrapedthumbnail,plot=scrapedplot) )
-    next_page = scrapertools.find_single_match(data,'<a class="next page-numbers" href="([^"]+)">Next &rarr;</a>')
-    if next_page!="":
-        next_page = urlparse.urljoin(item.url,next_page)
+    soup = create_soup(item.url)
+    matches = soup.find_all("article", id=re.compile(r"^post-\d+"))
+    for elem in matches:
+        parte = elem.find('h1', class_='entry-title')
+        url = parte.a['href']
+        title = parte.text
+        if "Siterip" in title or "manyvids" in title:
+            title = "[COLOR red]%s[/COLOR]" %title
+        thumbnail = elem.img['src']
+        itemlist.append(item.clone(action="findvideos", title=title, contentTitle=title, url=url,
+                               fanart=thumbnail, thumbnail=thumbnail) )
+    next_page = soup.find('a', class_='next page-numbers')
+    if next_page:
+        next_page = next_page['href']
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
     return itemlist
 
@@ -107,19 +116,18 @@ def lista(item):
 def findvideos(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
-    data = re.sub(r"\n|\r|\t|amp;|\s{2}|&nbsp;", "", data)
-    patron = '<a href="([^"]+)" rel="nofollow[^>]+>(?:<strong>|)\s*(?:Streaming|Download)'
-    matches = scrapertools.find_multiple_matches(data, patron)
-    for url in matches:
-        if not "ubiqfile" in url:
-            itemlist.append(item.clone(action='play',title="%s", contentTitle=item.title, url=url))
-        # else:
-            # itemlist.append(item.clone(action='play',title="Descarga Ubiqfile: %s", contentTitle=item.title, url=url))
-    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
+    soup = create_soup(item.url).find('div', class_='entry-content')
+    matches = soup.find_all("a")
+    for elem in matches:
+        url = elem['href']
+        if not "imgcloud." in url:
+            logger.debug(url)
+            itemlist.append(item.clone(action="play", title= "%s" , contentTitle=item.title, url=url)) 
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize()) 
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)
     # Requerido para AutoPlay
     autoplay.start(itemlist, item)
     return itemlist
+
 

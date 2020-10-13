@@ -8,6 +8,7 @@ if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 import os
 import xbmc
 import xbmcgui
+import xbmcvfs
 from quasar.addon import ADDON, ADDON_PATH
 
 XBFONT_CENTER_X = 0x00000002
@@ -69,7 +70,26 @@ class OverlayText(object):
     # This is so hackish it hurts.
     def _get_skin_resolution(self):
         import xml.etree.ElementTree as ET
-        skin_path = xbmc.translatePath("special://skin/")
+        skin_path = translatePath("special://skin/")
         tree = ET.parse(os.path.join(skin_path, "addon.xml"))
         res = tree.findall("./extension/res")[0]
         return int(res.attrib["width"]), int(res.attrib["height"])
+
+
+def translatePath(path):
+    """
+    Kodi 19: xbmc.translatePath is deprecated and might be removed in future kodi versions. Please use xbmcvfs.translatePath instead.
+    @param path: cadena con path special://
+    @type path: str
+    @rtype: str
+    @return: devuelve la cadena con el path real
+    """
+    if PY3:
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+        path = xbmcvfs.translatePath(path)
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+    else:
+        path = xbmc.translatePath(path)
+    return path

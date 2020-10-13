@@ -5,11 +5,11 @@
     "patterns": [
       {
         "pattern": "youtube(?:-nocookie)?\\.com/(?:(?:(?:v/|embed/))|(?:(?:watch(?:_popup)?(?:\\.php)?)?(?:\\?|#!?)(?:.+&)?v=))?([0-9A-Za-z_-]{11})",
-        "url": "http://www.youtube.com/watch?v=\\1"
+        "url": "https://www.youtube.com/watch?v=\\1"
       },
       {
-        "pattern": "youtube.com/v/([0-9A-Za-z_-]{11})",
-        "url": "http://www.youtube.com/watch?v=\\1"
+        "pattern": "(?:youtube.com|youtu.be)/v/([0-9A-Za-z_-]{11})",
+        "url": "https://www.youtube.com/watch?v=\\1"
       }
     ]
   },

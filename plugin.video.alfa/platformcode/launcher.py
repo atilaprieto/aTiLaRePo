@@ -122,7 +122,39 @@ def run(item=None):
             from core import tmdb
             if tmdb.drop_bd():
                 platformtools.dialog_notification(config.get_localized_string(20000), config.get_localized_string(60011), time=2000, sound=False)
+                
+        elif item.action == "function":
+            """
+            {
+                "action": "function",
+                "folder": "lib",
+                "function": "alfa_assistant",
+                "method": "install_alfa_assistant",
+                "options": "auto"
+            }
+            """
+            # Checks if function file exists
+            function_file = os.path.join(config.get_runtime_path(),
+                                        item.folder, item.function + ".py")
+            logger.info("function_file=%s" % function_file)
 
+            function = None
+
+            if os.path.exists(function_file):
+                try:
+                    function = __import__('%s.%s' % (item.folder, item.function), None,
+                                         None, ["%s.%s" % (item.folder, item.function)])
+                except ImportError:
+                    exec("import %s." + item.function + " as function")
+
+                logger.info("Running function %s(%s) | %s" % (function.__name__, item.options, function.__file__))
+                
+                getattr(function, item.method)(item.options)
+            
+            else:
+                logger.error("ERROR Running function %s(%s) | %s" % (function.__name__, item.options, function.__file__))
+
+        
         # Action in certain channel specified in "action" and "channel" parameters
         else:
 
@@ -312,12 +344,11 @@ def run(item=None):
         canal = scrapertools.find_single_match(traceback.format_exc(), patron)
 
         try:
-            import xbmc
             if config.get_platform(True)['num_version'] < 14:
                 log_name = "xbmc.log"
             else:
                 log_name = "kodi.log"
-            log_message = config.get_localized_string(50004) + xbmc.translatePath("special://logpath") + log_name
+            log_message = config.get_localized_string(50004) + config.translatePath("special://logpath") + log_name
         except:
             log_message = ""
 

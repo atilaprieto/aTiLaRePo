@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from builtins import range
 import sys
 PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
 if PY3:
-    import urllib.parse as urllib                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.parse as urllib                                               # Es muy lento en PY2.  En PY3 es nativo
 else:
-    import urllib                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib                                                               # Usamos el nativo de PY2 que es más rápido
 
 import re
 import string
@@ -27,7 +28,7 @@ from channels import autoplay
 from lib import gktools
 
 IDIOMAS = {'latino': 'Latino'}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_servers = []
 list_quality = ['default']
 
@@ -123,7 +124,7 @@ def sub_search(item):
             scrapedyear = result[3]
         except:
             scrapedyear = ''
-        filtro_tmdb = {"first_air_date": scrapedyear}.items()
+        filtro_tmdb = list({"first_air_date": scrapedyear}.items())
         itemlist.append(item.clone(action = "seasons",
                                    title = scrapedtitle,
                                    thumbnail = scrapedthumbnail,
@@ -320,7 +321,7 @@ def findvideos(item):
         video = scrapertools.find_single_match(js, "sources: \[\{src:(.*?), type")
         js = re.sub(' videojs\((.*?)\);', video+";", js)
         
-        import js2py
+        from lib import js2py
         js2py.disable_pyimport()
         context = js2py.EvalJs({'atob': atob})
         

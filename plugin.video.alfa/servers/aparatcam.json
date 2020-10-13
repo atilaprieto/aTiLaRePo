@@ -8,7 +8,7 @@
         "url": "\\1"
       },
       {
-        "pattern": "(https://aparat.cam/[A-z0-9-_.]+.html)",
+        "pattern": "(https://aparat.cam/[A-z0-9-_.]+(?:.html|))",
         "url": "\\1"
       }
     ]

@@ -2,7 +2,14 @@
 # -*- Channel SeriesFLV -*-
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse
 
 from channels import filtertools
 from bs4 import BeautifulSoup
@@ -14,23 +21,10 @@ from channels import autoplay
 from platformcode import config, logger
 from channelselector import get_thumb
 
-import sys
-PY3 = False
-if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
-
-if PY3:
-    #from future import standard_library
-    #standard_library.install_aliases()
-    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
-    import urllib.parse as urllib
-else:
-    import urlparse
-
-
 host = 'https://seriesflv.org/'
 IDIOMAS = {'es': 'CAST', 'esp': 'CAST', 'la': 'LAT', 'lat': 'LAT', 'sub': 'VOSE', 'espsub': 'VOSE', 'en': 'VO',
            'eng': 'VO', 'engsub': 'VOS'}
-list_idiomas = IDIOMAS.values()
+list_idiomas = list(IDIOMAS.values())
 list_servers = ['powvideo', 'gamovideo', 'streamplay', 'flashx', 'nowvideo', 'thevideo']
 list_quality = []
 

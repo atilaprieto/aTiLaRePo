@@ -1,7 +1,7 @@
 {
   "id": "cineasiaenlinea",
   "name": "CineAsiaEnLinea",
-  "active": false,
+  "active": true,
   "adult": false,
   "language": ["cast", "lat"],
   "thumbnail": "http://i.imgur.com/5KOU8uy.png?3",

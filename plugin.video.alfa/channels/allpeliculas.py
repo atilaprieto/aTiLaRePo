@@ -124,15 +124,22 @@ def section(item):
 
 def make_link(item, link_data):
     logger.info()
-    if link_data.a:
+
+    srvs = {"play": "zplayer", "stp": "streamtape"}
+
+    if hasattr(link_data, "a"):
         id = link_data.a["data-id"]
         server = link_data.a["data-server"]
     else:
         id = link_data.span["data-id"]
         server = link_data.span["data-server"]
 
+    srv = server
+    if server.lower() in srvs:
+        srv = srvs[server.lower()]
+
     url = "%swp-json/get/player?id=%s&server=%s" % (host, id, server)
-    new_item = Item(channel=item.channel, title=server.capitalize(), url=url, action="play", server=server.capitalize(),
+    new_item = Item(channel=item.channel, title=server.capitalize(), url=url, action="play", server=srv.capitalize(),
                     language="LAT", infoLabels=item.infoLabels)
 
     return new_item

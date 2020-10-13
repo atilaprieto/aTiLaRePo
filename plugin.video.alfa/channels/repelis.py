@@ -29,7 +29,7 @@ list_servers = ['rapidvideo', 'streamango', 'fastplay', 'openload', 'netu', 'vid
 
 __channel__='repelis'
 
-host = "https://repelisxd.com"
+host = "https://repelis.io"
 
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
@@ -237,6 +237,8 @@ def play(item):
     itemlist = []
     #headers = {"}
     url1 = httptools.downloadpage(host + item.url, follow_redirects=False, only_headers=True).headers.get("location", "")
+    if "repelis" in url1:
+        url1 = httptools.downloadpage(url1, follow_redirects=False, only_headers=True).headers.get("location", "")
     itemlist.append(item.clone(url=url1))
     itemlist = servertools.get_servers_itemlist(itemlist)
     itemlist[0].thumbnail = item.contentThumbnail

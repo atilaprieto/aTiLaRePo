@@ -2,11 +2,19 @@
 # -*- Channel SerieMega -*-
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
+if PY3:
+    import urllib.parse as urlparse                                             # Es muy lento en PY2.  En PY3 es nativo
+else:
+    import urlparse
 
 import re
-from channels import filtertools
 from bs4 import BeautifulSoup
+
+from channels import filtertools
 from core import httptools
 from core import scrapertools
 from core import servertools
@@ -15,18 +23,10 @@ from core import tmdb
 from channels import autoplay
 from platformcode import config, logger
 from channelselector import get_thumb
-import sys
-PY3 = False
-if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
-
-if PY3:
-    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
-else:
-    import urlparse
 
 host = 'https://seriemega.net/'
 IDIOMAS = {"Latino": "LAT", "Castellano": "CAST", "Subtitulado": "VOSE"}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_servers = ['directo', 'jawclowd']
 list_quality = ['HD-RIP', 'TSC-SCR', 'HD-720', 'HD-1080']
 
@@ -53,11 +53,11 @@ def mainlist(item):
     #autoplay.init(item.channel, list_servers, list_quality)
     itemlist = list()
 
-    itemlist.append(Item(channel=item.channel, title="Peliculas", action="list_all", url=host + "peliculas",
+    itemlist.append(Item(channel=item.channel, title="Peliculas", action="list_all", url=host + "series/?tr_post_type=1",
                          thumbnail=get_thumb("movies", auto=True)))
 
-    itemlist.append(Item(channel=item.channel, title="Series", action="list_all", url=host + "serie",
-                         thumbnail=get_thumb("tvshows", auto=True)))
+    #itemlist.append(Item(channel=item.channel, title="Series", action="list_all", url=host + "series/?tr_post_type=2",
+    #                     thumbnail=get_thumb("tvshows", auto=True)))
 
     itemlist.append(Item(channel=item.channel, title="Generos", action="section", url=host,
                          thumbnail=get_thumb("genres", auto=True)))
@@ -233,7 +233,7 @@ def findvideos(item):
             elem = BeautifulSoup(elem.text, "html5lib", from_encoding="utf-8")
             new_url = elem.iframe["src"]
         else:
-            new_url = elem.iframe["data-lazy-src"]
+            new_url = elem.iframe["src"]
         new_url = create_soup(new_url).find("div", class_="Video").iframe["src"]
 
         if "seriemega" in new_url:
@@ -248,7 +248,7 @@ def findvideos(item):
         itemlist.append(Item(channel=item.channel, title="%s [%s] [%s]", url=url, action='play',
                              language=IDIOMAS.get(lang, "VOSE"), quality=quality, infoLabels=infoLabels))
 
-    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % (i.server, i.quality, i.language))
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % (i.server.capitalize(), i.quality, i.language))
     # Requerido para FilterTools
 
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)
@@ -271,7 +271,7 @@ def section(item):
     itemlist = list()
 
     if item.title == "Generos":
-        soup = create_soup(host).find("ul", class_="sub-menu")
+        soup = create_soup(host).find("div", id="categories-3")
         action = "list_all"
     elif item.title == "Alfabetico":
         soup = create_soup(item.url).find("ul", class_="AZList")
@@ -279,6 +279,8 @@ def section(item):
 
     for elem in soup.find_all("li"):
         url = elem.a["href"]
+        #apaño
+        url += '/?tr_post_type=1'
         title = elem.a.text
         itemlist.append(Item(channel=item.channel, title=title, action=action, url=url))
 
@@ -305,6 +307,8 @@ def search(item, texto):
         texto = texto.replace(" ", "+")
         if texto != '':
             item.url += texto
+            #apaño
+            item.url += '&tr_post_type=1'
             return list_all(item)
         else:
             return []
@@ -321,7 +325,7 @@ def newest(categoria):
     item = Item()
     try:
         if categoria == 'peliculas':
-            item.url = host + 'peliculas'
+            item.url = host + 'series/?tr_post_type=1'
         itemlist = list_all(item)
         if itemlist[-1].title == 'Siguiente >>':
             itemlist.pop()

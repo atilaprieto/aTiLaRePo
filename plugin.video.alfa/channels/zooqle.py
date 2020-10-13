@@ -35,8 +35,7 @@ list_servers = ['torrent']
 
 channel = 'zooqle'
 host = 'https://zooqle.com/'
-host_alt = ['https://zooqle.com/', 'https://zooqle1.unblocked.is/', 'https://zooqle.unblocked.win/', 
-            'https://zooqle-com.prox2.info/']
+host_alt = ['https://zooqle.com/', 'https://zooqle.unblockit.top/', 'https://zooqle.unblockninja.com/']
 """
 https://torrents.io/proxy/zooqle
 host_alt = ['https://zooqle.com/', 'https://zooqle1.unblocked.is/', 'https://zooqle.unblocked.win/', 
@@ -312,6 +311,9 @@ def listado(item):
             patron += '"([^"]+)")?><\/a><\/td>.*?<div class="mov_head">\s*<a href="'
             patron += '([^"]+)">(.*?)<\/a>\s*<span class="[^"]+">\((\d+)\)<\/span>()'
             
+        #logger.debug("PATRON: " + patron)
+        #logger.debug(data)
+        
         matches = re.compile(patron, re.DOTALL).findall(data)
         if not matches and item.extra != 'search':                              #error
             item = generictools.web_intervenida(item, data)                     #Verificamos que no haya sido clausurada
@@ -334,9 +336,7 @@ def listado(item):
         elif item.extra3 == 'novedades':
             matches = matches[mat_len:]
         
-        #logger.debug("PATRON: " + patron)
         #logger.debug(matches)
-        #logger.debug(data)
         
         #Buscamos la próxima y la última página
         if item.extra == 'search' or item.extra3 == 'novedades' or item.extra3 == 'populares': # Si es Search, no hay paginado
@@ -923,8 +923,8 @@ def episodios(item):
     if item.infoLabels['number_of_seasons']:
         max_temp = item.infoLabels['number_of_seasons']
     y = []
+    patron = 'season (\d+)'
     if modo_ultima_temp_alt and item.library_playcounts:        #Averiguar cuantas temporadas hay en Videoteca
-        patron = 'season (\d+)'
         matches = re.compile(patron, re.DOTALL).findall(str(item.library_playcounts))
         for x in matches:
             y += [int(x)]
@@ -958,9 +958,9 @@ def episodios(item):
     patron_temp = '<ul class="list-group eplist" id="eps_(\d+)">(.*?)<\/ul><\/div><\/div><\/div>'
     temp_serie = re.compile(patron_temp, re.DOTALL).findall(data)
     
-    #logger.debug("PATRON: " + patron)
-    #logger.debug(temp_serie)
-    #logger.debug(data)
+    logger.debug("PATRON: " + patron)
+    logger.debug(temp_serie)
+    logger.debug(data)
     
     if not temp_serie:                                                          #error
         item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
@@ -969,7 +969,7 @@ def episodios(item):
             return itemlist                                                     #Salimos
         
         logger.error("ERROR 02: EPISODIOS: Ha cambiado la estructura de la Web " 
-                        + " / PATRON: " + patron + " / DATA: " + temporada)
+                        + " / PATRON: " + patron + " / DATA: " + data)
         itemlist.append(item.clone(action='', title=item.channel.capitalize() + 
                         ': ERROR 02: EPISODIOS: Ha cambiado la estructura de la Web.  ' 
                         + 'Reportar el error con el log'))
@@ -1117,6 +1117,7 @@ def retry_alt(url, timeout=timeout):                                            
     host_a = scrapertools.find_single_match(url, '(http.?\:\/\/(?:www.)?.*?\.\w+(?:\.\w+)?\/)')
     
     logger.error("ERROR 98: Web caída, reintentando..." + " / URL: " + url)
+    config.set_setting('domain_name', host, channel)                            # Reseteamos el dominio
     
     for host_b in host_alt:
         if host_b in url:

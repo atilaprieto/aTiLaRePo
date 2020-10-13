@@ -7,6 +7,8 @@
         <setting id="autoplay" type="bool" label="70562" default="false" visible="true"/>
         <setting id="second_language" type="labelenum" values="No|CAST|LAT|VOSE|VOS|VO"
                  label="Idioma secundario para Autoplay/Filtro" default="No"/>
+        <setting id="autoplay_qlty" type="labelenum" label="Autoplay (forzar calidad)"
+                 values="Alta|Baja" default="Alta"/>
         <setting id="thumbnail_type" type="enum" lvalues="30011|30012|30200" label="30010" default="2"/>
         <setting id="channel_language" type="labelenum" values="all|cast|lat" label="30019" default="all"/>
         <setting id="trakt_sync" type="bool" label="70109" default="false"/>
@@ -126,6 +128,12 @@
         <setting label="Opciones para Alfa Assistant" type="lsep"/>
         <setting id="assistant_mode" label="Dispositivo a utilizar" type="labelenum" values="este|otro" default="este"/>
         <setting id="assistant_custom_address" label="    IP manual" type="ipaddress" visible="eq(-1,otro)"/>
+        <setting id="assistant_flag_install" type="bool" label="¿Desea que se instale la app automáticamente si es necesario?" default="true"/>
+        <setting id="assistant_auto_install" type="action" label="[COLOR limegreen][B]Pinche[/B][/COLOR] para que Alfa instale/actualice Alfa Assistant ahora"
+                 action="RunPlugin(plugin://plugin.video.alfa/?ew0KICAgICJhY3Rpb24iOiAiZnVuY3Rpb24iLA0KICAgICJmb2xkZXIiOiAibGliIiwNCiAgICAiZnVuY3Rpb24iOiAiYWxmYV9hc3Npc3RhbnQiLA0KICAgICJtZXRob2QiOiAiaW5zdGFsbF9hbGZhX2Fzc2lzdGFudCIsDQogICAgIm9wdGlvbnMiOiAiYXV0byINCn0=)"/>
+        <setting id="assistant_manual_install" type="action" label="URL para instalación manual: [COLOR yellow]https://bit.ly/2Zwpfzq[/COLOR]  [COLOR limegreen]Pinche[/COLOR] si tiene browser"
+                 action="RunPlugin(plugin://plugin.video.alfa/?ew0KICAgICJhY3Rpb24iOiAiZnVuY3Rpb24iLA0KICAgICJmb2xkZXIiOiAibGliIiwNCiAgICAiZnVuY3Rpb24iOiAiZ2VuZXJpY3Rvb2xzIiwNCiAgICAibWV0aG9kIjogImNhbGxfYnJvd3NlciIsDQogICAgIm9wdGlvbnMiOiAiaHR0cHM6Ly9iaXQubHkvMlp3cGZ6cSINCn0=)"/>
+        <setting id="is_rooted_device" label="¿Dispositivo con privilegios de Super-usuario?" type="labelenum" values="check|rooted|no_rooted" default="check"/>         
     </category>
     <category label="70149">
         <setting label="70150" type="lsep"/>
@@ -143,7 +151,7 @@
         <setting id="tmdb_plus_info" type="bool" label="70156" default="false"/>
         <setting id="tmdb_cache" type="bool" label="70157" default="true"/>
         <setting id="tmdb_cache_expire" type="enum" lvalues="70158|70159|70160|70161|70170" label="70162"
-                 enable="eq(-1,true)" default="4"/>
+                 enable="eq(-1,true)" default="2"/>
         <setting id="tmdb_clean_db_cache" type="action" label="70163"
                  action="RunPlugin(plugin://plugin.video.alfa/?ew0KICAgICJhY3Rpb24iOiAic2NyaXB0Ig0KfQ==)"/>
 

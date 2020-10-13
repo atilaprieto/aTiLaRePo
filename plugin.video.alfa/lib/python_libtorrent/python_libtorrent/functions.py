@@ -23,31 +23,30 @@
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 from __future__ import absolute_import
-#from builtins import str
+from builtins import object
 import sys
 PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
-from builtins import object
 
-import os
 import time
 import xbmc, xbmcgui, xbmcaddon
 
 from .net import HTTP
 from core import filetools                                                      ### Alfa
 from core import ziptools
+from platformcode import config                                                 ### Alfa
 
 #__libbaseurl__ = "https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"
 __libbaseurl__ = ["https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"]
 #__settings__ = xbmcaddon.Addon(id='script.module.libtorrent')
 #__version__ = __settings__.getAddonInfo('version')
 #__plugin__ = __settings__.getAddonInfo('name') + " v." + __version__
-#__icon__=os.path.join(xbmc.translatePath('special://home'), 'addons',
+#__icon__= filetools.join(filetools.translatePath('special://home'), 'addons',
 #                                   'script.module.libtorrent', 'icon.png')
 #__settings__ = xbmcaddon.Addon(id='plugin.video.alfa')                         ### Alfa
 __version__ = '1.1.17'                                                          ### Alfa
 __plugin__ = "python-libtorrent v.1.1.7"                                        ### Alfa
-__icon__=os.path.join(xbmc.translatePath('special://home'), 'addons',
+__icon__= filetools.join(filetools.translatePath('special://home'), 'addons',
                                    'plugin.video.alfa', 'icon.png')             ### Alfa
 #__language__ = __settings__.getLocalizedString                                 ### Alfa
 
@@ -70,7 +69,7 @@ class LibraryManager(object):
     def __init__(self, dest_path, platform):
         self.dest_path = dest_path
         self.platform = platform
-        self.root=os.path.dirname(os.path.dirname(__file__))
+        self.root=filetools.dirname(filetools.dirname(__file__))
         ver1, ver2, ver3 = platform['version'].split('.')                       ### Alfa: resto método
         try:
             ver1 = int(ver1)
@@ -88,7 +87,7 @@ class LibraryManager(object):
         if dest_path: self.dest_path = dest_path
         if platform: self.platform = platform
         for libname in get_libname(self.platform):
-            if not filetools.exists(os.path.join(self.dest_path,libname)):
+            if not filetools.exists(filetools.join(self.dest_path,libname)):
                 return False
         return True
 
@@ -96,9 +95,9 @@ class LibraryManager(object):
         need_update=False
         for libname in get_libname(self.platform):
             if libname!='liblibtorrent.so':
-                self.libpath = os.path.join(self.dest_path, libname)
-                self.sizepath=os.path.join(self.root, self.platform['system'], self.platform['version'], libname+'.size.txt')
-                size=str(os.path.getsize(self.libpath))
+                self.libpath = filetools.join(self.dest_path, libname)
+                self.sizepath=filetools.join(self.root, self.platform['system'], self.platform['version'], libname+'.size.txt')
+                size=str(filetools.getsize(self.libpath))
                 size_old=open( self.sizepath, "r" ).read()
                 if size_old!=size:
                     need_update=True
@@ -109,7 +108,7 @@ class LibraryManager(object):
         if platform: self.platform = platform
         if self.check_update():
             for libname in get_libname(self.platform):
-                self.libpath = os.path.join(self.dest_path, libname)
+                self.libpath = filetools.join(self.dest_path, libname)
                 filetools.remove(self.libpath)
             self.download()
 
@@ -134,7 +133,7 @@ class LibraryManager(object):
         for libname in get_libname(self.platform):
             p_version = self.platform['version']
             if PY3: p_version += '_PY3'
-            dest = os.path.join(self.dest_path, libname)
+            dest = filetools.join(self.dest_path, libname)
             log("try to fetch %s/%s/%s" % (self.platform['system'], p_version, libname))
             
             for url_lib in __libbaseurl__:                                      ### Alfa
@@ -166,12 +165,12 @@ class LibraryManager(object):
                         #xbmc.executebuiltin("Notification(%s,%s,%s,%s)" % (__plugin__,text,750,__icon__))
                         continue
                 else:
-                    filetools.copy(os.path.join(self.dest_path, 'libtorrent.so'), dest, silent=True)    ### Alfa
+                    filetools.copy(filetools.join(self.dest_path, 'libtorrent.so'), dest, silent=True)    ### Alfa
                 
-                dest_alfa = os.path.join(xbmc.translatePath(__settings__.getAddonInfo('Path')), \
+                dest_alfa = filetools.join(filetools.translatePath(__settings__.getAddonInfo('Path')), \
                                 'lib', libname)                                 ### Alfa
                 #filetools.copy(dest, dest_alfa, silent=True)                    ### Alfa
-                dest_alfa = os.path.join(xbmc.translatePath(__settings__.getAddonInfo('Profile')), \
+                dest_alfa = filetools.join(filetools.translatePath(__settings__.getAddonInfo('Profile')), \
                                 'custom_code', 'lib', libname)                  ### Alfa
                 filetools.copy(dest, dest_alfa, silent=True)                    ### Alfa
                 break
@@ -181,55 +180,22 @@ class LibraryManager(object):
         return True
 
     def android_workaround(self, new_dest_path):                                ### Alfa (entera)
-        import subprocess
-        
+
         for libname in get_libname(self.platform):
-            libpath=os.path.join(self.dest_path, libname)
-            size=str(os.path.getsize(libpath))
-            new_libpath=os.path.join(new_dest_path, libname)
+            libpath = filetools.join(self.dest_path, libname)
+            size = str(filetools.getsize(libpath))
+            new_libpath = filetools.join(new_dest_path, libname)
 
             if filetools.exists(new_libpath):
-                new_size=str(os.path.getsize(new_libpath))
+                new_size = str(filetools.getsize(new_libpath))
                 if size != new_size:
-                    filetools.remove(new_libpath)
-                    if filetools.exists(new_libpath):
-                        try:
-                            command = ['su', '-c', 'rm', '%s' % new_libpath]
-                            p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                            output_cmd, error_cmd = p.communicate()
-                            log('Comando ROOT: %s' % str(command))
-                        except:
-                            log('Sin PERMISOS ROOT: %s' % str(command))
-                    
-                    if not filetools.exists(new_libpath):
+                    res = filetools.remove(new_libpath, su=True)
+                    if res:
                         log('Deleted: (%s) %s -> (%s) %s' %(size, libpath, new_size, new_libpath))
                     
             if not filetools.exists(new_libpath):
-                filetools.copy(libpath, new_libpath, silent=True)                 ### ALFA
-                log('Copying... %s -> %s' %(libpath, new_libpath))
-                
-                if not filetools.exists(new_libpath):
-                    try:
-                        command = ['su', '-c', 'cp', '%s' % libpath, '%s' % new_libpath]
-                        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        output_cmd, error_cmd = p.communicate()
-                        log('Comando ROOT: %s' % str(command))
-                        
-                        command = ['su', '-c', 'chmod', '777', '%s' % new_libpath]
-                        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        output_cmd, error_cmd = p.communicate()
-                        log('Comando ROOT: %s' % str(command))
-                    except:
-                        log('Sin PERMISOS ROOT: %s' % str(command))
+                res = filetools.copy(libpath, new_libpath, ch_mod='777', su=True)   ### ALFA
 
-                    if not filetools.exists(new_libpath):
-                        log('ROOT Copy Failed!')
-                
-                else:
-                    command = ['chmod', '777', '%s' % new_libpath]
-                    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    output_cmd, error_cmd = p.communicate()
-                    log('Comando: %s' % str(command))
             else:
                 log('Module exists.  Not copied... %s' % new_libpath)           ### ALFA
 

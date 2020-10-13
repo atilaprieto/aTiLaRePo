@@ -187,7 +187,7 @@ class SMBFile(object):
     def __init__(self, url, mode="r"):
         import random
         try:
-            import xbmc
+            from core import filetools
         except:
             xbmc = None
         self.url = url
@@ -200,7 +200,7 @@ class SMBFile(object):
         self.size = 0
         self.pos = 0
         if xbmc:
-            self.tmp_path = os.path.join(xbmc.translatePath("special://temp/"), "%08x" % (random.getrandbits(32)))
+            self.tmp_path = os.path.join(filetools.translatePath("special://temp/"), "%08x" % (random.getrandbits(32)))
         else:
             self.tmp_path = os.path.join(os.getenv("TEMP") or os.getenv("TMP") or os.getenv("TMPDIR"),
                                          "%08x" % (random.getrandbits(32)))

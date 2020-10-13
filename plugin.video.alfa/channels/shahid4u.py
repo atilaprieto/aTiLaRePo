@@ -23,7 +23,7 @@ from lib import jsunpack
 IDIOMAS = {'default': 'default'}
 list_language = list(IDIOMAS.values())
 list_quality = ['1080p', '720p', '360p']
-list_servers = ['uptobox', '1fichier', 'openload']
+list_servers = ['uptobox', 'vidhd', 'okru']
 
 host = 'https://ww.shahid4u.net/'
 host_alt = 'https://on.shahid4u.net'
@@ -55,11 +55,21 @@ def mainlist(item):
                          text_bold=True,action="listall", url=host + "category/افلام-اجنبي/",
                          thumbnail="https://cdn.countryflags.com/thumbs/united-states-of-america/flag-button-square-250.png",
                          plot="افلام اجنبي", extra="film"))
+
+    itemlist.append(Item(channel=item.channel, title="Turkish Movies", text_color="0xFF5AC0E0",
+                         text_bold=True,action="listall", url=host + "category/فلام-تركية/",
+                         thumbnail="https://cdn.countryflags.com/thumbs/turkey/flag-button-square-250.png",
+                         plot="فلام تركية", extra="film"))
     
     itemlist.append(Item(channel=item.channel, title="Indian Movies", text_color="0xFF5AC0E0",
                          text_bold=True,action="listall", url=host + "category/افلام-هندي/",
                          thumbnail="https://cdn.countryflags.com/thumbs/india/flag-button-square-250.png",
                          extra="film", plot="افلام هندي"))
+
+    itemlist.append(Item(channel=item.channel, title="Asian Movies", text_color="0xFF5AC0E0",
+                         text_bold=True,action="listall", url=host + "category/افلام-اسيوية/",
+                         thumbnail="https://cdn.countryflags.com/thumbs/south-korea/flag-button-square-250.png",
+                         plot="افلام اسيوية", extra="film"))
     
     itemlist.append(Item(channel=item.channel, title="", folder=False, thumbnail=thumb_separador))
     '''try:
@@ -88,11 +98,21 @@ def mainlist(item):
                          title="Indian Series", action="listall", url=host + "category/مسلسلات-هندية/",
                          thumbnail="https://www.favcy.com/data/brand/logo/compressed/1526294822-2-56-india-tv-logo.png",
                          extra="film", plot="مسلسلات هندية"))
+
+    itemlist.append(Item(channel=item.channel, text_color="yellow", text_bold=True,
+                         title="Asian Series", action="listall", url=host + "category/مسلسلات-اسيوي/",
+                         thumbnail="https://cdn.countryflags.com/thumbs/south-korea/flag-button-square-250.png",
+                         extra="film", plot="مسلسلات اسيوية"))
     
     itemlist.append(Item(channel=item.channel, text_color="yellow", text_bold=True,
-     title="Anime Series", action="listall", url=host + "category/مسلسلات-انمي/",
-      thumbnail="http://www.retornoanime.com/wp-content/uploads/2012/06/crunchyroll-logo.jpg",
-       extra="film", plot="مسلسلات انمي"))
+                        title="Anime Series", action="listall", url=host + "category/مسلسلات-انمي/",
+                        thumbnail="http://www.retornoanime.com/wp-content/uploads/2012/06/crunchyroll-logo.jpg",
+                        extra="film", plot="مسلسلات انمي"))
+
+    # itemlist.append(Item(channel=item.channel, text_color="yellow", text_bold=True,
+    #                     title="Netflix Series", action="listall", url=host + "category/netflix/",
+    #                     thumbnail="https://www.citypng.com/public/uploads/preview/-11594687246vzsjesy7bd.png",
+    #                     extra="film", plot="مسلسلات نتفليكس"))
     
     itemlist.append(Item(channel=item.channel, text_color="yellow", text_bold=True,
                          title="TV Shows", action="listall", url=host + "category/برامج-تلفزيونية/",
@@ -143,7 +163,7 @@ def listall(item):
         else:
             text_color= ""
         
-        if "مسلسل" in scrapedtitle or "انمي" in scrapedtitle or season:
+        if not 'film' in url:
             action = "episodes"
             
             if not '/episode/' in url and item.busqueda_:
@@ -158,7 +178,7 @@ def listall(item):
                     pass
             
             scrapedinfo = scrapedtitle.split(' الحلقة ')
-            title2 = scrapedinfo[0].replace("مسلسل ", "").replace("انمي ", "") 
+            title2 = re.sub("مسلسل |انمي |مترجم ", "", scrapedinfo[0])
             
             if "الموسم" in title2:
                 title2 = title2.split(" الموسم ")[0]
@@ -168,7 +188,7 @@ def listall(item):
             
             titlelist.append(title2)
             
-            title2 = re.sub('S(?:0)(\d+)', '', title2).strip()
+            title2 = re.sub('S(?:0)(\d+)|مترجم', '', title2).strip()
             
             if "اعلان" in scrapedtitle or direct_link == True:
                 action = "findvideos"
@@ -299,7 +319,7 @@ def episodes(item):
 
 def findvideos(item):
     logger.info()
-    servers = {'vidhd':'directo', '1fichier': 'onefichier', 'uploaded': 'uploadedto', 'ok': 'okru'}
+    servers = {'1fichier': 'onefichier', 'uploaded': 'uploadedto', 'ok': 'okru'}
     itemlist = []
     downlist = []
     server = ""
@@ -398,37 +418,15 @@ def play(item):
     if 'shah' in item.url:
         
         data = httptools.downloadpage(item.url, headers=headers).data
-        item.url = data
+        item.url = re.sub(r'\s*', '', data)
         
-        if "vidhd" in item.title.lower():
-            
-            data = httptools.downloadpage(item.url).data
-            
-            packed = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
-            unpacked = jsunpack.unpack(packed)
-
-            item.url = scrapertools.find_single_match(unpacked, 'file:"([^"]+)"')
-            item.server = "directo"
-        
-        elif item.title.lower() == "ok":
+        if item.title.lower() == "ok":
             item.server="okru"
-        else:
-            item.server=item.title.lower()
         
         itemlist.append(item.clone())
     
     else:
-        if "vidhd" in item.url:
-            
-            data = httptools.downloadpage(item.url).data
-            
-            packed = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
-            unpacked = jsunpack.unpack(packed)
-
-            item.url = scrapertools.find_single_match(unpacked, 'file:"([^"]+)"')
-            item.server = "directo"
-        
-        itemlist.append(item.clone())
+        return [item]
     
     return itemlist
 

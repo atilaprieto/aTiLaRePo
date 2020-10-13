@@ -36,6 +36,8 @@ def search(item, texto):
         return []
 
 
+
+
 def categorias(item):
     logger.info()
     itemlist = []
@@ -96,6 +98,7 @@ def findvideos(item):
     itemlist.append(item.clone(action="play", title=url, contentTitle = item.title, url=url))
     return itemlist
 
+
 def play(item):
     logger.info()
     itemlist = []
@@ -111,7 +114,8 @@ def play(item):
     if "vide" in server[0]:
         url = "https://%s/cam/mp4:%s_h264_aac_480p/chunklist_w206153776.m3u8?token=%s"  %(server[0],dir,token)
     else:
-        url = "https://%s/%s_h264_aac_480p/tracks-v1a1/mono.m3u8?token=%s" %(server[0],dir,token)
+        url = "https://%s/%s_h264_aac_720p/tracks-v1a1/mono.m3u8?token=%s" %(server[0],dir,token)
+    url = url + "|verifypeer=false"
     itemlist.append(item.clone(action="play", title=url, contentTitle = item.title, url=url))
     return itemlist
 

@@ -1,0 +1,28 @@
+{
+  "id": "clubdecine",
+  "name": "Club De Cine",
+  "force_unify": true,
+  "thumbnail":"https://i.postimg.cc/05JfQNw9/clubdecine.png",
+  "banner":"",
+  "active": true,
+  "adult": false,
+  "language": ["cast", "lat"],
+  "categories": [
+    "movie",
+    "vos"
+  ],
+  "settings": [
+    {
+      "id": "filter_languages",
+      "type": "list",
+      "label": "Mostrar enlaces en idioma...",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "No filtrar"
+      ]
+    }
+  ]
+
+}

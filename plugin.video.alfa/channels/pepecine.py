@@ -25,8 +25,8 @@ list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['rapidvideo', 'verystream', 'streamplay']
 
-host = 'https://pepecine.tv/'
-referer = 'https://pepecine.to'
+host = 'https://verencasa.com/'
+referer = 'https://pepecine.to/'
 
 
 def mainlist(item):
@@ -55,7 +55,7 @@ def submenu(item):
     if 'series' in item.url:
         itemlist.append(
             Item(channel=item.channel, title='Nuevos capitulos',
-                 url= host + 'last/estrenos-episodios-online.php', action='list_news',
+                 url=host + 'last/estrenos-episodios-online.php', action='list_news',
                  thumbnail=get_thumb('new episodes', auto=True), first=0, news_type='series'))
     else:
         itemlist.append(
@@ -102,7 +102,6 @@ def list_news(item):
     next = False
 
     data = get_source(item.url, referer=referer)
-
     patron = '<td><a href=([^ ]+) target="_parent"><img src=([^ ]+) class="s8" alt="([^"]+)"'
 
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -146,8 +145,8 @@ def list_news(item):
                 ep = int(se_ep[1])
                 new_item.contentSerieName = contentSerieName
                 new_item.url += '&episodeNumber=%s' % ep
-                new_item.ep_info = ep - 1
-                # new_item.infoLabels['season'] = se_ep[0]
+                new_item.ep_info = ep
+                new_item.infoLabels['season'] = se_ep[0]
                 new_item.infoLabels['episode'] = ep
 
             listed.append(url)
@@ -297,7 +296,7 @@ def findvideos(item):
         if str(item.ep_info) != '':
             is_tvshow = True
             epi = item.ep_info
-            season = item.contentSeason
+            season = item.infoLabels["season"]
 
         for elem in videos_info:
             lang = scrapertools.find_single_match(elem['name'], '/(.*?).png')
@@ -317,7 +316,6 @@ def findvideos(item):
                 title = ' [%s]' % lang
             else:
                 title = ''
-
             if not is_tvshow or (elem['season'] == season and elem['episode'] == epi):
 
                 itemlist.append(Item(channel=item.channel, title='%s' + title, action='play', url=url,
@@ -354,7 +352,7 @@ def search_results(item):
 
     if json_data.get('results', ''):
         for elem in json_data['results']:
-            url = '%ssecure/titles/%s?titleId=%s' % (host, elem['id'], elem['id'])
+            url = '%ssecure/titles/%s?titleId=%s' % (item.host, elem['id'], elem['id'])
             if not 'videos' in elem:
                 continue
             try:
@@ -400,8 +398,10 @@ def search_results(item):
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    if not item.url:
-        item.url = host + 'secure/search/'
+    item.host = 'https://pepecine.tv/'
+    item.url =  item.host + 'secure/search/'
+    # if not item.url:
+    #     item.url = host + 'secure/search/'
 
     item.url = '%s%s?type=&limit=30' % (item.url, texto)
 
@@ -417,11 +417,11 @@ def newest(categoria):
     item = Item()
     try:
         if categoria == 'peliculas':
-            item.url = 'https://verencasa.com/last/estrenos-peliculas-online.php'
+            item.url = host + 'last/estrenos-peliculas-online.php'
             item.news_type = 'movies'
             item.first = 0
         elif categoria == 'series':
-            item.url = 'https://verencasa.com/last/estrenos-episodios-online.php'
+            item.url = host + 'last/estrenos-episodios-online.php'
             item.first = 0
             item.news_type = 'series'
         elif categoria == 'infantiles':

@@ -18,18 +18,23 @@ metodos:
 
 """
 from __future__ import division
-from future import standard_library
-standard_library.install_aliases()
 from builtins import range
 from builtins import object
 from past.utils import old_div
-#from builtins import str
+
 import sys
 PY3 = False
 VFS = True
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int; VFS = False
 
-import urllib.request, urllib.parse, urllib.error
+if PY3:
+    import urllib.parse as urllib                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.request as urllib2
+    import urllib.parse as urlparse
+else:
+    import urllib                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib2
+    import urlparse
 
 import mimetypes
 import os
@@ -201,8 +206,7 @@ class Downloader(object):
         self._max_buffer = max_buffer
 
         try:
-            import xbmc
-            self.tmp_path = xbmc.translatePath("special://temp/")
+            self.tmp_path = filetools.translatePath("special://temp/")
         except:
             self.tmp_path = os.getenv("TEMP") or os.getenv("TMP") or os.getenv("TMPDIR")
 
@@ -270,13 +274,13 @@ class Downloader(object):
 
         # headers adicionales
         if "|" in url:
-            self._headers.update(dict([[header.split("=")[0], urllib.parse.unquote_plus(header.split("=")[1])] for header in
+            self._headers.update(dict([[header.split("=")[0], urllib.unquote_plus(header.split("=")[1])] for header in
                                        url.split("|")[1].split("&")]))
 
     def __get_download_headers__(self):
         if self.url.startswith("https"):
             try:
-                conn = urllib.request.urlopen(urllib.request.Request(self.url.replace("https", "http"), headers=self._headers))
+                conn = urllib2.urlopen(urllib2.Request(self.url.replace("https", "http"), headers=self._headers))
                 conn.fp._sock.close()
                 self.url = self.url.replace("https", "http")
             except:
@@ -285,10 +289,10 @@ class Downloader(object):
         for x in range(3):
             try:
                 if not sys.hexversion > 0x0204FFFF:
-                    conn = urllib.request.urlopen(urllib.request.Request(self.url, headers=self._headers))
+                    conn = urllib2.urlopen(urllib2.Request(self.url, headers=self._headers))
                     conn.fp._sock.close()
                 else:
-                    conn = urllib.request.urlopen(urllib.request.Request(self.url, headers=self._headers), timeout=5)
+                    conn = urllib2.urlopen(urllib2.Request(self.url, headers=self._headers), timeout=5)
 
             except:
                 self.response_headers = dict()
@@ -303,19 +307,19 @@ class Downloader(object):
         if "filename" in self.response_headers.get("content-disposition",
                                                    "") and "attachment" in self.response_headers.get(
                 "content-disposition", ""):
-            cd_filename, cd_ext = os.path.splitext(urllib.parse.unquote_plus(
+            cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(
                 re.compile("attachment; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(
                     self.response_headers.get("content-disposition")).group(1)))
         elif "filename" in self.response_headers.get("content-disposition", "") and "inline" in self.response_headers.get(
                 "content-disposition", ""):
-            cd_filename, cd_ext = os.path.splitext(urllib.parse.unquote_plus(
+            cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(
                 re.compile("inline; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(
                     self.response_headers.get("content-disposition")).group(1)))
         else:
             cd_filename, cd_ext = "", ""
 
         url_filename, url_ext = os.path.splitext(
-            urllib.parse.unquote_plus(filetools.basename(urllib.parse.urlparse(self.url)[2])))
+            urllib.unquote_plus(filetools.basename(urlparse.urlparse(self.url)[2])))
         if self.response_headers.get("content-type", "application/octet-stream") != "application/octet-stream":
             mime_ext = mimetypes.guess_extension(self.response_headers.get("content-type"))
         else:
@@ -416,9 +420,9 @@ class Downloader(object):
         if not end: end = ""
         headers.update({"Range": "bytes=%s-%s" % (start, end)})
         if not sys.hexversion > 0x0204FFFF:
-            conn = urllib.request.urlopen(urllib.request.Request(self.url, headers=headers))
+            conn = urllib2.urlopen(urllib2.Request(self.url, headers=headers))
         else:
-            conn = urllib.request.urlopen(urllib.request.Request(self.url, headers=headers), timeout=5)
+            conn = urllib2.urlopen(urllib2.Request(self.url, headers=headers), timeout=5)
         return conn
 
     def __check_consecutive__(self, id):

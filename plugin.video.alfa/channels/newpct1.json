@@ -9,9 +9,7 @@
   "categories": [
     "movie",
     "tvshow",
-    "anime",
     "torrent",
-    "documentary",
     "vos",
     "direct"
   ],
@@ -103,22 +101,15 @@
       "visible": true,
       "lvalues": [
         "Aleatorio",
-        "Descargas2020",
-        "Pctnew",
         "Pctreload",
-        "Tumejortorrent",
-        "Torrentrapid",
-        "Planetatorrent",
-        "Tvsinpagar",
-        "Torrentlocura",
-        "Mispelisyseries"        
+        "Pctmix"
       ]
     },
     {
       "id": "clonenewpct1_channels_list",
       "type": "text",
       "label": "Lista de clones de NewPct1 y orden de uso",
-      "default": "('1', 'descargas2020', 'https://descargas2020.org/', 'movie, tvshow, season, episode', ''), ('1', 'pctnew', 'https://pctnew.org/', 'movie, tvshow, season, episode', ''), ('1', 'pctreload', 'https://pctreload.com/', 'movie, tvshow, season, episode', ''), ('0', 'tumejortorrent', 'https://tumejortorrent.org/', 'movie, tvshow, season, episode', ''), ('0', 'torrentrapid', 'https://torrentrapid.org/', 'movie, tvshow, season, episode', 'serie_episodios'), ('0', 'planetatorrent', 'http://planetatorrent.com/', 'movie, tvshow, season, episode', ''), ('0', 'tvsinpagar', 'http://www.tvsinpagar.com/', 'tvshow, season, episode', ''), ('0', 'torrentlocura', 'https://torrentlocura.cc/', 'movie, tvshow, season, episode', ''), ('0', 'mispelisyseries', 'http://mispelisyseries.com/', 'movie', 'search, listado_busqueda')",
+      "default": "('1', 'pctreload', 'https://pctreload.com/', 'movie, tvshow, season, episode', ''), ('1', 'pctmix', 'https://pctmix.com/', 'movie, tvshow, season, episode', ''), ('0', 'descargas2020', 'https://descargas2020.net/', 'movie, tvshow, season, episode', ''), ('0', 'tumejortorrent', 'https://tumejortorrent.org/', 'movie, tvshow, season, episode', ''), ('0', 'torrentrapid', 'https://torrentrapid.org/', 'movie, tvshow, season, episode', 'serie_episodios'), ('0', 'planetatorrent', 'http://planetatorrent.com/', 'movie, tvshow, season, episode', ''), ('0', 'tvsinpagar', 'http://www.tvsinpagar.com/', 'tvshow, season, episode', ''), ('0', 'torrentlocura', 'https://torrentlocura.cc/', 'movie, tvshow, season, episode', ''), ('0', 'mispelisyseries', 'http://mispelisyseries.com/', 'movie', 'search, listado_busqueda'), ('0', 'pctnew', 'https://pctnew.org/', 'movie, tvshow, season, episode', '')",
       "enabled": true,
       "visible": false
     },
@@ -126,7 +117,7 @@
       "id": "intervenidos_channels_list",
       "type": "text",
       "label": "Lista de canales y clones de NewPct1 intervenidos y orden de sustitución de URLs",
-      "default": "('0', 'canal_org', 'canal_des', 'url_org', 'url_des', 'patron1', 'patron2', 'patron3', 'patron4', 'patron5', 'content_inc', 'content_exc', 'ow_force'), ('0', 'canal_org', 'canal_des', 'url_org', 'url_des', 'patron1', 'patron2', 'patron3', 'patron4', 'patron5', 'content_inc', 'content_exc', 'ow_force'), ('1', 'descargas2020', 'descargas2020', 'descargas2020.com', 'https://descargas2020.org', '', '', '', '', '', '*', '', 'no'), ('1', 'pctnew', 'pctnew', 'pctnew.com', 'https://pctnew.org', '', '', '', '', '', '*', '', 'no'), ('1', 'tumejortorrent', 'pctnew', 'tumejortorrent.com', 'https://pctnew.org', '', '', '', '', '', '*', '', 'no'), ('1', 'torrentrapid', 'pctnew', 'torrentrapid.com', 'https://pctnew.org', '', '', '', '', '', '*', '', 'no'), ('1', 'torrentlocura', 'pctnew', 'torrentlocura.com', 'https://pctnew.org', '', '', '', '', '', '*', '', 'no'), ('1', 'tvsinpagar', 'pctnew', 'www.tvsinpagar.com', 'https://pctnew.org', '', '', '', '', '', '*', '', 'no'), ('1', 'mispelisyseries', 'pctnew', 'mispelisyseries.com', 'https://pctnew.org', '', '', '', '', '', '*', '', 'no'), ('1', 'planetatorrent', 'pctnew', 'planetatorrent.com', 'https://pctnew.org', '', '', '', '', '', '*', '', 'no'), ('1', 'seriespapaya', 'seriespapaya', '*', 'https://www.seriespapaya.nu', '', '', '', '', '', '*', '', 'no'), ('1', 'pepecine', 'pepecine', '*', 'https://pepecine.tv', '', '', '', '', '', '*', '', 'no'), ('1', 'hdfull', 'hdfull', '*', 'https://hdfull.lv', '', '', '', '', '', '*', '', 'no'), ('1', 'mejortorrent', 'mejortorrent', '*', 'http://www.mejortorrentt.org', '', '', '', '', '', '*', '', 'no'), ('1', 'grantorrent', 'grantorrent', '*', 'https://grantorrent.nl', '', '', '', '', '', '*', '', 'no'), ('1', 'subtorrents', 'subtorrents', '*', 'https://www.subtorrents.one', '', '', '', '', '', '*', '', 'no'), ('1', 'elitetorrent', 'elitetorrent', '*', 'https://www.elitetorrent.nl', '', '', '', '', '', '*', '', 'no'), ('1', 'cinecalidad', 'cinecalidad', '*', 'http://www.cinecalidad.is', '', '', '', '', '', '*', '', 'no'), ('1', 'cuevana3', 'cuevana3', '*', 'https://cuevana3.io', '', '', '', '', '', '*', '', 'no'), ('1', 'dontorrent', 'dontorrent', '*', 'https://dontorrent.org', '', '', '', '', '', '*', '', 'no'), ('1', 'pelisplay', 'pelisplay', '*', 'https://www.pelisplay.co', '', '', '', '', '', '*', '', 'no'), ('1', 'estrenosgo', 'estrenosgo', '*', 'https://estrenosflix.net', '', '', '', '', '', '*', '', 'no')",
+      "default": "('0', 'canal_org', 'canal_des', 'url_org', 'url_des', 'patron1', 'patron2', 'patron3', 'patron4', 'patron5', 'content_inc', 'content_exc', 'ow_force'), ('0', 'canal_org', 'canal_des', 'url_org', 'url_des', 'patron1', 'patron2', 'patron3', 'patron4', 'patron5', 'content_inc', 'content_exc', 'ow_force'), ('1', 'pctreload', 'pctreload', 'pctreload.com', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'pctmix', 'pctmix', 'pctmix.com', 'https://pctmix.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'descargas2020', 'pctreload', 'descargas2020.com', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'descargas2020', 'pctreload', 'descargas2020.org', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'pctnew', 'pctreload', 'pctnew.com', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'pctnew', 'pctreload', 'pctnew.org', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'tumejortorrent', 'pctreload', 'tumejortorrent.com', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'torrentrapid', 'pctreload', 'torrentrapid.com', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'torrentlocura', 'pctreload', 'torrentlocura.com', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'tvsinpagar', 'pctreload', 'www.tvsinpagar.com', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'mispelisyseries', 'pctreload', 'mispelisyseries.com', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'planetatorrent', 'pctreload', 'planetatorrent.com', 'https://pctreload.com/', '\u0028http\\S+\u0029\\/\\w+-\u0028?:org|com\u0029', '', '', '', '', '*', '', 'no'), ('1', 'seriespapaya', 'seriespapaya', '*', 'https://www.seriespapaya.nu', '', '', '', '', '', '*', '', 'no'), ('1', 'pepecine', 'pepecine', '*', 'https://pepecine.tv', '', '', '', '', '', '*', '', 'no'), ('1', 'hdfull', 'hdfull', '*', 'https://hdfull.la', '', '', '', '', '', '*', '', 'no'), ('1', 'mejortorrent', 'mejortorrent', '*', 'http://www.mejortorrentt.org', '', '', '', '', '', '*', '', 'no'), ('1', 'grantorrent', 'grantorrent', '*', 'https://grantorrent.nl', '', '', '', '', '', '*', '', 'no'), ('1', 'subtorrents', 'subtorrents', '*', 'https://www.subtorrents.one', '', '', '', '', '', '*', '', 'no'), ('1', 'elitetorrent', 'elitetorrent', '*', 'https://www.elitetorrent.nl', '', '', '', '', '', '*', '', 'no'), ('1', 'cinecalidad', 'cinecalidad', '*', 'http://www.cinecalidad.is', '', '', '', '', '', '*', '', 'no'), ('1', 'cuevana3', 'cuevana3', '*', 'https://cuevana3.io', '', '', '', '', '', '*', '', 'no'), ('1', 'dontorrent', 'dontorrent', '*', 'https://dontorrent.org', '', '', '', '', '', '*', '', 'no'), ('1', 'pelisplay', 'pelisplay', '*', 'https://www.pelisplay.co', '', '', '', '', '', '*', '', 'no'), ('1', 'estrenosgo', 'estrenosgo', '*', 'https://estrenosflix.net', '', '', '', '', '', '*', '', 'no')",
       "enabled": true,
       "visible": false
     },
@@ -619,7 +610,7 @@
       "label": "Incluir en Novedades - Torrent",
       "default": true,
       "enabled": true,
-      "visible": true
+      "visible": false
     },
     {
       "id": "clonenewpct1_timeout_downloadpage",

@@ -4,8 +4,8 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "clicknupload.(?:me|com|org)/([a-z0-9]+)",
-        "url": "https://clicknupload.org/\\1"
+        "pattern": "clicknupload.(?:me|com|org|co)/([a-z0-9]+)",
+        "url": "https://clicknupload.co/\\1"
       }
     ]
   },

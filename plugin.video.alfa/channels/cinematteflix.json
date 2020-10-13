@@ -1,0 +1,30 @@
+{
+"id": "cinematteflix",
+  "name": "CinematteFlix",
+  "force_unify": true,
+  "active": true,
+  "adult": false,
+  "language": ["cast"],
+  "thumbnail": "https://4.bp.blogspot.com/-D_9ZHSed-QQ/Xzv6JORi2OI/AAAAAAADubk/6lvIk0PgEFcASsSrLc5jd6qbBAMBLWeiwCK4BGAYYCw/s1600/black-wallpapers-34%2B%25282%2529.png",
+  "banner": "",
+  "categories": [
+    "movies",
+    "vos"
+  ],
+  "settings": [
+
+    {
+      "id": "filter_languages",
+      "type": "list",
+      "label": "Mostrar enlaces en idioma...",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "No filtrar",
+        "CAST",
+        "VOSE"
+      ]
+    }
+  ]
+}

@@ -130,7 +130,7 @@ def getfilefromtitle(url, title):
     plataforma = config.get_system_platform()
     logger.info("plataforma=" + plataforma)
 
-    # nombrefichero = xbmc.makeLegalFilename(title + url[-4:])
+    # nombrefichero = filetools.makeLegalFilename(title + url[-4:])
     from . import scrapertools
 
     nombrefichero = title + scrapertools.get_filename_from_url(url)[-4:]
@@ -148,10 +148,6 @@ def getfilefromtitle(url, title):
 
     fullpath = filetools.join(config.get_setting("downloadpath"), nombrefichero)
     logger.info("fullpath=%s" % fullpath)
-
-    if config.is_xbmc() and fullpath.startswith("special://"):
-        import xbmc
-        fullpath = xbmc.translatePath(fullpath)
 
     return fullpath
 
@@ -225,21 +221,15 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
 
     progreso = None
 
-    if config.is_xbmc() and nombrefichero.startswith("special://"):
-        import xbmc
-        nombrefichero = xbmc.translatePath(nombrefichero)
-
     try:
         # Si no es XBMC, siempre a "Silent"
         from platformcode import platformtools
 
         # antes
         # f=open(nombrefichero,"wb")
-        try:
-            import xbmc
-            nombrefichero = xbmc.makeLegalFilename(nombrefichero)
-        except:
-            pass
+
+        nombrefichero = filetools.makeLegalFilename(nombrefichero)
+
         logger.info("nombrefichero=" + nombrefichero)
 
         # El fichero existe y se quiere continuar
@@ -493,8 +483,7 @@ def downloadfileGzipped(url, pathfichero):
     nombrefichero = pathfichero
     logger.info("nombrefichero=" + nombrefichero)
 
-    import xbmc
-    nombrefichero = xbmc.makeLegalFilename(nombrefichero)
+    nombrefichero = filetools.makeLegalFilename(nombrefichero)
     logger.info("nombrefichero=" + nombrefichero)
     patron = "(http://[^/]+)/.+"
     matches = re.compile(patron, re.DOTALL).findall(url)
@@ -667,7 +656,7 @@ def GetTitleFromFile(title):
     plataforma = config.get_system_platform()
     logger.info("plataforma=" + plataforma)
 
-    # nombrefichero = xbmc.makeLegalFilename(title + url[-4:])
+    # nombrefichero = filetools.makeLegalFilename(title + url[-4:])
     nombrefichero = title
     return nombrefichero
 

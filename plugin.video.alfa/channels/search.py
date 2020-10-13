@@ -29,17 +29,17 @@ def_lang = addon.getSetting('language')
 def mainlist(item):
     logger.info()
 
-    itemlist = [Item(channel=item.channel, title=config.get_localized_string(70276), action='new_search', mode='all', thumbnail=get_thumb("search.png")),
-
-                Item(channel=item.channel, title=config.get_localized_string(70741) % config.get_localized_string(30122), action='new_search', mode='movie', thumbnail=get_thumb("search_movie.png")),
+    itemlist = [Item(channel=item.channel, title=config.get_localized_string(70741) % config.get_localized_string(30122), action='new_search', mode='movie', thumbnail=get_thumb("search.png")),
 
                 Item(channel=item.channel, title=config.get_localized_string(70741) % config.get_localized_string(30123), action='new_search', mode='tvshow', thumbnail=get_thumb("search_tvshow.png")),
 
+                Item(channel=item.channel, title=config.get_localized_string(70276), action='new_search', mode='all', thumbnail=get_thumb("search_generic.png")),
+
                 Item(channel=item.channel, title=config.get_localized_string(70741) % config.get_localized_string(70314), action='new_search', page=1, mode='person', thumbnail=get_thumb("search_star.png")),
 
-                Item(channel=item.channel, title=config.get_localized_string(59995), action='saved_search', thumbnail=get_thumb('search.png')),
+                Item(channel=item.channel, title=config.get_localized_string(59995), action='saved_search', thumbnail=get_thumb('folder.png')),
 
-                Item(channel=item.channel, title=config.get_localized_string(60420), action='sub_menu', thumbnail=get_thumb('search.png')),
+                Item(channel=item.channel, title=config.get_localized_string(60420), action='sub_menu', thumbnail=get_thumb('search_more.png')),
 
                 Item(channel=item.channel, title=config.get_localized_string(59994), action='opciones', thumbnail=get_thumb('setting_0.png')),
 
@@ -53,27 +53,27 @@ def mainlist(item):
 def sub_menu(item):
     logger.info()
 
-    itemlist = [Item(channel=item.channel, action='genres_menu', title=config.get_localized_string(70306), mode='movie', thumbnail=get_thumb("channels_movie_genre.png")),
+    itemlist = [Item(channel=item.channel, action='genres_menu', title=config.get_localized_string(70306), mode='movie', thumbnail=get_thumb("genres.png")),
 
-                Item(channel=item.channel, action='years_menu', title=config.get_localized_string(70742), mode='movie', thumbnail=get_thumb("channels_movie_year.png")),
+                Item(channel=item.channel, action='years_menu', title=config.get_localized_string(70742), mode='movie', thumbnail=get_thumb("years.png")),
 
-                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70307), search_type='list', list_type='movie/popular', mode='movie', thumbnail=get_thumb("channels_movie_popular.png")),
+                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70307), search_type='list', list_type='movie/popular', mode='movie', thumbnail=get_thumb("popular.png")),
 
-                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70308), search_type='list', list_type='movie/top_rated', mode='movie', thumbnail=get_thumb("channels_movie_top.png")),
+                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70308), search_type='list', list_type='movie/top_rated', mode='movie', thumbnail=get_thumb("top_rated.png")),
 
-                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70309), search_type='list', list_type='movie/now_playing', mode='movie', thumbnail=get_thumb("channels_movie_now_playing.png")),
+                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70309), search_type='list', list_type='movie/now_playing', mode='movie', thumbnail=get_thumb("now_playing.png")),
 
-                Item(channel=item.channel, action='genres_menu', title=config.get_localized_string(70310), mode='tvshow', thumbnail=get_thumb("channels_tvshow_genre.png")),
+                Item(channel=item.channel, action='genres_menu', title=config.get_localized_string(70310), mode='tvshow', thumbnail=get_thumb("genres.png")),
 
-                Item(channel=item.channel, action='years_menu', title=config.get_localized_string(70743), mode='tvshow', thumbnail=get_thumb("channels_tvshow_year.png")),
+                Item(channel=item.channel, action='years_menu', title=config.get_localized_string(70743), mode='tvshow', thumbnail=get_thumb("years.png")),
 
                 Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70311), search_type='list', list_type='tv/popular', mode='tvshow', thumbnail=get_thumb("popular.png")),
 
-                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70312), search_type='list', list_type='tv/on_the_air', mode='tvshow', thumbnail=get_thumb("channels_tvshow_on_the_air.png")),
+                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70312), search_type='list', list_type='tv/on_the_air', mode='tvshow', thumbnail=get_thumb("on_the_air.png")),
 
-                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70313), search_type='list', list_type='tv/top_rated', mode='tvshow', thumbnail=get_thumb("channels_tvshow_top.png")),
+                Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70313), search_type='list', list_type='tv/top_rated', mode='tvshow', thumbnail=get_thumb("top_rated.png")),
 
-                Item(channel="tvmoviedb", action="mainlist", title=config.get_localized_string(70274), thumbnail=get_thumb("search.png"))]
+                Item(channel="tvmoviedb", action="mainlist", title=config.get_localized_string(70274), thumbnail=get_thumb("search_more.png"))]
 
     itemlist = set_context(itemlist)
 
@@ -250,6 +250,8 @@ def channel_search(item):
             if it in valid:
                 continue
             if mode == 'all' or (it.contentType and mode == it.contentType):
+                if not it.infoLabels or not item.text.lower() in it.title.lower():
+                    continue
                 if config.get_setting('result_mode', 'search') != 0:
                     if config.get_localized_string(30992) not in it.title:
                         it.title += " " + ch_name
@@ -602,6 +604,8 @@ def discover_list(item):
     itemlist = []
 
     year = 0
+    if item.discovery and not item.discovery.get("language", ""):
+        item.discovery["language"] = def_lang
     tmdb_inf = tmdb.discovery(item, dict_=item.discovery, cast=item.cast_)
     result = tmdb_inf.results
     tvshow = False
@@ -646,7 +650,7 @@ def discover_list(item):
     elif len(result) > 19 and item.discovery:
         item.discovery['page'] = str(int(item.discovery['page']) + 1)
         itemlist.append(Item(channel=item.channel, action='discover_list', title=config.get_localized_string(70065),
-                             list_type=item.list_type, discovery=item.discovery, text_color='gold'))
+                             list_type=item.list_type, discovery=item.discovery, mode=item.mode, text_color='gold'))
     elif len(result) > 19:
         next_page = str(int(item.page) + 1)
 

@@ -1066,7 +1066,10 @@ def report_send(item, description='', fatal=False):
     var = proxytools.logger_disp(debugging=True)
     environment = envtal.list_env()
     if not environment['log_path']:
-        environment['log_path'] = str(filetools.join(xbmc.translatePath("special://logpath/"), 'kodi.log'))
+        if iletools.join("special://logpath/", 'kodi.log'):
+            environment['log_path'] = str(filetools.join("special://logpath/", 'kodi.log'))
+        else:
+            environment['log_path'] = str(filetools.join("special://logpath/", 'xbmc.log'))
         environment['log_size_bytes'] = str(filetools.getsize(environment['log_path']))
         environment['log_size'] = str(round(float(environment['log_size_bytes']) / (1024*1024), 3))
     

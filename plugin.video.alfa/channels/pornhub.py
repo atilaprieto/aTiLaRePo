@@ -122,19 +122,21 @@ def lista(item):
     logger.info()
     itemlist = []
     soup = create_soup(item.url)
-    matches = soup.find_all('div', class_='phimage')
+    matches = soup.find('div', class_='gridWrapper').find_all('div', class_='phimage')
     for elem in matches:
         url = elem.a['href']
         stitle = elem.a['title']
-        thumbnail = elem.img['data-src']
+        thumbnail = elem.img['data-thumb_url']
         stime = elem.find('var', class_='duration').text
         quality = elem.find('span', class_='hd-thumbnail')
+        premium = elem.find('i', class_='premiumIcon')
         if quality:
             title = "[COLOR yellow]%s[/COLOR] [COLOR red]%s[/COLOR] %s"% (stime,quality.text,stitle)
         else:
             title = "[COLOR yellow]%s[/COLOR] %s" % (stime,stitle)
         url = urlparse.urljoin(item.url, url)
-        itemlist.append(item.clone(action="play", title=title, contentTitle = title, url=url,
+        if not premium:
+            itemlist.append(item.clone(action="play", title=title, contentTitle = title, url=url,
                              fanart=thumbnail, thumbnail=thumbnail))
     next_page = soup.find('li', class_='page_next')
     if next_page:
@@ -147,5 +149,15 @@ def lista(item):
 def play(item):
     logger.info(item)
     itemlist = servertools.find_video_items(item.clone(url = item.url))
+    return itemlist
+
+
+def findvideos(item):
+    logger.info(item)
+    itemlist = []
+    data = httptools.downloadpage(item.url).data
+    url = scrapertools.find_single_match(data, '"embedUrl": "([^"]+)"')
+    itemlist.append(item.clone(action="play", title= "%s" , contentTitle=item.title, url=url)) 
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize()) 
     return itemlist
 

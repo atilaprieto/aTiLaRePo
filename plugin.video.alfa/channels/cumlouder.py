@@ -177,6 +177,7 @@ def play(item):
         url = urllib.unquote(url.split("/go.php?u=")[1].split("&")[0])
     elif not url.startswith("http"):
         url = "https:%s" % url.replace("&amp;", "&")
-        title="Video %s" % res
+    title="Video %s" % res
+    url = url.replace("amp;", "")
     itemlist.append(item.clone(action="play", title=title, contentTitle=item.contentTitle, url=url, server="directo"))
     return itemlist

@@ -28,6 +28,8 @@ list_servers = ['mangovideo']
 
 host = 'https://watchpornfree.info'   #'https://xxxparodyhd.net'  'http://www.veporns.com'  'http://streamporno.eu'  playpornx
 
+                                # KTP no resuelve
+
 def mainlist(item):
     logger.info("")
     itemlist = []
@@ -112,10 +114,6 @@ def findvideos(item):
     for url in matches:
         if "streamz" in url:
             url = url.replace("streamz.cc", "stream2.vg").replace("streamz.vg", "stream2.vg")
-            # url= httptools.downloadpage(url).url
-            # url= url.replace("/x", "/getlink-")
-            # url += ".dll"
-            # url = httptools.downloadpage(url, headers={"referer": url}, follow_redirects=False).headers["location"]
         if not ".xyz/" in url: #netu
             itemlist.append(item.clone(title='%s', url=url, action='play', language='VO',contentTitle = item.contentTitle))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server)

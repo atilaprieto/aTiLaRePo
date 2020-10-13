@@ -52,7 +52,7 @@ ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
 # Headers por defecto, si no se especifica nada
 default_headers = dict()
 #default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/79.0.3945.117"
-default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
+default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36"
 default_headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
 default_headers["Accept-Language"] = "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"
 default_headers["Accept-Charset"] = "UTF-8"
@@ -84,6 +84,9 @@ def get_url_headers(url, forced=False):
             return url
 
     headers = dict()
+    cf_ua = config.get_setting('cf_assistant_ua', None)
+    if cf_ua and cf_ua != 'Default':
+        default_headers["User-Agent"] = cf_ua
     headers["User-Agent"] = default_headers["User-Agent"]
     headers["Cookie"] = "; ".join(["%s=%s" % (c.name, c.value) for c in list(domain_cookies.values())])
 
@@ -458,6 +461,8 @@ def downloadpage(url, **opt):
     load_cookies()
     import requests
 
+    cf_ua = config.get_setting('cf_assistant_ua', None)
+
     # Headers por defecto, si no se especifica nada
     req_headers = default_headers.copy()
     if opt.get('add_referer', False):
@@ -493,6 +498,8 @@ def downloadpage(url, **opt):
             session = cloudscraper.create_scraper()                             #El dominio necesita CloudScraper
             session.verify = True
             CS_stat = True
+            if cf_ua and cf_ua != 'Default':
+                req_headers['User-Agent'] = cf_ua
         else:
             session = requests.session()
             session.verify = False
@@ -500,6 +507,11 @@ def downloadpage(url, **opt):
 
         if opt.get('cookies', True):
             session.cookies = cj
+        
+        if not opt.get('keep_alive', True):
+            #session.keep_alive =  opt['keep_alive']
+            req_headers['Connection'] = "close"
+        
         session.headers.update(req_headers)
         
         # Prepara la url en caso de necesitar proxy, o si se envía "proxy_addr_forced" desde el canal
@@ -552,22 +564,22 @@ def downloadpage(url, **opt):
                     if opt.get('only_headers', False):
                         ### Makes the request with HEAD method
                         req = session.head(url, allow_redirects=opt.get('follow_redirects', True),
-                                          timeout=opt['timeout'])
+                                          timeout=opt.get('timeout', None))
                     else:
                         ### Makes the request with POST method
                         req = session.post(url, data=payload, allow_redirects=opt.get('follow_redirects', True),
-                                          files=files, timeout=opt['timeout'])
+                                          files=files, timeout=opt.get('timeout', None))
                 
                 elif opt.get('only_headers', False):
                     info_dict = fill_fields_pre(url, opt, proxy_data, file_name)
                     ### Makes the request with HEAD method
                     req = session.head(url, allow_redirects=opt.get('follow_redirects', True),
-                                      timeout=opt['timeout'])
+                                      timeout=opt.get('timeout', None))
                 else:
                     info_dict = fill_fields_pre(url, opt, proxy_data, file_name)
                     ### Makes the request with GET method
                     req = session.get(url, allow_redirects=opt.get('follow_redirects', True),
-                                      timeout=opt['timeout'])
+                                      timeout=opt.get('timeout', None))
 
             except Exception as e:
                 if not opt.get('ignore_response_code', False) and not proxy_data.get('stat', ''):
@@ -603,6 +615,11 @@ def downloadpage(url, **opt):
                     CF_File.write("%s\n" % domain)
                 logger.debug("CF retry... for domain: %s" % domain)
                 return downloadpage(url, **opt)
+        
+        if req.headers.get('Server', '') == 'Alfa' and response_code in [429, 503, 403] and not opt.get('cf_v2', False):
+            opt["cf_v2"] = True
+            logger.debug("CF Assistant retry... for domain: %s" % urlparse.urlparse(url)[1])
+            return downloadpage(url, **opt)
 
         response['data'] = req.content
         try:
@@ -693,8 +710,14 @@ def fill_fields_pre(url, opt, proxy_data, file_name):
         info_dict.append(('Dominio', urlparse.urlparse(url)[1]))
         if CS_stat:
             info_dict.append(('Dominio_CF', True))
+        if not opt.get('keep_alive', True):
+            info_dict.append(('Keep Alive', opt.get('keep_alive', True)))
+        if opt.get('cf_v2', False):
+            info_dict.append(('CF v2 Assistant', opt.get('cf_v2', False)))
         if opt.get('post', None):
             info_dict.append(('Peticion', 'POST' + proxy_data.get('stat', '')))
+        elif opt.get('only_headers', False):
+            info_dict.append(('Peticion', 'HEAD' + proxy_data.get('stat', '')))
         else:
             info_dict.append(('Peticion', 'GET' + proxy_data.get('stat', '')))
         info_dict.append(('Descargar Pagina', not opt.get('only_headers', False)))

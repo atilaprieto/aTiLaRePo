@@ -17,7 +17,7 @@ def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
     data = httptools.downloadpage(page_url).data
 
-    if "Oops.. Page you're looking is not available" in data:
+    if "File Not Found" in data or "File is no longer available" in data:
         return False, "[Vidia] El fichero no existe o ha sido borrado"
     return True, ""
 
@@ -34,7 +34,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     for video_url in videos:
         extension = scrapertools.get_filename_from_url(video_url)[-4:]
         if extension not in [".vtt", ".srt"]:
-            video_urls.append(["[vidia] %s" % extension, video_url, 0, subtitulo])
+            if extension == ".mpd":
+                video_urls.append(["[vidia] %s" % extension, video_url, 0, subtitulo, "mpd"])
+            else:
+                video_urls.append(["[vidia] %s" % extension, video_url, 0, subtitulo])
 
     return video_urls
-

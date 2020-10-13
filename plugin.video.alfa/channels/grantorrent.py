@@ -18,7 +18,6 @@ else:
 import re
 import time
 import traceback
-import js2py
 import base64
 
 from channelselector import get_thumb
@@ -29,6 +28,7 @@ from core.item import Item
 from platformcode import config, logger
 from core import tmdb
 from lib import generictools
+from lib import js2py
 from channels import filtertools
 from channels import autoplay
 
@@ -87,10 +87,10 @@ def mainlist(item):
     #Buscar películas
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar en Películas >>", url=host, extra="peliculas", thumbnail=thumb_buscar))
     
-    #itemlist.append(Item(channel=item.channel, action="submenu", title="Series", url=host, extra="series", thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, action="submenu", title="Series", url=host, extra="series", thumbnail=thumb_series))
 
     #Buscar series
-    #itemlist.append(Item(channel=item.channel, action="search", title="Buscar en Series >>", url=host + series_sufix, extra="series", thumbnail=thumb_buscar))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar en Series >>", url=host + series_sufix, extra="series", thumbnail=thumb_buscar))
         
     itemlist.append(Item(channel=item.channel, url=host, title="[COLOR yellow]Configuración:[/COLOR]", folder=False, thumbnail=thumb_separador))
     

@@ -1,14 +1,13 @@
 {
 "id": "seriemega",
   "name": "SerieMega",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["lat", "cast"],
-  "thumbnail": "https://seriemega.net/wp-content/uploads/2020/04/Sin-título-1-1.jpg",
+  "thumbnail": "https://seriemega.me/wp-content/uploads/2020/08/default-monochrome-white-2.png",
   "banner": "",
   "categories": [
     "movie",
-    "tvshow",
     "vos",
     "direct"
   ],

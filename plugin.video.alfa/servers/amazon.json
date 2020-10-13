@@ -6,6 +6,10 @@
       {
         "pattern": "https://www.amazon.com/drive/v1/shares/([A-z0-9]+)?",
         "url": "https://www.amazon.com/drive/v1/shares/\\1?resourceVersion=V2&ContentType=JSON&asset=ALL"
+      },
+      {
+        "pattern": "https://www.amazon.com/clouddrive/share/([A-z0-9]+)?",
+        "url": "https://www.amazon.com/drive/v1/shares/\\1?resourceVersion=V2&ContentType=JSON&asset=ALL"
       }
     ]
   },

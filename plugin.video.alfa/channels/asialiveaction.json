@@ -1,7 +1,7 @@
 {
   "id": "asialiveaction",
   "name": "Asialiveaction",
-  "active": true,
+  "active": false,
   "adult": false,
   "language": ["cast", "lat"],
   "thumbnail": "https://i.postimg.cc/bZHzFzyC/asialiveaction.png",

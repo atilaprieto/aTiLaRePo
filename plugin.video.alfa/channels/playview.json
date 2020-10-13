@@ -2,6 +2,7 @@
   "id": "playview",
   "name": "Playview",
   "active": true,
+  "force_unify": true,
   "adult": false,
   "language": [
     "lat", "cast"

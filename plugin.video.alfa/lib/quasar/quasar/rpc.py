@@ -244,7 +244,7 @@ class QuasarRPCServer(BaseHandler):
         window.setProperty(k, v if v else "")
 
     def GetCurrentView(self):
-        skinPath = xbmc.translatePath('special://skin/')
+        skinPath = translatePath('special://skin/')
         xml = os.path.join(skinPath, 'addon.xml')
         f = xbmcvfs.File(xml)
         read = f.read()
@@ -266,7 +266,7 @@ class QuasarRPCServer(BaseHandler):
                     return view
 
     def TranslatePath(self, *args, **kwargs):
-        return xbmc.translatePath(*args, **kwargs)
+        return translatePath(*args, **kwargs)
 
     def Log(self, *args, **kwargs):
         return xbmc.log(*args, **kwargs)
@@ -359,6 +359,24 @@ class QuasarRPCServer(BaseHandler):
         overlay.hide()
         del overlay
 
+
+def translatePath(path):
+    """
+    Kodi 19: xbmc.translatePath is deprecated and might be removed in future kodi versions. Please use xbmcvfs.translatePath instead.
+    @param path: cadena con path special://
+    @type path: str
+    @rtype: str
+    @return: devuelve la cadena con el path real
+    """
+    if PY3:
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+        path = xbmcvfs.translatePath(path)
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+    else:
+        path = xbmc.translatePath(path)
+    return path
 
 def server_thread():
     try:

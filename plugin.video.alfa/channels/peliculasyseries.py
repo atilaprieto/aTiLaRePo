@@ -35,7 +35,7 @@ list_servers = ['openload', 'rapidvideo', 'powvideo', 'gamovideo', 'streamplay',
 __comprueba_enlaces__ = config.get_setting('comprueba_enlaces', 'peliculasyseries')
 __comprueba_enlaces_num__ = config.get_setting('comprueba_enlaces_num', 'peliculasyseries')
 
-host = 'https://peliculasyseries.org/'
+host = 'https://peliculasyseries.me/'
 
 def mainlist(item):
     logger.info()

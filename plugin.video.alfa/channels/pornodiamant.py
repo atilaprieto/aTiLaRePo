@@ -94,7 +94,7 @@ def lista(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    patron = '<a itemprop="url" href="([^"]+)" data-video-id.*?'
+    patron = '<a href="([^"]+)" data-video-id.*?'
     patron += 'data-src="([^"]+)" alt="([^"]+)".*?'
     patron += '</svg>([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)

@@ -11,7 +11,7 @@ if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 try:
     from platformcode import config
     import xbmc, os, time
-    librerias = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib'))
+    librerias = os.path.join(config.get_runtime_path(), 'lib')
     sys.path.append(librerias)
 except:
     import os, time
@@ -204,7 +204,13 @@ def check_for_update(overwrite=True):
                         if estado:                                              #Si ha tenido éxito la actualización...
                             estado_verify_playcount_series = True               #... se marca para cambiar la opción de la Videoteca
 
-                    interval = int(serie.active)  # Podria ser del tipo bool
+                    if serie.active:
+                        try:
+                            interval = int(serie.active)                        # Podria ser del tipo bool
+                        except:
+                            interval = 1
+                    else:
+                        interval = 0
 
                     if not serie.active:
                         # si la serie no esta activa descartar

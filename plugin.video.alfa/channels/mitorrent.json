@@ -12,7 +12,7 @@
   ],
   "settings": [
     {
-      "default": true, 
+      "default": false, 
       "enabled": true, 
       "id": "include_in_global_search", 
       "label": "Incluir en busqueda global", 

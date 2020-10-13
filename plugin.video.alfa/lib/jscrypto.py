@@ -1,8 +1,22 @@
 # -*- coding: utf-8 -*-
 
-import StringIO
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from builtins import object
+from past.utils import old_div
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
+
+if PY3:
+    import io as StringIO
+else:
+    import StringIO
+
 import binascii
 import hashlib
+import codecs
 from array import array
 
 
@@ -10,6 +24,8 @@ def evpKDF(passwd, salt, key_size=8, iv_size=4, iterations=1, hash_algorithm="md
     target_key_size = key_size + iv_size
     derived_bytes = ""
     number_of_derived_words = 0
+    if PY3:
+        passwd = bytes(list(ord(x) for x in passwd))
     block = None
     hasher = hashlib.new(hash_algorithm)
     while number_of_derived_words < target_key_size:
@@ -26,9 +42,12 @@ def evpKDF(passwd, salt, key_size=8, iv_size=4, iterations=1, hash_algorithm="md
             block = hasher.digest()
             hasher = hashlib.new(hash_algorithm)
 
-        derived_bytes += block[0: min(len(block), (target_key_size - number_of_derived_words) * 4)]
+        if PY3:
+            derived_bytes += "".join(chr(x) for x in block[0: min(len(block), (target_key_size - number_of_derived_words) * 4)])
+        else:
+            derived_bytes += block[0: min(len(block), (target_key_size - number_of_derived_words) * 4)]
 
-        number_of_derived_words += len(block) / 4
+        number_of_derived_words += old_div(len(block), 4)
 
     return {
         "key": derived_bytes[0: key_size * 4],
@@ -72,7 +91,10 @@ class PKCS7Encoder(object):
         Remove the PKCS#7 padding from a text string
         '''
         nl = len(text)
-        val = int(binascii.hexlify(text[-1]), 16)
+        if PY3:
+            val = int(binascii.hexlify(bytes(text[-1])), 16)
+        else:
+            val = int(binascii.hexlify(text[-1]), 16)
         if val > self.k:
             raise ValueError('Input is not padded or padding is corrupt')
 
@@ -87,7 +109,7 @@ class PKCS7Encoder(object):
         l = len(text)
         output = StringIO.StringIO()
         val = self.k - (l % self.k)
-        for _ in xrange(val):
+        for _ in range(val):
             output.write('%02x' % val)
         return text + binascii.unhexlify(output.getvalue())
 
@@ -108,7 +130,9 @@ def new(key, mode, IV=None):
         return ECBMode(AES(key))
     elif mode == MODE_CBC:
         if IV is None:
-            raise ValueError, "CBC mode needs an IV value!"
+            raise ValueError("CBC mode needs an IV value!")
+        if PY3:
+            IV = bytes(list(ord(x) for x in IV))
 
         return CBCMode(AES(key), IV)
     else:
@@ -126,7 +150,10 @@ class AES(object):
     def setkey(self, key):
         """Sets the key and performs key expansion."""
 
-        self.key = key
+        if PY3:
+            self.key = bytes(list(ord(x) for x in key))
+        else:
+            self.key = key
         self.key_size = len(key)
 
         if self.key_size == 16:
@@ -136,7 +163,7 @@ class AES(object):
         elif self.key_size == 32:
             self.rounds = 14
         else:
-            raise ValueError, "Key length must be 16, 24 or 32 bytes"
+            raise ValueError("Key length must be 16, 24 or 32 bytes")
 
         self.expand_key()
 
@@ -164,22 +191,22 @@ class AES(object):
         # 4-byte temporary variable for key expansion
         word = exkey[-4:]
         # Each expansion cycle uses 'i' once for Rcon table lookup
-        for i in xrange(1, 11):
+        for i in range(1, 11):
 
             #### key schedule core:
             # left-rotate by 1 byte
             word = word[1:4] + word[0:1]
 
             # apply S-box to all bytes
-            for j in xrange(4):
+            for j in range(4):
                 word[j] = aes_sbox[word[j]]
 
             # apply the Rcon table to the leftmost byte
             word[0] = word[0] ^ aes_Rcon[i]
             #### end key schedule core
 
-            for z in xrange(4):
-                for j in xrange(4):
+            for z in range(4):
+                for j in range(4):
                     # mix in bytes from the last subkey
                     word[j] ^= exkey[-self.key_size + j]
                 exkey.extend(word)
@@ -190,15 +217,15 @@ class AES(object):
 
             # Special substitution step for 256-bit key
             if self.key_size == 32:
-                for j in xrange(4):
+                for j in range(4):
                     # mix in bytes from the last subkey XORed with S-box of
                     # current word bytes
                     word[j] = aes_sbox[word[j]] ^ exkey[-self.key_size + j]
                 exkey.extend(word)
 
             # Twice for 192-bit key, thrice for 256-bit key
-            for z in xrange(extra_cnt):
-                for j in xrange(4):
+            for z in range(extra_cnt):
+                for j in range(4):
                     # mix in bytes from the last subkey
                     word[j] ^= exkey[-self.key_size + j]
                 exkey.extend(word)
@@ -211,7 +238,7 @@ class AES(object):
         offset = round * 16
         exkey = self.exkey
 
-        for i in xrange(16):
+        for i in range(16):
             block[i] ^= exkey[offset + i]
 
             # print 'AddRoundKey:', block
@@ -223,7 +250,7 @@ class AES(object):
         is passed in.
         """
 
-        for i in xrange(16):
+        for i in range(16):
             block[i] = sbox[block[i]]
 
             # print 'SubBytes   :', block
@@ -264,7 +291,7 @@ class AES(object):
 
         # Since we're dealing with a transposed matrix, columns are already
         # sequential
-        for i in xrange(4):
+        for i in range(4):
             col = i * 4
 
             # v0, v1, v2, v3 = block[col : col+4]
@@ -289,7 +316,7 @@ class AES(object):
 
         # Since we're dealing with a transposed matrix, columns are already
         # sequential
-        for i in xrange(4):
+        for i in range(4):
             col = i * 4
 
             v0, v1, v2, v3 = (block[col], block[col + 1], block[col + 2],
@@ -310,7 +337,7 @@ class AES(object):
         # mutable array, not returned.
         self.add_round_key(block, 0)
 
-        for round in xrange(1, self.rounds):
+        for round in range(1, self.rounds):
             self.sub_bytes(block, aes_sbox)
             self.shift_rows(block)
             self.mix_columns(block)
@@ -329,7 +356,7 @@ class AES(object):
         self.add_round_key(block, self.rounds)
 
         # count rounds down from 15 ... 1
-        for round in xrange(self.rounds - 1, 0, -1):
+        for round in range(self.rounds - 1, 0, -1):
             self.shift_rows_inv(block)
             self.sub_bytes(block, aes_inv_sbox)
             self.add_round_key(block, round)
@@ -358,12 +385,12 @@ class ECBMode(object):
         """Perform ECB mode with the given function"""
 
         if len(data) % self.block_size != 0:
-            raise ValueError, "Plaintext length must be multiple of 16"
+            raise ValueError("Plaintext length must be multiple of 16")
 
         block_size = self.block_size
         data = array('B', data)
 
-        for offset in xrange(0, len(data), block_size):
+        for offset in range(0, len(data), block_size):
             block = data[offset: offset + block_size]
             block_func(block)
             data[offset: offset + block_size] = block
@@ -403,16 +430,16 @@ class CBCMode(object):
 
         block_size = self.block_size
         if len(data) % block_size != 0:
-            raise ValueError, "Plaintext length must be multiple of 16"
+            raise ValueError("Plaintext length must be multiple of 16")
 
         data = array('B', data)
         IV = self.IV
 
-        for offset in xrange(0, len(data), block_size):
+        for offset in range(0, len(data), block_size):
             block = data[offset: offset + block_size]
 
             # Perform CBC chaining
-            for i in xrange(block_size):
+            for i in range(block_size):
                 block[i] ^= IV[i]
 
             self.cipher.encrypt_block(block)
@@ -427,12 +454,12 @@ class CBCMode(object):
 
         block_size = self.block_size
         if len(data) % block_size != 0:
-            raise ValueError, "Ciphertext length must be multiple of 16"
+            raise ValueError("Ciphertext length must be multiple of 16")
 
         data = array('B', data)
         IV = self.IV
 
-        for offset in xrange(0, len(data), block_size):
+        for offset in range(0, len(data), block_size):
             ctext = data[offset: offset + block_size]
             block = ctext[:]
             self.cipher.decrypt_block(block)
@@ -440,7 +467,7 @@ class CBCMode(object):
             # Perform CBC chaining
             # for i in xrange(block_size):
             #    data[offset + i] ^= IV[i]
-            for i in xrange(block_size):
+            for i in range(block_size):
                 block[i] ^= IV[i]
             data[offset: offset + block_size] = block
 
@@ -484,7 +511,7 @@ gf_mul_by_14 = array('B', [galois_multiply(x, 14) for x in range(256)])
 #
 # More information: http://en.wikipedia.org/wiki/Rijndael_S-box
 
-aes_sbox = array('B',
+aes_sbox = array('B', codecs.decode(
                  '637c777bf26b6fc53001672bfed7ab76'
                  'ca82c97dfa5947f0add4a2af9ca472c0'
                  'b7fd9326363ff7cc34a5e5f171d83115'
@@ -500,13 +527,13 @@ aes_sbox = array('B',
                  'ba78252e1ca6b4c6e8dd741f4bbd8b8a'
                  '703eb5664803f60e613557b986c11d9e'
                  'e1f8981169d98e949b1e87e9ce5528df'
-                 '8ca1890dbfe6426841992d0fb054bb16'.decode('hex')
+                 '8ca1890dbfe6426841992d0fb054bb16', 'hex')
                  )
 
 # This is the inverse of the above. In other words:
 # aes_inv_sbox[aes_sbox[val]] == val
 
-aes_inv_sbox = array('B',
+aes_inv_sbox = array('B', codecs.decode(
                      '52096ad53036a538bf40a39e81f3d7fb'
                      '7ce339829b2fff87348e4344c4dee9cb'
                      '547b9432a6c2233dee4c950b42fac34e'
@@ -522,7 +549,7 @@ aes_inv_sbox = array('B',
                      '1fdda8338807c731b11210592780ec5f'
                      '60517fa919b54a0d2de57a9f93c99cef'
                      'a0e03b4dae2af5b0c8ebbb3c83539961'
-                     '172b047eba77d626e169146355210c7d'.decode('hex')
+                     '172b047eba77d626e169146355210c7d', 'hex')
                      )
 
 # The Rcon table is used in AES's key schedule (key expansion)
@@ -530,7 +557,7 @@ aes_inv_sbox = array('B',
 #
 # More information: http://en.wikipedia.org/wiki/Rijndael_key_schedule
 
-aes_Rcon = array('B',
+aes_Rcon = array('B', codecs.decode(
                  '8d01020408102040801b366cd8ab4d9a'
                  '2f5ebc63c697356ad4b37dfaefc59139'
                  '72e4d3bd61c29f254a943366cc831d3a'
@@ -546,5 +573,5 @@ aes_Rcon = array('B',
                  '254a943366cc831d3a74e8cb8d010204'
                  '08102040801b366cd8ab4d9a2f5ebc63'
                  'c697356ad4b37dfaefc5913972e4d3bd'
-                 '61c29f254a943366cc831d3a74e8cb'.decode('hex')
+                 '61c29f254a943366cc831d3a74e8cb', 'hex')
                  )

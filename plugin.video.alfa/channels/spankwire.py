@@ -140,7 +140,7 @@ def play(item):
     itemlist = []
     json_data = httptools.downloadpage(item.url).json
     url = json_data["HLS"]
-    itemlist.append(["m3u", url])
+    itemlist.append(["1080p", url])
     for quality, url in json_data["videos"].items():
         url = url.replace("%3D", "=").replace("%2B", "+")
         itemlist.append(['%s' %quality.replace("quality_", ""), url])

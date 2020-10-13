@@ -371,9 +371,9 @@ def GKPluginLink(hash):
     except:
         return None
 
-def RedirectLink(hash):
-    hashdata = urllib.urlencode({r'url':hash})
-    url = 'https://player.%s/r.php' % domain
+def RedirectLink(hash_):
+    hashdata = urllib.urlencode({r'h':hash_})
+    url = 'https://player.%s/sc/r.php' % domain
     return redirect_url(url, hashdata)
 
 def OpenloadLink(hash):
@@ -435,8 +435,12 @@ def findvideos(item):
                 #logger.info("CUEVANA IR %s" % link)
                 server = servertools.get_server_from_url(link)
             # otros links convencionales (fembed, rapidvideo, etc)
-            elif r'irgoto.php' in link:
-                link = scrapertools.find_single_match(link, 'php\?url=(.*?)&').replace('%3A', ':').replace('%2F', '/')
+            elif r'irgoto.php' in link or 'sc/?h=' in link:
+                if r'irgoto.php' in link:
+                    link = scrapertools.find_single_match(link, 'php\?url=(.*?)&').replace('%3A', ':').replace('%2F', '/')
+                else:
+                    link = scrapertools.find_single_match(link, 'sc/\?h=(\w+)')
+
                 if link.startswith('aHR0'):
                     try:
                         link = base64.b64decode(link.strip()+'==')
@@ -444,6 +448,7 @@ def findvideos(item):
                         link = RedirectLink(link)
                 else:
                     link = RedirectLink(link)
+                
                 if link:
                     server = servertools.get_server_from_url(link)
                 #logger.info("CUEVANA IRGOTO %s" % link)
@@ -482,7 +487,7 @@ def findvideos(item):
         else: # En caso de que exista otra cosa no implementada, reportar si no aparece pelicula
             continue
 
-        if not link:
+        if not link or 'waaw' in link:
             continue
 
         # GKplugin puede devolver multiples links con diferentes calidades, si se pudiera colocar una lista de opciones

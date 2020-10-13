@@ -65,15 +65,26 @@ def init():
     """
 
     try:
+        #Comprime la BD de cache de TMDB para evitar que crezca demasiado
+        bd_tmdb_maintenance()
+        if config.get_setting('tmdb_cache_expire', default=4) == 4:
+            config.set_setting('tmdb_cache_expire', 2)
+
         #Verifica si es necsario instalar script.alfa-update-helper
         verify_script_alfa_update_helper()
         
         #Borra el .zip de instalación de Alfa de la carpeta Packages, por si está corrupto, y que así se pueda descargar de nuevo
         version = 'plugin.video.alfa-%s.zip' % config.get_addon_version(with_fix=False)
-        filetools.remove(filetools.join(xbmc.translatePath('special://home'), 'addons', 'packages', version), True)
+        filetools.remove(filetools.join('special://home', 'addons', 'packages', version), True)
         
-        #Borrar contenido de carpeta de Torrents
+        #Borrar contenido de carpeta de Torrents y de Subtitles
         filetools.rmdirtree(filetools.join(config.get_videolibrary_path(), 'temp_torrents_Alfa'), silent=True)
+        subtitle_path = config.get_kodi_setting("subtitles.custompath")
+        ret = filetools.rmdirtree(subtitle_path, silent=True)
+        if not ret: logger.error('RMDIR: ' + subtitle_path)
+        time.sleep(1)
+        ret = filetools.mkdir(subtitle_path, silent=True)
+        if not ret: logger.error('MKDIR: ' + subtitle_path)
 
         #Verifica si Kodi tiene algún achivo de Base de Datos de Vídeo de versiones anteriores, entonces los borra
         verify_Kodi_video_DB()
@@ -130,6 +141,21 @@ def init():
         logger.error(traceback.format_exc())
 
 
+def bd_tmdb_maintenance():
+    try:
+        import sqlite3
+        
+        fname = filetools.join(config.get_data_path(), "alfa_db.sqlite")
+        
+        if filetools.exists(fname):
+            conn = sqlite3.connect(fname)
+            conn.execute("VACUUM")
+            conn.close()
+            logger.info('TMDB DB compacted')
+    except:
+        logger.error(traceback.format_exc(1))
+
+
 def marshal_check():
     try:
         marshal_modules = ['lib/alfaresolver_py3', 'core/proxytools_py3']
@@ -169,7 +195,7 @@ def verify_script_alfa_update_helper():
     
     addonid = 'script.alfa-update-helper'
     package = addonid + '-0.0.1.zip'
-    filetools.remove(filetools.join(xbmc.translatePath('special://home'), 'addons', 'packages', package), True)
+    filetools.remove(filetools.join('special://home', 'addons', 'packages', package), True)
     
     # Comprobamos si hay acceso a Github
     url = 'https://github.com/alfa-addon/alfa-repo/raw/master/plugin.video.alfa/addon.xml'
@@ -181,7 +207,7 @@ def verify_script_alfa_update_helper():
         response = httptools.downloadpage(url, ignore_response_code=True, alfa_s=True, json_to_utf8=False)
         if response.code == 200:
             zip_data = response.data
-            addons_path = xbmc.translatePath("special://home/addons")
+            addons_path = filetools.translatePath("special://home/addons")
             pkg_updated = filetools.join(addons_path, 'packages', package)
             res = filetools.write(pkg_updated, zip_data, mode='wb')
             
@@ -304,7 +330,7 @@ def update_external_addon(addon_name):
             #Path de destino en addon externo
             __settings__ = xbmcaddon.Addon(id="plugin.video." + addon_name)
             if addon_name.lower() in ['quasar', 'elementum']:
-                addon_path_root = xbmc.translatePath(__settings__.getAddonInfo('Path'))
+                addon_path_root = filetools.translatePath(__settings__.getAddonInfo('Path'))
                 addon_path_mig = filetools.join(addon_path_root, filetools.join("resources", "site-packages"))
                 addon_path = filetools.join(addon_path_mig, addon_name)
             else:
@@ -351,8 +377,8 @@ def update_external_addon(addon_name):
         logger.error(traceback.format_exc())
     
     return False
-    
-    
+
+
 def update_libtorrent():
     logger.info()
     
@@ -369,6 +395,12 @@ def update_libtorrent():
             config.set_setting("bt_download_path", config.get_setting("downloadpath"), server="torrent")
         config.set_setting("mct_download_limit", "", server="torrent")
         config.set_setting("magnet2torrent", False, server="torrent")
+        
+    if not filetools.exists(filetools.join(config.get_setting("bt_download_path", server="torrent"), 'BT-torrents')):
+        filetools.mkdir(filetools.join(config.get_setting("bt_download_path", server="torrent"), 'BT-torrents'))
+    if not filetools.exists(filetools.join(config.get_setting("mct_download_path", server="torrent"), 'MCT-torrent-videos')):
+        filetools.mkdir(filetools.join(config.get_setting("mct_download_path", server="torrent"), 'MCT-torrent-videos'))
+        filetools.mkdir(filetools.join(config.get_setting("mct_download_path", server="torrent"), 'MCT-torrents'))
         
     if not filetools.exists(filetools.join(config.get_runtime_path(), "custom_code.json")) or not \
                     config.get_setting("unrar_path", server="torrent", default=""):
@@ -396,24 +428,16 @@ def update_libtorrent():
                         if xbmc.getCondVisibility("system.platform.android"):
                             # Para Android copiamos el binario a la partición del sistema
                             unrar_org = unrar
-                            unrar = filetools.join(xbmc.translatePath('special://xbmc/'), 'files').replace('/cache/apk/assets', '')
+                            unrar = filetools.join('special://xbmc/', 'files').replace('/cache/apk/assets', '')
                             if not filetools.exists(unrar):
                                 filetools.mkdir(unrar)
                             unrar = filetools.join(unrar, 'unrar')
                             filetools.copy(unrar_org, unrar, silent=True)
                         
-                        command = ['chmod', '777', '%s' % unrar]
-                        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        output_cmd, error_cmd = p.communicate()
-                        command = ['ls', '-l', unrar]
-                        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        output_cmd, error_cmd = p.communicate()
-                        if PY3 and isinstance(output_cmd, bytes):
-                            output_cmd = output_cmd.decode()
-                        xbmc.log('######## UnRAR file: %s' % str(output_cmd), xbmc.LOGNOTICE)
+                        filetools.chmod(unrar, '777')
                     except:
-                        xbmc.log('######## UnRAR ERROR in path: %s' % str(unrar), xbmc.LOGNOTICE)
-                        logger.error(traceback.format_exc(1))
+                        logger.info('######## UnRAR ERROR in path: %s' % str(unrar), force=True)
+                        logger.error(traceback.format_exc())
 
                 try:
                     if xbmc.getCondVisibility("system.platform.windows"):
@@ -422,20 +446,20 @@ def update_libtorrent():
                         p = subprocess.Popen(unrar, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     output_cmd, error_cmd = p.communicate()
                     if p.returncode != 0 or error_cmd:
-                        xbmc.log('######## UnRAR returncode in module %s: %s, %s in %s' % \
-                                (device, str(p.returncode), str(error_cmd), unrar), xbmc.LOGNOTICE)
+                        logger.info('######## UnRAR returncode in module %s: %s, %s in %s' % \
+                                (device, str(p.returncode), str(error_cmd), unrar), force=True)
                         unrar = ''
                     else:
-                        xbmc.log('######## UnRAR OK in %s: %s' % (device, unrar), xbmc.LOGNOTICE)
+                        logger.info('######## UnRAR OK in %s: %s' % (device, unrar), force=True)
                         break
                 except:
-                    xbmc.log('######## UnRAR ERROR in module %s: %s' % (device, unrar), xbmc.LOGNOTICE)
+                    logger.info('######## UnRAR ERROR in module %s: %s' % (device, unrar), force=True)
                     logger.error(traceback.format_exc(1))
                     unrar = ''
         
         if unrar: config.set_setting("unrar_path", unrar, server="torrent")
 
-    # Ahora descargamos la última versión disponible de Liborrent para esta plataforma
+    # Ahora descargamos la última versión disponible de Libtorrent para esta plataforma
     try:
         version_base = filetools.join(config.get_runtime_path(), 'lib', 'python_libtorrent')
         if config.get_setting("libtorrent_version", server="torrent", default=""):
@@ -461,7 +485,8 @@ def update_libtorrent():
         current_version = ''
         logger.error(traceback.format_exc(1))
     
-    if filetools.exists(filetools.join(config.get_runtime_path(), "custom_code.json")) and current_version:
+    custom_code_json = filetools.exists(filetools.join(config.get_runtime_path(), "custom_code.json"))
+    if custom_code_json and current_version:
         msg = 'Libtorrent_path: %s' % config.get_setting("libtorrent_path", server="torrent", default="")
         if current_version not in msg:
             msg += ' - Libtorrent_version: %s/%s' % (current_system, current_version)
@@ -469,6 +494,8 @@ def update_libtorrent():
         return
 
     try:
+        logger.info('Libtorrent stored version: %s, %s' % (config.get_setting("libtorrent_version", \
+                            server="torrent", default=""), str(custom_code_json)), force=True)
         from lib.python_libtorrent.python_libtorrent import get_libtorrent
     except Exception as e:
         logger.error(traceback.format_exc(1))
@@ -490,7 +517,7 @@ def verify_Kodi_video_DB():
     db_files = []
     
     try:
-        path = filetools.join(xbmc.translatePath("special://masterprofile/"), "Database")
+        path = filetools.join("special://masterprofile/", "Database")
         if filetools.exists(path):
             platform = config.get_platform(full_version=True)
             if platform and platform['num_version'] <= 19:
@@ -523,7 +550,7 @@ def set_Kodi_video_DB_useFolderNames():
     
     from platformcode import xbmc_videolibrary
 
-    strPath = filetools.join(config.get_setting("videolibrarypath"), config.get_setting("folder_movies"), ' ').strip()
+    strPath = filetools.join(config.get_videolibrary_path(), config.get_setting("folder_movies"), ' ').strip()
     scanRecursive = 2147483647
         
     sql = 'UPDATE path SET useFolderNames=1 WHERE (strPath="%s" and scanRecursive=%s and strContent="movies" ' \

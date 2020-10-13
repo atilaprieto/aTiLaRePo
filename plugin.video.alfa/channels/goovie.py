@@ -257,16 +257,15 @@ def findvideos(item):
     for server, quality, language, url in matches:
 
         if url != '':
-            if not url.startswith(host):
-                url = host+url
             language = IDIOMAS[language]
             if quality.lower() == 'premium':
                 quality = '720p'
             quality = quality.replace(' HD', '')
             try:
-                server = server.split(".")[0]
+                server = server.split(".")[0].lower()
             except:
                 server= ""
+            server = server.replace('ul', 'uploadedto')
             quality = CALIDADES[quality]
             title = ' [%s] [%s]' % (language, quality)
             if 'visor/vdz' in url:
@@ -275,22 +274,6 @@ def findvideos(item):
                                  quality=quality, server=server, headers=headers, infoLabels=item.infoLabels))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return sorted(itemlist, key=lambda i: i.language)
-
-
-def play(item):
-    logger.info()
-    itemlist = []
-    url = ''
-    item.server = ''
-    data = httptools.downloadpage(item.url, headers=item.headers).data
-    bloq = data.split('<div id="informacion">')[1]
-    url = scrapertools.find_single_match(bloq, 'href="([^"]+)">Acceder al')
-    itemlist.append(Item(channel=item.channel, url=url, action='play', server=item.server,
-                         infoLabels=item.infoLabels))
-
-    itemlist = servertools.get_servers_itemlist(itemlist)
-    return itemlist
-
 
 
 

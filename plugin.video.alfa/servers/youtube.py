@@ -84,15 +84,17 @@ itag_list = {1: "video",
              333: "webm 480p hdr",
              334: "webm 720p hdr",
              335: "webm 1080p hdr",
-             336: "webm 1440p hdr"}
+             336: "webm 1440p hdr",
+             337: "webm 2160p hdr"}
 
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
+    set_cookie()
 
     data = httptools.downloadpage(page_url).data
 
-    if "File was deleted" in data:
+    if "File was deleted" in data or 'El vídeo no está disponible' in data:
         return False, config.get_localized_string(70449) % "Youtube"
     return True, ""
 
@@ -101,7 +103,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("(page_url='%s')" % page_url)
 
     if not page_url.startswith("http"):
-        page_url = "http://www.youtube.com/watch?v=%s" % page_url
+        page_url = "https://www.youtube.com/watch?v=%s" % page_url
         logger.info(" page_url->'%s'" % page_url)
 
     video_id = scrapertools.find_single_match(page_url, '(?:v=|embed/)([A-z0-9_-]{11})')
@@ -119,7 +121,7 @@ def remove_additional_ending_delimiter(data):
 
 def normalize_url(url):
     if url[0:2] == "//":
-        url = "http:" + url
+        url = "https:" + url
     return url
 
 
@@ -180,6 +182,7 @@ def extract_videos(video_id):
     url = 'https://www.youtube.com/get_video_info?video_id=%s&eurl=https://youtube.googleapis.com/v/%s&ssl_stream=1' % \
           (video_id, video_id)
     data = httptools.downloadpage(url).data
+
     if PY3 and isinstance(data, bytes):
         data = data.decode('utf-8')
 
@@ -205,16 +208,20 @@ def extract_videos(video_id):
     if params.get('player_response'):
         params = json.load(params.get('player_response'))
         data_flashvars = params["streamingData"]
+
         for s_data in data_flashvars:
             if s_data in ["adaptiveFormats", "formats"]:
                 for opt in data_flashvars[s_data]:
+
                     opt = dict(opt)
                     if "audioQuality" not in opt:
                         continue
-                    if "cipher" in opt:
+                    if "audio" in opt['mimeType']:
+                        continue
+                    if "signatureCipher" in opt:
                         signature = get_signature(youtube_page_data)
-                        cipher = dict(urlparse.parse_qsl(urllib.unquote(opt["cipher"])))
-                        url = re.search('url=(.*)', opt["cipher"]).group(1)
+                        cipher = dict(urlparse.parse_qsl(urllib.unquote(opt["signatureCipher"])))
+                        url = re.search('url=(.*)', opt["signatureCipher"]).group(1)
                         s = cipher.get('s')
                         url = "%s&sig=%s" % (urllib.unquote(url), signature([s]))
                         video_urls.append(["%s" % itag_list.get(opt["itag"], "video"), url])
@@ -222,3 +229,11 @@ def extract_videos(video_id):
                         video_urls.append(["%s" % itag_list.get(opt["itag"], "video"), opt["url"]])
 
     return video_urls
+
+def set_cookie():
+    dict_cookie = {'domain': '.youtube.com',
+                    'name': 'c_locale',
+                    'value': '0',
+                    'expires': 1}
+    
+    httptools.set_cookies(dict_cookie, clear=True)

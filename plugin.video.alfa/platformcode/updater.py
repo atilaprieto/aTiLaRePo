@@ -197,7 +197,7 @@ def check_update_to_others(verbose=False):
         
     try:
         from lib import alfa_assistant
-        res, addonid = alfa_assistant.update_alfa_assistant()
+        res, addonid = alfa_assistant.update_alfa_assistant(verbose=verbose)
     except:
         logger.error("Alfa Assistant.  Error en actualización")
         logger.error(traceback.format_exc())

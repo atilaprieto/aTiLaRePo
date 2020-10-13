@@ -64,17 +64,21 @@ def list_all(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)  # Eliminamos tabuladores, dobles espacios saltos de linea, etc...
     patron = '<article id="post-\d+".*?'
-    patron += 'h2 class="entry-title"><a href="([^"]+)".*?>(.*?) (?:watch|Watch).*?'
+    patron += 'h2 class="entry-title"><a href="([^"]+)".*?>([^<]+).*?'
     patron += '<div class="twp-article-post-thumbnail">.*?'
     patron += 'src="([^?]+).*?'
     patron += '<p>([^<]+)</p>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle, img, plot in matches:
+        scrapedtitle = scrapedtitle.replace("&#8217;", "'")
         contentTitle = scrapertools.find_single_match(scrapedtitle, '([^\(]+)')
         year = scrapertools.find_single_match(scrapedtitle, '(\d{4})')
         if not year:
             year = scrapertools.find_single_match(scrapedtitle, '\((\d{4})\)')
-        itemlist.append(item.clone(action = "findvideos", title = scrapedtitle, contentTitle = contentTitle, url = scrapedurl,
+        title = "%s %s" %(contentTitle, year)
+        if not year:
+            year = "-"
+        itemlist.append(item.clone(action = "findvideos", title = title, contentTitle = contentTitle, url = scrapedurl,
                              thumbnail = img, plot=plot, contentType = "movie", infoLabels = {'year': year}))
 
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
@@ -90,15 +94,12 @@ def findvideos(item):
     logger.info() 
     itemlist = [] 
     data = httptools.downloadpage(item.url).data 
-    url = scrapertools.find_single_match(data, '<p><iframe src="([^#]+)')
-    post = "r=&d=sleazemovies.tk"
-    url = url.replace("/v/", "/api/source/")
-    data = httptools.downloadpage(url, post=post).data
-    patron = '"file":"([^"]+)","label":"([^"]+)"'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    for url,quality in matches:
-      url = url.replace("\/", "/")
-      itemlist.append(item.clone(action="play", title=quality, quality=quality, url=url))
+    url = scrapertools.find_single_match(data, '<p><iframe src="([^"]+)"').replace("amp;", "")
+    data = httptools.downloadpage(url, headers={"Referer": item.url}).data
+    url = scrapertools.find_single_match(data, '"file":"([^"]+)"')
+    url += "|Referer=%s" % item.url
+    itemlist.append(item.clone(action="play", url=url))
+
     if config.get_videolibrary_support() and len(itemlist) > 0 and item.extra != 'findvideos':
         itemlist.append(item.clone(title = '[COLOR yellow]Añadir esta pelicula a la videoteca[/COLOR]',
                              url = item.url,

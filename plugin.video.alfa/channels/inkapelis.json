@@ -1,11 +1,12 @@
 {
   "id": "inkapelis",
-  "name": "Inkapelis",
-  "active": false,
+  "name": "InkaPelis",
+  "force_unify": true,
+  "language": ["lat"],
+  "active": true,
   "adult": false,
-  "language": ["cast", "lat"],
-  "thumbnail": "https://www.inkapelis.tv/wp-content/uploads/2016/07/logitoinkapelis-min.png",
-  "banner": "inkapelis.png",
+  "thumbnail": "https://i.postimg.cc/fTVV35zr/inkapelis.png",
+  "banner": "",
   "categories": [
     "movie",
     "vos"
@@ -15,62 +16,9 @@
       "id": "include_in_global_search",
       "type": "bool",
       "label": "Incluir en busqueda global",
-      "default": false,
-      "enabled": true,
-      "visible": true
-    },
-    {
-      "id": "include_in_newest_peliculas",
-      "type": "bool",
-      "label": "Incluir en Novedades - Películas",
       "default": true,
       "enabled": true,
       "visible": true
-    },
-    {
-      "id": "include_in_newest_terror",
-      "type": "bool",
-      "label": "Incluir en Novedades - terror",
-      "default": true,
-      "enabled": true,
-      "visible": true
-    },
-    {
-      "id": "include_in_newest_castellano",
-      "type": "bool",
-      "label": "Incluir en Novedades - castellano",
-      "default": true,
-      "enabled": true,
-      "visible": true
-    },
-    {
-      "id": "include_in_newest_latino",
-      "type": "bool",
-      "label": "Incluir en Novedades - latino",
-      "default": true,
-      "enabled": true,
-      "visible": true
-    },
-    {
-      "id": "modo_grafico",
-      "type": "bool",
-      "label": "Buscar información extra",
-      "default": true,
-      "enabled": true,
-      "visible": true
-    },
-    {
-      "id": "perfil",
-      "type": "list",
-      "label": "Perfil de color",
-      "default": 0,
-      "enabled": true,
-      "visible": true,
-      "lvalues": [
-        "Perfil 3",
-        "Perfil 2",
-        "Perfil 1"
-      ]
     },
     {
       "id": "filter_languages",
@@ -87,28 +35,44 @@
       ]
     },
     {
-      "id": "filtro_defecto_peliculas",
-      "type": "label",
+      "id": "include_in_newest_latino",
+      "type": "bool",
+      "label": "Incluir en Novedades - Latino",
+      "default": true,
       "enabled": true,
-      "visible": false
+      "visible": true
     },
     {
-      "id": "pers_peliculas1",
-      "type": "label",
+      "id": "include_in_newest_castellano",
+      "type": "bool",
+      "label": "Incluir en Novedades - Castellano",
+      "default": true,
       "enabled": true,
-      "visible": false
+      "visible": true
     },
     {
-      "id": "pers_peliculas2",
-      "type": "label",
+      "id": "include_in_newest_infantiles",
+      "type": "bool",
+      "label": "Incluir en Novedades - Películas",
+      "default": true,
       "enabled": true,
-      "visible": false
+      "visible": true
     },
     {
-      "id": "pers_peliculas3",
-      "type": "label",
+      "id": "include_in_newest_terror",
+      "type": "bool",
+      "label": "Incluir en Novedades - Terror",
+      "default": true,
       "enabled": true,
-      "visible": false
+      "visible": true
+    },
+    {
+      "id": "include_in_newest_peliculas",
+      "type": "bool",
+      "label": "Incluir en Novedades - Películas",
+      "default": true,
+      "enabled": true,
+      "visible": true
     }
   ]
 }

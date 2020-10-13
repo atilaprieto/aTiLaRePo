@@ -1,15 +1,15 @@
 {
   "id": "cliver",
   "name": "Cliver",
-  "active": false,
+  "active": true,
   "adult": false,
   "language": ["cast", "lat"],
   "thumbnail": "https://www.cliver.to/img/logo.png",
   "banner": "",
   "version": 1,
   "categories": [
-    "movie",
-    "tvshow"  ],
+    "movie"
+  ],
   "settings": [
     {
       "id": "include_in_global_search",

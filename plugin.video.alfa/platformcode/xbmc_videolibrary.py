@@ -95,7 +95,7 @@ def sync_trakt_addon(path_folder):
                  "special://home/addons/script.trakt/"]
 
         for path in paths:
-            sys.path.append(xbmc.translatePath(path))
+            sys.path.append(filetools.translatePath(path))
 
         # se obtiene las series vistas
         try:
@@ -714,10 +714,10 @@ def set_content(content_type, silent=False):
             useFolderNames = 1
             if seleccion == -1 or seleccion == 0:
                 strScraper = 'metadata.themoviedb.org'
-                path_settings = xbmc.translatePath("special://profile/addon_data/metadata.themoviedb.org/settings.xml")
+                path_settings = filetools.translatePath("special://profile/addon_data/metadata.themoviedb.org/settings.xml")
             elif seleccion == 1: 
                 strScraper = 'metadata.universal'
-                path_settings = xbmc.translatePath("special://profile/addon_data/metadata.universal/settings.xml")
+                path_settings = filetools.translatePath("special://profile/addon_data/metadata.universal/settings.xml")
             settings_data = filetools.read(path_settings)
             strSettings = ' '.join(settings_data.split()).replace("> <", "><")
             strSettings = strSettings.replace("\"","\'")
@@ -731,10 +731,10 @@ def set_content(content_type, silent=False):
             useFolderNames = 0
             if seleccion == -1 or seleccion == 0:
                 strScraper = 'metadata.tvdb.com'
-                path_settings = xbmc.translatePath("special://profile/addon_data/metadata.tvdb.com/settings.xml")
+                path_settings = filetools.translatePath("special://profile/addon_data/metadata.tvdb.com/settings.xml")
             elif seleccion == 1: 
                 strScraper = 'metadata.tvshows.themoviedb.org'
-                path_settings = xbmc.translatePath("special://profile/addon_data/metadata.tvshows.themoviedb.org/settings.xml")
+                path_settings = filetools.translatePath("special://profile/addon_data/metadata.tvshows.themoviedb.org/settings.xml")
             settings_data = filetools.read(path_settings)
             strSettings = ' '.join(settings_data.split()).replace("> <", "><")
             strSettings = strSettings.replace("\"","\'")
@@ -807,13 +807,13 @@ def execute_sql_kodi(sql):
     # Buscamos el archivo de la BBDD de videos segun la version de kodi
     video_db = config.get_platform(True)['video_db']
     if video_db:
-        file_db = filetools.join(xbmc.translatePath("special://userdata/Database"), video_db)
+        file_db = filetools.join("special://userdata/Database", video_db)
 
     # metodo alternativo para localizar la BBDD
     if not file_db or not filetools.exists(file_db):
         file_db = ""
-        for f in filetools.listdir(xbmc.translatePath("special://userdata/Database")):
-            path_f = filetools.join(xbmc.translatePath("special://userdata/Database"), f)
+        for f in filetools.listdir("special://userdata/Database"):
+            path_f = filetools.join("special://userdata/Database", f)
 
             if filetools.isfile(path_f) and f.lower().startswith('myvideos') and f.lower().endswith('.db'):
                 file_db = path_f
@@ -858,7 +858,7 @@ def add_sources(path):
     logger.info()
     from xml.dom import minidom
 
-    SOURCES_PATH = xbmc.translatePath("special://userdata/sources.xml")
+    SOURCES_PATH = filetools.translatePath("special://userdata/sources.xml")
 
     if os.path.exists(SOURCES_PATH):
         xmldoc = minidom.parse(SOURCES_PATH)

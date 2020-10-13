@@ -203,10 +203,10 @@ def episodesxseason(item):
         else:
             epis = block.find_all("li")
             for elem in epis:
-
-                if "href" not in elem.a.attrs:
+                try:
+                    url = elem.a["href"]
+                except:
                     continue
-                url = elem.a["href"]
                 episode = scrapertools.find_single_match(elem.a.text, r"(\d+)")
                 title = "%sx%s" % (infoLabels["season"], episode)
                 infoLabels["episode"] = episode
@@ -240,6 +240,8 @@ def findvideos(item):
                 continue
             itemlist.append(Item(channel=item.channel, title=server.capitalize(), url=url, server=server, action="play",
                                  language=IDIOMAS.get(lang, 'LAT'), infoLabels=item.infoLabels))
+
+    itemlist = sorted(itemlist, key=lambda it: it.language)
 
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language)

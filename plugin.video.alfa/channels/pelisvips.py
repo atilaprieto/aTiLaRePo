@@ -247,16 +247,21 @@ def findvideos(item):
     players = {'pelisvips': 'https://pelisvips.com', 
                'stape': 'https://streamtape.com',
                'stream': 'https://streamtape.com',
+               'streamtape': 'https://streamtape.com',
                'netu': 'https://hqq.tv',
                'up': 'https://upstream.to', 
+               'upstream': 'https://upstream.to', 
                'easy': 'https://easyload.io', 
+               'easyload': 'https://easyload.io', 
                'fembed': 'https://fembad.net',
                'youtube': '',
                'pelisup': 'https://www.pelisup.com',
-               'goo': 'https://gounlimited.to'}
+               'goo': 'https://gounlimited.to',
+               'gounlimited': 'https://gounlimited.to'}
                
     # Descarga la pagina
     soup = create_soup(item.url).find('div', id='movie-player')
+    logger.error(str(type(soup)))
     matches = soup.find_all('li')
     
     for elem in matches:

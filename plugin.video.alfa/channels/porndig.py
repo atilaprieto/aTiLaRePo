@@ -136,6 +136,7 @@ def lista(item):
     if "search" in item.url:
         post = "main_category_id=1&type=post&name=search_posts&search=%s&offset=%s" % (item.texto, offset)
     soup = create_soup(posturl, post)
+    logger.debug(soup)
     matches = soup.find_all('a', class_='video_item_thumbnail')
     for elem in matches:
         url = elem['href']

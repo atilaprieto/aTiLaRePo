@@ -83,11 +83,11 @@ def lista(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
     patron = 'data-title="([^"]+)".*?'
-    patron += 'ng-preview="([^"]+)-preview.mp4".*?'
     patron += 'data-src="([^"]+)".*?'
+    patron += 'ng-preview="([^"]+)-preview.mp4".*?'
     patron += '<span class="txt">([^<]+)<(.*?)<\/span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedtitle,scrapedurl,scrapedthumbnail,time,quality in matches:
+    for scrapedtitle,scrapedthumbnail,scrapedurl,time,quality in matches:
         time = time.strip()
         title = "[COLOR yellow]%s[/COLOR] %s" % (time, scrapedtitle)
         if "icon-hd" in quality or "icon-vr" in quality:

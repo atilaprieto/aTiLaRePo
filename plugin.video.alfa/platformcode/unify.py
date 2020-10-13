@@ -319,7 +319,7 @@ def title_format(item):
     # TODO se deberia quitar cualquier elemento que no sea un enlace de la lista de findvideos para quitar esto
 
     #Palabras "prohibidas" en los titulos (cualquier titulo que contengas estas no se procesara en unify)
-    excluded_words = ['online', 'descarga', 'downloads', 'trailer', 'videoteca', 'gb', 'autoplay']
+    excluded_words = ['descarga', 'downloads', 'trailer', 'videoteca', 'gb', 'autoplay']
 
     # Actions excluidos, (se define canal y action) los titulos que contengan ambos valores no se procesaran en unify
     excluded_actions = [('videolibrary','get_episodes')]

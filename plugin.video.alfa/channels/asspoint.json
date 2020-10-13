@@ -1,0 +1,15 @@
+{
+  "id": "asspoint",
+  "name": "asspoint",
+  "active": true,
+  "adult": true,
+  "language": ["*"],
+  "thumbnail": "https://cdn1.images.asspoint.com/dart/logo.png",
+  "banner": "",
+  "categories": [
+    "adult"
+  ],
+  "settings": [
+  ]
+}
+

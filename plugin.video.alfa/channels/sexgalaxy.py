@@ -25,7 +25,7 @@ list_servers = ['gounlimited']
 
 host = 'http://sexgalaxy.net'  #'http://streamingporn.xyz'
 
-# UBIQFILE  falta jetload
+# UBIQFILE y KS2C
 
 def mainlist(item):
     logger.info()
@@ -35,7 +35,7 @@ def mainlist(item):
 
     itemlist.append(item.clone(title="Peliculas", action="lista", url=host + "/full-movies/"))
     itemlist.append(item.clone(title="Peliculas JAV", action="lista", url=host + "/jav-movies/"))
-    itemlist.append(item.clone(title="Videos", action="lista", url=host + "/videos/"))
+    itemlist.append(item.clone(title="Videos", action="lista", url=host + "/new-releases/"))
     itemlist.append(item.clone(title="Canales", action="categorias", url=host + "/videos/"))
     itemlist.append(item.clone(title="Categorias", action="categorias", url=host + "/videos/"))
     itemlist.append(item.clone(title="Buscar", action="search"))
@@ -91,7 +91,7 @@ def lista(item):
         if not "manyvids" in scrapedtitle:
             itemlist.append(item.clone(action="findvideos", title=scrapedtitle, contentTitle=scrapedtitle,
                              fanart=scrapedthumbnail, url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
-    next_page = scrapertools.find_single_match(data, '"page-numbers current">.*?href="([^"]+)">')
+    next_page = scrapertools.find_single_match(data, '<div class="nav-previous"><a href="([^"]+)"')
     if next_page != "":
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page))
     return itemlist
@@ -105,8 +105,7 @@ def findvideos(item):
     patron = '<a href="([^"]+)" rel="nofollow[^<]+>(?:|<strong> |)(?:Streaming|Download)'
     matches = scrapertools.find_multiple_matches(data, patron)
     for url in matches:
-        if not "ubiqfile" in url:
-            itemlist.append(item.clone(action='play',title="%s", contentTitle=item.title, url=url))
+        itemlist.append(item.clone(action='play',title="%s", contentTitle=item.title, url=url))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)

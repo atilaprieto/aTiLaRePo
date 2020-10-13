@@ -219,7 +219,7 @@ def btoa(s):
     return base64.b64encode(s.to_string().value)
     
 def decode_url(data):
-    import js2py
+    from lib import js2py
     import re
     data = re.sub(r'\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
     js = scrapertools.find_single_match(data, '<script>(l.*?)</script>')
@@ -228,7 +228,6 @@ def decode_url(data):
     part0 = part[1].split("String['fromCharCode'")[0]
     part1 = part[1].replace(part0, "")
     part1 = re.sub(r'(l.*?)\(\(\[', 'window.btoa(([', part1)
-    logger.info("zebiiiii-%s" % part1)
     context = js2py.EvalJs({ "btoa": btoa });
     url = "htt%s" % context.eval(part1)
     logger.info(url)

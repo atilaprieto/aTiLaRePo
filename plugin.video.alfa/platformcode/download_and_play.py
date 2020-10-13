@@ -6,15 +6,20 @@
 # ---------------------------------------------------------------------------
 
 from __future__ import division
-from future import standard_library
-standard_library.install_aliases()
-#from builtins import str
 from past.utils import old_div
 import sys
 PY3 = False
 if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
-import urllib.request, urllib.parse, urllib.error
+if PY3:
+    import urllib.parse as urllib                                             # Es muy lento en PY2.  En PY3 es nativo
+    import urllib.request as urllib2
+    import urllib.error as urllib_error
+else:
+    import urllib                                                             # Usamos el nativo de PY2 que es más rápido
+    import urllib2
+    import urllib2 as urllib_error
+
 
 import os
 import re
@@ -24,7 +29,7 @@ import time
 
 import xbmc
 import xbmcgui
-from core import downloadtools
+from core import downloadtools, filetools
 from platformcode import config, logger
 
 
@@ -220,7 +225,7 @@ class DownloadThread(threading.Thread):
 
         # Se asegura de que el fichero se podrá crear
         logger.info("nombrefichero=" + self.file_name)
-        self.file_name = xbmc.makeLegalFilename(self.file_name)
+        self.file_name = filetools.makeLegalFilename(self.file_name)
         logger.info("nombrefichero=" + self.file_name)
         logger.info("url=" + self.url)
 
@@ -240,7 +245,7 @@ class DownloadThread(threading.Thread):
             for additional_header in additional_headers:
                 logger.info("additional_header: " + additional_header)
                 name = re.findall("(.*?)=.*?", additional_header)[0]
-                value = urllib.parse.unquote_plus(re.findall(".*?=(.*?)$", additional_header)[0])
+                value = urllib.unquote_plus(re.findall(".*?=(.*?)$", additional_header)[0])
                 headers.append([name, value])
 
             self.url = self.url.split("|")[0]
@@ -250,18 +255,18 @@ class DownloadThread(threading.Thread):
         socket.setdefaulttimeout(60)
 
         # Crea la petición y añade las cabeceras
-        h = urllib.request.HTTPHandler(debuglevel=0)
-        request = urllib.request.Request(self.url)
+        h = urllib2.HTTPHandler(debuglevel=0)
+        request = urllib2.Request(self.url)
         for header in headers:
             logger.info("Header=" + header[0] + ": " + header[1])
             request.add_header(header[0], header[1])
 
         # Lanza la petición
-        opener = urllib.request.build_opener(h)
-        urllib.request.install_opener(opener)
+        opener = urllib2.build_opener(h)
+        urllib2.install_opener(opener)
         try:
             connexion = opener.open(request)
-        except urllib.error.HTTPError as e:
+        except urllib_error.HTTPError as e:
             logger.error("error %d (%s) al abrir la url %s" % (e.code, e.msg, self.url))
             # print e.code
             # print e.msg

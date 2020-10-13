@@ -2,11 +2,14 @@
 # -*- Channel SeriesFlix -*-
 # -*- Created for Alfa-addon -*-
 # -*- By the Alfa Develop Group -*-
-
+import sys
+PY3 = False
+if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
 import re
-from channels import filtertools
 from bs4 import BeautifulSoup
+
+from channels import filtertools
 from core import httptools
 from core import scrapertools
 from core import servertools
@@ -15,18 +18,10 @@ from core import tmdb
 from channels import autoplay
 from platformcode import config, logger
 from channelselector import get_thumb
-import sys
-PY3 = False
-if sys.version_info[0] >= 3: PY3 = True; unicode = str; unichr = chr; long = int
 
-if PY3:
-    import urllib.parse as urlparse                             # Es muy lento en PY2.  En PY3 es nativo
-else:
-    import urlparse
-
-host = 'https://seriesflix.co/'
+host = 'https://seriesflix.to/'
 IDIOMAS = {"Latino": "LAT"}
-list_language = IDIOMAS.values()
+list_language = list(IDIOMAS.values())
 list_servers = ['uqload', 'fembed', 'mixdrop', 'supervideo', 'mystream']
 list_quality = []
 
@@ -263,11 +258,9 @@ def findvideos(item):
     itemlist = list()
     soup = create_soup(item.url)
 
-    term_id = soup.find("div", class_="VideoPlayer")
-
     bloq = soup.find("ul", class_="ListOptions")
     for elem in bloq.find_all("li"):
-        url = "https://seriesflix.co/?trembed=%s&trid=%s&trtype=2" % (elem["data-key"], elem["data-id"])
+        url = "%s?trembed=%s&trid=%s&trtype=2" % (host, elem["data-key"], elem["data-id"])
         server = elem.find("p", class_="AAIco-dns").text
         if server.lower() == "embed":
             server = "Mystream"
@@ -275,7 +268,7 @@ def findvideos(item):
         qlty = elem.find("p", class_="AAIco-equalizer").text
         title = "%s [%s]" % (server, lang)
         itemlist.append(Item(channel=item.channel, title=title, url=url, action='play',
-                             language=IDIOMAS.get(lang, lang), infoLabels=item.infoLabels,
+                             language=IDIOMAS.get(lang, lang), quality=qlty, infoLabels=item.infoLabels,
                              server=server))
 
 

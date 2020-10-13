@@ -9,7 +9,7 @@ def test_video_exists(page_url):
     global data
     logger.info("(page_url='%s')" % page_url)
     data = httptools.downloadpage(page_url).data
-    if "File is no longer available as it expired or has been deleted" in data:
+    if "File is no longer available as it expired or has been deleted" in data or "File Not Found" in data:
         return False, "[supervideo] El fichero ha sido borrado"
     return True, ""
 

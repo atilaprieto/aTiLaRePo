@@ -34,8 +34,6 @@ def mainlist(item):
 
     itemlist.append(item.clone(title="Peliculas" , action="lista", url=host + "/category/movies/"))
     itemlist.append(item.clone(title="Videos" , action="lista", url=host + "/category/stream/"))
-    itemlist.append(item.clone(title="Canal" , action="catalogo", url=host))
-    itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
     itemlist.append(item.clone(title="Buscar", action="search"))
 
     autoplay.show_option(item.channel, itemlist)
@@ -56,41 +54,6 @@ def search(item, texto):
         return []
 
 
-def catalogo(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data,'PaySites(.*?)<li id="menu-item-28040"')
-    data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron  = '<li id="menu-item-\d+".*?<a href="([^"]+)">([^"]+)</a>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-    for scrapedurl,scrapedtitle in matches:
-        scrapedplot = ""
-        scrapedthumbnail = ""
-        itemlist.append(item.clone(action="lista", title=scrapedtitle , url=scrapedurl , 
-                        thumbnail=scrapedthumbnail, plot=scrapedplot) )
-    return itemlist
-
-
-def categorias(item):
-    logger.info()
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    data = scrapertools.find_single_match(data,'<a href="#">Categories</a>(.*?)</ul>')
-    data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    patron  = '<li id="menu-item-\d+".*?<a href="([^"]+)">([^"]+)</a>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedtitle in matches:
-        scrapedplot = ""
-        scrapedthumbnail = ""
-        scrapedtitle = scrapedtitle
-        scrapedurl = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append(item.clone(action="lista", title=scrapedtitle , url=scrapedurl , 
-                        thumbnail=scrapedthumbnail, plot=scrapedplot) )
-    return itemlist
-
-
 def lista(item):
     logger.info()
     itemlist = []
@@ -98,7 +61,7 @@ def lista(item):
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     patron  = '<article id="post-\d+".*?'
     patron += '<a href="([^"]+)" rel="bookmark">([^<]+)<.*?'
-    patron += '<img src="([^"]+)"'
+    patron += 'data-lazy-src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail  in matches:
         url = scrapedurl
@@ -114,7 +77,8 @@ def lista(item):
         if not "manyvids" in url:
             itemlist.append(item.clone(action="findvideos" , title=title , url=url, thumbnail=thumbnail, 
                               fanart=scrapedthumbnail, plot=plot, contentTitle = contentTitle) )
-    next_page_url = scrapertools.find_single_match(data,'<a class="next page-numbers" href="([^"]+)">Next page')
+                              
+    next_page_url = scrapertools.find_single_match(data,'rel="next" href="([^"]+)"')
     if next_page_url!="":
         next_page_url = urlparse.urljoin(item.url,next_page_url)
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page_url) )
@@ -129,8 +93,7 @@ def findvideos(item):
     patron = '<a href="([^"]+)" rel="nofollow[^<]+>(?:Streaming|Download)'
     matches = scrapertools.find_multiple_matches(data, patron)
     for url in matches:
-        if not "ubiqfile" in url:
-            itemlist.append(item.clone(action='play',title="%s", contentTitle=item.title, url=url))
+        itemlist.append(item.clone(action='play',title="%s", contentTitle=item.title, url=url))
     itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     # Requerido para FilterTools
     itemlist = filtertools.get_links(itemlist, item, list_language, list_quality)

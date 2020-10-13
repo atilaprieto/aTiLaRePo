@@ -34,5 +34,8 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     matches = scrapertools.find_multiple_matches(data.data, patron)
     for url in matches:
         url += "|Referer=%s" %page_url
-        video_urls.append(['.mpd [CinemaUpload]', url,0,"", "mpd"])
+        if ".mp4" in url:
+            video_urls.append(['.mpd [CinemaUpload]', url])
+        else:
+            video_urls.append(['.mpd [CinemaUpload]', url,0,"", "mpd"])
     return video_urls

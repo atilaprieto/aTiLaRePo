@@ -92,7 +92,19 @@ def lista(item):
     return itemlist
 
 
+def findvideos(item):
+    logger.info(item)
+    data = httptools.downloadpage(item.url).data
+    url = scrapertools.find_single_match(data, '<iframe src="([^"]+)"')
+    itemlist.append(item.clone(action="play", title= "%s" , contentTitle=item.title, url=url)) 
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize()) 
+    return itemlist
+
+
 def play(item):
     logger.info(item)
-    itemlist = servertools.find_video_items(item.clone(url = item.url, contentTitle = item.title))
+    data = httptools.downloadpage(item.url).data
+    url = scrapertools.find_single_match(data, '<iframe src="([^"]+)"')
+    itemlist.append(item.clone(action="play", title= "%s" , contentTitle=item.title, url=url)) 
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize()) 
     return itemlist

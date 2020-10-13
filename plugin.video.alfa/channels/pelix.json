@@ -3,8 +3,8 @@
   "name": "Pelix",
   "active": true,
   "adult": false,
-  "language": ["lat", "cast"],
-  "thumbnail": "https://pelix.tv/build/images/logo.png",
+  "language": ["lat"],
+  "thumbnail": "https://pelix.tv/wp-content/themes/allcine/images/logossss.png",
   "banner": "",
   "categories": [
     "movie",
@@ -27,16 +27,29 @@
       "enabled": true,
       "visible": true,
       "lvalues": [
-        "No filtrar",
-        "Latino",
-        "Castellano",
-        "VOSE"
+        "No filtrar"
       ]
     },
     {
       "id": "include_in_newest_peliculas",
       "type": "bool",
       "label": "Incluir en Novedades - Peliculas",
+      "default": true,
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "id": "include_in_newest_latino",
+      "type": "bool",
+      "label": "Incluir en Novedades - Latino",
+      "default": true,
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "id": "include_in_newest_torrent",
+      "type": "bool",
+      "label": "Incluir en Novedades - Torrent",
       "default": true,
       "enabled": true,
       "visible": true
@@ -56,23 +69,6 @@
       "default": true,
       "enabled": true,
       "visible": true
-    },
-    {
-      "id": "comprueba_enlaces",
-      "type": "bool",
-      "label": "Verificar si los enlaces existen",
-      "default": false,
-      "enabled": true,
-      "visible": true
-    },
-    {
-      "id": "comprueba_enlaces_num",
-      "type": "list",
-      "label": "Número de enlaces a verificar",
-      "default": 1,
-      "enabled": true,
-      "visible": "eq(-1,true)",
-      "lvalues": [ "5", "10", "15", "20" ]
     }
   ]
 }

@@ -27,14 +27,16 @@ from channels import renumbertools
 
 host = "https://monoschinos.com/"
 
-__comprueba_enlaces__ = config.get_setting('comprueba_enlaces', 'animespace')
-__comprueba_enlaces_num__ = config.get_setting('comprueba_enlaces_num', 'animespace')
+__comprueba_enlaces__ = config.get_setting('comprueba_enlaces', 'tvanime')
+__comprueba_enlaces_num__ = config.get_setting('comprueba_enlaces_num', 'tvanime')
+
+epsxfolder = config.get_setting('epsxfolder', 'tvanime')
 
 IDIOMAS = {'VOSE': 'VOSE', 'Latino':'LAT', 'Castellano':'CAST'}
+list_epsxf = {0: None, 1: 25, 2: 50, 3: 100}
 list_language = list(IDIOMAS.values())
 list_quality = []
 list_servers = ['directo', 'openload', 'streamango']
-
 
 def mainlist(item):
     logger.info()
@@ -102,10 +104,25 @@ def mainlist(item):
                                fanart='https://s30.postimg.cc/pei7txpa9/buscar.png'
                                ))
 
+    itemlist.append(Item(channel=item.channel,
+                             title="Configurar Canal...",
+                             text_color="turquoise",
+                             action="settingCanal",
+                             thumbnail=get_thumb('setting_0.png'),
+                             url='',
+                             fanart=get_thumb('setting_0.png')
+                             ))
+
     autoplay.show_option(item.channel, itemlist)
     itemlist = renumbertools.show_option(item.channel, itemlist)
 
     return itemlist
+
+def settingCanal(item):
+    from platformcode import platformtools
+    platformtools.show_channel_settings()
+    platformtools.itemlist_refresh()
+    return
 
 
 def get_source(url):
@@ -135,13 +152,17 @@ def list_all(item):
             lang = 'Castellano'
         else:
             lang = 'VOSE'
-        title = re.sub('Audio|Latino|Castellano', '', scrapedtitle)
+        title = re.sub(r'Audio|Latino|Castellano|\((.*?)\)', '', scrapedtitle)
+        stitle = title
+        if lang != 'VOSE' and not config.get_setting('unify'):
+            stitle += ' [COLOR gold][%s][/COLOR]' %  lang
+
         context = renumbertools.context(item)
         context2 = autoplay.context
         context.extend(context2)
         new_item= Item(channel=item.channel,
-                       action='episodios',
-                       title=title,
+                       action='folders',
+                       title=stitle,
                        url=url,
                        thumbnail=thumbnail,
                        language = lang,
@@ -223,8 +244,47 @@ def new_episodes(item):
             lang = 'VOSE'
         scrapedtitle = re.sub('Audio|Latino|Castellano', '', scrapedtitle)
         title = '%s - Episodio %s' % (scrapedtitle, epi)
+        if lang != 'VOSE' and not config.get_setting('unify'):
+            title += ' [COLOR gold][%s][/COLOR]' %  lang
         itemlist.append(Item(channel=item.channel, title=title, url=url, thumbnail=scrapedthumbnail,
                              action='findvideos', language=lang))
+
+    return itemlist
+
+def folders(item):
+    logger.info()
+    itemlist = []
+    exf = list_epsxf.get(epsxfolder, None)
+    if not epsxfolder:
+        return episodesxfolder(item)
+    data = get_source(item.url)
+    patron = '<a class="item" href="([^"]+)">'
+    matches = re.compile(patron, re.DOTALL).findall(data)
+    l_matches = len(matches)
+    if l_matches <= exf:
+        return episodesxfolder(item)
+    div = l_matches // exf
+    res = l_matches % exf
+    tot_div = div
+    
+    count = 1
+    for folder in list(range(0, tot_div)):
+        final = (count*exf)
+        inicial = (final - exf) + 1
+        if count == tot_div:
+            final = (count*exf) + res
+        
+        title = "Eps %s - %s" % (inicial, final)
+        init = inicial - 1
+        itemlist.append(Item(channel=item.channel, title=title, url=item.url,
+                             action='episodesxfolder', init=init, fin=final))
+        count += 1
+
+    if item.contentSerieName != '' and config.get_videolibrary_support() and len(itemlist) > 0:
+        itemlist.append(
+            Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la videoteca[/COLOR]', url=item.url,
+                 action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName,
+                 extra1='library'))
 
     return itemlist
 
@@ -232,12 +292,26 @@ def episodios(item):
     logger.info()
     itemlist = []
 
+    templist = folders(item)
+    for tempitem in templist:
+        itemlist += episodesxfolder(tempitem)
+
+    return itemlist
+
+def episodesxfolder(item):
+    logger.info()
+    itemlist = []
+    if not item.init:
+        item.init = None
+    if not item.fin:
+        item.fin = None
     data = get_source(item.url)
     patron = '<a class="item" href="([^"]+)">'
     matches = re.compile(patron, re.DOTALL).findall(data)
-
     infoLabels = item.infoLabels
-    for scrapedurl in matches:
+    if item.init or item.fin:
+        matches.reverse()
+    for scrapedurl in matches[item.init:item.fin]:
         episode = scrapertools.find_single_match(scrapedurl, '.*?episodio-(\d+)')
         lang = item.language
         season, episode = renumbertools.numbered_for_tratk(item.channel, item.contentSerieName, 1, int(episode))
@@ -258,6 +332,8 @@ def episodios(item):
                  action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName,
                  extra1='library'))
 
+    if item.init or item.fin:
+        itemlist.reverse()
     return itemlist
 
 
@@ -265,7 +341,7 @@ def findvideos(item):
     logger.info()
 
     itemlist = []
-    g_host = 'https://storage.googleapis.com/proven-reality-256313.appspot.com/'
+    g_host = 'https://192-99-219-204.sysdop.com/'
 
     data = get_source(item.url)
     patron = r'%sreproductor\?url=([^&]+)' % host
@@ -278,6 +354,10 @@ def findvideos(item):
         if "cl?url=" in scrapedurl:
             scrapedurl = scrapertools.find_single_match(scrapedurl, '\?url=(.*)')
             url = g_host + scrapedurl.replace('+', '%20')
+            check = httptools.downloadpage(url, only_headers=True, ignore_response_code=True).code
+
+            if check != 200: 
+                continue
             server = "directo"
         
         elif '?url=' in  scrapedurl:

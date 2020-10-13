@@ -36,10 +36,16 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Todas", url=host+'pelicula', action="list_all",
                          thumbnail=get_thumb('all', auto=True), first=0))
 
-    itemlist.append(Item(channel=item.channel, title="Generos", action="section",
+    itemlist.append(Item(channel=item.channel, title="Generos", action="genres",
                          thumbnail=get_thumb('genres', auto=True)))
+    
+    itemlist.append(Item(channel=item.channel, title="Directores", action="section",
+                        thumbnail=get_thumb('colections', auto=True)))
+    
+    itemlist.append(Item(channel=item.channel, title="Actores", action="section",
+                        thumbnail=get_thumb('actors', auto=True)))
 
-    itemlist.append(Item(channel=item.channel, title="Años", action="section",
+    itemlist.append(Item(channel=item.channel, title="Años", action="year",
                         thumbnail=get_thumb('year', auto=True)))
 
     itemlist.append(Item(channel=item.channel, title="Buscar...",  url=host + '?s=',  action="search",
@@ -126,10 +132,27 @@ def section(item):
 
     soup = create_soup(host)
 
-    if item.title == "Generos":
-        matches = soup.find("ul", id="menu-generos")
-    elif item.title == "Años":
-        matches = soup.find("ul", class_="releases")
+    if item.title == "Directores":
+        matches = soup.find("aside", id="tag_cloud-6")
+
+    elif item.title == "Actores":
+        matches = soup.find("aside", id="tag_cloud-4")
+
+    for elem in matches.find_all("a"):
+        url = elem["href"]
+        title = elem["aria-label"]
+        itemlist.append(Item(channel=item.channel, title=title, action="list_all", url=url, first=0))
+
+    return itemlist
+
+def genres(item):
+    logger.info()
+
+    itemlist = list()
+
+    soup = create_soup(host)
+
+    matches = soup.find("ul", id="menu-generos")
 
     for elem in matches.find_all("li"):
         url = elem.a["href"]
@@ -138,6 +161,37 @@ def section(item):
 
     return itemlist
 
+def year(item):
+    logger.info()
+    import datetime
+    itemlist = list()
+
+    now = datetime.datetime.now()
+    c_year = now.year - 2
+    l_year = 1950
+    year_list = list(range(l_year, c_year))
+
+    for year in year_list:
+        year = str(year)
+        url = '%s/ano/%s/' % (host, year)
+        
+        itemlist.append(Item(channel=item.channel, title=year, url=url, thumbnail=item.thumbnail,
+                             action="list_all", type=item.type, first=0))
+    itemlist.reverse()
+    
+    itemlist.append(Item(channel=item.channel, title='Introduzca otro año...', url='',
+                                 action="year_cus", first=0, thumbnail=get_thumb("years.png")))
+
+    return itemlist
+
+def year_cus(item):
+    from platformcode import platformtools
+    heading = 'Introduzca Año (4 digitos)'
+    year = platformtools.dialog_numeric(0, heading, default="")
+    item.url = '%s/ano/%s/' % (host, year)
+    item.action = "list_all"
+    if year and len(year) == 4:
+        return list_all(item)
 
 def findvideos(item):
     logger.info()
@@ -147,6 +201,7 @@ def findvideos(item):
     soup = create_soup(item.url).find("div", id="videos")
     matches = soup.find("div", class_="links_table")
     added = list()
+    from channels.clubdecine import findvideos as fv
     for elem in matches.find_all("tr", id=re.compile(r"link-\d+")):
         links = elem.find_all("td")
 
@@ -156,18 +211,11 @@ def findvideos(item):
         if server == "my":
             server = "mailru"
         if server == "mycinedesiempre":
-            new_url = create_soup(url).find("a", class_="btn")["href"]
-            data = httptools.downloadpage(new_url).data
-            data = re.sub(r"\n|\r|\t|\(.*?\)|\s{2}|&nbsp;", "", data)
-            data = scrapertools.find_single_match(data, "</ul></dd>(.*?)tags")
-            v_data = re.compile(r'<a href="([^"]+)".*?<br', re.DOTALL).findall(data)
-            for v_url in v_data:
-                url = v_url
-                srv = servertools.get_server_from_url(url)
-                if url not in added:
-                    itemlist.append(Item(channel=item.channel, title='%s', action='play', url=url, server=srv,
-                                         infoLabels=item.infoLabels))
-                    added.append(url)
+            redir = create_soup(url)
+            url = redir.find("a", id="link")["href"]
+            if re.sub(r"-\d+/", "/", url) not in added:
+                itemlist.extend(fv(item.clone(url=url))[:-1])
+                added.append(url)
         else:
             itemlist.append(Item(channel=item.channel, title='%s', action='play', url=url, server=server,
                                  language=IDIOMAS.get(lang, "VOSE"), infoLabels=item.infoLabels))

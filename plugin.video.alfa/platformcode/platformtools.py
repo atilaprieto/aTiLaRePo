@@ -196,7 +196,7 @@ def render_items(itemlist, parent_item):
     # for adding extendedinfo to contextual menu, if it's used
     has_extendedinfo = xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)')
     # for adding superfavourites to contextual menu, if it's used
-    sf_file_path = xbmc.translatePath("special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py")
+    sf_file_path = config.translatePath("special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py")
     check_sf = os.path.exists(sf_file_path)
     superfavourites = check_sf and xbmc.getCondVisibility('System.HasAddon("plugin.program.super.favourites")')
     num_version_xbmc = config.get_platform(True)['num_version']
@@ -1198,6 +1198,11 @@ def set_player(item, xlistitem, mediaurl, view, strm, autoplay):
         from platformcode import xbmc_videolibrary
         xbmc_videolibrary.mark_auto_as_watched(item)
 
+    from threading import Thread
+    Thread(target=freq_count, args=[item]).start()
+
+
+def freq_count(item):
     if is_playing():
         xbmc.sleep(2000)
         if is_playing():
@@ -1260,6 +1265,8 @@ def play_torrent(item, xlistitem, mediaurl):
     LIBTORRENT_in_use_local = False
     RAR_UNPACK = config.get_setting("mct_rar_unpack", server="torrent", default='')
     BACKGROUND_DOWNLOAD = config.get_setting("mct_background_download", server="torrent", default='')
+    subtitle_path = config.get_kodi_setting("subtitles.custompath")
+    subtitles_list = []
     size_rar = 2
     rar_files = []
     rar_control = {}
@@ -1339,8 +1346,8 @@ def play_torrent(item, xlistitem, mediaurl):
         #### Compatibilidad con Kodi 18: evita cuelgues/cancelaciones cuando el .torrent se lanza desde pantalla convencional
         # if xbmc.getCondVisibility('Window.IsMedia'):
         try:
-            xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, xlistitem)   # Preparamos el entorno para evitar error Kod1 18
-            time.sleep(0.5)                                                 # Dejamos tiempo para que se ejecute
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, xlistitem)       # Preparamos el entorno para evitar error Kod1 18
+            time.sleep(0.5)                                                     # Dejamos tiempo para que se ejecute
         except:
             pass
 
@@ -1401,10 +1408,12 @@ def play_torrent(item, xlistitem, mediaurl):
             if item.referer: referer = item.referer
             if item.post: post = item.post
             # Descargamos el .torrent
-            size, url, torrent_f, rar_files = generictools.get_torrent_size(item.url, referer, post, \
-                                                                            torrents_path=torrents_path,
+            size, url, torrent_f, rar_files, subtitles_list = generictools.get_torrent_size(item.url, referer, post, \
+                                                                            torrents_path=torrents_path, subtitles=True, 
                                                                             timeout=timeout, lookup=False,
                                                                             headers=headers, short_pad=True)
+            if not item.subtitle and subtitles_list:
+                item.subtitle = subtitles_list[0]
             if url:
                 url_stat = True
                 item.url = url
@@ -1425,8 +1434,13 @@ def play_torrent(item, xlistitem, mediaurl):
         if url_local and not url_stat and videolibrary_path:            # .torrent alternativo local
             if filetools.copy(item.url, torrents_path, silent=True):    # se copia a la carpeta generíca para evitar problemas de encode
                 item.url = torrents_path
+            if subtitle_path:
+                for subt in filetools.dirname(item.url):
+                    if subt.endswith('.srt'):
+                        filetools.copy(filetools.join(filetools.dirname(item.url), subt), filetools.join(subtitle_path, subt), silent=True)
+                    
             size, url, torrent_f, rar_files = generictools.get_torrent_size(item.url, file_list=True, 
-                                                    lookup=False, torrents_path=torrents_path, short_pad=True)
+                                              lookup=False, torrents_path=torrents_path, short_pad=True)
             if url and url != item.url:
                 filetools.remove(torrents_path, silent=True)
                 item.url = url
@@ -1437,6 +1451,13 @@ def play_torrent(item, xlistitem, mediaurl):
         mediaurl = item.url
 
     if seleccion >= 0:
+        if not item.subtitle and subtitle_path:
+            item.subtitle = subtitle_path
+        if item.subtitle:
+            if '\\' in item.subtitle or item.subtitle.startswith("/") and videolibrary_path not in item.subtitle:
+                item.subtitle = filetools.join(videolibrary_path, folder, item.subtitle)
+            time.sleep(0.5)
+            xbmc_player.setSubtitles(item.subtitle)                             # Activamos los subtítulos
         
         # Si no existe, creamos un archivo de control para que sea gestionado desde Descargas
         if torrent_paths[torr_client.upper()]:                                  # Es un cliente monitorizable?
@@ -1563,7 +1584,7 @@ def play_torrent(item, xlistitem, mediaurl):
 
                 result = False
                 __settings__ = xbmcaddon.Addon(id="plugin.video.%s" % torr_client)  # Apunta settings del cliente torrent externo
-                save_path_videos = str(xbmc.translatePath(__settings__.getSetting('download_path')))
+                save_path_videos = str(config.translatePath(__settings__.getSetting('download_path')))
                 
                 if torr_client == 'quasar' and 'cliente_torrent_Alfa' not in item.url:  # Quasar no copia el .torrent
                     ret = filetools.copy(item.url, filetools.join(save_path_videos, 'torrents', \
@@ -1686,4 +1707,4 @@ def rar_control_mng(item, xlistitem, mediaurl, rar_files, torr_client, password,
 
 
 def log(texto):
-    xbmc.log(texto, xbmc.LOGNOTICE)
+    logger.info(texto, force=True)

@@ -29,6 +29,8 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     # URL del vídeo
     for type, url in re.findall(r'\{"name":"([^"]+)","url":"([^"]+)"', data, re.DOTALL):
         url = url.replace("%3B", ";").replace("u0026", "&")
+        if "mobile" in type:
+            continue
         video_urls.append([type + " [okru]", url])
 
     return video_urls

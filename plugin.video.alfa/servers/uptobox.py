@@ -63,32 +63,36 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
 
 def uptostream(data):
+    video_id = scrapertools.find_single_match(data,"var videoId\s*=\s*'([^']+)';")
     subtitle = scrapertools.find_single_match(data, "kind='subtitles' src='//([^']+)'")
     if subtitle:
         subtitle = "http://" + subtitle
     video_urls = []
-    videos1 = []
-    data = data.replace("\\","")
-    patron  = 'src":"([^"]+).*?'
-    patron += 'type":"([^"]+).*?'
-    patron += 'res":"([^"]+).*?'
-    patron += 'lang":"([^"]+)'
-    media = scrapertools.find_multiple_matches(data, patron)
-    for media_url, tipo, res, lang in media:
-        videos1.append([media_url, tipo, res, lang])
-    videos1.sort(key=lambda videos1: int(videos1[2]))
-    for x in videos1:
-        media_url = x[0]
-        tipo = x[1]
-        res = x[2]
-        lang = x[3]
+    api_url = "https://uptostream.com/api/streaming/source/get?token=null&file_code=%s" % video_id
+    api_data = httptools.downloadpage(api_url).json
+    js_code = api_data.get('data', '').get('sources', '')
+    
+    from lib import js2py
+    
+    context = js2py.EvalJs({'atob': atob})
+    context.execute(js_code)
+    result = context.sources
+
+    for x in result:
+        media_url = x.get('src', '')
+        tipo = x.get('type', '')
+        res = x.get('label', '')
+        #lang = x.get('lang', '')
         tipo = tipo.replace("video/","")
         extension = ".%s (%s)" % (tipo, res)
-        if lang:
-            extension = extension.replace(")", "/%s)" % lang[:3])
+        #if lang:
+        #    extension = extension.replace(")", "/%s)" % lang[:3])
         video_urls.append([extension + " [uptostream]", media_url, 0, subtitle])
     return video_urls
 
+def atob(s):
+    import base64
+    return base64.b64decode('{}'.format(s)).decode('utf-8')
 
 def uptobox(url, data):
     video_urls = []

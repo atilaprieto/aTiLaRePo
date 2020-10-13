@@ -22,11 +22,30 @@ import socket
 import xbmcgui
 import threading
 import subprocess
+import xbmcvfs
 from quasar.logger import log
 from quasar.osarch import PLATFORM
 from quasar.config import QUASARD_HOST
 from quasar.addon import ADDON, ADDON_ID, ADDON_PATH
 from quasar.util import notify, system_information, getLocalizedString, getWindowsShortPath
+
+def translatePath(path):
+    """
+    Kodi 19: xbmc.translatePath is deprecated and might be removed in future kodi versions. Please use xbmcvfs.translatePath instead.
+    @param path: cadena con path special://
+    @type path: str
+    @rtype: str
+    @return: devuelve la cadena con el path real
+    """
+    if PY3:
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+        path = xbmcvfs.translatePath(path)
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+    else:
+        path = xbmc.translatePath(path)
+    return path
 
 def ensure_exec_perms(file_):
     st = os.stat(file_)
@@ -68,8 +87,8 @@ def get_quasar_binary():
             xbmc_data_path = ''
         
         if not os.path.exists(xbmc_data_path):
-            log.info("%s path does not exist, so using %s as xbmc_data_path" % (xbmc_data_path, xbmc.translatePath("special://xbmcbin/")))
-            xbmc_data_path = xbmc.translatePath("special://xbmcbin/")
+            log.info("%s path does not exist, so using %s as xbmc_data_path" % (xbmc_data_path, translatePath("special://xbmcbin/")))
+            xbmc_data_path = translatePath("special://xbmcbin/")
 
             try:                    #Test if there is any permisions problem
                 f = open(os.path.join(xbmc_data_path, "test.txt"), "wb")
@@ -80,14 +99,14 @@ def get_quasar_binary():
                 xbmc_data_path = ''
         
         if not os.path.exists(xbmc_data_path):
-            log.info("%s path does not exist, so using %s as xbmc_data_path" % (xbmc_data_path, xbmc.translatePath("special://masterprofile/")))
-            xbmc_data_path = xbmc.translatePath("special://masterprofile/")
+            log.info("%s path does not exist, so using %s as xbmc_data_path" % (xbmc_data_path, translatePath("special://masterprofile/")))
+            xbmc_data_path = translatePath("special://masterprofile/")
         dest_binary_dir = os.path.join(xbmc_data_path, "files", ADDON_ID, "bin", "%(os)s_%(arch)s" % PLATFORM)
     else:
         if not PY3:
-            dest_binary_dir = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")).decode('utf-8'), "bin", "%(os)s_%(arch)s" % PLATFORM)
+            dest_binary_dir = os.path.join(translatePath(ADDON.getAddonInfo("profile")).decode('utf-8'), "bin", "%(os)s_%(arch)s" % PLATFORM)
         else:
-            dest_binary_dir = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")), "bin", "%(os)s_%(arch)s" % PLATFORM)
+            dest_binary_dir = os.path.join(translatePath(ADDON.getAddonInfo("profile")), "bin", "%(os)s_%(arch)s" % PLATFORM)
     
     if PY3 and isinstance(dest_binary_dir, bytes):
         dest_binary_dir = dest_binary_dir.decode("utf8")
@@ -216,9 +235,9 @@ def start_quasard(**kwargs):
             log.warning("Removing library.db.lock file...")
             try:
                 if not PY3:
-                    library_lockfile = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")).decode('utf-8'), "library.db.lock")
+                    library_lockfile = os.path.join(translatePath(ADDON.getAddonInfo("profile")).decode('utf-8'), "library.db.lock")
                 else:
-                    library_lockfile = os.path.join(xbmc.translatePath(ADDON.getAddonInfo("profile")), "library.db.lock")
+                    library_lockfile = os.path.join(translatePath(ADDON.getAddonInfo("profile")), "library.db.lock")
                     if isinstance(library_lockfile, bytes):
                         library_lockfile = library_lockfile.decode("utf8")
                 os.remove(library_lockfile)

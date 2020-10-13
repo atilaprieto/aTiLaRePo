@@ -23,7 +23,7 @@ def mainlist(item):
     logger.info()
     itemlist = []
     itemlist.append(item.clone(title="Ultimos" , action="lista", url=host + "/tube/last-1/"))
-    itemlist.append(item.clone(title="Popular" , action="lista", url=host + "/tube/popular-1/"))
+    # itemlist.append(item.clone(title="Popular" , action="lista", url=host + "/tube/popular-1/"))
     # itemlist.append(item.clone(title="Categorias" , action="categorias", url=host))
     itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist

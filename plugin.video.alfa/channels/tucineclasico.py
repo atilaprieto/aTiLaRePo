@@ -127,25 +127,17 @@ def findvideos(item):
     itemlist = list()
 
     soup = create_soup(item.url)
-    matches = soup.find("ul", id="playeroptionsul")
+    matches = soup.find("div", class_="dooplay_player")
 
-    for elem in matches.find_all("li"):
-        if "youtube" in elem.find("span", class_="server").text:
+    for elem in matches.find_all("div", class_="source-box"):
+        if "trailer" in elem["id"] or elem.find("script"):
             continue
-        post = {"action": "doo_player_ajax", "post": elem["data-post"], "nume": elem["data-nume"],
-                "type": elem["data-type"]}
-        headers = {"Referer": item.url}
-        doo_url = "%swp-admin/admin-ajax.php" % host
-        lang = elem.find("span", class_="flag").img["src"]
+        url = elem.find("iframe")["src"]
+        lang = matches.find("li", id=elem["id"].replace("source-player", "player-option")).img["src"]
         lang = scrapertools.find_single_match(lang, r"flags/([^\.]+)\.png")
-        response = httptools.downloadpage(doo_url, post=post, headers=headers, ignore_response_code=True)
-        if not response.sucess:
-            continue
-        data = response.data
-        url = BeautifulSoup(data, "html5lib").find("iframe")["src"]
-
         itemlist.append(Item(channel=item.channel, title='%s', action='play', url=url,
-                             language=IDIOMAS.get(lang, "VOSE"), infoLabels=item.infoLabels))
+                            language=IDIOMAS.get(lang, "VOSE"), infoLabels=item.infoLabels))
+
     itemlist = servertools.get_servers_itemlist(itemlist, lambda x: x.title % x.server.capitalize())
 
     # Requerido para FilterTools

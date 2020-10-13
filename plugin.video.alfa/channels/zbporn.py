@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 
 host = 'https://zbporn.com'
 
-
+                            # No muestra thumbnail
 def mainlist(item):
     logger.info()
     itemlist = []
@@ -90,7 +90,7 @@ def lista(item):
         url = elem.a['href']
         stitle = elem.a['title']
         thumbnail = elem.img['data-src']
-        thumbnail = thumbnail + "|referer=host"
+        thumbnail = re.sub("/\d+x\d+/", "/240x180/", thumbnail)
         stime = elem.find('span', class_='th-time').text.strip()
         if stime:
             title = "[COLOR yellow]%s[/COLOR] %s" % (stime,stitle)

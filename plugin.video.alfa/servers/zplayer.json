@@ -4,8 +4,12 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "https://zplayer.live/e/([A-z0-9]+)",
+        "pattern": "https://zplayer.live/(?:e|v)/([A-z0-9]+)",
         "url": "https://zplayer.live/e/\\1"
+      },
+      {
+        "pattern": "https://v2.zplayer.live/(?:embed|video)/([A-z0-9]+)",
+        "url": "https://v2.zplayer.live/embed/\\1"
       }
     ]
   },

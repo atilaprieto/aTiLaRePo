@@ -601,15 +601,15 @@ def play(item):                                                                 
     
     if item.subtitle:                                                           #Si hay urls de sub-títulos, se descargan
         headers.append(["User-Agent", httptools.random_useragent()])            #Se busca un User-Agent aleatorio
-        if not os.path.exists(os.path.join(config.get_setting("videolibrarypath"), "subtitles")):   #Si no hay carpeta se Sub-títulos, se crea
-            os.mkdir(os.path.join(config.get_setting("videolibrarypath"), "subtitles"))
+        if not os.path.exists(os.path.join(config.get_videolibrary_path(), "subtitles")):   #Si no hay carpeta se Sub-títulos, se crea
+            os.mkdir(os.path.join(config.get_videolibrary_path(), "subtitles"))
         subtitles = []
         subtitles.extend(item.subtitle)
         item.subtitle = subtitles[0]                                            #ponemos por defecto el primeroç
-        #item.subtitle = os.path.join(config.get_setting("videolibrarypath"), os.path.join("subtitles", scrapertools.find_single_match(subtitles[0], '\/\d{2}\/(.*?\.\w+)$')))
+        #item.subtitle = os.path.join(config.get_videolibrary_path(), os.path.join("subtitles", scrapertools.find_single_match(subtitles[0], '\/\d{2}\/(.*?\.\w+)$')))
         for subtitle in subtitles:                                              #recorremos la lista
             subtitle_name = scrapertools.find_single_match(subtitle, '\/\d{2}\/(.*?\.\w+)$')                #se pone el nombre del Sub-título
-            subtitle_folder_path = os.path.join(config.get_setting("videolibrarypath"), "subtitles", subtitle_name)         #Path de descarga
+            subtitle_folder_path = os.path.join(config.get_videolibrary_path(), "subtitles", subtitle_name)         #Path de descarga
             ret = downloadtools.downloadfile(subtitle, subtitle_folder_path, headers=headers, continuar=True, silent=True)  #Descarga
 
     itemlist.append(item.clone())                                               #Reproducción normal

@@ -84,15 +84,22 @@ def get_caller(message=None):
 
 def info(texto="", force=False):
     if loggeractive or force:
-        xbmc.log(get_caller(encode_log(texto)), xbmc.LOGNOTICE)
+        if PY3:
+            xbmc.log(get_caller(encode_log(texto)), xbmc.LOGINFO)
+        else:
+            xbmc.log(get_caller(encode_log(texto)), xbmc.LOGNOTICE)
 
 
 def debug(texto="", force=False):
     if loggeractive or force:
         texto = "    [" + get_caller() + "] " + encode_log(texto)
 
-        xbmc.log("######## DEBUG #########", xbmc.LOGNOTICE)
-        xbmc.log(texto, xbmc.LOGNOTICE)
+        if PY3:
+            xbmc.log("######## DEBUG #########", xbmc.LOGINFO)
+            xbmc.log(texto, xbmc.LOGINFO)
+        else:
+            xbmc.log("######## DEBUG #########", xbmc.LOGNOTICE)
+            xbmc.log(texto, xbmc.LOGNOTICE)
 
 
 def error(texto="", force=False):

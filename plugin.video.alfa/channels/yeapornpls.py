@@ -17,7 +17,9 @@ from core.item import Item
 from core import servertools
 from core import httptools
 
-host = 'https://0dayporn.com'
+host = 'https://pornwild.to' # 'https://0dayporn.com'
+
+        # KTP no resuelve
 
 def mainlist(item):
     logger.info()
@@ -25,6 +27,7 @@ def mainlist(item):
     itemlist.append(item.clone(title="Nuevos" , action="lista", url=host + "/latest-updates/"))
     itemlist.append(item.clone(title="Mas vistos" , action="lista", url=host + "/most-popular/"))
     itemlist.append(item.clone(title="Mejor valorado" , action="lista", url=host + "/top-rated/"))
+    itemlist.append(item.clone(title="Pornstars" , action="categorias", url=host + "/models/"))
     itemlist.append(item.clone(title="Categorias" , action="categorias", url=host + "/categories/"))
     itemlist.append(item.clone(title="Buscar", action="search"))
     return itemlist
@@ -50,21 +53,20 @@ def categorias(item):
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
     patron = '<a class="item".*?'
     patron += 'href="([^"]+)" title="([^"]+)".*?'
-    if "models" in item.url:
-        patron += 'src="([^"]+)".*?'
-        patron += '<span class="model-title.*?>([^<]+)</span>.*?'
-        patron += '</i>([^<]+)</span>'
-    else:
-        patron += '<div class="img">(.*?)</div.*?'
-        patron += '<div class="videos">([^<]+) videos<'
+    patron += 'src="([^"]+)".*?'
+    patron += '<div class="videos">([^<]+) videos<'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle,scrapedthumbnail,cantidad in matches:
-        thumbnail = scrapertools.find_single_match(scrapedthumbnail, 'src="([^"]+)"')
+        thumbnail = scrapedthumbnail
         title = "%s (%s)" %(scrapedtitle,cantidad)
         url = urlparse.urljoin(host,scrapedurl)
         itemlist.append(item.clone(action="lista", title=title, url=url,
                               fanart=thumbnail, thumbnail=thumbnail, plot="") )
-    next_page = scrapertools.find_single_match(data, '<a class="page-link" href="([^"]+)" class="prevnext"')
+    next_page = scrapertools.find_single_match(data, '<div class="load-more".*?<a href="([^"]+)"')
+    if "#" in next_page:
+        next_page = scrapertools.find_single_match(data, 'data-parameters="([^"]+)">Next')
+        next_page = next_page.replace(":", "=").replace(";", "&").replace("+from_albums", "")
+        next_page = "?%s" % next_page
     if next_page:
         next_page = urlparse.urljoin(item.url,next_page)
         itemlist.append(item.clone(action="categorias", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )
@@ -91,7 +93,8 @@ def lista(item):
         plot = ""
         itemlist.append(item.clone(action="play", title=title, url=scrapedurl,
                               thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=plot, contentTitle = title))
-    next_page = scrapertools.find_single_match(data, '<li class="next"><a href="([^"]+)"')
+                              
+    next_page = scrapertools.find_single_match(data, '<div class="load-more".*?<a href="([^"]+)"')
     if "#" in next_page:
         next_page = scrapertools.find_single_match(data, 'data-parameters="([^"]+)">Next')
         next_page = next_page.replace(":", "=").replace(";", "&").replace("+from_albums", "")
@@ -107,7 +110,7 @@ def play(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>|<br/>", "", data)
-    data = scrapertools.find_single_match(data, '<div class="player-holder">(.*?)<div class="sponsor">')
+    data = scrapertools.find_single_match(data, '<div class="player-holder">(.*?)<a href="#like"')
     if "kt_player" in data:
         url = item.url
     else:

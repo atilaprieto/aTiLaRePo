@@ -82,9 +82,9 @@ def getmainlist(view="thumb_"):
                          thumbnail=get_thumb("help.png", view), unify=False, folder=False, 
                          category=config.get_localized_string(30104), viewmode="list"))
                          
-    itemlist.append(Item(channel="setting", action=action, url='https://alfa-addon.com/threads/bloqueos-en-la-descarga-de-torrents.3646/', 
-                         title="-     [COLOR yellow]¿Bloqueos en la descarga de Torrents?[/COLOR]   " + 
-                         "https://alfa-addon.com/threads/bloqueos-en-la-descarga-de-torrents.3646/", 
+    itemlist.append(Item(channel="setting", action=action, url='https://alfa-addon.com/threads/manual-de-alfa-mobile-assistant-herramienta-de-apoyo.3797/', 
+                         title="-     [COLOR yellow]Manual de Alfa Mobile Assistant (herramienta de apoyo)[/COLOR]   " + 
+                         "https://alfa-addon.com/threads/manual-de-alfa-mobile-assistant-herramienta-de-apoyo.3797/", 
                          thumbnail=get_thumb("help.png", view), unify=False, folder=False, 
                          category=config.get_localized_string(30104), viewmode="list"))
 
@@ -230,7 +230,6 @@ def filterchannels(category, view="thumb_"):
             import traceback
             logger.error(traceback.format_exc())
 
-
     if config.get_setting('frequents'):
         for ch in channelslist:
             if int(ch.frequency) != 0:
@@ -272,9 +271,6 @@ def filterchannels(category, view="thumb_"):
 
     channelslist.sort(key=lambda item: item.title.lower().strip())
 
-
-
-
     if category == "all":
         channel_parameters = channeltools.get_channel_parameters('url')
         # Si prefiere el banner y el canal lo tiene, cambia ahora de idea
@@ -292,10 +288,10 @@ def filterchannels(category, view="thumb_"):
         ids = ['popular', 'top_rated', 'now_playing', 'on_the_air']
         for x in range(0,3):
             if x == 2 and category != 'movie':
-                title=titles[x+1]
+                title = titles[x+1]
                 id = ids[x+1]
             else:
-                title=titles[x]
+                title = titles[x]
                 id = ids[x]
             channelslist.insert(x,
                 Item(channel='search', action='discover_list', title=title, search_type='list',
@@ -310,6 +306,19 @@ def filterchannels(category, view="thumb_"):
                                     type=category.replace('show',''), thumbnail=get_thumb("genres.png"),
                                     mode=category))
 
+    ### Especiales (Halloween, otros)
+    from datetime import date
+
+    today = date.today()
+
+    if today.month == 10 and category == "movie":
+        this_year = today.year
+        from_date = "%s-01-01" % this_year
+        discovery = {"url": "discover/movie", "with_genres": "27", "primary_release_date.lte": "%s" % today,
+                     "primary_release_date.gte": from_date, "page": "1"}
+
+        channelslist.insert(0, Item(channel="search", title="Halloween %s" % this_year, page=1, action='discover_list',
+                                    discovery=discovery, mode="movie", thumbnail=get_thumb("channels_horror.png")))
     return channelslist
 
 

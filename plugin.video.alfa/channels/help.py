@@ -191,12 +191,12 @@ def faq(item):
             search.settings("")
 
     elif item.extra == "report_error":
-        import xbmc
+        from core import filetools
         if config.get_platform(True)['num_version'] < 14:
             log_name = "xbmc.log"
         else:
             log_name = "kodi.log"
-        ruta = xbmc.translatePath("special://logpath") + log_name
+        ruta = filetools.translatePath("special://logpath") + log_name
         title = "Alfa - FAQ - %s" % item.title[6:]
         text = ("Para reportar un problema en 'http://alfa-addon.com' es necesario:\n"
                 "  - Versión que usas de Alfa.\n"

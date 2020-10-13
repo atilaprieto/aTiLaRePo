@@ -187,7 +187,7 @@ def searchSubtitle(item):
             logger.error("error no se pudo crear path subtitulos")
             return
 
-    path_movie_subt = xbmc.translatePath(filetools.join(subtitlepath, "Movies"))
+    path_movie_subt = filetools.translatePath(filetools.join(subtitlepath, "Movies"))
     if not filetools.exists(path_movie_subt):
         try:
             filetools.mkdir(path_movie_subt)
@@ -195,7 +195,7 @@ def searchSubtitle(item):
             logger.error("error no se pudo crear el path Movies")
             return
     full_path_tvshow = ""
-    path_tvshow_subt = xbmc.translatePath(filetools.join(subtitlepath, "Tvshows"))
+    path_tvshow_subt = filetools.translatePath(filetools.join(subtitlepath, "Tvshows"))
     if not filetools.exists(path_tvshow_subt):
         try:
             filetools.mkdir(path_tvshow_subt)
@@ -206,19 +206,19 @@ def searchSubtitle(item):
         title_new = title = urllib.unquote_plus(item.title)
     else:
         title_new = title = urllib.unquote_plus(item.show + " - " + item.title)
-    path_video_temp = xbmc.translatePath(filetools.join(config.get_runtime_path(), "resources", "subtitle.mp4"))
+    path_video_temp = filetools.translatePath(filetools.join(config.get_runtime_path(), "resources", "subtitle.mp4"))
     if not filetools.exists(path_video_temp):
         logger.error("error : no existe el video temporal de subtitulos")
         return
-    # path_video_temp = xbmc.translatePath(filetools.join( ,video_temp + ".mp4" ))
+    # path_video_temp = filetools.translatePath(filetools.join( ,video_temp + ".mp4" ))
 
     title_new = _normalize(title_new)
     tvshow_title, season, episode = regex_tvshow(False, title_new)
     if episode != "":
-        full_path_tvshow = xbmc.translatePath(filetools.join(path_tvshow_subt, tvshow_title))
+        full_path_tvshow = filetools.translatePath(filetools.join(path_tvshow_subt, tvshow_title))
         if not filetools.exists(full_path_tvshow):
             filetools.mkdir(full_path_tvshow)  # title_new + ".mp4"
-        full_path_video_new = xbmc.translatePath(
+        full_path_video_new = filetools.translatePath(
             filetools.join(full_path_tvshow, "%s %sx%s.mp4" % (tvshow_title, season, episode)))
         logger.info(full_path_video_new)
         listitem = xbmcgui.ListItem(title_new, iconImage="DefaultVideo.png", thumbnailImage="")
@@ -227,7 +227,7 @@ def searchSubtitle(item):
                           "tvshowtitle": tvshow_title})
 
     else:
-        full_path_video_new = xbmc.translatePath(filetools.join(path_movie_subt, title_new + ".mp4"))
+        full_path_video_new = filetools.translatePath(filetools.join(path_movie_subt, title_new + ".mp4"))
         listitem = xbmcgui.ListItem(title, iconImage="DefaultVideo.png", thumbnailImage="")
         listitem.setInfo("video", {"Title": title_new, "Genre": "Movies"})
 

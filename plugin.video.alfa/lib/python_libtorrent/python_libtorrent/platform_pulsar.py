@@ -41,15 +41,26 @@ except:
     pass
 
 def log(msg):
-    try:
-        xbmc.log("### [%s]: %s" % (__plugin__,msg,), level=xbmc.LOGNOTICE )
-    except UnicodeEncodeError:
-        xbmc.log("### [%s]: %s" % (__plugin__,msg.encode("utf-8", "ignore"),), level=xbmc.LOGNOTICE )
-    except:
+    if PY3:
         try:
-            xbmc.log("### [%s]: %s" % (__plugin__,'ERROR LOG',), level=xbmc.LOGNOTICE )
+            xbmc.log("### [%s]: %s" % (__plugin__,msg,), level=xbmc.LOGINFO )
+        except UnicodeEncodeError:
+            xbmc.log("### [%s]: %s" % (__plugin__,msg.encode("utf-8", "ignore"),), level=xbmc.LOGINFO )
         except:
-            print(msg)
+            try:
+                xbmc.log("### [%s]: %s" % (__plugin__,'ERROR LOG',), level=xbmc.LOGINFO )
+            except:
+                print(msg)
+    else:
+        try:
+            xbmc.log("### [%s]: %s" % (__plugin__,msg,), level=xbmc.LOGNOTICE )
+        except UnicodeEncodeError:
+            xbmc.log("### [%s]: %s" % (__plugin__,msg.encode("utf-8", "ignore"),), level=xbmc.LOGNOTICE )
+        except:
+            try:
+                xbmc.log("### [%s]: %s" % (__plugin__,'ERROR LOG',), level=xbmc.LOGNOTICE )
+            except:
+                print(msg)
 
 def get_libname(platform):
     libname=[]

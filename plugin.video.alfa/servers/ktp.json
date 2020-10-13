@@ -8,7 +8,7 @@
         "url": "\\1"
       },
       {
-        "pattern": "(https://(?:www.|)(?:javbangers|fapnado|xozilla|camwhoresbay|pornrewind|dato.porn|megatube)(?:.com|.xxx|)/(?:video|videos)/[0-9]+/[A-z0-9-]+(?:/|))",
+        "pattern": "(https://(?:www.|)(?:javbangers|fapnado|xozilla|camwhoresbay|pornrewind|dato.porn|megatube|zbporn)(?:.com|.xxx|)/(?:video|videos)/[0-9]+/[A-z0-9-]+(?:/|))",
         "url": "\\1"
       },
       {
@@ -30,8 +30,24 @@
       {
         "pattern": "(https://www.porn00.org/[A-z0-9-]+/)",
         "url": "\\1"
+      },
+      {
+        "pattern": "(https://mangovideo.club/embed/\\d+)",
+        "url": "\\1"
+      },
+      {
+        "pattern": "(https://www.theyarehuge.com/v/[A-z0-9-.]+/)",
+        "url": "\\1"
+      },
+      {
+        "pattern": "(https://ok.xxx/video/[0-9]+/)",
+        "url": "\\1"
+      },
+      {
+        "pattern": "(https://pornwild.to/videos/[0-9]+/[A-z0-9-]+/)",
+        "url": "\\1"
       }
-    ]
+      ]
   },
   "free": true,
   "id": "ktp",

@@ -14,7 +14,11 @@ else:
 from core import httptools
 from core import scrapertools
 from platformcode import logger
-
+import codecs
+if PY3:
+    from alfaresolver_py3 import failed_link
+else:
+    from alfaresolver import failed_link
 
 def test_video_exists(page_url):
     if 'googleusercontent' in page_url:
@@ -28,8 +32,6 @@ def test_video_exists(page_url):
 
     if "no+existe" in response.data or 'no existe.</p>' in response.data:
         return False, "[gvideo] El video no existe o ha sido borrado"
-    if "Se+ha+excedido+el" in response.data:
-        return False, "[gvideo] Se ha excedido el número de reproducciones permitidas"
     if "No+tienes+permiso" in response.data:
         return False, "[gvideo] No tienes permiso para acceder a este video"
     if "Se ha producido un error" in response.data:
@@ -47,38 +49,43 @@ def get_video_url(page_url, user="", password="", video_password=""):
     urls = []
     streams =[]
     logger.debug('page_url: %s'%page_url)
+    try:
+        if 'googleusercontent' in page_url:
+
+            url = page_url
+            headers_string = httptools.get_url_headers(page_url, forced=True)
+
+            quality = scrapertools.find_single_match (url, '.itag=(\d+).')
+            if not quality:
+                quality = '59'
+            streams.append((quality, url))
+
+        else:
+
+            data = page.data
+            bloque= scrapertools.find_single_match(data, 'url_encoded_fmt_stream_map(.*)')
+            
+            if bloque:
+                data = bloque
+            
+            #data = data.decode('unicode-escape', errors='replace')
+            data = codecs.decode(data, 'unicode-escape')
+            data = urllib.unquote_plus(urllib.unquote_plus(data))
+
+            headers_string = httptools.get_url_headers(page_url, forced=True)
+            streams = scrapertools.find_multiple_matches(data,
+                                                         'itag=(\d+)&url=(.*?)(?:;.*?quality=.*?(?:,|&)|&quality=.*?(?:,|&))')
+
+        itags = {'18': '360p', '22': '720p', '34': '360p', '35': '480p', '37': '1080p', '43': '360p', '59': '480p'}
+        for itag, video_url in streams:
+            if not video_url in urls:
+                video_url += headers_string
+                video_urls.append([itags.get(itag, ''), video_url])
+                urls.append(video_url)
+            video_urls.sort(key=lambda video_urls: int(video_urls[0].replace("p", "")))
+    except:
+        pass
+    if not video_urls:
+        return failed_link(page_url)
     
-    if 'googleusercontent' in page_url:
-
-        url = page_url
-        headers_string = httptools.get_url_headers(page_url, forced=True)
-
-        quality = scrapertools.find_single_match (url, '.itag=(\d+).')
-        if not quality:
-            quality = '59'
-        streams.append((quality, url))
-
-    else:
-
-        data = page.data
-        bloque= scrapertools.find_single_match(data, 'url_encoded_fmt_stream_map(.*)')
-        
-        if bloque:
-            data = bloque
-        
-        data = data.decode('unicode-escape', errors='replace')
-        data = urllib.unquote_plus(urllib.unquote_plus(data))
-
-        headers_string = httptools.get_url_headers(page_url, forced=True)
-        streams = scrapertools.find_multiple_matches(data,
-                                                     'itag=(\d+)&url=(.*?)(?:;.*?quality=.*?(?:,|&)|&quality=.*?(?:,|&))')
-
-    itags = {'18': '360p', '22': '720p', '34': '360p', '35': '480p', '37': '1080p', '43': '360p', '59': '480p'}
-    for itag, video_url in streams:
-        if not video_url in urls:
-            video_url += headers_string
-            video_urls.append([itags.get(itag, ''), video_url])
-            urls.append(video_url)
-        video_urls.sort(key=lambda video_urls: int(video_urls[0].replace("p", "")))
-
     return video_urls

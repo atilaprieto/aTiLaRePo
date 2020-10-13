@@ -23,6 +23,7 @@ from core.item import Item
 from platformcode import config, logger
 from core import tmdb
 from lib import generictools
+from lib import js2py
 from channels import filtertools
 from channels import autoplay
 
@@ -572,7 +573,7 @@ def findvideos(item):
 
     #Bajamos los datos de la página
     data = ''
-    patron = 'class="linktorrent[^"]*"\s*href="(http[^"]+)"'
+    patron = 'class="linktorrent[^"]*"\s*(?:target="[^"]*"\s*)?href="([^"]+)"'
     patron1 = 'onclick="'
     patron1 += "post\('(?P<url>[^']+',\s*{u:\s*'[^']+)'}\);"
     
@@ -636,15 +637,18 @@ def findvideos(item):
         item, itemlist = generictools.post_tmdb_findvideos(item, itemlist)
 
     #Ahora tratamos los enlaces .torrent
-    for scrapedurl_la in matches:                                       #leemos los torrents con la diferentes calidades
-        scrapedurl = urlparse.urljoin(host, scrapedurl_la).replace("download/torrent.php', {u: ", "download_tt.php?u=")
+    for scrapedurl_la in matches:                                               #leemos los torrents con la diferentes calidades
+        if '/' not in scrapedurl_la:
+            scrapedurl = urlparse.urljoin(host, 'download_tt.php?u=' + scrapedurl_la)
+        else:
+            scrapedurl = urlparse.urljoin(host, scrapedurl_la).replace("download/torrent.php', {u: ", "download_tt.php?u=")
         #Generamos una copia de Item para trabajar sobre ella
         item_local = item.clone()
 
         #Buscamos si ya tiene tamaño, si no, los buscamos en el archivo .torrent
         size = scrapertools.find_single_match(item_local.quality, '\s\[(\d+,?\d*?\s\w\s?[b|B])\]')
         if not item.armagedon:
-            size = generictools.get_torrent_size(scrapedurl)                                #Buscamos el tamaño en el .torrent
+            size = generictools.get_torrent_size(scrapedurl, timeout=timeout*2)             #Buscamos el tamaño en el .torrent
         if size:
             item_local.title = re.sub(r'\s\[\d+,?\d*?\s\w[b|B]\]', '', item_local.title)    #Quitamos size de título, si lo traía
             size = size.replace('GB', 'G·B').replace('Gb', 'G·b').replace('MB', 'M·B')\
@@ -770,9 +774,22 @@ def episodios(item):
 
     #Usamos el mismo patrón que en listado
     #patron = '<tr><td><img src="[^"]+".*?title="Idioma Capitulo" \/>(.*?)<a onclick="[^"]+".?href="[^"]+".?title="[^"]*">(.*?)<\/a><\/td><td><a href="([^"]+)".?title="[^"]*".?onclick="[^"]+".?<img src="([^"]+)".*?<\/a><\/td><td>.*?<\/td><\/tr>'
-    patron = '<tr><td><img src="[^"]+".*?title="Idioma Capitulo"\s* \/>(.*?)'
-    patron += '<a href=.*?title="">(.*?)<\/a><\/td><td><a href=.*?'
-    patron += '<td\s*class="opcion2_td".*?<a href="([^"]+)".*?<img src="([^"]+)"'
+    patron = '<tr><td><img\s*src="[^>]+title="Idioma\s*Capitulo"\s*\/>(.*?)<a\s*class='
+    patron += '[^>]+>([^<]+)<\/a><\/td><td><[^>]+><[^>]+><\/a><\/td><td\s*class='
+    patron += '"opcion2_td"[^>]+><a\s*href="([^"]+)"[^>]+><img\s*src="([^"]+)"'
+    if not scrapertools.find_single_match(data, patron):
+        patron = '<tr><td><img src="[^"]+".*?title="Idioma Capitulo"\s*\/>(.*?)'
+        patron += '<a href=.*?title="">(.*?)<\/a><\/td><td><a href=.*?'
+        patron += '<td\s*class="opcion2_td".*?<a href="([^"]+)".*?<img src="([^"]+)"'
+        if not scrapertools.find_single_match(data, patron):
+            patron = '<tr><td><img\s*src="[^"]+".*?title="Idioma\s*Capitulo"\s*\/>(.*?)'
+            patron += '<a.*?href="[^"]+"\s*title="\s*">(.*?)<\/a><\/td><td><a.*?href=.*?'
+            patron +='<td\s*class="opcion2_td".*?<a\s*href="([^"]+)".*?<img\s*src="([^"]+)"'
+            if not scrapertools.find_single_match(data, patron):
+                logger.debug("PATRON: " + patron)
+                logger.debug(data)
+                data = ''
+    
     matches = re.compile(patron, re.DOTALL).findall(data)
     if not matches:                                                             #error
         item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
@@ -908,7 +925,6 @@ def actualizar_titulos(item):
     
 def js2py_conversion(data, url, post=None, follow_redirects=True):
     logger.info()
-    import js2py
     import base64
     
     if not 'Javascript is required' in data:

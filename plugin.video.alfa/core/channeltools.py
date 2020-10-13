@@ -110,7 +110,7 @@ def get_channel_json(channel_name):
     except Exception as ex:
         template = "An exception of type %s occured. Arguments:\n%r"
         message = template % (type(ex).__name__, ex.args)
-        logger.error(" %s" % message)
+        logger.error("%s: %s" % (channel_name, message))
 
     return channel_json
 
@@ -167,7 +167,8 @@ def get_channel_setting(name, channel, default=None):
             if isinstance(dict_file, dict) and 'settings' in dict_file:
                 dict_settings = dict_file['settings']
         except EnvironmentError:
-            logger.error("ERROR al leer el archivo: %s" % file_settings)
+            logger.error("ERROR al leer el archivo: %s, parámetro: %s" % (file_settings, name))
+            logger.error(filetools.file_info(file_settings))
 
     if not dict_settings or name not in dict_settings:
         # Obtenemos controles del archivo ../channels/channel.json
@@ -183,7 +184,8 @@ def get_channel_setting(name, channel, default=None):
             # Creamos el archivo ../settings/channel_data.json
             json_data = jsontools.dump(dict_file)
             if not filetools.write(file_settings, json_data, silent=True):
-                logger.error("ERROR al salvar el archivo: %s" % file_settings)
+                logger.error("ERROR al salvar el parámetro: %s en el archivo: %s" % (name, file_settings))
+                logger.error(filetools.file_info(file_settings))
 
     # Devolvemos el valor del parametro local 'name' si existe, si no se devuelve default
     return dict_settings.get(name, default)
@@ -227,7 +229,8 @@ def set_channel_setting(name, value, channel):
             dict_file = jsontools.load(filetools.read(file_settings))
             dict_settings = dict_file.get('settings', {})
         except EnvironmentError:
-            logger.error("ERROR al leer el archivo: %s" % file_settings)
+            logger.error("ERROR al leer el archivo: %s, parámetro: %s" % (file_settings, name))
+            logger.error(filetools.file_info(file_settings))
 
     dict_settings[name] = value
 
@@ -240,7 +243,8 @@ def set_channel_setting(name, value, channel):
     # Creamos el archivo ../settings/channel_data.json
     json_data = jsontools.dump(dict_file)
     if not filetools.write(file_settings, json_data, silent=True):
-        logger.error("ERROR al salvar el archivo: %s" % file_settings)
+        logger.error("ERROR al salvar el parámetro: %s en el archivo: %s" % (name, file_settings))
+        logger.error(filetools.file_info(file_settings))
         return None
 
     return value

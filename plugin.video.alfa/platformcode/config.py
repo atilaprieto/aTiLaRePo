@@ -13,11 +13,35 @@ import re
 
 import xbmc
 import xbmcaddon
+import xbmcvfs
 
 PLUGIN_NAME = "alfa"
 
 __settings__ = xbmcaddon.Addon(id="plugin.video." + PLUGIN_NAME)
 __language__ = __settings__.getLocalizedString
+
+
+def translatePath(path):
+    """
+    Kodi 19: xbmc.translatePath is deprecated and might be removed in future kodi versions. Please use xbmcvfs.translatePath instead.
+    @param path: cadena con path special://
+    @type path: str
+    @rtype: str
+    @return: devuelve la cadena con el path real
+    """
+    if not path:
+        return ''
+
+    if PY3:
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+        path = xbmcvfs.translatePath(path)
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+    else:
+        path = xbmc.translatePath(path)
+        
+    return path
 
 
 def get_addon_version(with_fix=True):
@@ -64,7 +88,7 @@ def get_platform(full_version=False):
     code_db = {'10': 'MyVideos37.db', '11': 'MyVideos60.db', '12': 'MyVideos75.db',
                '13': 'MyVideos78.db', '14': 'MyVideos90.db', '15': 'MyVideos93.db',
                '16': 'MyVideos99.db', '17': 'MyVideos107.db', '18': 'MyVideos116.db', 
-               '19': 'MyVideos118.db'}
+               '19': 'MyVideos119.db'}
 
     num_version = xbmc.getInfoLabel('System.BuildVersion')
     num_version = re.match("\d+\.\d+", num_version).group(0)
@@ -84,6 +108,74 @@ def get_platform(full_version=False):
 
 def is_xbmc():
     return True
+
+
+def is_rooted(silent=False):
+    res = get_setting('is_rooted_device', default='check')
+    
+    if res in ['rooted', 'no_rooted']:
+        return res
+    
+    res = 'no_rooted'
+    from platformcode import logger
+    
+    if xbmc.getCondVisibility("system.platform.windows"):
+        res = 'no_rooted'
+
+    elif xbmc.getCondVisibility("system.platform.android"):
+        LIBTORRENT_MSG = get_setting("libtorrent_msg", server="torrent", default='')
+        if not LIBTORRENT_MSG:
+            import xbmcgui
+            dialog = xbmcgui.Dialog()
+            dialog.notification('ALFA: Verificando privilegios de Super-usuario', \
+                        'Puede solicitarle permisos de Super usuario', time=10000)
+            logger.info('### ALFA: Notificación enviada: privilegios de Super-usuario verificados', force=True)
+            set_setting("libtorrent_msg", 'OK', server="torrent")
+        
+        for subcmd in ['-c', '-0']:
+            command = ['su', subcmd, 'ls']
+            output_cmd, error_cmd = su_command(command, silent=silent)
+            if not error_cmd:
+                res = 'rooted'
+                break
+
+    elif xbmc.getCondVisibility("system.platform.linux"):
+        res = 'rooted'
+
+    if not silent:
+        if res == 'rooted':
+            logger.info('Dispositivo Rooteado', force=True)
+        else:
+            logger.info('Dispositivo NO Rooteado', force=True)
+
+    set_setting('is_rooted_device', res)
+    return res
+
+
+def su_command(command, silent=False):
+    import subprocess
+    
+    try:
+        if not silent:
+            from platformcode import logger
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output_cmd, error_cmd = p.communicate()
+        if not error_cmd and not silent:
+            logger.info('Command: %s' % str(command))
+        if error_cmd and not silent:
+            logger.info('Command ERROR: %s, %s' % (str(command), str(error_cmd)))
+    
+    except Exception as e:
+        if not PY3:
+            e = unicode(str(e), "utf8", errors="replace").encode("utf8")
+        elif PY3 and isinstance(e, bytes):
+            e = e.decode("utf8")
+        error_cmd = e
+        output_cmd = ''
+        if not silent:
+            logger.info('Command ERROR: %s, %s' % (str(command), str(error_cmd)))
+
+    return output_cmd, error_cmd
 
 
 def get_videolibrary_support():
@@ -224,7 +316,7 @@ def get_setting(name, channel="", server="", default=None):
             return default
         # Translate Path if start with "special://"
         if value.startswith("special://") and "videolibrarypath" not in name:
-            value = xbmc.translatePath(value)
+            value = translatePath(value)
 
         # hack para devolver el tipo correspondiente
         if value == "true":
@@ -295,6 +387,53 @@ def set_setting(name, value, channel="", server=""):
         return value
 
 
+def get_kodi_setting(name, total=False):
+    """
+    Retorna el valor de configuracion del parametro solicitado.
+
+    Devuelve el valor del parametro 'name' en la configuracion global de Kodi
+
+    @param default: valor devuelto en caso de que no exista el parametro name
+    @type default: any
+
+    @return: El valor del parametro 'name'
+    @rtype: any
+
+    """
+
+    # Global Kodi setting
+    from core import scrapertools
+
+    infile = open(os.path.join(translatePath('special://masterprofile/'), "guisettings.xml"), "r")
+    data = infile.read()
+    infile.close()
+
+    ret = {}
+    matches = scrapertools.find_multiple_matches(data, '<setting\s*id="([^"]+)"[^>]*>([^<]*)<\/setting>')
+
+    for _id, value in matches:
+        # hack para devolver el tipo correspondiente
+        if value == "true":
+            value = True
+        elif value == "false":
+            value =  False
+        else:
+            try:
+                value = int(value)
+            except ValueError:
+                value = str(value)
+        
+        if _id == name and not total:
+            return value
+        
+        ret[_id] = value
+    
+    if not total:
+        return None
+    else:
+        return ret
+
+
 def get_localized_string(code):
     dev = __language__(code)
 
@@ -328,26 +467,26 @@ def get_localized_category(categ):
 
 def get_videolibrary_config_path():
     value = get_setting("videolibrarypath")
-    if value == "":
+    if not value:
         verify_directories_created()
         value = get_setting("videolibrarypath")
     return value
 
 
 def get_videolibrary_path():
-    return xbmc.translatePath(get_videolibrary_config_path())
+    return translatePath(get_videolibrary_config_path())
 
 
 def get_temp_file(filename):
-    return xbmc.translatePath(os.path.join("special://temp/", filename))
+    return translatePath(os.path.join("special://temp/", filename))
 
 
 def get_runtime_path():
-    return xbmc.translatePath(__settings__.getAddonInfo('Path'))
+    return translatePath(__settings__.getAddonInfo('Path'))
 
 
 def get_data_path():
-    dev = xbmc.translatePath(__settings__.getAddonInfo('Profile'))
+    dev = translatePath(__settings__.getAddonInfo('Profile'))
 
     # Crea el directorio si no existe
     if not os.path.exists(dev):
@@ -357,11 +496,11 @@ def get_data_path():
 
 
 def get_icon():
-    return xbmc.translatePath(__settings__.getAddonInfo('icon'))
+    return translatePath(__settings__.getAddonInfo('icon'))
 
 
 def get_fanart():
-    return xbmc.translatePath(__settings__.getAddonInfo('fanart'))
+    return translatePath(__settings__.getAddonInfo('fanart'))
 
 
 def get_cookie_data():
@@ -400,7 +539,7 @@ def verify_directories_created():
             saved_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/" + default
             set_setting(path, saved_path)
 
-        saved_path = xbmc.translatePath(saved_path)
+        saved_path = translatePath(saved_path)
         if not filetools.exists(saved_path):
             logger.debug("Creating %s: %s" % (path, saved_path))
             filetools.mkdir(saved_path)
@@ -425,8 +564,7 @@ def verify_directories_created():
     try:
         from core import scrapertools
         # Buscamos el archivo addon.xml del skin activo
-        skindir = filetools.join(xbmc.translatePath("special://home"), 'addons', xbmc.getSkinDir(),
-                                 'addon.xml')
+        skindir = filetools.join("special://home", 'addons', xbmc.getSkinDir(), 'addon.xml')
         if not os.path.isdir(skindir): return # No hace falta mostrar error en el log si no existe la carpeta
         # Extraemos el nombre de la carpeta de resolución por defecto
         folder = ""

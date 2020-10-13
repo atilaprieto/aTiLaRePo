@@ -54,15 +54,15 @@ except:
 
 try:
     DOWNLOAD_PATH = ''
-    DOWNLOAD_PATH = xbmc.translatePath(config.get_setting("mct_download_path", \
-                server="torrent", default=config.get_setting("downloadpath")))
+    DOWNLOAD_PATH = config.get_setting("mct_download_path", \
+                server="torrent", default=config.get_setting("downloadpath"))
 except:
     DOWNLOAD_PATH = config.get_setting("mct_download_path", server="torrent", default=config.get_setting("downloadpath"))
 if not config.get_setting("mct_download_path", server="torrent") and DOWNLOAD_PATH:
     config.set_setting("mct_download_path", DOWNLOAD_PATH, server="torrent")
 if not DOWNLOAD_PATH:
     try:
-        DOWNLOAD_PATH = str(xbmc.translatePath(os.path.join(config.get_data_path(), 'downloads')))
+        DOWNLOAD_PATH = str(os.path.join(config.get_data_path(), 'downloads'))
         config.set_setting("mct_download_path", os.path.join(config.get_data_path(), 'downloads'), server="torrent")
     except:
         DOWNLOAD_PATH = os.path.join(config.get_data_path(), 'downloads')
@@ -1071,4 +1071,7 @@ def encode(s):
 
 
 def log(texto):
-    xbmc.log(texto, xbmc.LOGNOTICE)
+    if PY3:
+        xbmc.log(texto, xbmc.LOGINFO)
+    else:
+        xbmc.log(texto, xbmc.LOGNOTICE)

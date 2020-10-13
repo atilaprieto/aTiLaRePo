@@ -5,11 +5,11 @@
     "patterns": [
       {
         "pattern": "clipwatching.com/(e.*?.html)",
-        "url": "http://clipwatching.com/\\1"
+        "url": "https://clipwatching.com/\\1"
       },
       {
         "pattern": "clipwatching.com/(\\w+)",
-        "url": "http://clipwatching.com/embed-\\1.html"
+        "url": "https://clipwatching.com/embed-\\1.html"
       }
     ]
   },

@@ -9,7 +9,6 @@ from core import httptools
 from core.item import Item
 from core import servertools
 from core import scrapertools
-from core import jsontools
 from bs4 import BeautifulSoup
 from channelselector import get_thumb
 from platformcode import config, logger
@@ -219,10 +218,14 @@ def findvideos(item):
                 "type": elem["data-type"]}
         headers = {"Referer": item.url}
         doo_url = "%swp-admin/admin-ajax.php" % host
-        data = httptools.downloadpage(doo_url, post=post, headers=headers).data
-        if not data:
+        data = httptools.downloadpage(doo_url, post=post, headers=headers).json
+        try:
+            url = BeautifulSoup(data.get("embed_url", ""), "html5lib").find("iframe")["src"]
+        except:
             continue
-        url = BeautifulSoup(data, "html5lib").find("iframe")["src"]
+
+        if not url.startswith("http"):
+            url = "https:%s" % url
         itemlist.append(Item(channel=item.channel, title="%s", action="play", url=url,
                              language="LAT", infoLabels=item.infoLabels))
 

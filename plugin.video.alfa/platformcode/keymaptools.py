@@ -67,7 +67,7 @@ def set_key():
         file_xml = "special://profile/keymaps/alfa.xml"
         data = '<keymap><global><keyboard><key id="%s">' % new_key + 'runplugin(plugin://' \
                                                                      'plugin.video.alfa/?ew0KICAgICJhY3Rpb24iOiAia2V5bWFwIiwNCiAgICAib3BlbiI6IHRydWUNCn0=)</key></keyboard></global></keymap>'
-        filetools.write(xbmc.translatePath(file_xml), data)
+        filetools.write(file_xml, data)
         platformtools.dialog_notification("Tecla guardada", "Reinicia Kodi para que se apliquen los cambios")
 
         config.set_setting("shortcut_key", new_key)

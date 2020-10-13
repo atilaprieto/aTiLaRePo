@@ -130,10 +130,13 @@ def start(itemlist, item):
 
         # Guarda el valor actual de "Accion y Player Mode" en preferencias
         user_config_setting_action = config.get_setting("default_action")
+        user_forced_action = config.get_setting("autoplay_qlty")
+
         user_config_setting_player = config.get_setting("player_mode")
-        # Habilita la accion "Ver en calidad alta" (si el servidor devuelve más de una calidad p.e. gdrive)
-        if user_config_setting_action != 2:
-            config.set_setting("default_action", 2)
+        # Habilita la accion "Ver en calidad alta o baja"(si el servidor devuelve más de una calidad p.e. gdrive)
+        forced = {"Baja": 1, "Alta": 2}
+        config.set_setting("default_action", forced[user_forced_action])
+
         if user_config_setting_player != 0:
             config.set_setting("player_mode", 0)
 

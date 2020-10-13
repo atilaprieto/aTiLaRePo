@@ -248,7 +248,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.2.0" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.2.5" provider-name="Alfa Addon">
   <requires>
     <import addon="script.module.requests"/>
     <import addon="script.module.beautifulsoup4" version="4.5.3"/>
@@ -262,7 +262,7 @@ You can clone the project and host it in your own server.
     <summary lang="es">Navega con Kodi por páginas web.</summary>
     <assets>
       <icon>resources/icono_3.png</icon>
-      <fanart>resources/fanart1_2.jpg</fanart>
+      <fanart>resources/halloween2020.png</fanart>
       <screenshot>resources/media/themes/ss/1.jpg</screenshot>
       <screenshot>resources/media/themes/ss/2.jpg</screenshot>
       <screenshot>resources/media/themes/ss/3.jpg</screenshot>
@@ -271,14 +271,15 @@ You can clone the project and host it in your own server.
       <news>[B]Estos son los cambios para esta versión:[/B]
 
       [COLOR green][B]Arreglos[/B][/COLOR]
-      ¤ HDfull                                 ¤ Simpsons-latino                         ¤ Maspeliculas
-      ¤ Animeid                             ¤ Pepecine                                     ¤ Replis
-      ¤ Rexpelis                             ¤ Migración final a Kodi 19
-      ¤ 18+
+      ¤ PlayView                                     ¤ SeriesKao                               ¤ ClasicoTV
+      ¤ EntrePeliculasySeries                ¤ Cine.is                                    ¤ HDfull
+      ¤ Divxtotal                                     ¤ Dontorrent                            ¤ Grantorrent
+      ¤ Newpct1                                     ¤ Cineasia                                 ¤ Peliculasyseries
+      ¤ Tvanime                                     ¤ CineHindi                               ¤ 18+
 
       [COLOR green][B]Novedades[/B][/COLOR]
-      ¤ Dascer (deportes del Motor)           ¤ Pelispanda (torrent LAT)
-      ¤ 18+                                     ¤ Libtorrent 1.2.9: Windows, Linux x86 y ARM
+      ¤ Seriesretro                                 ¤ Cinematteflix                         ¤ FullseriesHD
+      ¤ Magnetpelis                              ¤ PctFenix
 
     </news>
     <description lang="es">Navega con Kodi por páginas web para ver sus videos de manera fácil.</description>
@@ -495,7 +496,7 @@ You can clone the project and host it in your own server.
 
 <addon id="plugin.video.cristalazul"
        name="[B][/B][COLOR aqua]CRISTAL AZUL[/COLOR]"
-       version="0.0.11"
+       version="0.0.12"
        provider-name="PICAPAU, LOURDES, SUPERTOPO, LUISMA">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -676,7 +677,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.mitele" name="MITELE" version="1.1.9" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.mitele" name="MITELE" version="1.2.2" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />

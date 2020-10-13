@@ -32,7 +32,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("url=" + page_url)
     video_urls = []
     enc_url = scrapertools.find_single_match(data, r'CreatePlayer\("v=([^\\]+)\\u0026')
-    url = urllib.unquote(enc_url)
+    url = "https:" + urllib.unquote(enc_url)
     video_urls.append(['[myvi] video', url])
 
     return video_urls

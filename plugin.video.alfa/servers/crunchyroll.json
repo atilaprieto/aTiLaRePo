@@ -4,8 +4,8 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(crunchyroll.com/[^/]+/[^-].*-\\d+).*$",
-        "url": "http://www.\\1"
+        "pattern": "(crunchyroll.com/[A-z0-9-/]+\\d{6})",
+        "url": "https://www.\\1"
       }
     ]
   },
