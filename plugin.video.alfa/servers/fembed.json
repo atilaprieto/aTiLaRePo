@@ -5,11 +5,11 @@
     "patterns": [
       {
         "pattern": "(?:ilovefembed|fembed|fembad|feurl|youtvgratis|myurlshort|videobb).\\w{2,4}/(?:f|v)/([A-z0-9_-]+)",
-        "url": "https://feurl.com/api/source/\\1"
+        "url": "https://www.feurl.com/api/source/\\1"
       },
       {
         "pattern": "(?:animekao|sypl).(?:xyz)/(?:f|v)/([A-z0-9_-]+)",
-        "url": "https://feurl.com/api/source/\\1"
+        "url": "https://www.feurl.com/api/source/\\1"
       }
     ]
   },

@@ -25,7 +25,7 @@ def configurar_proxies(item):
 
 def do_downloadpage(url, post=None):
     # ~ data = httptools.downloadpage(url).data
-    data = httptools.downloadpage_proxy('pelisvips', url, post=post, headers={'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36'}).data
+    data = httptools.downloadpage_proxy('pelisvips', url, post=post, headers={'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}).data
 
     return data
 

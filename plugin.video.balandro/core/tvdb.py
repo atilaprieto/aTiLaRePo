@@ -17,7 +17,7 @@ from platformcode import config, logger
 from platformcode import platformtools
 
 HOST = "https://api.thetvdb.com"
-HOST_IMAGE = "http://thetvdb.com/banners/"
+HOST_IMAGE = "https://thetvdb.com/banners/"
 
 TOKEN = config.get_setting("tvdb_token", default="")
 DEFAULT_LANG = "es"
@@ -120,7 +120,7 @@ def find_and_set_infoLabels(item):
 
     if tvdb_result:
         infoLabels['tvdb_id'] = tvdb_result['id']
-        infoLabels['url_scraper'] = ["http://thetvdb.com/index.php?tab=series&id=%s" % infoLabels['tvdb_id']]
+        infoLabels['url_scraper'] = ["https://thetvdb.com/index.php?tab=series&id=%s" % infoLabels['tvdb_id']]
         if not info_load:
             if otvdb_global.get_id() != infoLabels['tvdb_id']:
                 otvdb_global = Tvdb(tvdb_id=infoLabels['tvdb_id'])

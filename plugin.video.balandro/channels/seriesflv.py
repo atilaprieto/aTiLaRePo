@@ -8,7 +8,7 @@ import re
 # ~ host = 'https://seriesf.lv/'
 host = 'https://seriesflv.org/'
 
-headers = {'Referer': host, 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:74.0) Gecko/20100101 Firefox/74.0'}
+headers = {'Referer': host}
 
 perpage = 15 # preferiblemente un múltiplo de los elementos que salen en la web (45) para que la subpaginación interna no se descompense
 

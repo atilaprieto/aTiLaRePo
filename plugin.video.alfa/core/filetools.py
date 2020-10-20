@@ -1121,7 +1121,10 @@ def basename(path, vfs=True):
     @rtype: str
     """
     path = encode(path)
-    return split(path)[1]
+    try:
+        return decode(split(path)[1])
+    except:
+        return split(path)[1]
 
 
 def dirname(path, vfs=True):
@@ -1133,7 +1136,10 @@ def dirname(path, vfs=True):
     @rtype: str
     """
     path = encode(path)
-    return split(path)[0]
+    try:
+        return decode(split(path)[0])
+    except:
+        return split(path)[0]
 
 
 def is_relative(path):

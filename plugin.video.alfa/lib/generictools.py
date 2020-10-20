@@ -1280,10 +1280,6 @@ def post_tmdb_findvideos(item, itemlist):
     num_episodios = item.contentEpisodeNumber
     if item.infoLabels['temporada_num_episodios'] and item.contentEpisodeNumber <= item.infoLabels['temporada_num_episodios']:
         num_episodios = item.infoLabels['temporada_num_episodios']
-        
-    #Si no existe "clean_plot" se crea a partir de "plot"
-    if not item.clean_plot and item.infoLabels['plot']:
-        item.clean_plot = item.infoLabels['plot']
 
     # Obtener la información actualizada del vídeo.  En una segunda lectura de TMDB da más información que en la primera
     #if not item.infoLabels['tmdb_id'] or (not item.infoLabels['episodio_titulo'] and item.contentType == 'episode'):
@@ -1306,6 +1302,10 @@ def post_tmdb_findvideos(item, itemlist):
     except:
         logger.error(traceback.format_exc())
 
+    #Si no existe "clean_plot" se crea a partir de "plot"
+    if not item.clean_plot and item.infoLabels['plot']:
+        item.clean_plot = item.infoLabels['plot']
+    
     #Ajustamos el nombre de la categoría
     if item.channel == channel_py:
         category = scrapertools.find_single_match(item.url, 'http.?\:\/\/(?:www.)?(\w+)\.\w+\/').capitalize()
@@ -3289,7 +3289,7 @@ def call_browser(url, download_path='', lookup=False, strict=False, wait=False, 
                         PM_LIST = PM_LIST.decode()
                     PM_LIST = PM_LIST.replace('\n', ', ')
                 
-            logger.info('PACKAGE LIST: %s' % PM_LIST, force=True)
+            #logger.info('PACKAGE LIST: %s' % PM_LIST, force=True)
 
             PREF_PATHS = [ANDROID_STORAGE + '/emulated/0/Android/data']
             PREF_PATHS += [os.getenv('ANDROID_DATA') + '/user/0']
@@ -3474,25 +3474,22 @@ def call_browser(url, download_path='', lookup=False, strict=False, wait=False, 
                 browser_prefs = filetools.read(prefs_file, silent=True)
                 res = scrapertools.find_single_match(browser_prefs, browser_params[browser][3]).replace('\\\\', '\\')
                 if not res and browser_prefs:
-                    try:
-                        logger.error('Archivo de Preferencias en ERROR %s: %s' % (prefs_file, str(browser_prefs[:60])))
-                    except:
-                        logger.error('Archivo de Preferencias en ERROR no PRINTABLE %s' % (prefs_file))  
+                    logger.debug('Archivo de Preferencias sin PARÁMETRO %s: %s' % (prefs_file, str(browser_params[browser][3])))
                 elif not res:
                     logger.error('Archivo de preferencias no encontrado/accesible: %s' % (prefs_file))
                     for prefs_dir in PREF_PATHS:
-                        logger.error('Listado de %s - %s' % (prefs_dir, sorted(filetools.listdir(prefs_dir))))
+                        logger.debug('Listado de %s - %s' % (prefs_dir, sorted(filetools.listdir(prefs_dir))))
 
                 # En Android puede haber problemas de permisos.  Si no se encuentra el path, se asume un path por defecto
                 if SAVED_D_PATH and not filetools.exists(SAVED_D_PATH):
-                    logger.error('Path de DESCARGAS almacenado NO EXISTE.  Reseteado: %s' % SAVED_D_PATH)
+                    logger.debug('Path de DESCARGAS almacenado NO EXISTE.  Reseteado: %s' % SAVED_D_PATH)
                     SAVED_D_PATH = ''
                     config.set_setting("capture_thru_browser_path", SAVED_D_PATH, server="torrent")
                 if not res and not download_path and not SAVED_D_PATH:
                     for folder in DOWNLOADS_PATH:
                         if filetools.exists(folder):
                             res = folder
-                            logger.error('Path de DESCARGAS por defecto: %s' % (folder))
+                            logger.debug('Path de DESCARGAS por defecto: %s' % (folder))
                             break
 
                 # Si se ha pasado la opción de download_path y difiere del path obtenido, se pasa a otro browser
@@ -3534,11 +3531,12 @@ def call_browser(url, download_path='', lookup=False, strict=False, wait=False, 
             else:
                 # Si no se ha encontrado ningún browser que cumpla las condiciones, se vuelve con error
                 logger.error('No se ha encontrado ningún BROWSER: %s' % str(exePath))
-                logger.error('Listado de APPS INSTALADAS en %s: %s' % (PATHS[0], sorted(filetools.listdir(PATHS[0]))))
+                if PM_LIST: logger.debug('PACKAGE LIST: %s' % PM_LIST)
+                logger.debug('Listado de APPS INSTALADAS en %s: %s' % (PATHS[0], sorted(filetools.listdir(PATHS[0]))))
                 if len(PATHS) > 1:
-                    logger.error('Listado de APPS INSTALADAS en %s: %s' % (PATHS[1], sorted(filetools.listdir(PATHS[1]))))
+                    logger.debug('Listado de APPS INSTALADAS en %s: %s' % (PATHS[1], sorted(filetools.listdir(PATHS[1]))))
                 for prefs_dir in PREF_PATHS:
-                    logger.error('Listado de %s - %s' % (prefs_dir, sorted(filetools.listdir(prefs_dir))))
+                    logger.debug('Listado de %s - %s' % (prefs_dir, sorted(filetools.listdir(prefs_dir))))
                 return (False, False)
         
         if lookup:
@@ -3550,7 +3548,7 @@ def call_browser(url, download_path='', lookup=False, strict=False, wait=False, 
         # Si la plataforma es Android, se llama de una forma diferente.
         if xbmc.getCondVisibility("system.platform.Android"):
             cmd = "StartAndroidActivity(%s,%s,%s,%s)" % (filetools.basename(path), intent, dataType, url)
-            logger.info(cmd, force=True)
+            logger.info('Android Browser call: %s' % cmd, force=True)
             xbmc.executebuiltin(cmd)
         
         else:

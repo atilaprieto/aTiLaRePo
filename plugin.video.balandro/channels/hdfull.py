@@ -6,11 +6,11 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, jsontools, servertools, tmdb
 
-# ~ host = "https://hdfull.tv"
-# ~ host = "https://hdfull.me"
-# ~ host = "https://hdfull.io"
-# ~ host = "https://hdfull.lv"
-host = "https://hdfull.la/"
+# ~ host = "https://hdfull.tv/"
+# ~ host = "https://hdfull.me/"
+# ~ host = "https://hdfull.io/"
+host = "https://hdfull.lv/"
+# ~ host = "https://hdfull.la/"
 
 perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (40) para que la subpaginación interna no se descompense
 
@@ -38,18 +38,16 @@ perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web
     # ~ return proxytools.configurar_proxies_canal(item.channel, host)
 
 def do_downloadpage(url, post=None, referer=None):
-    url = url.replace('hdfull.tv', 'hdfull.la') # por si viene de enlaces guardados
-    url = url.replace('hdfull.me', 'hdfull.la') # por si viene de enlaces guardados
-    url = url.replace('hdfull.io', 'hdfull.la') # por si viene de enlaces guardados
-    url = url.replace('hdfull.lv', 'hdfull.la') # por si viene de enlaces guardados
+    url = url.replace('hdfull.tv', 'hdfull.lv') # por si viene de enlaces guardados
+    url = url.replace('hdfull.me', 'hdfull.lv') # por si viene de enlaces guardados
+    url = url.replace('hdfull.io', 'hdfull.lv') # por si viene de enlaces guardados
+    url = url.replace('hdfull.la', 'hdfull.lv') # por si viene de enlaces guardados
     if not referer: referer = host
     # ~ if not referer: referer = host+'peliculas-actualizadas'
+    headers = {'Referer': referer}
 
-    # ~ data = httptools.downloadpage(url, post=post, headers={'Referer': host}).data
-    # ~ data = httptools.downloadpage(url, post=post, headers={'Referer': host, 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}).data
-    data = httptools.downloadpage(url, post=post, headers={'Referer': referer, 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36'}).data
-
-    # ~ data = httptools.downloadpage_proxy('hdfull', url, post=post).data
+    # ~ data = httptools.downloadpage_proxy('hdfull', url, post=post, headers=headers).data
+    data = httptools.downloadpage(url, post=post, headers=headers).data
     return data
 
 

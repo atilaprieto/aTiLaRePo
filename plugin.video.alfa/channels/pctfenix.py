@@ -676,8 +676,12 @@ def findvideos(item):
 
     # Salvamos el enlace .torrent
     #Patron para .torrent
-    patron = '<div\s*class=\s*"ctn-download-torrent">\s*<a\s*href=\s*"javascript:[^"]+"'
+    patron = '<div\s*class=\s*"ctn-download-torrent"[^>]*>\s*<a\s*href=\s*"javascript:[^"]+"'
     patron += '\s*id=\s*"btn-download-torrent"\s*data-ut=\s*"([^"]+)"'
+    if not scrapertools.find_single_match(data, patron):
+        patron = '<div\s*class=\s*"ctn-download-torrent"[^>]*>\s*<a\s*href=\s*"(?:javascript:)?([^"]+)"'
+        patron += '\s*id=\s*"btn-download-torrent"'
+    #logger.debug("PATRON Torrent: " + patron)
     url_torr = scrapertools.find_single_match(data, patron)
     if 'javascript:;' in url_torr: url_torr = ''
     if url_torr:
@@ -729,7 +733,7 @@ def findvideos(item):
             matches = item.matches
             del item.matches
 
-    #logger.debug("PATRON: " + patron)
+    #logger.debug("PATRON directos: " + patron_directos)
     #logger.debug(enlaces_ver)
     #logger.debug(enlaces_descargar)
     #logger.debug(matches)

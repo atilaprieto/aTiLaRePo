@@ -26,7 +26,7 @@ from channels import autoplay
 from core.item import Item
 from platformcode import config, logger
 
-HOST = "https://www.seriespapaya.nu/"
+HOST = "https://www2.seriespapaya.nu/"
 
 IDIOMAS = {'es': 'Español', 'lat': 'Latino', 'in': 'Inglés', 'ca': 'Catalán', 'sub': 'VOSE', 'Español Latino':'Latino',
            'Español Castellano':'Español', 'Sub Español':'VOSE'}
@@ -261,7 +261,7 @@ def seasons(item):
                              contentSeasonNumber=contentSeasonNumber, infoLabels=infoLabels, extra1=item.title))
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
 
-    if config.get_videolibrary_support() and len(itemlist) > 0:
+    if config.get_videolibrary_support() and len(itemlist) > 0 and not item.extra == "epìsodios":
         itemlist.append(
             Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la videoteca[/COLOR]', url=item.url,
                  action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName,
@@ -313,7 +313,7 @@ def episodesxseasons(item):
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
     
     # Opción "Añadir esta serie a la videoteca de KODI"
-    if config.get_videolibrary_support() and len(itemlist) > 0 and item.contentSeasonNumber == '1':
+    if config.get_videolibrary_support() and len(itemlist) > 0 and item.contentSeasonNumber == '1' and not item.extra == "epìsodios":
         itemlist.append(
             Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la videoteca[/COLOR]', url=item.url,
                  action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName,
@@ -326,11 +326,9 @@ def search(item, texto):
     itemlist = []
     infoLabels = ()
     try:
-        int(texto)
         post = urllib.urlencode({'searchquery': texto})
         data = httptools.downloadpage(urlparse.urljoin(HOST, "/busqueda/"), post=post).data
         data = re.sub(r'|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-        
         patron = r"location.href='(.*?)'.*?background-image: url\('(.*?)'\).*?"
         patron += '<div style="display.*?>([^<]+)'
         matches = re.compile(patron, re.DOTALL).findall(data)

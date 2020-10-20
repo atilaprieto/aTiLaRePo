@@ -26,7 +26,7 @@ def do_downloadpage(url, post=None, headers=None):
     url = url.replace('https://www.esdivx.nl/', 'https://www.torrentdivx.com/') # por si viene de enlaces guardados
 
     # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
-    data = httptools.downloadpage_proxy('torrentdivx', url, post=post, headers={'Referer': HOST, 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0'}).data
+    data = httptools.downloadpage_proxy('torrentdivx', url, post=post, headers={'Referer': HOST, 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}).data
     return data
 
 
@@ -252,8 +252,8 @@ def play(item):
     itemlist = []
 
     if item.url.startswith(HOST) and '/links/' in item.url:
-        #TODO!? linkwz=true variable !?
-        data = do_downloadpage(item.url, post='linkwz=true')
+        # ~ data = do_downloadpage(item.url, post='linkwz=true') #TODO!? linkwz=true variable !?
+        data = do_downloadpage(item.url)
         # ~ logger.debug(data)
 
         url = scrapertools.find_single_match(data, '<a id="link" rel="nofollow" href="([^"]+)')

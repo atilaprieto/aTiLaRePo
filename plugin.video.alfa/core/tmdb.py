@@ -85,7 +85,7 @@ from platformcode import logger
 
 otmdb_global = None
 fname = filetools.join(config.get_data_path(), "alfa_db.sqlite")
-tmdb_langs = ['es', 'en', 'it', 'pt', 'fr', 'de']
+tmdb_langs = ['es', 'es-MX', 'en', 'it', 'pt', 'fr', 'de']
 langs = config.get_setting('tmdb_lang', default=0)
 tmdb_lang = tmdb_langs[langs]
 
@@ -399,7 +399,7 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda=tmdb_lang, lock=Non
                         date = temporada['air_date'].split('-')
                         item.infoLabels['aired'] = date[2] + "/" + date[1] + "/" + date[0]
                     if temporada['poster_path']:
-                        item.infoLabels['poster_path'] = 'http://image.tmdb.org/t/p/original' + temporada['poster_path']
+                        item.infoLabels['poster_path'] = 'https://image.tmdb.org/t/p/original' + temporada['poster_path']
                         item.thumbnail = item.infoLabels['poster_path']
                     return len(item.infoLabels)
 
@@ -521,7 +521,7 @@ def find_and_set_infoLabels(item):
         # todo mirar si se puede eliminar y obtener solo desde get_nfo()
         infoLabels['url_scraper'] = ["https://www.themoviedb.org/%s/%s" % (tipo_busqueda, infoLabels['tmdb_id'])]
         if infoLabels['tvdb_id']:
-            infoLabels['url_scraper'].append("http://thetvdb.com/index.php?tab=series&id=%s" % infoLabels['tvdb_id'])
+            infoLabels['url_scraper'].append("https://thetvdb.com/index.php?tab=series&id=%s" % infoLabels['tvdb_id'])
         item.infoLabels = infoLabels
         set_infoLabels_item(item)
 
@@ -560,7 +560,7 @@ def completar_codigos(item):
         ob = Tvdb(imdb_id=item.infoLabels['imdb_id'])
         item.infoLabels['tvdb_id'] = ob.get_id()
     if item.infoLabels['tvdb_id']:
-        url_scraper = "http://thetvdb.com/index.php?tab=series&id=%s" % item.infoLabels['tvdb_id']
+        url_scraper = "https://thetvdb.com/index.php?tab=series&id=%s" % item.infoLabels['tvdb_id']
         if url_scraper not in item.infoLabels['url_scraper']:
             item.infoLabels['url_scraper'].append(url_scraper)
 
@@ -722,7 +722,7 @@ class ResultDictDefault(dict):
 #
 #   Limitaciones:
 #   El uso de la API impone un limite de 20 conexiones simultaneas (concurrencia) o 30 peticiones en 10 segundos por IP
-# Informacion sobre la api : http://docs.themoviedb.apiary.io
+# Informacion sobre la api : https://docs.themoviedb.apiary.io
 # -------------------------------------------------------------------------------------------------------------------
 
 
@@ -894,7 +894,7 @@ class Tmdb(object):
 
         if tipo not in cls.dic_generos[idioma]:
             cls.dic_generos[idioma][tipo] = {}
-            url = ('http://api.themoviedb.org/3/genre/%s/list?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s'
+            url = ('https://api.themoviedb.org/3/genre/%s/list?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s'
                    % (tipo, idioma))
             try:
                 logger.info("[Tmdb.py] Rellenando dicionario de generos")
@@ -915,17 +915,17 @@ class Tmdb(object):
 
         if self.busqueda_id:
             if source == "tmdb":
-                # http://api.themoviedb.org/3/movie/1924?api_key=a1ab8b8669da03637a4b98fa39c39228&language=es
+                # https://api.themoviedb.org/3/movie/1924?api_key=a1ab8b8669da03637a4b98fa39c39228&language=es
                 #   &append_to_response=images,videos,external_ids,credits&include_image_language=es,null
-                # http://api.themoviedb.org/3/tv/1407?api_key=a1ab8b8669da03637a4b98fa39c39228&language=es
+                # https://api.themoviedb.org/3/tv/1407?api_key=a1ab8b8669da03637a4b98fa39c39228&language=es
                 #   &append_to_response=images,videos,external_ids,credits&include_image_language=es,null
-                url = ('http://api.themoviedb.org/3/%s/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s'
+                url = ('https://api.themoviedb.org/3/%s/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s'
                        '&append_to_response=images,videos,external_ids,credits&include_image_language=%s,null' %
                        (self.busqueda_tipo, self.busqueda_id, self.busqueda_idioma, self.busqueda_idioma))
                 buscando = "id_Tmdb: %s" % self.busqueda_id
             else:
-                # http://api.themoviedb.org/3/find/%s?external_source=imdb_id&api_key=a1ab8b8669da03637a4b98fa39c39228
-                url = ('http://api.themoviedb.org/3/find/%s?external_source=%s&api_key=a1ab8b8669da03637a4b98fa39c39228'
+                # https://api.themoviedb.org/3/find/%s?external_source=imdb_id&api_key=a1ab8b8669da03637a4b98fa39c39228
+                url = ('https://api.themoviedb.org/3/find/%s?external_source=%s&api_key=a1ab8b8669da03637a4b98fa39c39228'
                        '&language=%s' % (self.busqueda_id, source, self.busqueda_idioma))
                 buscando = "%s: %s" % (source.capitalize(), self.busqueda_id)
 
@@ -961,9 +961,9 @@ class Tmdb(object):
         buscando = ""
 
         if self.busqueda_texto:
-            # http://api.themoviedb.org/3/search/movie?api_key=a1ab8b8669da03637a4b98fa39c39228&query=superman&language=es
+            # https://api.themoviedb.org/3/search/movie?api_key=a1ab8b8669da03637a4b98fa39c39228&query=superman&language=es
             # &include_adult=false&page=1
-            url = ('http://api.themoviedb.org/3/search/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&query=%s&language=%s'
+            url = ('https://api.themoviedb.org/3/search/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&query=%s&language=%s'
                    '&include_adult=%s&page=%s' % (self.busqueda_tipo, text_quote,
                                                   self.busqueda_idioma, self.busqueda_include_adult, page))
 
@@ -1029,8 +1029,8 @@ class Tmdb(object):
             for key, value in list(self.discover.items()):
                 if key != "url":
                     params.append(key + "=" + str(value))
-            # http://api.themoviedb.org/3/discover/movie?api_key=a1ab8b8669da03637a4b98fa39c39228&query=superman&language=es
-            url = ('http://api.themoviedb.org/3/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&%s'
+            # https://api.themoviedb.org/3/discover/movie?api_key=a1ab8b8669da03637a4b98fa39c39228&query=superman&language=es
+            url = ('https://api.themoviedb.org/3/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&%s'
                    % (type_search, "&".join(params)))
 
             logger.info("[Tmdb.py] Buscando %s:\n%s" % (type_search, url))
@@ -1193,7 +1193,7 @@ class Tmdb(object):
                 else:
                     self.busqueda_idioma = self.result['original_language']
 
-                url = ('http://api.themoviedb.org/3/%s/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s' %
+                url = ('https://api.themoviedb.org/3/%s/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s' %
                        (self.busqueda_tipo, self.busqueda_id, self.busqueda_idioma))
 
                 resultado = self.get_json(url)
@@ -1227,7 +1227,7 @@ class Tmdb(object):
         if self.result["poster_path"] is None or self.result["poster_path"] == "":
             poster_path = ""
         else:
-            poster_path = 'http://image.tmdb.org/t/p/' + size + self.result["poster_path"]
+            poster_path = 'https://image.tmdb.org/t/p/' + size + self.result["poster_path"]
 
         if tipo_respuesta == 'str':
             return poster_path
@@ -1248,7 +1248,7 @@ class Tmdb(object):
                         size = "original"
                     elif size[1] == 'h' and int(imagen_path['height']) < int(size[1:]):
                         size = "original"
-                ret.append('http://image.tmdb.org/t/p/' + size + imagen_path)
+                ret.append('https://image.tmdb.org/t/p/' + size + imagen_path)
         else:
             ret.append(poster_path)
 
@@ -1275,7 +1275,7 @@ class Tmdb(object):
         if self.result["backdrop_path"] is None or self.result["backdrop_path"] == "":
             backdrop_path = ""
         else:
-            backdrop_path = 'http://image.tmdb.org/t/p/' + size + self.result["backdrop_path"]
+            backdrop_path = 'https://image.tmdb.org/t/p/' + size + self.result["backdrop_path"]
 
         if tipo_respuesta == 'str':
             return backdrop_path
@@ -1296,7 +1296,7 @@ class Tmdb(object):
                         size = "original"
                     elif size[1] == 'h' and int(imagen_path['height']) < int(size[1:]):
                         size = "original"
-                ret.append('http://image.tmdb.org/t/p/' + size + imagen_path)
+                ret.append('https://image.tmdb.org/t/p/' + size + imagen_path)
         else:
             ret.append(backdrop_path)
 
@@ -1309,8 +1309,8 @@ class Tmdb(object):
         #   Return: (dic)
         #       Devuelve un dicionario con datos sobre la temporada.
         #       Puede obtener mas informacion sobre los datos devueltos en:
-        #           http://docs.themoviedb.apiary.io/#reference/tv-seasons/tvidseasonseasonnumber/get
-        #           http://docs.themoviedb.apiary.io/#reference/tv-seasons/tvidseasonseasonnumbercredits/get
+        #           https://docs.themoviedb.apiary.io/#reference/tv-seasons/tvidseasonseasonnumber/get
+        #           https://docs.themoviedb.apiary.io/#reference/tv-seasons/tvidseasonseasonnumbercredits/get
         # --------------------------------------------------------------------------------------------------------------------------------------------
         if not self.result["id"] or self.busqueda_tipo != "tv":
             return {}
@@ -1322,9 +1322,9 @@ class Tmdb(object):
         if not self.temporada.get(numtemporada, {}):
             # Si no hay datos sobre la temporada solicitada, consultar en la web
 
-            # http://api.themoviedb.org/3/tv/1407/season/1?api_key=a1ab8b8669da03637a4b98fa39c39228&language=es&
+            # https://api.themoviedb.org/3/tv/1407/season/1?api_key=a1ab8b8669da03637a4b98fa39c39228&language=es&
             # append_to_response=credits
-            url = "http://api.themoviedb.org/3/tv/%s/season/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s" \
+            url = "https://api.themoviedb.org/3/tv/%s/season/%s?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s" \
                   "&append_to_response=credits" % (self.result["id"], numtemporada, self.busqueda_idioma)
 
             buscando = "id_Tmdb: " + str(self.result["id"]) + " temporada: " + str(numtemporada) + "\nURL: " + url
@@ -1395,7 +1395,7 @@ class Tmdb(object):
         else:
             ret_dic["temporada_air_date"] = ""
         if temporada["poster_path"]:
-            ret_dic["temporada_poster"] = 'http://image.tmdb.org/t/p/original' + temporada["poster_path"]
+            ret_dic["temporada_poster"] = 'https://image.tmdb.org/t/p/original' + temporada["poster_path"]
         else:
             ret_dic["temporada_poster"] = ""
         dic_aux = temporada.get('credits', {})
@@ -1426,7 +1426,7 @@ class Tmdb(object):
             ret_dic["episodio_vote_count"] = episodio["vote_count"]
             ret_dic["episodio_vote_average"] = episodio["vote_average"]
             if episodio["still_path"]:
-                ret_dic["episodio_imagen"] = 'http://image.tmdb.org/t/p/original' + episodio["still_path"]
+                ret_dic["episodio_imagen"] = 'https://image.tmdb.org/t/p/original' + episodio["still_path"]
             else:
                 ret_dic["episodio_imagen"] = ""
 
@@ -1444,7 +1444,7 @@ class Tmdb(object):
                 self.result["videos"] = self.result["videos"]['results']
             else:
                 # Primera búsqueda de videos en el idioma de busqueda
-                url = "http://api.themoviedb.org/3/%s/%s/videos?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s" \
+                url = "https://api.themoviedb.org/3/%s/%s/videos?api_key=a1ab8b8669da03637a4b98fa39c39228&language=%s" \
                       % (self.busqueda_tipo, self.result['id'], self.busqueda_idioma)
 
                 dict_videos = self.get_json(url)
@@ -1457,7 +1457,7 @@ class Tmdb(object):
 
             # Si el idioma de busqueda no es ingles, hacer una segunda búsqueda de videos en inglés
             if self.busqueda_idioma != 'en':
-                url = "http://api.themoviedb.org/3/%s/%s/videos?api_key=a1ab8b8669da03637a4b98fa39c39228" \
+                url = "https://api.themoviedb.org/3/%s/%s/videos?api_key=a1ab8b8669da03637a4b98fa39c39228" \
                       % (self.busqueda_tipo, self.result['id'])
 
                 dict_videos = self.get_json(url)
@@ -1567,10 +1567,10 @@ class Tmdb(object):
                 ret_infoLabels['votes'] = v
 
             elif k == 'poster_path':
-                ret_infoLabels['thumbnail'] = 'http://image.tmdb.org/t/p/original' + v
+                ret_infoLabels['thumbnail'] = 'https://image.tmdb.org/t/p/original' + v
 
             elif k == 'backdrop_path':
-                ret_infoLabels['fanart'] = 'http://image.tmdb.org/t/p/original' + v
+                ret_infoLabels['fanart'] = 'https://image.tmdb.org/t/p/original' + v
 
             elif k == 'id':
                 ret_infoLabels['tmdb_id'] = v

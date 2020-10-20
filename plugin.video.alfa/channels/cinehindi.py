@@ -52,6 +52,9 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title='Por Año', action='section',
                          thumbnail=get_thumb('year', auto=True)))
 
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=host + '?s=',
+                         thumbnail=get_thumb("search", auto=True),  extra='movie'))
+
     autoplay.show_option(item.channel, itemlist)
 
     return itemlist
@@ -153,7 +156,8 @@ def findvideos(item):
         srv, lang = elem.find("span", class_="server").text.replace(" - ", "-").split("-")
         opt = elem.a["href"].replace("#","")
         try:
-            url = soup.find("div", id="%s" % opt).find("iframe")["src"]
+            url_ = soup.find("div", id="%s" % opt).find("iframe")
+            url = url_.get("data-lazy-src", '') or url_.get("data-src", '')
             url = create_soup(url).find("iframe")["src"]
         except:
             continue

@@ -26,6 +26,7 @@
         <setting id="adult_request_password" type="bool" label="70115" enable="!eq(-1,0)+!eq(-2,)" default="true"/>
         <setting id="adult_aux_new_password1" type="text" label="70116" option="hidden" enable="!eq(-3,)" default=""/>
         <setting id="adult_aux_new_password2" type="text" label="70117" option="hidden" enable="!eq(-1,)" default=""/>
+        <setting id="chrome_ua_version" type="text" default="86.0.4240.75" visible="False"/>
     </category>
 
     <!-- Path downloads -->
@@ -146,7 +147,7 @@
 
         <setting type="sep"/>
         <setting label="70154" type="lsep"/>
-        <setting id="tmdb_lang" type="enum" lvalues="60436|70425|70422|70421|70420|70419" label="70418" default="0"/>
+        <setting id="tmdb_lang" type="enum" lvalues="60436|70423|70425|70422|70421|70420|70419" label="70418" default="0"/>
         <setting id="tmdb_threads" type="labelenum" values="5|10|15|20|25|30" label="70155" default="20"/>
         <setting id="tmdb_plus_info" type="bool" label="70156" default="false"/>
         <setting id="tmdb_cache" type="bool" label="70157" default="true"/>

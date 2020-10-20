@@ -502,6 +502,11 @@ def play(url, xlistitem={}, is_view=None, subtitle="", password="", item=None):
                 player = play_video( xbmc.PLAYER_CORE_AUTO )
             else:
                 player = play_video()
+            
+            if subtitle:
+                time.sleep(0.5)
+                player.setSubtitles(item.subtitle)                              # Activamos los subtítulos
+            
             player.play(playlist)
 
             # -- Contador de cancelaciones para la ventana de   -

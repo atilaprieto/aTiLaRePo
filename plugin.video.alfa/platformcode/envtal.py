@@ -203,6 +203,8 @@ def get_environment():
         if environment['userdata_path_perm']:
             environment['userdata_path'] = environment['userdata_path_perm']
             del environment['userdata_path_perm']
+        environment['torrent_lang'] = '%s/%s' % (config.get_setting("channel_language", default="").upper(), \
+                                config.get_setting("second_language", default="").upper())
 
         try:
             environment['videolab_series'] = '?'
@@ -253,6 +255,7 @@ def get_environment():
         environment['torrentcli_rar'] = config.get_setting("mct_rar_unpack", server="torrent", default=True)
         environment['torrentcli_backgr'] = config.get_setting("mct_background_download", server="torrent", default=True)
         environment['torrentcli_lib_path'] = config.get_setting("libtorrent_path", server="torrent", default="")
+        
         if environment['torrentcli_lib_path']:
             lib_path = 'Activo'
         else:
@@ -264,11 +267,8 @@ def get_environment():
             if xbmc.getCondVisibility("system.platform.Android"):
                 unrar = 'Android'
             else:
-                unrar, bin = filetools.split(environment['torrentcli_unrar'])
-                unrar = unrar.replace('\\', '/')
-                if not unrar.endswith('/'):
-                    unrar = unrar + '/'
-                unrar = scrapertools.find_single_match(unrar, '\/([^\/]+)\/$').capitalize()
+                unrar = filetools.dirname(environment['torrentcli_unrar'])
+                unrar = filetools.basename(unrar).capitalize()
         else:
             unrar = 'Inactivo'
         torrent_id = config.get_setting("torrent_client", server="torrent", default=0)
@@ -377,7 +377,8 @@ def get_environment():
             environment['log_size'] = ''
         
         environment['debug'] = str(config.get_setting('debug'))
-        environment['addon_version'] = str(config.get_addon_version())
+        environment['addon_version'] = '%s (Upd: %s h.)' % (str(config.get_addon_version()), \
+                                str(config.get_setting("addon_update_timer", default=12)).replace('0', 'No'))
 
     except:
         logger.error(traceback.format_exc())
@@ -415,6 +416,7 @@ def get_environment():
         environment['debug'] = ''
         environment['addon_version'] = ''
         environment['torrent_list'] = []
+        environment['torrent_lang'] = ''
         environment['torrentcli_option'] = ''
         environment['torrentcli_rar'] = ''
         environment['torrentcli_lib_path'] = ''
@@ -456,7 +458,8 @@ def list_env(environment={}):
                     environment['kodi_rfactor'])
 
     logger.info('Userdata: ' + environment['userdata_path'] + ' - Libre: ' + 
-                environment['userdata_free'].replace('.', ',') +  ' GB')
+                environment['userdata_free'].replace('.', ',') +  ' GB' + 
+                ' - Idioma: ' + environment['torrent_lang'])
     
     logger.info('Videoteca: Series/Epis: ' + environment['videolab_series'] + '/' + 
                     environment['videolab_episodios'] + ' - Pelis: ' + 
@@ -510,6 +513,7 @@ def paint_env(item, environment={}):
     cabecera = """\
     Muestra las [COLOR yellow]variables[/COLOR] del ecosistema de Kodi que puden ser relevantes para el diagnóstico de problema en Alfa:
         - Versión de Alfa con Fix
+        - (Upd): Intervalo de actualización en horas, o NO actualización
         - Debug Alfa: True/False
     """
     plataform = """\
@@ -550,6 +554,7 @@ def paint_env(item, environment={}):
     Muestra los datos del "path" de [COLOR yellow]Userdata[/COLOR]:
         - Path
         - Espacio disponible
+        - Idioma primario/secudario de Alfa
     """
     videoteca = """\
     Muestra los datos de la [COLOR yellow]Videoteca[/COLOR]:
@@ -621,7 +626,7 @@ def paint_env(item, environment={}):
 
     itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Userdata: [/COLOR]' + 
                     environment['userdata_path'] + ' - Free: ' + environment['userdata_free'].replace('.', ',') + 
-                    ' GB', action="", plot=userdata, thumbnail=thumb, folder=False))
+                    ' GB' + ' - Idioma: ' + environment['torrent_lang'], action="", plot=userdata, thumbnail=thumb, folder=False))
     
     itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Videoteca: [/COLOR]Series/Epis: ' + 
                     environment['videolab_series'] + '/' + environment['videolab_episodios'] + 

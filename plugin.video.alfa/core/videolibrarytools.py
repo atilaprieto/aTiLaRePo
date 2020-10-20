@@ -642,6 +642,10 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
             if tvshow_item.infoLabels["tmdb_id"] == serie.infoLabels["tmdb_id"]:
                 tvshow_item.infoLabels = serie.infoLabels
                 tvshow_item.infoLabels["title"] = tvshow_item.infoLabels["tvshowtitle"] 
+                tvshow_item.infoLabels["thumbnail"] = tvshow_item.infoLabels["thumbnail"].replace('http:', 'https:')
+                if tvshow_item.infoLabels["thumbnail"]: tvshow_item.thumbnail = tvshow_item.infoLabels["thumbnail"]
+                tvshow_item.infoLabels["fanart"] = tvshow_item.infoLabels["fanart"].replace('http:', 'https:')
+                if tvshow_item.infoLabels["fanart"]: tvshow_item.fanart = tvshow_item.infoLabels["fanart"]
 
             if max_sea == high_sea and max_epi == high_epi and (tvshow_item.infoLabels["status"] == "Ended" 
                             or tvshow_item.infoLabels["status"] == "Canceled") and insertados == 0 and fallidos == 0:
@@ -649,6 +653,9 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
                 logger.debug("%s [%s]: serie 'Terminada' o 'Cancelada'.  Se desactiva la actualización periódica" % \
                             (serie.contentSerieName, serie.channel))
             
+            
+            
+            # Actualiza la fecha de la próxima actualización
             update_last = datetime.date.today()
             tvshow_item.update_last = update_last.strftime('%Y-%m-%d')
             update_next = datetime.date.today() + datetime.timedelta(days=int(tvshow_item.active))

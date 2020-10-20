@@ -1,6 +1,11 @@
 Balandro changelog
 ==================
 
+1.4.22:
+    Canales modificados: Hdfull, Torrentdivx, Pelispedia, Tupelihd, Retroseriestv.
+    Servidores modificados: Gamovideo, Streamtape.
+    Imágenes de Tmdb con https para evitar errores en ciertos dispositivos.
+
 1.4.21:
     Canales modificados: Hdfull, Pepecine, Seriemega, Cuevana3, Seriesflix.
     Servidores modificados: Upstream, Vup, Playtube, Gloria, Streamz.

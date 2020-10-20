@@ -65,13 +65,12 @@ def categorias(item):
     logger.info()
     itemlist = []
     soup = create_soup(item.url)
-    if "/pornstars" in item.url:
-        matches = soup.find_all('div', class_='pornstar-cube')
     if "/channels" in item.url:
         matches = soup.find_all('div', class_='channel-cube')
     else:
         matches = soup.find_all('div', class_='catt')
-
+    if "/pornstars" in item.url:
+        matches = soup.find_all('div', class_='pornstar-cube')
     for elem in matches:
         url = elem.a['href']
         thumbnail = elem.img['src']
@@ -145,12 +144,13 @@ def findvideos(item):
         post = "&video-player=%s" % player
         data = httptools.downloadpage(item.url, post = post).data
         url = scrapertools.find_single_match(data, ".src = '([^']+)'")
-        if not url.startswith("http"):
+        if url and not url.startswith("http"):
             url = "https:%s" % url
         if "api.gounlimited" in url:
-            data = httptools.downloadpage(url).data
-            url = scrapertools.find_single_match(data, '"url":"([^"]+)"')
-            server = "gounlimited"
+            continue
+            # data = httptools.downloadpage(url).data
+            # url = scrapertools.find_single_match(data, '"url":"([^"]+)"')
+            # server = "gounlimited"
         if not url:
             continue
         itemlist.append(item.clone(action="play", title="%s", contentTitle=item.title, url=url))

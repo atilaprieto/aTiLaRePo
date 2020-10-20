@@ -304,7 +304,7 @@ def episodesxseasons(item):
         title = '%sx%s - %s' % (infoLabels['season'], infoLabels['episode'], scrapedtitle)
 
         itemlist.append(Item(channel=item.channel, title=title, url=url, action='findvideos',
-                             infoLabels=infoLabels, thumbanil=thumb))
+                             infoLabels=infoLabels, thumbnail=thumb))
 
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
 

@@ -63,9 +63,14 @@ def list_all(item):
     matches = soup.find(id="primary").find_all("article")
 
     for elem in matches:
-
+        cat = elem.find("a", class_="covernews-categories")["alt"]
+        if cat in ["View all posts in Las Mejores Peliculas de Terror", "View all posts in Editoriales"]:
+            continue
         title_data = elem.find("h3", class_="article-title").text.strip()
-        title = title_data.replace(")", "").split(" (")
+        if "(" in title_data:
+            title = title_data.replace(")", "").split(" (")
+        elif "[" in title_data:
+            title = title_data.replace("]", "").split(" [")
         url = elem.find("h3", class_="article-title").a["href"]
         thumb = elem.find("div", class_="data-bg-hover")["data-background"]
         try:
@@ -104,34 +109,29 @@ def findvideos(item):
     logger.info()
 
     itemlist = list()
-    urls_list = list()
-    sub_url = ''
 
-    soup = create_soup(item.url).find("div", class_="entry-content").find("div")
-    quality = scrapertools.find_single_match(soup.text, r"Calidad: ([^\n]+)\n")
-    video_data = soup.find_all("a")
-
-    for link in video_data:
-
-        if link["data-wpel-link"] == "external":
-            sub_url = link["href"]
-        else:
-            urls_list.append(link["href"])
+    soup = create_soup(item.url).find("div", class_="entry-content-wrap")
+    quality = scrapertools.find_single_match(soup.text, r"Calidad: ([^\n]+)\n").split("+")
+    urls_list = soup.find_all("a", {"data-wpel-link": True, "href": re.compile("magnet|torrent")})
+    try:
+        sub_url = soup.find("a", {"data-wpel-link": True, "href": re.compile("subdivx")})["href"]
+    except:
+        sub_url = ""
+    qlty_cnt = 0
 
     for url in urls_list:
+        url = url["href"]
 
         if not sub_url:
-            sub = ''
             lang = 'VO'
         else:
-            try:
-                sub = subtitletools.get_from_subdivx(sub_url)
-            except:
-                sub = ''
             lang = 'VOSE'
 
-        itemlist.append(Item(channel=item.channel, title="%s", url=url, action="play", quality=quality,
-                             language=lang, subtitle=sub, server="torrent", infoLabels=item.infoLabels))
+        qlty = quality[qlty_cnt]
+        qlty_cnt += 1
+
+        itemlist.append(Item(channel=item.channel, title="%s", url=url, action="play", quality=qlty,
+                             language=lang, subtitle=sub_url, server="torrent", infoLabels=item.infoLabels))
 
     if config.get_videolibrary_support() and len(itemlist) > 0 and item.extra != 'findvideos':
         itemlist.append(Item(channel=item.channel,
@@ -143,6 +143,16 @@ def findvideos(item):
                              ))
 
     return itemlist
+
+
+def play(item):
+    logger.info()
+    if item.subtitle:
+        sub = subtitletools.get_from_subdivx(item.subtitle)
+
+        return [item.clone(subtitle=sub)]
+    else:
+        return [item]
 
 
 def search(item, texto):

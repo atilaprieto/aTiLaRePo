@@ -13,6 +13,7 @@ from platformcode import config, logger, platformtools
 from core import httptools
 from core import jsontools
 from core import downloadtools
+from core import scrapertools
 from core import ziptools
 
 def check_addon_init():
@@ -73,6 +74,11 @@ def check_addon_updates(verbose=False):
 
     ADDON_UPDATES_JSON = 'https://extra.alfa-addon.com/addon_updates/updates.json'
     ADDON_UPDATES_ZIP = 'https://extra.alfa-addon.com/addon_updates/updates.zip'
+
+    try:
+        get_ua_list()
+    except:
+        pass
 
     try:
         last_fix_json = os.path.join(config.get_runtime_path(), 'last_fix.json')   # información de la versión fixeada del usuario
@@ -262,3 +268,19 @@ def copytree(src, dst, symlinks=False, ignore=None):
                         if not buf:
                             break
                         fdst.write(buf)
+
+
+def get_ua_list():
+    logger.info()
+    url = "http://omahaproxy.appspot.com/all?csv=1"
+    current_ver = config.get_setting("chrome_ua_version", default="").split(".")
+    data = httptools.downloadpage(url, alfa_s=True).data
+    new_ua_ver = scrapertools.find_single_match(data, "win64,stable,([^,]+),")
+
+    if not current_ver:
+        config.set_setting("chrome_ua_version", new_ua_ver)
+    else:
+        for pos, val in enumerate(new_ua_ver.split('.')):
+            if int(val) > int(current_ver[pos]):
+                config.set_setting("chrome_ua_version", new_ua_ver)
+                break

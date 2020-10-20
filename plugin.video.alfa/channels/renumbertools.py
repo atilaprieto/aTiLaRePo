@@ -235,7 +235,7 @@ def add_season(data=None):
             return
 
     # si hemos insertado un valor en la temporada
-    if season != "" and int(season) > 0:
+    if season != "" and int(season) >= 0:
         heading = "Introduzca el número de episodio desde que empieza la temporada"
         # default = 0
         # if list_season_episode:

@@ -560,37 +560,43 @@ def findvideos(item):
                 del item.emergency_urls[0][0]
         
         # Procesamos la calidad
-        if item_local.contentType == 'movie':
-            patron_q = '(?:\[|\(|\-\s*)([^\)]+)(?:\]|\)|\s*\-)'
+        if len(matches) == 1:
+            item_local.quality = item.quality
         else:
-            patron_q = '(?:\[|\(|\-\s*)(HD[^\)]+)(?:\]|\)|\s*\-)'
-        patron_al = '(.*?\d+x\d+\s*(?:al\s*(?:\d+x)?\d+\s*)?)'
-        if not scrapertools.find_single_match(scrapedquality, patron_q):
-            scrapedquality = item.quality
-            patron_q = ''
-        if patron_q:
-            scrapedquality = scrapertools.find_single_match(scrapedquality, patron_q)
-            scrapedquality = re.sub(patron_al, '', scrapedquality)              # Quitamos basura del título
-        item_local.quality = scrapedquality                                     # Copiamos la calidad
-        if '3D' in item.quality and not '3D' in item_local.quality:
-            item_local.quality = '3D ' + item_local.quality
+            if item_local.contentType == 'movie':
+                patron_q = '(?:\[|\(|\-\s*)([^\)]+)(?:\]|\)|\s*\-)'
+            else:
+                patron_q = '(?:\[|\(|\-\s*)(HD[^\)]+)(?:\]|\)|\s*\-)'
+            patron_al = '(.*?\d+x\d+\s*(?:al\s*(?:\d+x)?\d+\s*)?)'
+            if not scrapertools.find_single_match(scrapedquality, patron_q):
+                scrapedquality = item.quality
+                patron_q = ''
+            if patron_q:
+                scrapedquality = scrapertools.find_single_match(scrapedquality, patron_q)
+                scrapedquality = re.sub(patron_al, '', scrapedquality)          # Quitamos basura del título
+            item_local.quality = scrapedquality                                 # Copiamos la calidad
+            if '3D' in item.quality and not '3D' in item_local.quality:
+                item_local.quality = '3D ' + item_local.quality
 
         # Procesamos idiomas
         item_local.language = []                                                #creamos lista para los idiomas
-        if 'ntegrados' in language or 'Sub Forzados' in language or ('Sub' in language \
-                    and not ('cast' in language.lower() or 'espa' in \
-                    language.lower())) or 'V.O.' in language:
-            item_local.language = ['VOS']                                       # añadimos VOS
-        if 'cast' in language.lower() or ('espa' in language.lower() and not 'lat' in language.lower()): 
-            item_local.language += ['CAST']                                     # añadimos CAST
-        if 'lat' in language.lower(): 
-            item_local.language += ['LAT']                                      # añadimos CAST
-        if 'dual' in language.lower() or 'varios' in language.lower() or \
-                    (('cast' in language.lower() or 'espa' in language.lower() \
-                    or 'lat' in language.lower()) and 'ingl' in language.lower()):
-            item_local.language += ['DUAL']                                     # añadimos DUAL
-        if not item_local.language:
-            item_local.language = item.language                                 # por defecto el original
+        if len(matches) == 1:
+            item_local.language = item.language
+        else:
+            if 'ntegrados' in language or 'Sub Forzados' in language or ('Sub' in language \
+                        and not ('cast' in language.lower() or 'espa' in \
+                        language.lower())) or 'V.O.' in language:
+                item_local.language = ['VOS']                                   # añadimos VOS
+            if 'cast' in language.lower() or ('espa' in language.lower() and not 'lat' in language.lower()): 
+                item_local.language += ['CAST']                                 # añadimos CAST
+            if 'lat' in language.lower(): 
+                item_local.language += ['LAT']                                  # añadimos CAST
+            if 'dual' in language.lower() or 'varios' in language.lower() or \
+                        (('cast' in language.lower() or 'espa' in language.lower() \
+                        or 'lat' in language.lower()) and 'ingl' in language.lower()):
+                item_local.language += ['DUAL']                                 # añadimos DUAL
+            if not item_local.language:
+                item_local.language = item.language                             # por defecto el original
         
         #Buscamos tamaño en el archivo .torrent
         size = ''

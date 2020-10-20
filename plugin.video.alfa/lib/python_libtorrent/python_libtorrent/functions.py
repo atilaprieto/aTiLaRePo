@@ -54,12 +54,20 @@ __icon__= filetools.join(filetools.translatePath('special://home'), 'addons',
 from lib.python_libtorrent.python_libtorrent.platform_pulsar import get_platform, get_libname   ### Alfa
 
 def log(msg):
-    try:
-        xbmc.log("### [%s]: %s" % (__plugin__,msg,), level=xbmc.LOGNOTICE )
-    except UnicodeEncodeError:
-        xbmc.log("### [%s]: %s" % (__plugin__,msg.encode("utf-8", "ignore"),), level=xbmc.LOGNOTICE )
-    except:
-        xbmc.log("### [%s]: %s" % (__plugin__,'ERROR LOG',), level=xbmc.LOGNOTICE )
+    if PY3:
+        try:
+            xbmc.log("### [%s]: %s" % (__plugin__,msg,), level=xbmc.LOGINFO )
+        except UnicodeEncodeError:
+            xbmc.log("### [%s]: %s" % (__plugin__,msg.encode("utf-8", "ignore"),), level=xbmc.LOGINFO )
+        except:
+            xbmc.log("### [%s]: %s" % (__plugin__,'ERROR LOG',), level=xbmc.LOGINFO )
+    else:
+        try:
+            xbmc.log("### [%s]: %s" % (__plugin__,msg,), level=xbmc.LOGNOTICE )
+        except UnicodeEncodeError:
+            xbmc.log("### [%s]: %s" % (__plugin__,msg.encode("utf-8", "ignore"),), level=xbmc.LOGNOTICE )
+        except:
+            xbmc.log("### [%s]: %s" % (__plugin__,'ERROR LOG',), level=xbmc.LOGNOTICE )
 
 def getSettingAsBool(setting):
     __settings__ = xbmcaddon.Addon(id='plugin.video.alfa')                      ### Alfa

@@ -248,7 +248,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.alfa" name="Alfa" version="3.2.5" provider-name="Alfa Addon">
+<addon id="plugin.video.alfa" name="Alfa" version="3.2.6" provider-name="Alfa Addon">
   <requires>
     <import addon="script.module.requests"/>
     <import addon="script.module.beautifulsoup4" version="4.5.3"/>
@@ -271,15 +271,18 @@ You can clone the project and host it in your own server.
       <news>[B]Estos son los cambios para esta versión:[/B]
 
       [COLOR green][B]Arreglos[/B][/COLOR]
-      ¤ PlayView                                     ¤ SeriesKao                               ¤ ClasicoTV
-      ¤ EntrePeliculasySeries                ¤ Cine.is                                    ¤ HDfull
-      ¤ Divxtotal                                     ¤ Dontorrent                            ¤ Grantorrent
-      ¤ Newpct1                                     ¤ Cineasia                                 ¤ Peliculasyseries
-      ¤ Tvanime                                     ¤ CineHindi                               ¤ 18+
+      ¤ Dontorrent                                  ¤ Magnetpelis                               ¤ Newpct1
+      ¤ Pctfenix                                        ¤ BlogHorror                                 ¤ Pelkex
+      ¤ SeriesRetro                                  ¤ Cineclasicoonline                       ¤ Clubdecine
+      ¤ Dangtoons                                  ¤ Fullseriehd                                  ¤ Pepecine
+      ¤ Hdfull                                           ¤ Movidy                                        ¤ Shahid4u
+      ¤ Cinehindi                                     ¤ Cuevana3                                    ¤ Cinetux
+      ¤ 18+
 
       [COLOR green][B]Novedades[/B][/COLOR]
-      ¤ Seriesretro                                 ¤ Cinematteflix                         ¤ FullseriesHD
-      ¤ Magnetpelis                              ¤ PctFenix
+      ¤ Madeintorrent                            ¤ Doramedplay                             ¤ CinemaT4
+
+      Agradecimientos a @DamianBacalov por su colaboración en esta versión
 
     </news>
     <description lang="es">Navega con Kodi por páginas web para ver sus videos de manera fácil.</description>
@@ -326,7 +329,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.4.21" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.4.22" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -343,8 +346,9 @@ You can clone the project and host it in your own server.
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Hdfull, Pepecine, Seriemega, Cuevana3, Seriesflix.
-    Servidores modificados: Upstream, Vup, Playtube, Gloria, Streamz.
+    Canales modificados: Hdfull, Torrentdivx, Pelispedia, Tupelihd, Retroseriestv.
+    Servidores modificados: Gamovideo, Streamtape.
+    Imágenes de Tmdb con https para evitar errores en ciertos dispositivos.
     </news>
 
     <assets>
@@ -905,7 +909,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.youtube" name="YouTube" version="6.8.5" provider-name="anxdpanic, bromix">
+<addon id="plugin.video.youtube" name="YouTube" version="6.8.6~beta1" provider-name="anxdpanic, bromix">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
         <import addon="script.module.six" version="1.11.0"/>
@@ -919,12 +923,8 @@ v.2.1.5
     <extension point="xbmc.python.module" library="resources/lib/"/>
     <extension point="xbmc.addon.metadata">
         <news>
-[fix] playback of purchased movies |contrib: MisterD81|
-[fix] notifications for some languages on Kodi 19
-[fix] searching for some languages
-[fix] loading on some versions of python 3
-[fix] some videos failing to play with an Invalid URL exception
-[upd] use xbmcvfs.translatePath if available, clean up for Kodi 19
+[fix] searching in some instances with encoding issues |contrib: tsaklidis|
+[fix] support python 3.9 html.unescape |contrib: asavah|
         </news>
         <assets>
             <icon>icon.png</icon>
@@ -1638,7 +1638,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.10" provider-name="gujal">
+<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.11" provider-name="gujal">
     <requires>
         <!-- <import addon="xbmc.python" version="3.0.0" /> -->
         <import addon="script.module.six" version="0.0.1"/>

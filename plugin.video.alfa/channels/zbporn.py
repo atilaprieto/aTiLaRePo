@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 
 host = 'https://zbporn.com'
 
-                            # No muestra thumbnail
+
 def mainlist(item):
     logger.info()
     itemlist = []

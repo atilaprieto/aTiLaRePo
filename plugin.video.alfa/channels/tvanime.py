@@ -145,17 +145,14 @@ def list_all(item):
     for scrapedurl, scrapedthumbnail, scrapedtitle, year, type in matches:
         type = type.strip().lower()
         url = scrapedurl
-        thumbnail = scrapedthumbnail
-        if 'latino' in scrapedtitle.lower():
-            lang = 'Latino'
-        elif 'castellano' in scrapedtitle.lower():
-            lang = 'Castellano'
-        else:
-            lang = 'VOSE'
-        title = re.sub(r'Audio|Latino|Castellano|\((.*?)\)', '', scrapedtitle)
+        thumbnail = re.sub("image/imagen/160/224/", "assets/img/serie/imagen/", scrapedthumbnail)
+        lang, title = clear_title(scrapedtitle)
         stitle = title
-        if lang != 'VOSE' and not config.get_setting('unify'):
-            stitle += ' [COLOR gold][%s][/COLOR]' %  lang
+        
+        if not config.get_setting('unify'):
+            stitle += ' [COLOR lightsteelblue](%s)[/COLOR]' %  year
+            if lang != 'VOSE' and not config.get_setting('unify'):
+                stitle += ' [COLOR gold][%s][/COLOR]' %  lang
 
         context = renumbertools.context(item)
         context2 = autoplay.context
@@ -164,14 +161,15 @@ def list_all(item):
                        action='folders',
                        title=stitle,
                        url=url,
+                       plot=type.capitalize(),
+                       type=item.type,
                        thumbnail=thumbnail,
                        language = lang,
                        infoLabels={'year':year}
                        )
-        if type != 'anime':
+        if not type in ('anime', 'ova'):
             new_item.contentTitle=title
         else:
-            new_item.plot=type
             new_item.contentSerieName=title
             new_item.context = context
         itemlist.append(new_item)
@@ -227,27 +225,32 @@ def new_episodes(item):
     logger.info()
 
     itemlist = []
+    infoLabels = dict()
 
     full_data = get_source(item.url)
     data = scrapertools.find_single_match(full_data, '<section class="caps">.*?</section>')
     patron = '<article.*?<a href="([^"]+)">.*?src="([^"]+)".*?'
+    patron += 'class="vista2">([^<]+)</span>.*?'
     patron += '<span class="episode">.*?</i>([^<]+)</span>.*?<h2 class="Title">([^<]+)</h2>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
-    for scrapedurl, scrapedthumbnail, epi, scrapedtitle in matches:
+    for scrapedurl, scrapedthumbnail, _type, epi, scrapedtitle in matches:
+        _type = _type.strip().lower()
         url = scrapedurl
-        if 'latino' in scrapedtitle.lower():
-            lang = 'Latino'
-        elif 'castellano' in scrapedtitle.lower():
-            lang = 'Castellano'
-        else:
-            lang = 'VOSE'
-        scrapedtitle = re.sub('Audio|Latino|Castellano', '', scrapedtitle)
-        title = '%s - Episodio %s' % (scrapedtitle, epi)
+        lang, title = clear_title(scrapedtitle)
+        
+        season, episode = renumbertools.numbered_for_tratk(item.channel, title, 1, int(epi))
+        
+        scrapedtitle += " - %sx%s" % (season, str(episode).zfill(2))
+        
         if lang != 'VOSE' and not config.get_setting('unify'):
-            title += ' [COLOR gold][%s][/COLOR]' %  lang
-        itemlist.append(Item(channel=item.channel, title=title, url=url, thumbnail=scrapedthumbnail,
-                             action='findvideos', language=lang))
+            scrapedtitle += ' [COLOR gold][%s][/COLOR]' %  lang
+        
+        itemlist.append(Item(channel=item.channel, title=scrapedtitle, url=url, thumbnail=scrapedthumbnail,
+                             action='findvideos', language=lang, plot=_type.capitalize(), type=_type,
+                             contentSerieName=title, infoLabels=infoLabels))
+
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
 
     return itemlist
 
@@ -276,11 +279,13 @@ def folders(item):
         
         title = "Eps %s - %s" % (inicial, final)
         init = inicial - 1
-        itemlist.append(Item(channel=item.channel, title=title, url=item.url,
-                             action='episodesxfolder', init=init, fin=final))
+        itemlist.append(Item(channel=item.channel, title=title, url=item.url, infoLabels=item.infoLabels,
+                             action='episodesxfolder', init=init, fin=final, type=item.type,
+                             thumbnail=item.thumbnail, contentSerieName=item.contentSerieName,
+                             foldereps=True))
         count += 1
 
-    if item.contentSerieName != '' and config.get_videolibrary_support() and len(itemlist) > 0:
+    if item.contentSerieName != '' and config.get_videolibrary_support() and len(itemlist) > 0 and not item.extra == "epìsodios":
         itemlist.append(
             Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la videoteca[/COLOR]', url=item.url,
                  action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName,
@@ -326,7 +331,7 @@ def episodesxfolder(item):
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
 
     itemlist = itemlist[::-1]
-    if item.contentSerieName != '' and config.get_videolibrary_support() and len(itemlist) > 0:
+    if item.contentSerieName != '' and config.get_videolibrary_support() and len(itemlist) > 0 and not item.foldereps:
         itemlist.append(
             Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la videoteca[/COLOR]', url=item.url,
                  action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName,
@@ -383,6 +388,11 @@ def findvideos(item):
 
     autoplay.start(itemlist, item)
 
+    if config.get_videolibrary_support() and itemlist > 0 and item.extra != 'findvideos' and not item.contentSerieName:
+        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la videoteca[/COLOR]',
+                             url=item.url, action="add_pelicula_to_library", extra="findvideos",
+                             contentTitle=item.contentTitle))
+
     return itemlist
 
 def newest(categoria):
@@ -392,3 +402,17 @@ def newest(categoria):
         item.url=host
         itemlist = new_episodes(item)
     return itemlist
+
+def clear_title(title):
+    if 'latino' in title.lower():
+        lang = 'Latino'
+    elif 'castellano' in title.lower():
+        lang = 'Castellano'
+    else:
+        lang = 'VOSE'
+    
+    title = re.sub(r'Audio|Latino|Castellano|\((.*?)\)', '', title)
+    title = re.sub(r'\s:', ':', title)
+
+    return lang, title
+

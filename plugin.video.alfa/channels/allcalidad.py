@@ -173,7 +173,7 @@ def findvideos(item):
     data1 = httptools.downloadpage(host + "/wp-json/elifilms/movies?id=" + match, encoding=encoding).json
     for url in data1["data"]["server_list"]:
         url1 = clear_url(url["link"])
-        if url1 in encontrado or "youtube.com" in url1 or "search" in url1:
+        if url1 in encontrado or "youtube.com" in url1 or "search" in url1 or 'salaload.com' in url1:
             continue
         encontrado.append(url1)
         itemlist.append(Item(

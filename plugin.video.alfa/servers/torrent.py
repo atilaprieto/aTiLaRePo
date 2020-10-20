@@ -2071,10 +2071,11 @@ def rename_rar_dir(rar_file, save_path_videos, video_path, torr_client):
         if filetools.exists(dst):                                               # Si la carpeta ya existe de una descarga anterior, salimos
             return rename_status, rar_file
         
+        time.sleep(5)                                                           # Tiempo de seguridad para pausar el .torrent
         for x in range(20):
             if (monitor and monitor.abortRequested()) or (not monitor and xbmc.abortRequested):
                 return rename_status, rar_file
-            xbmc.sleep(1000)
+            time.sleep(1)
             
             # Se para la actividad para que libere los archivos descargados
             if torr_client in ['quasar', 'elementum']:

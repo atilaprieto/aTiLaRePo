@@ -1,7 +1,7 @@
 {
     "id": "watchseries",
     "name": "WatchSeries",
-    "active": false,
+    "active": true,
     "adult": false,
     "language": [],
     "thumbnail": "https://www2.watchmovie.io/img/icon/new-logo.png",

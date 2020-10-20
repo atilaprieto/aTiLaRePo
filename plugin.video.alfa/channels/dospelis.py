@@ -270,7 +270,7 @@ def findvideos(item):
         except:
             lang = ""
         data = httptools.downloadpage(doo_url, post=post, headers=headers).data
-        if not data:
+        if not data or not "iframe" in data:
             continue
         url = BeautifulSoup(data, "html5lib").find("iframe")["src"]
         if "streamcrypt.net" in url:

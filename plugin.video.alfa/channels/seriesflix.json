@@ -3,8 +3,9 @@
   "name": "SeriesFlix",
   "active": true,
   "adult": false,
+  "force_unify": true,
   "language": ["lat"],
-  "thumbnail": "https://seriesflix.co/wp-content/uploads/2019/12/cropped-seriesflix-logo-1.png?x64271",
+  "thumbnail": "https://seriesflix.to/wp-content/uploads/2019/12/cropped-seriesflix-logo-1.png?x64271",
   "banner": "",
   "categories": [
     "tvshow"

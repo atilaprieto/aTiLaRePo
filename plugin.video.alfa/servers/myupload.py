@@ -5,16 +5,14 @@
 from core import httptools
 from core import scrapertools
 from platformcode import logger
-import base64
 
 def test_video_exists(page_url):
-
+    logger.info()
+    
+    global response
     response = httptools.downloadpage(page_url)
 
-    if not response.sucess or \
-       "Not Found" in response.data \
-       or "File was deleted" in response.data \
-       or "is no longer available" in response.data:
+    if '/index.html' in response.url:
         return False, "[myupload] El fichero no existe o ha sido borrado"
     return True, ""
 
@@ -22,9 +20,13 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info()
     video_urls = []
-    data = httptools.downloadpage(page_url).data
-    matches = scrapertools.find_multiple_matches(data, 'tracker: "([^"]+)"')
-    for scrapedurl in matches:
-        url = base64.b64decode(scrapedurl)
-    video_urls.append(["[myupload]", url])
+    
+    data = response.data
+
+    url = scrapertools.find_single_match(data, r'<source\s*src=\s*"([^"]+)"')
+    ext = scrapertools.find_single_match(data, r'" type="video/(\w+)"')
+    
+    if url:
+        video_urls.append([".%s [myupload]" % ext, url])
+        
     return video_urls

@@ -6,7 +6,7 @@
       {
         "pattern": "playtube.ws/(?:embed-|)(\\w+)",
         "url": "https://playtube.ws/embed-\\1.html"
-      },
+      }
 
     ]
   },

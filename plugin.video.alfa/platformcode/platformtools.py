@@ -274,6 +274,11 @@ def render_items(itemlist, parent_item):
             fanart = item.fanart
         else:
             fanart = config.get_fanart()
+            
+        # Ponemos el poster
+        poster = item.thumbnail
+        if item.action == 'play' and item.infoLabels['temporada_poster']:
+            poster = item.infoLabels['temporada_poster']
 
         # Creamos el listitem
         listitem = xbmcgui.ListItem(item.title)
@@ -281,7 +286,7 @@ def render_items(itemlist, parent_item):
         # values icon, thumb or poster are skin dependent.. so we set all to avoid problems
         # if not exists thumb it's used icon value
         if config.get_platform(True)['num_version'] >= 16.0:
-            listitem.setArt({'icon': icon_image, 'thumb': item.thumbnail, 'poster': item.thumbnail,
+            listitem.setArt({'icon': icon_image, 'thumb': item.thumbnail, 'poster': poster,
                              'fanart': fanart})
         else:
             listitem.setIconImage(icon_image)
@@ -1434,10 +1439,16 @@ def play_torrent(item, xlistitem, mediaurl):
         if url_local and not url_stat and videolibrary_path:            # .torrent alternativo local
             if filetools.copy(item.url, torrents_path, silent=True):    # se copia a la carpeta generíca para evitar problemas de encode
                 item.url = torrents_path
-            if subtitle_path:
-                for subt in filetools.dirname(item.url):
+
+            if not item.subtitle:
+                subtitles_list_vl = []
+                for subt in filetools.listdir(filetools.dirname(item.url)):
                     if subt.endswith('.srt'):
-                        filetools.copy(filetools.join(filetools.dirname(item.url), subt), filetools.join(subtitle_path, subt), silent=True)
+                        subtitles_list_vl += [filetools.join(filetools.dirname(item.url), subt)]
+                        #if subtitle_path:
+                        #    filetools.copy(filetools.join(filetools.dirname(item.url), subt), filetools.join(subtitle_path, subt), silent=True)
+                if subtitles_list_vl:
+                    item.subtitle = filetools.dirname(item.url)
                     
             size, url, torrent_f, rar_files = generictools.get_torrent_size(item.url, file_list=True, 
                                               lookup=False, torrents_path=torrents_path, short_pad=True)
@@ -1451,11 +1462,10 @@ def play_torrent(item, xlistitem, mediaurl):
         mediaurl = item.url
 
     if seleccion >= 0:
-        if not item.subtitle and subtitle_path:
-            item.subtitle = subtitle_path
         if item.subtitle:
-            if '\\' in item.subtitle or item.subtitle.startswith("/") and videolibrary_path not in item.subtitle:
+            if not filetools.exists(item.subtitle):
                 item.subtitle = filetools.join(videolibrary_path, folder, item.subtitle)
+            logger.info('Subtítulos externos: %s' % item.subtitle, force=True)
             time.sleep(0.5)
             xbmc_player.setSubtitles(item.subtitle)                             # Activamos los subtítulos
         

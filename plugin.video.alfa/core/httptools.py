@@ -51,8 +51,13 @@ ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
 
 # Headers por defecto, si no se especifica nada
 default_headers = dict()
-#default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/79.0.3945.117"
-default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36"
+# default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) Chrome/79.0.3945.117"
+
+ver = config.get_setting("chrome_ua_version")
+ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36" % ver
+
+default_headers["User-Agent"] = ua
+#default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36"
 default_headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
 default_headers["Accept-Language"] = "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"
 default_headers["Accept-Charset"] = "UTF-8"
@@ -68,6 +73,13 @@ HTTPTOOLS_DEFAULT_RANDOM_HEADERS = False
 def get_user_agent():
     # Devuelve el user agent global para ser utilizado cuando es necesario para la url.
     return default_headers["User-Agent"]
+
+def get_cookie(url, name):
+    domain = urlparse.urlparse(url).netloc
+    for cookie in cj:
+        if cookie.name == name and domain in cookie.domain:
+            return cookie.value
+    return False
 
 def get_url_headers(url, forced=False):
     from . import scrapertools
@@ -462,6 +474,7 @@ def downloadpage(url, **opt):
     import requests
 
     cf_ua = config.get_setting('cf_assistant_ua', None)
+    url = url.strip()
 
     # Headers por defecto, si no se especifica nada
     req_headers = default_headers.copy()
@@ -498,7 +511,7 @@ def downloadpage(url, **opt):
             session = cloudscraper.create_scraper()                             #El dominio necesita CloudScraper
             session.verify = True
             CS_stat = True
-            if cf_ua and cf_ua != 'Default':
+            if cf_ua and cf_ua != 'Default' and get_cookie(url, 'cf_clearance'):
                 req_headers['User-Agent'] = cf_ua
         else:
             session = requests.session()

@@ -1,0 +1,29 @@
+{
+  "id": "cinemat4",
+  "name": "CinemaT4",
+  "force_unify": true,
+  "thumbnail":"https://www.cinemat4.org/wp-content/uploads/2019/02/%C3%ADndice.png",
+  "banner":"",
+  "active": true,
+  "adult": false,
+  "language": ["lat"],
+  "version": 1,
+  "categories": [
+    "movie"
+  ],
+  "settings": [
+    {
+      "id": "filter_languages",
+      "type": "list",
+      "label": "Mostrar enlaces en idioma...",
+      "default": 0,
+      "enabled": true,
+      "visible": true,
+      "lvalues": [
+        "No filtrar",
+        "LAT"
+      ]
+    }
+  ]
+
+}

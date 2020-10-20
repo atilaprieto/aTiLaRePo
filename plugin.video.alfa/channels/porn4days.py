@@ -100,20 +100,21 @@ def lista(item):
     matches = soup.find_all('div', class_='col-lg-3')
     for elem in matches:
         url = elem.a['href']
-        stitle = elem.img['alt']
+        title = elem.img['alt']
         thumbnail = elem.img['src']
-        stime = elem.find('div', class_='timer').text.strip()
-        if stime:
-            title = "[COLOR yellow]%s[/COLOR] %s" % (stime,stitle)
+        time = elem.find('div', class_='timer')
+        if time:
+            time = time.text.strip()
+            title = "[COLOR yellow]%s[/COLOR] %s" % (time,title)
         url = urlparse.urljoin(host,url)
         thumbnail = urlparse.urljoin(host,thumbnail)
         plot = ""
         itemlist.append(item.clone(action="play", title=title, url=url, thumbnail=thumbnail,
                                plot=plot, fanart=thumbnail, contentTitle=title ))
-    next_page = soup.find('li', class_='active').next_sibling
+    next_page = soup.find('a', rel='next')
     if next_page:
-        next_page = next_page.a['href']
-        if "/?s=" in item.url and not"/search/" in next_page:      #   
+        next_page = next_page['href']
+        if "/?s=" in item.url and not"/search/" in next_page:
             next_page = "/search%s" %next_page
         next_page = urlparse.urljoin(host,next_page)
         itemlist.append(item.clone(action="lista", title="[COLOR blue]Página Siguiente >>[/COLOR]", url=next_page) )

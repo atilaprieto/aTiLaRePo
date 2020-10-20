@@ -4,7 +4,7 @@
   "active": true,
   "adult": false,
   "language": ["cast", "lat"],
-  "thumbnail": "https://i.postimg.cc/k6zttdTq/hdfull.png",
+  "thumbnail": "https://i.postimg.cc/HskwLYrk/hdfull.png",
   "banner": "hdfull.png",
   "categories": [
     "movie",
@@ -33,6 +33,14 @@
       "default": false,
       "enabled": true,
       "visible": true
+    },
+    {
+      "id": "current_host",
+      "type": "text",
+      "label": "Host actual",
+      "default": "https://hdfull.io/",
+      "enabled": true,
+      "visible": false
     },
     {
       "id": "show_langs",
