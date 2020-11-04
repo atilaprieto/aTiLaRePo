@@ -60,6 +60,7 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title='Calidad 4k', action='list_all', url=HOST + 'tag/4k/', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Por año', action = 'anyos', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
@@ -94,6 +95,18 @@ def generos(item):
     itemlist.append(item.clone ( action = 'list_all', title = 'Bélica', url = HOST + 'genre/belica/' ))
 
     return sorted(itemlist, key=lambda it: it.title)
+
+def anyos(item):
+    logger.info()
+    itemlist = []
+
+    from datetime import datetime
+    current_year = int(datetime.today().year)
+
+    for x in range(current_year, 1938, -1):
+        itemlist.append(item.clone( title=str(x), url= HOST + 'release/' + str(x) + '/', action='list_all' ))
+
+    return itemlist
 
 
 def list_all(item): 
@@ -205,10 +218,9 @@ def episodios(item):
     return itemlist
 
 
-
 def puntuar_calidad(txt):
     txt = txt.replace(' ', '').replace('-', '').lower()
-    orden = ['cam', 'ts', 'webdl', 'webrip', 'bdscr', 'hdtv', 'hc720p', 'bdrip', 'hdrip', '720p', '1080p', '4k']
+    orden = ['cam', 'ts', 'webdl', 'webrip', 'bdscr', 'hdtv', 'hc720p', 'bdrip', 'dvdrip', 'hdrip', '720p', '1080p', '4k']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 

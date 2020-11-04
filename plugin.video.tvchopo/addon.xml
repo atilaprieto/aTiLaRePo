@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.tvchopo"
        name="[B][LOWERCASE][CAPITALIZE][COLOR white]Tv[COLOR gold]chopo[/CAPITALIZE][/LOWERCASE][/B][/COLOR]"
-       version="20"
+       version="21"
        provider-name="equipo-chopo">
  <requires>
     <import addon="xbmc.python" version="2.1.0"/>

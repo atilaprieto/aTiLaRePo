@@ -7,10 +7,11 @@ from core.item import Item
 from core import httptools, scrapertools, servertools, jsontools, tmdb
 
 
-host = 'https://verencasa.com'
+host = 'https://verencasa.com/'
+# ~ host = 'https://pepecinehd.com/'
 
-ruta_pelis  = '/browse?type=movie'
-ruta_series = '/browse?type=series'
+ruta_pelis  = 'browse?type=movie'
+ruta_series = 'browse?type=series'
 
 
 # ~ def item_configurar_proxies(item):
@@ -22,12 +23,15 @@ ruta_series = '/browse?type=series'
     # ~ from core import proxytools
     # ~ return proxytools.configurar_proxies_canal(item.channel, host)
 
-
 def do_downloadpage(url, post=None):
     headers = {'Referer': 'https://pepecine.to/'}
 
-    if '/secure/search/' in url: 
-        url = url.replace('verencasa.com', 'pepecine.tv')
+    if '/secure/search/' in url or '/secure/titles/' in url:
+        if '/secure/search/' in url:
+            # ~ url = url.replace('verencasa.com', 'pepecinehd.com')
+            url = url.replace('verencasa.com', 'pepecine.to')
+        else:
+            url = url.replace('verencasa.com', 'pepecine.tv')
         timeout = config.get_setting('httptools_timeout', default=15)
     else:
         timeout = 30 # timeout ampliado pq el primer acceso puede tardar en responder
@@ -36,6 +40,7 @@ def do_downloadpage(url, post=None):
     data = httptools.downloadpage(url, post=post, headers=headers, timeout=timeout).data
 
     return data
+
 
 
 def mainlist(item):
@@ -58,7 +63,7 @@ def mainlist_pelis(item):
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
     if not descartar_xxx:
-        itemlist.append(item.clone( title = 'Últimas películas', action = 'list_latest', url = host + '/last/estrenos-peliculas-online.php', search_type = 'movie' ))
+        itemlist.append(item.clone( title = 'Últimas películas', action = 'list_latest', url = host + 'last/estrenos-peliculas-online.php', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Las más populares', action = 'list_all', url = host + ruta_pelis, orden = 'popularity:desc', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Las más valoradas', action = 'list_all', url = host + ruta_pelis, orden = 'user_score:desc', search_type = 'movie' ))
@@ -67,11 +72,11 @@ def mainlist_pelis(item):
         itemlist.append(item.clone( title = 'Las más recientes', action = 'list_all', url = host + ruta_pelis, orden = 'created_at:desc', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
-    itemlist.append(item.clone( title = 'Por año', action = 'anios', url = host + ruta_pelis, top_year = 1919,  search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Por año', action = 'anios', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Por calificación de edad', action = 'edades', search_type = 'movie' ))
 
-    itemlist.append(item.clone( title = 'Listas de películas', action = 'listas', url = host, search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Listas de películas', action = 'listas', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
@@ -86,7 +91,7 @@ def mainlist_series(item):
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
     if not descartar_xxx:
-        itemlist.append(item.clone( title = 'Últimos episodios', action = 'list_latest', url = host + '/last/estrenos-episodios-online.php', search_type = 'tvshow' ))
+        itemlist.append(item.clone( title = 'Últimos episodios', action = 'list_latest', url = host + 'last/estrenos-episodios-online.php', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Las más populares', action = 'list_all', url = host + ruta_series, orden = 'popularity:desc', search_type = 'tvshow' ))
     itemlist.append(item.clone( title = 'Las más valoradas', action = 'list_all', url = host + ruta_series, orden = 'user_score:desc', search_type = 'tvshow' ))
@@ -95,11 +100,11 @@ def mainlist_series(item):
         itemlist.append(item.clone( title = 'Las más recientes', action = 'list_all', url = host + ruta_series, orden = 'created_at:desc', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'tvshow' ))
-    itemlist.append(item.clone( title = 'Por año', action = 'anios', url = host + ruta_series, top_year = 1950, search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Por año', action = 'anios', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Por calificación de edad', action = 'edades', search_type = 'tvshow' ))
 
-    itemlist.append(item.clone( title = 'Listas de series', action = 'listas', url = host, search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Listas de series', action = 'listas', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
@@ -132,8 +137,11 @@ def anios(item):
     from datetime import datetime
     current_year = int(datetime.today().year)
 
-    for x in range(current_year, item.top_year, -1):
-        itemlist.append(item.clone( title=str(x), url= item.url, orden = '&released=' + str(x) + ',' + str(x), action='list_all' ))
+    url = host + (ruta_pelis if item.search_type == 'movie' else ruta_series)
+    to_year = 1950 if item.search_type == 'tvshow' else 1919
+
+    for x in range(current_year, to_year, -1):
+        itemlist.append(item.clone( title=str(x), url = url, orden = '&released=' + str(x) + ',' + str(x), action='list_all' ))
 
     return itemlist
 
@@ -164,7 +172,7 @@ def search(item, texto):
     logger.info()
     try:
         if item.search_type not in ['movie', 'tvshow', 'all']: item.search_type = 'all'
-        item.url = host + '/secure/search/' + texto.replace(" ", "+")
+        item.url = host + 'secure/search/' + texto.replace(" ", "+")
         return sub_search(item)
     except:
         import sys
@@ -197,8 +205,8 @@ def sub_search(item):
         thumb = element['poster'] if element['poster'] else item.thumbnail
         new_item = item.clone( title = element['name'], thumbnail = thumb, infoLabels = {'year':element['year'], 'plot': element['description']})
 
-        # ~ new_item.url = host + '/titles/' + str(element['id'])
-        new_item.url = host + '/secure/titles/' + str(element['id']) + '?titleId=' + str(element['id'])
+        # ~ new_item.url = host + 'titles/' + str(element['id'])
+        new_item.url = host + 'secure/titles/' + str(element['id']) + '?titleId=' + str(element['id'])
 
         if not element['is_series']:
             new_item.action = 'findvideos'
@@ -229,7 +237,7 @@ def list_all(item):
 
     tipo = 'movie' if item.search_type == 'movie' else 'series'
 
-    url = host + '/secure/titles?type=%s&order=%s&onlyStreamable=true&page=%s' % (tipo, item.orden, item.page)
+    url = host + 'secure/titles?type=%s&order=%s&onlyStreamable=true&page=%s' % (tipo, item.orden, item.page)
     if item.genero: url += '&genre=' + item.genero
     if item.calificacion: url += '&certification=' + item.calificacion
 
@@ -244,8 +252,8 @@ def list_all(item):
         thumb = element['poster'] if element['poster'] else item.thumbnail
         new_item = item.clone( title = element['name'], thumbnail = thumb, infoLabels = {'year':element['year'], 'plot': element['description']})
 
-        # ~ new_item.url = host + '/titles/' + str(element['id'])
-        new_item.url = host + '/secure/titles/' + str(element['id']) + '?titleId=' + str(element['id'])
+        # ~ new_item.url = host + 'titles/' + str(element['id'])
+        new_item.url = host + 'secure/titles/' + str(element['id']) + '?titleId=' + str(element['id'])
 
         if not element['is_series']:
             new_item.action = 'findvideos'
@@ -318,13 +326,11 @@ def puntuar_calidad(txt):
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
-
 def _extraer_idioma(lang):
     if 'Castellano' in lang: return 'Esp'
     if 'Latino' in lang: return 'Lat'
     if 'Subtitulado' in lang: return 'VOSE'
     return 'VO'
-
 
 def findvideos(item):
     logger.info()
@@ -406,7 +412,7 @@ def list_latest(item):
 
         if item.search_type == 'movie':
             vid = scrapertools.find_single_match(url, '/([^/]+)$')
-            url = host + '/secure/titles/' + vid + '?titleId=' + vid
+            url = host + 'secure/titles/' + vid + '?titleId=' + vid
 
             if url in [it.url for it in itemlist]: continue # descartar repetidos
 
@@ -416,7 +422,7 @@ def list_latest(item):
         else:
             vid, season, episode = scrapertools.find_single_match(url, '/(\d+)/season/(\d+)/episode/(\d+)$')
 
-            url_serie = host + '/secure/titles/' + vid + '?titleId=' + vid
+            url_serie = host + 'secure/titles/' + vid + '?titleId=' + vid
             url_tempo = url_serie + '&seasonNumber=' + season
             url = url_tempo + '&episodeNumber=' + episode
 
@@ -485,11 +491,8 @@ def listas(item):
         ]
 
     for numero, nombre in seleccion:
-        url = host + '/secure/lists/' + numero
-
-        if 'verencasa' in url:
-            url = url + '.php'
-
+        url = host + 'secure/lists/' + numero
+        if 'verencasa' in url: url = url + '.php'
         url = url + '?sortBy=pivot.order&sortDir=asc'
 
         itemlist.append(item.clone( title = nombre, action = 'list_list', url = url))
@@ -516,8 +519,8 @@ def list_list(item):
 
         new_item = item.clone( title = element['name'], thumbnail = element['poster'], infoLabels = {'year':element['year'], 'plot': element['description']})
 
-        # ~ new_item.url = host + '/titles/' + str(element['id'])
-        new_item.url = host + '/secure/titles/' + str(element['id']) + '?titleId=' + str(element['id'])
+        # ~ new_item.url = host + 'titles/' + str(element['id'])
+        new_item.url = host + 'secure/titles/' + str(element['id']) + '?titleId=' + str(element['id'])
 
         if not element['is_series']:
             new_item.action = 'findvideos'

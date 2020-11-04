@@ -24,13 +24,17 @@ def configurar_proxies(item):
     from core import proxytools
     return proxytools.configurar_proxies_canal(item.channel, HOST)
 
-def do_downloadpage(url, post=None, headers=None):
+def do_downloadpage(url, post=None, referer=None):
     url = url.replace('http://', 'https://') # por si viene de enlaces guardados
     url = url.replace('seriespapaya.com', 'seriespapaya.net') # por si viene de enlaces guardados
     url = url.replace('seriespapaya.net', 'seriespapaya.nu') # por si viene de enlaces guardados
     url = url.replace('https://www.', 'https://www2.') # por si viene de enlaces guardados
-    # ~ data = httptools.downloadpage(url, post=post).data
-    data = httptools.downloadpage_proxy('seriespapaya', url, post=post).data
+    
+    headers = {'Referer': HOST}
+    if referer: headers['Referer'] = referer
+    
+    # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
+    data = httptools.downloadpage_proxy('seriespapaya', url, post=post, headers=headers).data
     return data
 
 
@@ -250,6 +254,7 @@ def findvideos(item):
     itemlist = []
 
     data = do_downloadpage(item.url)
+    # ~ logger.debug(data)
     patron = 'mtos' + '.+?' + \
              '<div.+?images/(?P<lang>[^\.]+)' + '.+?' + \
              '<div[^>]+>\s+(?P<date>[^\s<]+)' + '.+?' + \
@@ -265,10 +270,11 @@ def findvideos(item):
         linkTypeNum = 0 if linkType == "descargar" else 1
         if linkTypeNum != 1 and server != 'Clicknupload' and server != 'Uptobox': continue # descartar descargas directas (menos Clicknupload y Uptobox)
 
+        if '.' in server: server = server.split('.')[0]
         server = servertools.corregir_servidor(server)
         # ~ logger.debug('%s %s' % (server, url))
 
-        itemlist.append(Item(channel = item.channel, action = 'play', server=server, 
+        itemlist.append(Item(channel = item.channel, action = 'play', server=server, referer=item.url,
                              title = '', url = urlparse.urljoin(HOST, url),
                              language = IDIOMAS.get(lang,lang), quality = quality, quality_num = puntuar_calidad(quality), 
                              age = date, other = uploader #+ ', ' + typeListStr[linkTypeNum]
@@ -283,7 +289,7 @@ def play(item):
     logger.info("play: %s" % item.url)
     itemlist = []
 
-    data = do_downloadpage(item.url)
+    data = do_downloadpage(item.url, referer=item.referer)
     # ~ logger.debug(data)
     new_url = scrapertools.find_single_match(data, "location.href='([^']+)")
     if new_url:

@@ -2,7 +2,8 @@
   "id": "videomega",
   "name": "VideoMega",
  
-  "active": true,
+  "active": false,
+  "notes": "El dominio ya no existe",
 
   "find_videos": {
     "ignore_urls": [],

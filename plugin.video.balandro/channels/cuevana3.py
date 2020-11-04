@@ -249,21 +249,26 @@ def findvideos(item):
 
     return itemlist
 
+def resuelve_damedamehoy(dame_url):
+    dame_url = dame_url
+    data = httptools.downloadpage(dame_url).data
+    # ~ logger.debug(data)
+    url = scrapertools.find_single_match(data, 'file:\s*"([^"]+)')
+    if not url:
+        checkUrl = dame_url.replace('embed.html#', 'details.php?v=')
+        data = httptools.downloadpage(checkUrl, headers={'Referer': dame_url}).data
+        # ~ logger.debug(data)
+        url = scrapertools.find_single_match(data, '"file":\s*"([^"]+)').replace('\\/', '/')
+    return url
+
 def play(item):
     logger.info()
     itemlist = []
+    # ~ logger.debug(item.url)
 
     if '//damedamehoy.' in item.url:
-        data = httptools.downloadpage(item.url).data
-        # ~ logger.debug(data)
-        url = scrapertools.find_single_match(data, 'file:\s*"([^"]+)')
-        if not url:
-            checkUrl = scrapertools.find_single_match(data, "checkUrl\s*=\s*'([^']+)")
-            if checkUrl:
-                data = httptools.downloadpage(checkUrl, headers={'Referer': item.url}).data
-                url = scrapertools.find_single_match(data, '"file":\s*"([^"]+)').replace('\\/', '/')
-        if url:
-            itemlist.append(['mp4', url])
+        url = resuelve_damedamehoy(item.url)
+        if url: itemlist.append(['mp4', url])
         return itemlist
 
     if '//api.cuevana3' in item.url:
@@ -303,19 +308,33 @@ def play(item):
 
         elif 'h=' in item.url:
             fid = scrapertools.find_single_match(item.url, "h=([^&]+)")
-            resp = httptools.downloadpage('https://api.cuevana3.io/ir/rd.php', post='url='+fid, headers={'Referer': item.url}, follow_redirects=False)
+            if 'https://api.cuevana3.io/sc/index.php?h=' in item.url:
+                api_url = 'https://api.cuevana3.io/sc/r.php'
+                api_post = 'h='+fid
+            elif 'https://api.cuevana3.io/ir/goto_ddh.php' in item.url:
+                api_url = 'https://api.cuevana3.io/ir/redirect_ddh.php'
+                api_post = 'url='+fid
+            else:
+                api_url = 'https://api.cuevana3.io/ir/rd.php'
+                api_post = 'url='+fid
+            
+            resp = httptools.downloadpage(api_url, post=api_post, headers={'Referer': item.url}, follow_redirects=False)
             # ~ logger.debug(resp.data)
             if 'location' in resp.headers:
                 url = resp.headers['location']
-                servidor = servertools.get_server_from_url(url)
-                if servidor != 'directo':
-                    url = servertools.normalize_url(servidor, url)
-                    itemlist.append(item.clone( url = url, server = servidor ))
+                if '//damedamehoy.' in url:
+                    url = resuelve_damedamehoy(url)
+                    if url: itemlist.append(['mp4', url])
                 else:
-                    fid = scrapertools.find_single_match(url, "id=([^&]+)")
-                    if fid:
-                        url = url.replace('public/dist/index.html?id=', 'hls/') + '/' + fid + '.playlist.m3u8'
-                        itemlist.append(['m3u8', url])
+                    servidor = servertools.get_server_from_url(url)
+                    if servidor != 'directo':
+                        url = servertools.normalize_url(servidor, url)
+                        itemlist.append(item.clone( url = url, server = servidor ))
+                    else:
+                        fid = scrapertools.find_single_match(url, "id=([^&]+)")
+                        if fid:
+                            url = url.replace('public/dist/index.html?id=', 'hls/') + '/' + fid + '.playlist.m3u8'
+                            itemlist.append(['m3u8', url])
 
     elif 'openloadpremium.com/' in item.url and '/player.php?' in item.url:
         data = httptools.downloadpage(item.url, headers={'Referer': item.referer}).data

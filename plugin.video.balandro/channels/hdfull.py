@@ -7,9 +7,9 @@ from core.item import Item
 from core import httptools, scrapertools, jsontools, servertools, tmdb
 
 # ~ host = "https://hdfull.tv/"
-# ~ host = "https://hdfull.me/"
+host = "https://hdfull.me/"
 # ~ host = "https://hdfull.io/"
-host = "https://hdfull.lv/"
+# ~ host = "https://hdfull.lv/"
 # ~ host = "https://hdfull.la/"
 
 perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (40) para que la subpaginación interna no se descompense
@@ -37,17 +37,23 @@ perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web
     # ~ from core import proxytools
     # ~ return proxytools.configurar_proxies_canal(item.channel, host)
 
-def do_downloadpage(url, post=None, referer=None):
-    url = url.replace('hdfull.tv', 'hdfull.lv') # por si viene de enlaces guardados
-    url = url.replace('hdfull.me', 'hdfull.lv') # por si viene de enlaces guardados
-    url = url.replace('hdfull.io', 'hdfull.lv') # por si viene de enlaces guardados
-    url = url.replace('hdfull.la', 'hdfull.lv') # por si viene de enlaces guardados
-    if not referer: referer = host
-    # ~ if not referer: referer = host+'peliculas-actualizadas'
+def do_downloadpage(url, post=None, referer=None, check_domain=True):
+    dominio = config.get_setting('dominio', 'hdfull', default=host)
+    url = re.sub('^https://[^/]+/', dominio, url)
+
+    if not referer: referer = host #dominio
+    if post and '&menu=search&query=' in post: referer = dominio
     headers = {'Referer': referer}
 
     # ~ data = httptools.downloadpage_proxy('hdfull', url, post=post, headers=headers).data
     data = httptools.downloadpage(url, post=post, headers=headers).data
+    
+    if check_domain and 'location.replace(' in data:
+        dominio = scrapertools.find_single_match(data, 'location\.replace\("(https://[^/]+/)')
+        if dominio:
+            config.set_setting('dominio', dominio, 'hdfull')
+            return do_downloadpage(url, post=post, referer=referer, check_domain=False)
+
     return data
 
 
@@ -247,7 +253,7 @@ def episodios(item):
     # ~ logger.debug(data)
 
     for epi in data:
-        logger.debug(epi)
+        # ~ logger.debug(epi)
         tit = epi['title']['es'] if 'es' in epi['title'] and epi['title']['es'] else epi['title']['en'] if 'en' in epi['title'] and epi['title']['en'] else ''
         titulo = '%sx%s %s' % (epi['season'], epi['episode'], tit)
 
@@ -329,6 +335,7 @@ def search(item, texto):
     logger.info()
     try:
         data = do_downloadpage(host)
+        # ~ logger.debug(data)
         magic = scrapertools.find_single_match(data, "name='__csrf_magic'\s*value=\"([^\"]+)")
         item.search_post = '__csrf_magic=%s&menu=search&query=%s' % (magic, texto.replace(' ','+'))
         item.url = host + 'buscar'

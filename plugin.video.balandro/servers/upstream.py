@@ -14,7 +14,7 @@ def get_video_url(page_url, url_referer=''):
     # ~ logger.debug(data)
 
     if 'sources:' not in data:
-        packed = scrapertools.find_single_match(data, "eval\((function\(p,a,c,k.*?)\)\s*</script>")
+        packed = scrapertools.find_single_match(data, "eval\((function\(p,a,c,k,e,d.*?)\)\s*</script>")
         if not packed: return video_urls
         data = jsunpack.unpack(packed)
         # ~ logger.debug(data)

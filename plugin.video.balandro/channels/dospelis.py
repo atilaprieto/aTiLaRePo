@@ -290,7 +290,7 @@ def corregir_servidor(servidor):
     servidor = servertools.corregir_servidor(servidor)
     if servidor == 'fcom': return 'fembed'
     elif servidor in ['mp4', 'api', 'drive']: return 'gvideo'
-    elif servidor == 'streamcrypt': return ''
+    elif servidor == ['streamcrypt', 'desconocido']: return ''
     else: return servidor
 
 
@@ -325,12 +325,14 @@ def findvideos(item):
 
         servidor = scrapertools.find_single_match(enlace, "<span class='server'>([^<.]+)")
         lang = scrapertools.find_single_match(enlace, "/img/flags/([^.']+)").lower()
-        if not servidor or not lang:
+        if not servidor or servidor == 'Desconocido' or not lang:
             # ~ <span class='title'>Subtitulado / STREAMTAPE</span>
+            # ~ <span class='title'>SUB ESP ¦ DooD</span>
             aux = scrapertools.find_single_match(enlace, "<span class='title'>([^<]+)")
-            if '/' in aux:
-                if not lang: lang = aux.split('/')[0].strip().lower()
-                if not servidor: servidor = aux.split('/')[1]
+            sep = '/' if '/' in aux else '¦' if '¦' in aux else None
+            if sep:
+                if not lang: lang = aux.split(sep)[0].strip().lower()
+                if not servidor or servidor == 'Desconocido': servidor = aux.split(sep)[1]
 
         servidor = corregir_servidor(servidor)
 

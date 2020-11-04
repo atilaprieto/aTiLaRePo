@@ -317,7 +317,7 @@ def play(item):
                 return sorted(itemlist, key=lambda x: int(x[0]) if x[0].isdigit() else 0)
 
     if url:
-       url = url.replace('www.privatecrypt.me', 'www.fembed.com').replace('isthebest.rest', '.com')
+       url = url.replace('www.privatecrypt.me', 'www.fembed.com') #.replace('isthebest.rest', '.com')
        servidor = servertools.get_server_from_url(url)
        if servidor != 'directo':
            url = servertools.normalize_url(servidor, url)

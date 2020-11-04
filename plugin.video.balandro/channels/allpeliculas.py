@@ -6,17 +6,26 @@ from platformcode import config, logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-# ~ f_y_m
 # ~ HOST = 'https://allpeliculas.tv/'
 HOST = 'https://allpeliculas.nu/'
 
 perpage = 18 # preferiblemente un múltiplo de los elementos que salen en la web (6x6=36) para que la subpaginación interna no se descompense
 
 
-def do_downloadpage(url, post=None, headers=None):
-    # ~ f_y_m  por si viene de enlaces guardados
-    url = url.replace('allpeliculas.tv', 'allpeliculas.nu')
-    data = httptools.downloadpage(url, post=post, headers=headers).data
+def item_configurar_proxies(item):
+    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + HOST + ' necesitarás un proxy.'
+    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, HOST)
+
+def do_downloadpage(url, post=None):
+    url = url.replace('allpeliculas.tv', 'allpeliculas.nu') # por si viene de enlaces guardados
+
+    # ~ data = httptools.downloadpage(url, post=post).data
+    data = httptools.downloadpage_proxy('allpeliculas', url, post=post).data
     return data
 
 
@@ -40,6 +49,7 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone ( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -101,6 +111,7 @@ def list_all(item):
 
     post = {'action':'loadmore', 'page':item.page, 'query':post_q}
     data = do_downloadpage(HOST + 'wp-admin/admin-ajax.php', post=post)
+    # ~ data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     matches = re.compile('<div class="col-mt-5 postsh">\s*<div class="poster-media-card">\s*<a(.*?)</a>', re.DOTALL).findall(data)

@@ -1,6 +1,10 @@
 Balandro changelog
 ==================
 
+1.4.23:
+    Canales modificados: Hdfull, Pepecine, Seriespapaya, Dilo, Dospelis, Movidy.
+    Servidores modificados: Gamovideo, Fembed, Playtube, Upstream.
+
 1.4.22:
     Canales modificados: Hdfull, Torrentdivx, Pelispedia, Tupelihd, Retroseriestv.
     Servidores modificados: Gamovideo, Streamtape.

@@ -41,6 +41,8 @@ def generos(item):
     logger.info()
     itemlist = []
 
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
     data = httptools.downloadpage(host_catalogue).data
 
     patron = '<input type="checkbox" class="[^"]+" id="[^"]+" value="([^"]+)" name="genre\[\]">'
@@ -48,6 +50,10 @@ def generos(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
     for valor, titulo in matches:
         itemlist.append(item.clone( title=titulo.strip(), url=host_catalogue+'?genre[]='+valor, action='list_all' ))
+
+    if not descartar_xxx:
+        itemlist.append(item.clone( action = 'list_all', title = 'xxx / adultos', url = host + 'search?s=adultos' ))
+        #itemlist.append(item.clone( action = 'list_all', title = 'xxx / adultos internacional', url = host + 'internacional-adultos/' ))
 
     return sorted(itemlist, key=lambda it: it.title)
 
@@ -78,6 +84,8 @@ def list_all(item):
     logger.info()
     itemlist = []
 
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
     
@@ -88,6 +96,8 @@ def list_all(item):
         title = scrapertools.find_single_match(article, '<div class="text-white[^"]*">([^<]+)</div>').strip()
         year = scrapertools.find_single_match(article, '<div class="txt-gray-200 txt-size-\d+">(\d+)</div>')
         
+        if descartar_xxx and ('/coleccion-adulto-espanol/' in url or '/internacional-adultos/' in url): continue
+
         itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, 
                                     contentType='tvshow', contentSerieName=title, infoLabels={'year': year} ))
 
@@ -119,11 +129,9 @@ def temporadas(item):
 
     return itemlist
 
-
 # Si una misma url devuelve los episodios de todas las temporadas, definir rutina tracking_all_episodes para acelerar el scrap en trackingtools.
 # ~ def tracking_all_episodes(item):
     # ~ return episodios(item)
-
 
 def episodios(item):
     logger.info()
@@ -138,13 +146,15 @@ def episodios(item):
     url = 'https://www.dilo.nu/api/web/episodes.php'
     post = 'item_id=%s&season_number=%s' % (item.item_id, item.contentSeason)
     data = jsontools.load(httptools.downloadpage(url, post=post).data)
+    # ~ logger.debug(data)
     for epi in data:
         titulo = '%sx%s %s' % (epi['season_number'], epi['number'], epi['name'])
         plot = epi['description']
         langs = re.findall('languajes/([^.]+).png', epi['audio'])
         if langs: titulo += ' [COLOR %s][%s][/COLOR]' % (color_lang, ','.join([IDIOMAS.get(lang, lang) for lang in langs]))
+        thumb = '' if 'picture' not in epi or not epi['picture'] else 'https://cdn.dilo.nu/resize/episode/220x125@' + epi['picture']
 
-        itemlist.append(item.clone( action='findvideos', url=host+epi['permalink']+'/', title=titulo, plot=plot,
+        itemlist.append(item.clone( action='findvideos', url=host+epi['permalink']+'/', title=titulo, plot=plot, thumbnail=thumb,
                                     contentType='episode', contentSeason=epi['season_number'], contentEpisodeNumber=epi['number'] ))
 
     tmdb.set_infoLabels(itemlist)

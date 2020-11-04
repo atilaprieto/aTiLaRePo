@@ -16,6 +16,23 @@ perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web
 # En la web: No hay acceso a serie solamente a serie+temporada
 
 
+def item_configurar_proxies(item):
+    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
+    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, host)
+
+def do_downloadpage(url, post=None, follow_redirects=True, only_headers=False):
+    # ~ resp = httptools.downloadpage(url, post=post, follow_redirects=follow_redirects, only_headers=only_headers)
+    resp = httptools.downloadpage_proxy('playview', url, post=post, follow_redirects=follow_redirects, only_headers=only_headers)
+
+    if only_headers: return resp.headers
+    return resp.data
+
+
 def mainlist(item):
     logger.info()
     itemlist = []
@@ -25,6 +42,7 @@ def mainlist(item):
 
     itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -35,9 +53,11 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title = 'Lista de películas', action = 'list_all', url = host + 'peliculas-online', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Por año', action = 'anios', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -51,6 +71,7 @@ def mainlist_series(item):
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -58,7 +79,7 @@ def generos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(host).data
+    data = do_downloadpage(host)
     
     patron = '<li><a href="(%s[^"]+)">([^<]+)</a></li>' % (host + 'peliculas-online/')
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -69,6 +90,17 @@ def generos(item):
 
     return sorted(itemlist, key=lambda it: it.title)
 
+def anios(item):
+    logger.info()
+    itemlist = []
+
+    from datetime import datetime
+    current_year = int(datetime.today().year)
+
+    for x in range(current_year, 1935, -1):
+        itemlist.append(item.clone( title = str(x), url = host + 'estrenos-' + str(x), action = 'list_all' ))
+
+    return itemlist
 
 
 def list_all(item):
@@ -77,7 +109,7 @@ def list_all(item):
 
     if not item.page: item.page = 0
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     matches = re.compile('<div class="spotlight_image lazy"(.*?)<div class="playRing">', re.DOTALL).findall(data)
@@ -148,13 +180,13 @@ def episodios(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     dataid = scrapertools.find_single_match(data, 'data-id="([^"]+)"')
     datatype = '1'
 
     post = 'set=LoadOptionsEpisode&action=EpisodesInfo&id=%s&type=%s' % (dataid, datatype)
-    data = httptools.downloadpage(host + 'playview', post=post).data
+    data = do_downloadpage(host + 'playview', post=post)
 
     patron = ' data-episode="(\d+)"'
     patron += '.*?url\(([^)]+)\)'
@@ -170,7 +202,7 @@ def episodios(item):
 
     if len(matches) == 0:
         post = 'set=LoadOptionsEpisode&action=EpisodeList&id=%s&type=%s' % (dataid, datatype)
-        data = httptools.downloadpage(host + 'playview', post=post).data
+        data = do_downloadpage(host + 'playview', post=post)
 
         patron = ' data-episode="(\d+)" value="[^"]*" title="([^"]+)'
         matches = re.compile(patron, re.DOTALL).findall(data)
@@ -206,13 +238,13 @@ def findvideos(item):
         tipo = item.datatype
         post = 'set=LoadOptionsEpisode&action=Step1&id=%s&type=%s&episode=%d' % (item.dataid, item.datatype, item.contentEpisodeNumber)
     else:
-        data = httptools.downloadpage(item.url).data
+        data = do_downloadpage(item.url)
 
         dataid = scrapertools.find_single_match(data, 'data-id="([^"]+)"')
         tipo = 'Movie'
         post = 'set=LoadOptions&action=Step1&id=%s&type=%s' % (dataid, tipo)
 
-    data = httptools.downloadpage(host + 'playview', post=post).data
+    data = do_downloadpage(host + 'playview', post=post)
     
     calidades = scrapertools.find_multiple_matches(data, 'data-quality="([^"]+)"')
     for calidad in calidades:
@@ -220,7 +252,7 @@ def findvideos(item):
             post = 'set=LoadOptionsEpisode&action=Step2&id=%s&type=%s&quality=%s&episode=%d' % (item.dataid, item.datatype, calidad.replace(' ', '+'), item.contentEpisodeNumber)
         else:
             post = 'set=LoadOptions&action=Step2&id=%s&type=%s&quality=%s' % (dataid, tipo, calidad.replace(' ', '+'))
-        data = httptools.downloadpage(host + 'playview', post=post).data
+        data = do_downloadpage(host + 'playview', post=post)
         # ~ logger.debug(data)
         
         # ~ enlaces = scrapertools.find_multiple_matches(data, 'data-id="([^"]+)">\s*<h4>([^<]+)</h4>\s*<small><img src="https://www\.google\.com/s2/favicons\?domain=([^"]+)')
@@ -249,7 +281,7 @@ def play(item):
     else:
         post = 'set=LoadOptionsEpisode&action=Step3&id=%s&type=%s&episode=%d' % (item.linkid, item.linktype, item.linkepi)
 
-    data = httptools.downloadpage(host + 'playview', post=post).data
+    data = do_downloadpage(host + 'playview', post=post)
     # ~ logger.debug(data)
 
     url = scrapertools.find_single_match(data, 'data-url="([^"]+)"><span class="pull-left">Link directo')
@@ -259,7 +291,8 @@ def play(item):
     if not url: url = scrapertools.find_single_match(data, 'data-url="([^"]+)')
 
     if url.startswith(host):
-        url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
+        # ~ url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '') # TODO revisar...
+        url = do_downloadpage(url, follow_redirects=False, only_headers=True).get('location', '')
         # ~ logger.debug(url)
         if url and 'http' not in url:
             if item.server == 'jetload': url = 'https://jetload.net/e/' + url
