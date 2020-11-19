@@ -1,6 +1,13 @@
 Balandro changelog
 ==================
 
+1.5.0:
+    Canales modificados: Hdfull, Seriesdanko, Seriespapaya, Estrenoscinesaa, Allpeliculas,
+    Playview, Dospelis, Inkapelis, Cinecalidad.
+    Servidores modificados: Youtube, Gamovideo, Streamtape.
+    Corrección bug por cambios de tmdb.
+    Opción en Settings para forzar actualizaciones de fixs.
+
 1.4.23:
     Canales modificados: Hdfull, Pepecine, Seriespapaya, Dilo, Dospelis, Movidy.
     Servidores modificados: Gamovideo, Fembed, Playtube, Upstream.

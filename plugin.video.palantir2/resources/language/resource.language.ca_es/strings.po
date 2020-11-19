@@ -69,14 +69,30 @@ msgid "Top/Uptobox server"
 msgstr "Servidor Top/Uptobox"
 
 msgctxt "#30012"
-msgid "User"
-msgstr "Usuari"
+msgid "Account email"
+msgstr "E-mail del compte"
 
 msgctxt "#30013"
 msgid "Password"
 msgstr "Contrasenya"
 
-# empty strings from id 30014 to 30020
+msgctxt "#30014"
+msgid "Team/Drive server"
+msgstr "Servidor Team/Drive"
+
+msgctxt "#30015"
+msgid "Client ID"
+msgstr "ID de client"
+
+msgctxt "#30016"
+msgid "Client secret"
+msgstr "Secret del client"
+
+msgctxt "#30017"
+msgid "Generated verification code"
+msgstr "Codi de verificació generat"
+
+# empty strings from id 30018 to 30020
 
 msgctxt "#30020"
 msgid "More..."
@@ -110,7 +126,14 @@ msgctxt "#30027"
 msgid "Reset Cache Extendedinfo"
 msgstr "Reiniciar Cache Extendedinfo"
 
-# empty strings from id 30028 to 30030
+msgctxt "#30028"
+msgid "Movie views by year"
+msgstr "Vistes de pel·lícules per any"
+
+msgctxt "#30029"
+msgid "Always use resolveUrl"
+msgstr "Utilitza sempre resolverUrl"
+
 
 # Palantir
 
@@ -175,8 +198,8 @@ msgid "Unknown"
 msgstr "Desconegut"
 
 msgctxt "#30046"
-msgid "It is necessary to have the GDrive addon configured correctly."
-msgstr "Cal que l'addon GDrive estigui configurat correctament."
+msgid "It is necessary to have the Team / Drive account configured in settings."
+msgstr "Cal que el compte Team / Drive estigui configurat a la configuració."
 
 msgctxt "#30047"
 msgid "Resolve not available"
@@ -214,7 +237,25 @@ msgctxt "#30055"
 msgid "One moment, please."
 msgstr "Un moment, si us plau."
 
-# empty strings from id 30055 to 30099
+msgctxt "#30056"
+msgid "We are sorry but your operating system does not support the pyCryptomode module needed to run Palantir"
+msgstr "Ho sentim però el teu sistema operatiu no suporta el mòdul pyCryptomode necessari per executar Palantir"
+
+
+msgctxt "#30057"
+msgid "Sorry, Palantir 2 is not compatible with Kodi 16 and 17"
+msgstr "Ho sentim, Palantir 2 no és compatible amb Kodi 16 i 17"
+
+msgctxt "#30058"
+msgid "Hide MPD links"
+msgstr "Amaga els enllaços MPD"
+
+msgctxt "#30059"
+msgid "Server %s temporarily out of service"
+msgstr "Servidor %s temporalment fora de servei"
+
+
+# empty strings from id 30060 to 30099
 
 # moria
 

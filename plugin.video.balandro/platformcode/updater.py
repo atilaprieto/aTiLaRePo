@@ -9,7 +9,7 @@ from platformcode import config, logger, platformtools
 from core import httptools, jsontools, filetools, downloadtools
 
 
-def check_addon_updates(verbose=False):
+def check_addon_updates(verbose=False, force=False):
     logger.info()
 
     ADDON_UPDATES_JSON = 'https://balandro.tk/addon_updates/updates.json'
@@ -18,6 +18,7 @@ def check_addon_updates(verbose=False):
     try:
         last_fix_json = os.path.join(config.get_runtime_path(), 'last_fix.json')   # información de la versión fixeada del usuario
         # Se guarda en get_runtime_path en lugar de get_data_path para que se elimine al cambiar de versión
+        if force and os.path.exists(last_fix_json): os.remove(last_fix_json)
 
         # Descargar json con las posibles actualizaciones
         # -----------------------------------------------
@@ -68,7 +69,7 @@ def check_addon_updates(verbose=False):
         # ---------------------------------
         import xbmc
         xbmc.executebuiltin('XBMC.Extract("%s", "%s")' % (localfilename, config.get_runtime_path()))
-        time.sleep(1)
+        time.sleep(2)
         
         # Borrar el zip descargado
         # ------------------------

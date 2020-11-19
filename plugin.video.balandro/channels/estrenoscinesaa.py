@@ -7,6 +7,12 @@ from core import httptools, scrapertools, tmdb, servertools
 host = 'https://www.estrenoscinesaa.com/'
 
 
+def do_downloadpage(url, post=None):
+    timeout = 30 # timeout ampliado pq el primer acceso puede tardar en responder
+    data = httptools.downloadpage(url, post=post, timeout=timeout).data
+    return data
+
+
 def mainlist(item):
     # ~ De momento descartadas series pq solamente hay 13
     return mainlist_pelis(item)
@@ -33,7 +39,7 @@ def generos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(host).data
+    data = do_downloadpage(host)
 
     bloque = scrapertools.find_single_match(data, '<ul class="genres(.*?)</ul>')
 
@@ -57,7 +63,7 @@ def list_all(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     
     hasta_data = '<div class="pagination">' if '<div class="pagination">' in data else '<nav class="genres">'
     bloque = scrapertools.find_single_match(data, '</h1>(.*?)' + hasta_data)
@@ -98,7 +104,7 @@ def findvideos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     # Fuentes de vídeo
     matches = scrapertools.find_multiple_matches(data, "(?i)<div class='pframe'><iframe.*?src=(?:'|\")([^'\"]+)")
@@ -133,7 +139,7 @@ def play(item):
     itemlist = []
 
     if host in item.url:
-        data = httptools.downloadpage(item.url).data
+        data = do_downloadpage(item.url)
         url = scrapertools.find_single_match(data, '<a id="link".*?href="([^"]+)')
         if url:
             servidor = servertools.get_server_from_url(url)
@@ -163,7 +169,7 @@ def list_search(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     matches = scrapertools.find_multiple_matches(data, '<article>(.*?)</article>')
 

@@ -24,6 +24,7 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title = 'Documentales', action = 'list_all', url = host + 'tag/documentales/', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Por año', action = 'anios', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
@@ -51,12 +52,23 @@ def generos(item):
 
     return itemlist
 
+def anios(item):
+    logger.info()
+    itemlist = []
+    
+    for ano in range(2013, 1913, -1):
+        itemlist.append(item.clone( action = 'list_all', title = str(ano), url = host + 'fecha/' + str(ano) + '/' ))
+
+    return itemlist
+
 
 def list_all(item): 
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    raise_weberror = False if '/fecha/' in item.url else True
+
+    data = httptools.downloadpage(item.url, raise_weberror=raise_weberror).data
     # ~ logger.debug(data)
     
     # descartados idiomas pq los VO y VOSE no se acostrumbran a cumplir

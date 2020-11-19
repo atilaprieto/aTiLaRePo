@@ -418,7 +418,7 @@ def update():
 
         xbmc.executebuiltin('UpdateAddonRepos()')
         xbmc.executebuiltin('UpdateLocalAddons()')
-        xbmc.executebuiltin('RunAddon(plugin.video.palantir)')
+        xbmc.executebuiltin('RunAddon(plugin.video.palantir2)')
         xbmc.executebuiltin("ActivateWindow(home)")
         xbmc.executebuiltin("ReloadSkin()")
         xbmcgui.Dialog().notification('Limpia Tu Kodi', "Repositorios & Addons[COLOR green]Actualizados[/COLOR]")

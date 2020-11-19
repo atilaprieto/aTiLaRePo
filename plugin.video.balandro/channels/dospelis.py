@@ -202,6 +202,7 @@ def list_all(item):
 
         year = scrapertools.find_single_match(article, '<span>(\d{4})</span>')
         if not year: year = scrapertools.find_single_match(article, '<span>.*?,\s*(\d{4})</span>').strip()
+        if year: title = re.sub(' %s$' % year, '', title)
 
         quality = scrapertools.find_single_match(article, '<span class="quality">([^<]+)</span>')
         plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<div class="texto">(.*?)</div>'))
@@ -311,33 +312,22 @@ def findvideos(item):
     # ~ logger.debug(data)
 
     # Fuentes de vídeo
-    bloque = scrapertools.find_single_match(data, "<ul id='playeroptionsul'>(.*?)</ul>")
+    bloque = scrapertools.find_single_match(data, "<ul id='playeroptionsul'[^>]*>(.*?)</ul>")
 
-    matches = scrapertools.find_multiple_matches(bloque, "<li id='player-option-\d+'(.*?)</li>")
-    for enlace in matches:
+    matches = scrapertools.find_multiple_matches(bloque, "<li id='player-option-(\d+)'(.*?)</li>")
+    for numero, enlace in matches:
         # ~ logger.debug(enlace)
-
-        dtype = scrapertools.find_single_match(enlace, "data-type='([^']+)")
-        dpost = scrapertools.find_single_match(enlace, "data-post='([^']+)")
-        dnume = scrapertools.find_single_match(enlace, "data-nume='([^']+)")
-        if dnume == 'trailer': continue
-        if not dtype or not dpost or not dnume: continue
-
-        servidor = scrapertools.find_single_match(enlace, "<span class='server'>([^<.]+)")
+        
+        # ~ <div id='source-player-1' class='source-box'><div class='pframe'><iframe class='metaframe rptss' src='https://upstream.to/embed-m63t64z83gfn.html'
+        url = scrapertools.find_single_match(data, "<div id='source-player-%s[^>]*><div class='pframe'><iframe[^>]* src='([^']+)" % numero)
+        if not url: continue
+        servidor = servertools.get_server_from_url(url)
+        if not servidor or servidor == 'directo': continue
+        url = servertools.normalize_url(servidor, url)
         lang = scrapertools.find_single_match(enlace, "/img/flags/([^.']+)").lower()
-        if not servidor or servidor == 'Desconocido' or not lang:
-            # ~ <span class='title'>Subtitulado / STREAMTAPE</span>
-            # ~ <span class='title'>SUB ESP ¦ DooD</span>
-            aux = scrapertools.find_single_match(enlace, "<span class='title'>([^<]+)")
-            sep = '/' if '/' in aux else '¦' if '¦' in aux else None
-            if sep:
-                if not lang: lang = aux.split(sep)[0].strip().lower()
-                if not servidor or servidor == 'Desconocido': servidor = aux.split(sep)[1]
-
-        servidor = corregir_servidor(servidor)
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
-                              title = '', dtype = dtype, dpost = dpost, dnume = dnume, referer = item.url,
+                              title = '', url = url,
                               language = IDIOMAS.get(lang, lang)
                        ))
 
@@ -370,12 +360,15 @@ def play(item):
     logger.info()
     itemlist = []
 
-    if item.url:
+    if item.url and host in item.url:
         data = httptools.downloadpage(item.url).data
-        # ~ logger.debug(data)
+        logger.debug(data)
         url = scrapertools.find_single_match(data, '<a id="link".*?href="([^"]+)')
         if url: 
             itemlist.append(item.clone( url=servertools.normalize_url(item.server, url) ))
+
+    elif item.url and item.server:
+        itemlist.append(item.clone())
 
     else:
         post = urllib.urlencode( {'action': 'doo_player_ajax', 'post': item.dpost, 'nume': item.dnume, 'type': item.dtype} )

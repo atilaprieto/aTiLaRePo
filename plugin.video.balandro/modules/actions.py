@@ -33,6 +33,15 @@ def check_addon_updates(item):
     from platformcode import updater
     updater.check_addon_updates(verbose=True)
 
+# Comprobar actualizaciones (llamada desde una opción de la Configuración)
+def check_addon_updates_force(item):
+    logger.info()
+
+    # TODO aviso de espera...
+    
+    from platformcode import updater
+    updater.check_addon_updates(verbose=True, force=True)
+
 
 # Borrar caché de TMDB (llamada desde una opción de la Configuración)
 def drop_db_cache(item):

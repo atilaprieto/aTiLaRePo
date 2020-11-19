@@ -22,12 +22,12 @@ def get_embed(vid):
     video_urls = []
 
     data = httptools.downloadpage('https://gounlimited.to/embed-' + vid + '.html').data
-    # ~ logger.debug(data)
+    logger.debug(data)
 
     packer = scrapertools.find_single_match(data, "<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
     if packer:
         data = jsunpack.unpack(packer)
-        # ~ logger.debug(data)
+        logger.debug(data)
 
     mp4 = scrapertools.find_single_match(data, 'sources:\["([^"]+)')
     if not mp4: mp4 = scrapertools.find_single_match(data, 'src:"([^"]+\.mp4)"')

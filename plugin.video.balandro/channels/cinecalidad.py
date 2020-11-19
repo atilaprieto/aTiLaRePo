@@ -8,7 +8,7 @@ from core import httptools, scrapertools, tmdb
 
 
 # ~ DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.to/', 'https://www1.cinecalidad.top/']
-DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.to/', 'https://www.cinecalidad.im/']
+DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.im/']
 
 def host_by_lang(lang=''):
     if lang == '': # si no se especifica idioma, obtenerlo de las preferencias de idioma del usuario
@@ -17,6 +17,7 @@ def host_by_lang(lang=''):
         lang = 'Esp' if pref_esp != 0 and (pref_lat == 0 or pref_esp <= pref_lat) else 'Lat'
         
     dominio = config.get_setting('dominio', 'cinecalidad', default=DOMINIOS[0])
+    if dominio not in DOMINIOS: dominio = DOMINIOS[0]
     if lang == 'Lat': return dominio
     if lang == 'Esp': return dominio + 'espana/'
     return dominio
@@ -45,6 +46,7 @@ def configurar_proxies(item):
 
 def do_downloadpage(url, post=None, headers=None):
     dominio = config.get_setting('dominio', 'cinecalidad', default=DOMINIOS[0]) # por si viene de enlaces guardados
+    if dominio not in DOMINIOS: dominio = DOMINIOS[0]
     for dom in DOMINIOS:
         url = url.replace(dom, dominio)
 
@@ -75,6 +77,8 @@ def mainlist_pelis_lang(item):
     host = host_by_lang(item.idioma)
     itemlist.append(item.clone( title='Lista de películas', action='peliculas', url=host ))
     itemlist.append(item.clone( title='Destacadas', action='peliculas', url=host+'genero-peliculas/destacada/' ))
+    itemlist.append(item.clone( title='Películas 4K', action='peliculas', url=host+'peliculas/4k-ultra-hd/' ))
+
     itemlist.append(item.clone( title='Por Género', action='generos' ))
     itemlist.append(item.clone( title='Por Año', action='anyos' ))
 
@@ -217,11 +221,23 @@ def findvideos(item):
                                  language = item.languages
                            ))
 
-    # Enlaces Torrent
+    # Idioma para enlaces BitTorrent, 4K
     idio = scrapertools.find_single_match(data, '<div class=pane_title>DESCARGAR</div><div class=pane_descripcion>([^<]+)').lower()
     if 'audio castellano' in idio: lang = 'Esp'
     elif 'audio latino' in idio: lang = 'Lat'
     else: lang = 'VOSE'
+
+    # Enlaces Mega 4K
+    matches = re.compile(' href="([^"]+)" target=_blank class="link link4k" rel=nofollow service=Mega4K', re.DOTALL).findall(data)
+    if not matches:
+        matches = re.compile(' href="([^"]+)" target="_blank" class="link link4k" rel="nofollow" service="Mega4K', re.DOTALL).findall(data)
+    for url in matches:
+        itemlist.append(Item(channel = item.channel, action = 'play', server = 'mega',
+                             title = '', url = host_by_lang('Lat')+url[1:],
+                             language = lang, quality = '4K'
+                       ))
+
+    # Enlaces BitTorrent
     matches = re.compile(' href="([^"]+)" target=_blank class=link rel=nofollow service=BitTorrent', re.DOTALL).findall(data)
     if not matches:
         matches = re.compile(' href="([^"]+)" target="_blank" class="link" rel="nofollow" service="BitTorrent', re.DOTALL).findall(data)
@@ -229,6 +245,16 @@ def findvideos(item):
         itemlist.append(Item(channel = item.channel, action = 'play', server = 'torrent',
                              title = '', url = host_by_lang('Lat')+url[1:],
                              language = lang
+                       ))
+
+    # Enlaces BitTorrent 4K
+    matches = re.compile(' href="([^"]+)" target=_blank class="link link4k" rel=nofollow service=BitTorrent4K', re.DOTALL).findall(data)
+    if not matches:
+        matches = re.compile(' href="([^"]+)" target="_blank" class="link link4k" rel="nofollow" service="BitTorrent4K', re.DOTALL).findall(data)
+    for url in matches:
+        itemlist.append(Item(channel = item.channel, action = 'play', server = 'torrent',
+                             title = '', url = host_by_lang('Lat')+url[1:],
+                             language = lang, quality = '4K'
                        ))
 
     return itemlist
@@ -239,13 +265,23 @@ def play(item):
     itemlist = []
 
     url = item.url
-    if '/protect/v.php' in item.url:
+    if '/protect/v.php' in item.url or '/vip/v.php' in item.url:
         data = do_downloadpage(item.url)
         # ~ logger.debug(data)
-        url_torrent = scrapertools.find_single_match(data, 'value="(magnet.*?)"')
-        if url_torrent != '': url = url_torrent
 
-    itemlist.append(item.clone(url = url))
+        cod_vip = scrapertools.find_single_match(data, 'name="codigovip" value="([^"]+)"')
+        if cod_vip:
+            data = httptools.downloadpage(item.url, post={'codigovip': cod_vip}).data
+            # ~ logger.debug(data)
+
+        if item.server != 'torrent':
+            url = scrapertools.find_single_match(data, '<div id="contenido".*?href="([^"]+)"')
+            if url: url = url.replace('/file/', '/embed#!')
+        else:
+            url = scrapertools.find_single_match(data, 'value="(magnet.*?)"')
+
+    if url:
+        itemlist.append(item.clone(url = url))
     
     return itemlist
 

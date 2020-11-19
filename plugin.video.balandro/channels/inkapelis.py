@@ -10,8 +10,10 @@ host = 'https://inkapelis.me/'
 
 
 def do_downloadpage(url, post=None, headers=None):
-    data = httptools.downloadpage(url, post=post, headers=headers).data
-    # ~ data = httptools.downloadpage_proxy('inkapelis', url, post=post, headers=headers).data
+    raise_weberror = False if '/fecha/' in url else True
+
+    data = httptools.downloadpage(url, post=post, headers=headers, raise_weberror=raise_weberror).data
+    # ~ data = httptools.downloadpage_proxy('inkapelis', url, post=post, headers=headers, raise_weberror=raise_weberror).data
     return data
 
 
@@ -83,13 +85,11 @@ def anyos(item):
     logger.info()
     itemlist = []
     
-    data = do_downloadpage(host + 'pelicula/')
-    
-    bloque = scrapertools.find_single_match(data, '<ul class="releases scrolling">(.*?)</ul>')
-    
-    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)')
-    for url, title in matches:
-        itemlist.append(item.clone( action='list_all', title=title, url=url ))
+    from datetime import datetime
+    current_year = int(datetime.today().year)
+
+    for x in range(current_year, 1938, -1):
+        itemlist.append(item.clone( title=str(x), url= host + '/fecha/' + str(x) + '/', action='list_all' ))
 
     return itemlist
 
@@ -275,23 +275,46 @@ def findvideos(item):
         # ~ https://players.inkapelis.me/players/
         # ~ https://is.playerd.xyz/embed/...
         # ~ https://pbgzqk.inkapelis.me/embed/...
+        # ~ https://play.megaplay.cc/players/...
         else:
             data2 = httptools.downloadpage(url, headers={'Referer':host}).data
             # ~ logger.debug(data2)
+            dom = '/'.join(url.split('/')[:3])
             
-            links = scrapertools.find_multiple_matches(data2, '<a id="servers"(.*?)</a>')
+            # ~ https://play.megaplay.cc/players/id5facb5f29ab755.47167764&bg=//image.tmdb.org/t/p/w780/BVgXyHfMxyS1Xu8n48YTpyTpPM.jpg
+            links = scrapertools.find_multiple_matches(data2, '<li onclick(.*?)</li>')
             for lnk in links:
-                lembed = scrapertools.find_single_match(lnk, 'data-embed="([^"]+)')
-                ltype = scrapertools.find_single_match(lnk, 'data-type="([^"]+)')
-                servidor = scrapertools.find_single_match(lnk, 'title="([^".]+)').lower()
-                if not servidor:
-                    servidor = scrapertools.find_single_match(lnk, '<span class="serverx">([^<]+)').lower()
+                vurl = scrapertools.find_single_match(lnk, "go_to_player\('([^']+)")
+                if not vurl: continue
+                if '/playerdir/' in vurl: vurl = '/playdir/' + scrapertools.find_single_match(vurl, "/playerdir/([^&]+)")
+                if vurl.startswith('/'): vurl = dom + vurl
+                    
+                servidor = scrapertools.find_single_match(lnk, 'player/server/([^."]+)').lower()
+                if servidor == 'descargar': continue # 1fichier?
                 # ~ logger.info(servidor)
-            
-                itemlist.append(Item( channel = item.channel, action = 'play', server = corregir_servidor(servidor), referer = url,
-                                      title = '', lembed = lembed, ltype = ltype, lurl = '/'.join(url.split('/')[:3]), #other=servidor,
+                # ~ lang = 'Esp' if '<p>Castellano' in lnk else 'Lat' if '<p>Latino' in lnk else 'VOSE' if '<p>Subtitulado' in lnk else 'VO'
+                lang = scrapertools.find_single_match(lnk, "<p>([A-z]+)").lower()
+
+                itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
+                                      title = '', url = vurl,
                                       language = IDIOMAS.get(lang, 'VO')
                                ))
+
+            if not links:
+                links = scrapertools.find_multiple_matches(data2, '<a id="servers"(.*?)</a>')
+                for lnk in links:
+                    lembed = scrapertools.find_single_match(lnk, 'data-embed="([^"]+)')
+                    ltype = scrapertools.find_single_match(lnk, 'data-type="([^"]+)')
+                    servidor = scrapertools.find_single_match(lnk, 'title="([^".]+)').lower()
+                    if not servidor:
+                        servidor = scrapertools.find_single_match(lnk, '<span class="serverx">([^<]+)').lower()
+                    # ~ logger.info(servidor)
+                
+                    itemlist.append(Item( channel = item.channel, action = 'play', server = corregir_servidor(servidor), referer = url,
+                                          title = '', lembed = lembed, ltype = ltype, lurl = '/'.join(url.split('/')[:3]), #other=servidor,
+                                          language = IDIOMAS.get(lang, 'VO')
+                                    ))
+
             if not links:
                 dom = '/'.join(url.split('/')[:3])
                 links = get_sources(data2)
@@ -329,7 +352,7 @@ def play(item):
 
     if 'playerd.xyz/' in item.url or 'inkapelis.me/' in item.url:
         resp = httptools.downloadpage(item.url, headers={'Referer':item.referer}, follow_redirects=False)
-        # ~ /playdir?dir=cVNSMlFPSkFxaUluU3FsbDNSVU5JdFMyN0dpOXArWnYxNncwUGhOOEh1ZW56Wk90a2tZRnZBQjNxYXRtaHBuUg==
+        # ~ /playdir?dir=...
         
         if 'refresh' in resp.headers:
             vurl = scrapertools.find_single_match(resp.headers['refresh'], ';\s*(.*)')

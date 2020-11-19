@@ -178,6 +178,7 @@
         <setting id="addon_update_atstart" type="bool" label="Comprobar actualizaciones al iniciar Kodi" default="true"/>
         <setting id="addon_update_verbose" type="bool" label="Mostrar aviso del resultado de la actualización" default="false" visible="eq(-1,true)"/>
         <setting id="addon_update_doit" type="action" label="Pulse para 'Comprobar actualizaciones' ahora" action="RunPlugin(plugin://plugin.video.balandro/?channel=actions&action=check_addon_updates)" />
+        <setting id="addon_update_doitforce" type="action" label="Pulse para 'Forzar actualizaciones' ahora" action="RunPlugin(plugin://plugin.video.balandro/?channel=actions&action=check_addon_updates_force)" />
     </category>
 
 

@@ -23,7 +23,13 @@ def get_aux(page_url):
     # ~ logger.debug(data)
     
     url = scrapertools.find_single_match(data, 'document\.getElementById\("videolink"\)\.innerHTML\s*=\s*"([^"]+)')
-    if not url: url = scrapertools.find_single_match(data, '<div id="videolink"[^>]*>(.*?)</div>')
+
+    if not url or (not url.startswith('//') and not url.startswith('http')): 
+        url = scrapertools.find_single_match(data, "elem\['innerHTML'\]\s*=\s*'([^']+)")
+
+    if not url or (not url.startswith('//') and not url.startswith('http')): 
+        url = scrapertools.find_single_match(data, '<div id="videolink"[^>]*>(.*?)</div>')
+
     if url:
         url += '&stream=1'
         if url.startswith('//'): url = 'https:' + url

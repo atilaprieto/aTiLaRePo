@@ -40,8 +40,10 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title='Actualizadas', action='peliculas', url=CHANNEL_HOST + 'pelicula/' ))
     itemlist.append(item.clone( title='Destacadas', action='peliculas', url=CHANNEL_HOST + 'mas-vistos/?get=movies' ))
     itemlist.append(item.clone( title='Estrenos', action='peliculas', url=CHANNEL_HOST + 'genero/estrenos/' ))
+
     itemlist.append(item.clone( title='Por Idioma', action='idiomas' ))
     itemlist.append(item.clone( title='Por Género', action='generos' ))
+    itemlist.append(item.clone( title='Por Año', action = 'anios' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
@@ -58,7 +60,6 @@ def idiomas(item):
     itemlist.append(item.clone( action='peliculas', title='VOSE', url= CHANNEL_HOST + 'idioma/subtitulado/' ))
 
     return itemlist
-
 
 def generos(item):
     logger.info()
@@ -81,6 +82,18 @@ def generos(item):
         itemlist.append(item.clone( action='peliculas', title='Bélica', url=CHANNEL_HOST + 'genero/belica/' ))
 
     return sorted(itemlist, key=lambda it: it.title)
+
+def anios(item):
+    logger.info()
+    itemlist = []
+    
+    from datetime import datetime
+    current_year = int(datetime.today().year)
+
+    for ano in range(current_year, 1938, -1):
+        itemlist.append(item.clone( action = 'peliculas', title = str(ano), url = CHANNEL_HOST + 'ano/' + str(ano) + '/' ))
+
+    return itemlist
 
 
 # A partir de un título detectar si contiene una versión alternativa y devolver ambos

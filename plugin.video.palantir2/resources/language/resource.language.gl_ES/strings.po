@@ -69,14 +69,30 @@ msgid "Top/Uptobox server"
 msgstr "Servidor Top/Uptobox"
 
 msgctxt "#30012"
-msgid "User"
-msgstr "Usuario"
+msgid "Account email"
+msgstr "Correo electrónico da conta"
 
 msgctxt "#30013"
 msgid "Password"
 msgstr "Contrasinal"
 
-# empty strings from id 30014 to 30020
+msgctxt "#30014"
+msgid "Team/Drive server"
+msgstr "Servidor Team/Drive"
+
+msgctxt "#30015"
+msgid "Client ID"
+msgstr "ID de cliente"
+
+msgctxt "#30016"
+msgid "Client secret"
+msgstr "Secreto do cliente"
+
+msgctxt "#30017"
+msgid "Generated verification code"
+msgstr "Código de verificación xerado"
+
+# empty strings from id 30018 to 30020
 
 msgctxt "#30020"
 msgid More..."
@@ -110,7 +126,15 @@ msgctxt "#30027"
 msgid "Reset Cache Extendedinfo"
 msgstr "Restablecer caché do Extendedinfo"
 
-# empty strings from id 30028 to 30030
+msgctxt "#30028"
+msgid "Movie views by year"
+msgstr "Reproducións de películas ao ano"
+
+msgctxt "#30029"
+msgid "Always use resolveUrl"
+msgstr "Emprega sempre resolveUrl"
+
+
 
 # Palantir
 
@@ -175,8 +199,8 @@ msgid "Unknown"
 msgstr "Descoñecido"
 
 msgctxt "#30046"
-msgid "It is necessary to have the GDrive addon configured correctly."
-msgstr "É preciso tener configurado o addon GDrive correctamente."
+msgid "It is necessary to have the Team / Drive account configured in settings."
+msgstr "É necesario ter a conta de Team / Drive configurada na configuración."
 
 msgctxt "#30047"
 msgid "Resolve not available"
@@ -212,9 +236,27 @@ msgstr "Actualizando dependencias externas..."
 
 msgctxt "#30055"
 msgid "One moment, please."
-msgstr "Un momento por favor."
+msgstr "Un momento, por favor."
 
-# empty strings from id 30055 to 30099
+msgctxt "#30056"
+msgid "We are sorry but your operating system does not support the pyCryptomode module needed to run Palantir"
+msgstr "Sentímolo, pero o seu sistema operativo non admite o módulo pyCryptomode necesario para executar Palantir"
+
+msgctxt "#30057"
+msgid "Sorry, Palantir 2 is not compatible with Kodi 16 and 17"
+msgstr "Sentímolo, Palantir 2 non é compatible con Kodi 16 e 17"
+
+msgctxt "#30058"
+msgid "Hide MPD links"
+msgstr "Ocultar ligazóns MPD"
+
+msgctxt "#30059"
+msgid "Server %s temporarily out of service"
+msgstr "O servidor %s está temporalmente inactivo"
+
+
+
+# empty strings from id 30060 to 30099
 
 # moria
 

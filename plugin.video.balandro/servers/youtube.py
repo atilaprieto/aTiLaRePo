@@ -106,6 +106,7 @@ def obtener_js_signature(youtube_page_data):
 
     js_signature_checked = True
     urljs = scrapertools.find_single_match(youtube_page_data, '"assets":.*?"js":\s*"([^"]+)"').replace("\\", "")
+    if not urljs: urljs = scrapertools.find_single_match(youtube_page_data, '"([^"]+base\.js)"').replace("\\", "")
     if urljs:
         if not re.search(r'https?://', urljs): urljs = urlparse.urljoin("https://www.youtube.com", urljs)
         data_js = httptools.downloadpage(urljs).data
@@ -123,6 +124,8 @@ def obtener_js_signature(youtube_page_data):
         from lib.jsinterpreter import JSInterpreter
         jsi = JSInterpreter(data_js)
         js_signature = jsi.extract_function(funcname)
+    else:
+        logger.info('No detectada js_signature')
 
 
 def extract_from_player_response(params, youtube_page_data=''):

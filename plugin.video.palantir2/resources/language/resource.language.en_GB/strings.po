@@ -679,14 +679,30 @@ msgid "Top/Uptobox server"
 msgstr ""
 
 msgctxt "#30012"
-msgid "User"
+msgid "Account email"
 msgstr ""
 
 msgctxt "#30013"
 msgid "Password"
 msgstr ""
 
-# empty strings from id 30014 to 30020
+msgctxt "#30014"
+msgid "Team/Drive server"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Client ID"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Client secret"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Generated verification code"
+msgstr ""
+
+# empty strings from id 30018 to 30020
 
 msgctxt "#30020"
 msgid "More..."
@@ -720,7 +736,14 @@ msgctxt "#30027"
 msgid "Reset Cache Extendedinfo"
 msgstr ""
 
-# empty strings from id 30028 to 30030
+msgctxt "#30028"
+msgid "Movie views by year"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Always use resolveUrl"
+msgstr ""
+
 
 # Palantir
 
@@ -785,7 +808,7 @@ msgid "Unknown"
 msgstr ""
 
 msgctxt "#30046"
-msgid "It is necessary to have the GDrive addon configured correctly."
+msgid "It is necessary to have the Team / Drive account configured in settings."
 msgstr ""
 
 msgctxt "#30047"
@@ -824,7 +847,25 @@ msgctxt "#30055"
 msgid "One moment, please."
 msgstr ""
 
-# empty strings from id 30055 to 30099
+msgctxt "#30056"
+msgid "We are sorry but your operating system does not support the pyCryptomode module needed to run Palantir"
+msgstr ""
+
+
+msgctxt "#30057"
+msgid "Sorry, Palantir 2 is not compatible with Kodi 16 and 17"
+msgstr ""
+
+msgctxt "#30058"
+msgid "Hide MPD links"
+msgstr ""
+
+msgctxt "#30059"
+msgid "Server %s temporarily out of service"
+msgstr ""
+
+
+# empty strings from id 30060 to 30099
 
 # moria
 

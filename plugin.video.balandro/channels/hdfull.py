@@ -41,9 +41,12 @@ def do_downloadpage(url, post=None, referer=None, check_domain=True):
     dominio = config.get_setting('dominio', 'hdfull', default=host)
     url = re.sub('^https://[^/]+/', dominio, url)
 
-    if not referer: referer = host #dominio
+    if not referer: referer = dominio #host
     if post and '&menu=search&query=' in post: referer = dominio
-    headers = {'Referer': referer}
+
+    # ~ headers = {'Referer': referer}
+    headers = {}
+    if post: headers = {'Referer': referer}
 
     # ~ data = httptools.downloadpage_proxy('hdfull', url, post=post, headers=headers).data
     data = httptools.downloadpage(url, post=post, headers=headers).data

@@ -1142,9 +1142,76 @@
 					</control>
 				</setting>
 			</group>
+			<group id="2" label="30014">
+				<setting id="drive_client_id" type="string" label="30015" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="edit" format="string">
+						<heading>30015</heading>
+					</control>
+				</setting>
+				<setting id="drive_client_secret" type="string" label="30016" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="edit" format="string">
+						<heading>30016</heading>
+					</control>
+				</setting>
+				<setting id="drive_code" type="string" label="30017" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="edit" format="string">
+						<heading>30017</heading>
+					</control>
+				</setting>
+			</group>
+			<group id="3" label="30014">
+				<visible>False</visible>
+				<setting id="Alldebrid_user" type="string" label="30012" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="edit" format="string">
+						<heading>30012</heading>
+					</control>
+				</setting>
+				<setting id="Alldebrid_password" type="string" label="30013" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="edit" format="string">
+						<heading>30013</heading>
+					</control>
+				</setting>
+			</group>
 		</category>
 		<category id="mas..." label="30020" help="">
 			<group id="1">
+				<setting id="OrderYear" type="string" label="30028" help="">
+					<level>0</level>
+					<default> order by sum(views) desc</default>
+					<constraints>
+						<options>
+							<option label="30122">order by sum(views) desc</option>
+							<option label="30124">order by updated desc</option>
+							<option label="30115">order by nombre COLLATE latin1</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
 				<setting id="Watched" type="integer" label="30021" help="">
 					<level>0</level>
 					<default>1</default>
@@ -1157,8 +1224,19 @@
 					</constraints>
 					<control type="spinner" format="string"/>
 				</setting>
+				<setting id="Always_resolveUrl" type="boolean" label="30029" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="MPD_hidde" type="boolean" label="30058" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
 			</group>
 			<group id="2" label="30025">
+				<visible>False</visible>
 				<setting id="reset_resolveurl_cache" type="action" label="30026" help="">
 					<level>0</level>
 					<data>RunPlugin(plugin://script.module.resolveurl/?mode=reset_cache)</data>

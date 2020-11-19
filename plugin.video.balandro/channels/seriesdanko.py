@@ -39,9 +39,74 @@ def mainlist_series(item):
 
     itemlist.append(item.clone( title='Listado alfabético', action='listado_alfabetico' ))
 
+    itemlist.append(item.clone( title = 'Por género', action = 'generos' ))
+
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
     # ~ itemlist.append(item_configurar_proxies(item))
+    return itemlist
+
+
+def generos(item):
+    logger.info()
+    itemlist = []
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
+    opciones = [
+        ('accion', 'Acción'),
+        ('accion-y-aventura', 'Acción y Aventura'),
+        ('action-adventure', 'Action & Adventure'),
+        ('animacion', 'Animación'),
+        ('anime', 'Anime'),
+        ('aventura', 'Aventura'),
+        ('biografia', 'Biografía'),
+        ('ciencia-ficcion', 'Ciencia ficción'),
+        ('cocina', 'Cocina'),
+        ('comedia', 'Comedia'),
+        ('crimen', 'Crimen'),
+        ('documental', 'Documental'),
+        ('dorama', 'Dorama'),
+        ('drama', 'Drama'),
+        ('erotico', 'Erótico'),
+        ('familia', 'Familia'),
+        ('family', 'Family'),
+        ('fantasia', 'Fantasía'),
+        ('historia', 'Historia'),
+        ('historico', 'Historico'),
+        ('infantil', 'Infantil'),
+        ('intrega', 'Intriga'),
+        ('kids', 'Kids'),
+        ('medico', 'Médico'),
+        ('mediometraje', 'Mediometraje'),
+        ('misterio', 'Misterio'),
+        ('musica', 'Música'),
+        ('musical', 'Musical'),
+        ('novelas', 'Novelas'),
+        ('policial', 'Policial'),
+        ('reality', 'Reality'),
+        ('reality-show', 'Reality Show'),
+        ('realityshow', 'RealityShow'),
+        ('realitytv', 'RealityTv'),
+        ('romance', 'Romance'),
+        ('sci-fi-fantasy', 'Sci-Fi & Fantasy'),
+        ('serie', 'Serie'),
+        ('suspense', 'Suspense'),
+        ('suspenso', 'Suspenso'),
+        ('talk', 'Talk'),
+        ('talkshow', 'TalkShow'),
+        ('telenovela', 'Telenovela'),
+        ('television', 'Televisión'),
+        ('terror', 'Terror'),
+        ('thriller', 'Thriller'),
+        ('tv-show', 'Tv Show'),
+        ('war-politics', 'War & Politics'),
+        ('western', 'Western')
+    ]
+
+    for opc, tit in opciones:
+        if descartar_xxx and opc == 'erotico': continue
+        itemlist.append(item.clone( title = tit, url = HOST + 'genero/' + opc + '/', action = 'series_por_letra' ))
+
     return itemlist
 
 

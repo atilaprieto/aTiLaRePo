@@ -69,14 +69,30 @@ msgid "Top/Uptobox server"
 msgstr "Servidor Top/Uptobox"
 
 msgctxt "#30012"
-msgid "User"
-msgstr "Usuario"
+msgid "Account email"
+msgstr "Email de la cuenta"
 
 msgctxt "#30013"
 msgid "Password"
 msgstr "Contraseña"
 
-# empty strings from id 30014 to 30020
+msgctxt "#30014"
+msgid "Team/Drive server"
+msgstr "Servidor Team/Drive"
+
+msgctxt "#30015"
+msgid "Client ID"
+msgstr "ID de cliente"
+
+msgctxt "#30016"
+msgid "Client secret"
+msgstr "Secreto de cliente"
+
+msgctxt "#30017"
+msgid "Generated verification code"
+msgstr "Código de verificación generado"
+
+# empty strings from id 30018 to 30020
 
 msgctxt "#30020"
 msgid More..."
@@ -110,7 +126,15 @@ msgctxt "#30027"
 msgid "Reset Cache Extendedinfo"
 msgstr "Reiniciar Cache Extendedinfo"
 
-# empty strings from id 30028 to 30030
+msgctxt "#30028"
+msgid "Movie views by year"
+msgstr "Vistas de películas por año"
+
+msgctxt "#30029"
+msgid "Always use resolveUrl"
+msgstr "Usar siempre resolverUrl"
+
+
 
 # Palantir
 
@@ -175,8 +199,8 @@ msgid "Unknown"
 msgstr "Desconocido"
 
 msgctxt "#30046"
-msgid "It is necessary to have the GDrive addon configured correctly."
-msgstr "Es necesario tener configurado el addon GDrive correctamente."
+msgid "It is necessary to have the Team / Drive account configured in settings."
+msgstr "Es necesario tener configurada la cuenta de Team/Drive en ajustes."
 
 msgctxt "#30047"
 msgid "Resolve not available"
@@ -214,7 +238,24 @@ msgctxt "#30055"
 msgid "One moment, please."
 msgstr "Un momento por favor."
 
-# empty strings from id 30055 to 30099
+msgctxt "#30056"
+msgid "We are sorry but your operating system does not support the pyCryptomode module needed to run Palantir"
+msgstr "Lo sentimos, pero su sistema operativo no es compatible con el módulo pyCryptomode necesario para ejecutar Palantir"
+
+msgctxt "#30057"
+msgid "Sorry, Palantir 2 is not compatible with Kodi 16 and 17"
+msgstr "Lo sentimos, Palantir 2 no es compatible con Kodi 16 y 17"
+
+msgctxt "#30058"
+msgid "Hide MPD links"
+msgstr "Ocultar enlaces MPD"
+
+msgctxt "#30059"
+msgid "Server %s temporarily out of service"
+msgstr "Servidor %s temporalmente fuera de servicio"
+
+
+# empty strings from id 30060 to 30099
 
 # moria
 
@@ -312,7 +353,7 @@ msgstr "Más vistas este mes"
 
 msgctxt "#30124"
 msgid "Latest updates "
-msgstr "Últimas actualizaciónes"
+msgstr "Últimas actualizaciones"
 
 msgctxt "#30125"
 msgid "Classic"

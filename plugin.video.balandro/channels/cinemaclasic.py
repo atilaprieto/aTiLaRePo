@@ -52,13 +52,13 @@ def anios(item):
     logger.info()
     itemlist = []
     
-    data = httptools.downloadpage(host).data
+    # ~ data = httptools.downloadpage(host).data
     
-    bloque = scrapertools.find_single_match(data, '<ul class="releases scrolling">(.*?)</ul>')
+    # ~ bloque = scrapertools.find_single_match(data, '<ul class="releases scrolling">(.*?)</ul>')
     
-    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)</a>')
-    for url, title in matches:
-        itemlist.append(item.clone( action='list_all', title=title, url=url ))
+    # ~ matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)</a>')
+    # ~ for url, title in matches:
+        # ~ itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
     # ~ for ano in range(1967, 1914, -1):
     for ano in range(2017, 1914, -1):

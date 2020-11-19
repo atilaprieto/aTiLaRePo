@@ -37,4 +37,3 @@ def comprobar_nuevos_episodios():
                 break
 
 threading.Thread(target=comprobar_nuevos_episodios).start()
-

@@ -69,14 +69,30 @@ msgid "Top/Uptobox server"
 msgstr "Serveur Top/Uptobox"
 
 msgctxt "#30012"
-msgid "User"
-msgstr "Utilisateur"
+msgid "Account email"
+msgstr "Compte email"
 
 msgctxt "#30013"
 msgid "Password"
 msgstr "Code"
 
-# empty strings from id 30014 to 30020
+msgctxt "#30014"
+msgid "Team/Drive server"
+msgstr "Serveur Team/Drive"
+
+msgctxt "#30015"
+msgid "Client ID"
+msgstr "ID de client"
+
+msgctxt "#30016"
+msgid "Client secret"
+msgstr "Secret client"
+
+msgctxt "#30017"
+msgid "Generated verification code"
+msgstr "Code de vérification généré"
+
+# empty strings from id 30018 to 30020
 
 msgctxt "#30020"
 msgid More..."
@@ -106,11 +122,15 @@ msgctxt "#30026"
 msgid "Reset Cache ResolveUrl"
 msgstr "Réinitialiser le cache ResolveUrl"
 
-msgctxt "#30027"
-msgid "Reset Cache Extendedinfo"
-msgstr "Réinitialiser le cache Extendedinfo"
+msgctxt "#30028"
+msgid "Movie views by year"
+msgstr "Vues de films par an"
 
-# empty strings from id 30028 to 30030
+msgctxt "#30029"
+msgid "Always use resolveUrl"
+msgstr "Utilisez toujours resolveUrl "
+
+
 
 # Palantir
 
@@ -175,8 +195,8 @@ msgid "Unknown"
 msgstr "Inconnu"
 
 msgctxt "#30046"
-msgid "It is necessary to have the GDrive addon configured correctly."
-msgstr "Il est nécessaire d'avoir configuré addon GDrive correctement."
+msgid "It is necessary to have the Team / Drive account configured in settings."
+msgstr "Il est nécessaire de configurer le compte Team/Drive dans les paramètres."
 
 msgctxt "#30047"
 msgid "Resolve not available"
@@ -214,7 +234,23 @@ msgctxt "#30055"
 msgid "One moment, please."
 msgstr "Un moment s'il vous plait"
 
-# empty strings from id 30055 to 30099
+msgctxt "#30056"
+msgid "We are sorry but your operating system does not support the pyCryptomode module needed to run Palantir"
+msgstr "Nous sommes désolés mais votre système d'exploitation ne prend pas en charge le module pyCryptomode nécessaire pour exécuter Palantir"
+
+
+msgctxt "#30057"
+msgid "Sorry, Palantir 2 is not compatible with Kodi 16 and 17"
+msgstr "Désolé, Palantir 2 n’est pas compatible avec Kodi 16 et 17"
+
+msgctxt "#30058"
+msgid "Hide MPD links"
+msgstr "Cacher des liens MPD"
+
+msgctxt "#30059"
+msgid "Server %s temporarily out of service"
+msgstr "Serveur %s temporairement hors service"
+
 
 # moria
 
