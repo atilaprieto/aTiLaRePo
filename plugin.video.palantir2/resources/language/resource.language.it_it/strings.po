@@ -77,22 +77,26 @@ msgid "Password"
 msgstr "Password"
 
 msgctxt "#30014"
-msgid "Team/Drive server"
-msgstr "Servidor Team/Drive"
+msgid "Alldebrid"
+msgstr "Alldebrid"
 
 msgctxt "#30015"
-msgid "Client ID"
-msgstr "ID de cliente"
+msgid "Apikey Name"
+msgstr "Nome apikey "
 
 msgctxt "#30016"
-msgid "Client secret"
-msgstr "Segreto client"
+msgid "Apikey Code"
+msgstr "Codice Apikey"
 
 msgctxt "#30017"
-msgid "Generated verification code"
-msgstr "Codice di verifica generato"
+msgid "Always play at full resolution (only Premium)"
+msgstr "Gioca sempre alla massima risoluzione (solo Premium)"
 
-# empty strings from id 30018 to 30020
+msgctxt "#30018"
+msgid "The duration of the video is %s minutes and you only have %s view.\nWould you like to cancel the playback?"
+msgstr "La durata del video è di %s minuti e hai solo la visualizzazione %s.\nVuoi annullare la riproduzione?"
+
+# empty strings from id 30019 to 30020
 
 msgctxt "#30020"
 msgid More..."

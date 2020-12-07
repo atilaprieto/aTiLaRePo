@@ -9,7 +9,8 @@ from core import httptools, scrapertools, servertools, jsontools, tmdb
 
 # ~ HOST = "http://www.seriespapaya.com"
 # ~ HOST = "https://www.seriespapaya.net"
-HOST = "https://www2.seriespapaya.nu/"
+# ~ HOST = "https://www2.seriespapaya.nu/"
+HOST = "https://www.seriespapaya.se/"
 
 IDIOMAS = {'es': 'Esp', 'lat': 'Lat', 'in': 'Eng', 'ca': 'Cat', 'sub': 'VOSE', 
            'Español Latino':'Lat', 'Español Castellano':'Esp', 'Sub Español':'VOSE'}
@@ -25,10 +26,12 @@ def configurar_proxies(item):
     return proxytools.configurar_proxies_canal(item.channel, HOST)
 
 def do_downloadpage(url, post=None, referer=None):
-    url = url.replace('http://', 'https://') # por si viene de enlaces guardados
-    url = url.replace('seriespapaya.com', 'seriespapaya.net') # por si viene de enlaces guardados
-    url = url.replace('seriespapaya.net', 'seriespapaya.nu') # por si viene de enlaces guardados
-    url = url.replace('https://www.', 'https://www2.') # por si viene de enlaces guardados
+    # por si viene de enlaces guardados:
+    url = url.replace('http://', 'https://')
+    url = url.replace('seriespapaya.com', 'seriespapaya.net')
+    url = url.replace('seriespapaya.net', 'seriespapaya.nu')
+    url = url.replace('seriespapaya.nu', 'seriespapaya.se')
+    url = url.replace('https://www2.', 'https://www.')
     
     headers = {'Referer': HOST}
     if referer: headers['Referer'] = referer

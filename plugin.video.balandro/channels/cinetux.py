@@ -8,7 +8,7 @@ from core import httptools, scrapertools, tmdb, servertools
 
 
 # ~ CHANNEL_HOST = "https://www.cinetux.to/"
-CHANNEL_HOST = "https://www.cinetux.nu/"
+CHANNEL_HOST = "https://cinetux.nu/"
 
 IDIOMAS = {'Latino': 'Lat', 'Subtitulado': 'VOSE', 'Español': 'Esp', 'Espa%C3%B1ol':'Esp', 'SUB': 'VO' }
 
@@ -24,7 +24,8 @@ def configurar_proxies(item):
 
 def do_downloadpage(url, post=None, headers=None):
     url = url.replace('http://', 'https://')
-    url = url.replace('www.cinetux.to/', 'www.cinetux.nu/')
+    url = url.replace('cinetux.to/', 'cinetux.nu/')
+    url = url.replace('https://www.', 'https://')
     # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
     data = httptools.downloadpage_proxy('cinetux', url, post=post, headers=headers).data
     return data

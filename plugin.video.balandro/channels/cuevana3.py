@@ -102,6 +102,7 @@ def list_all(item):
     if item.page: # paginaciones ajax para series
         post = {'page': item.page}
         if item.filtro == 'tabserie-1': post['action'] = 'cuevana_ajax_pagination'
+        elif item.filtro == 'tabserie-2': post['action'] = 'cuevana_ajax_pagination_estreno'
         elif item.filtro == 'tabserie-3': post['action'] = 'cuevana_ajax_pagination_rating'
         elif item.filtro == 'tabserie-4': post['action'] = 'cuevana_ajax_pagination_view'
         data = do_downloadpage(host+'wp-admin/admin-ajax.php', post=urllib.urlencode(post))
@@ -114,16 +115,17 @@ def list_all(item):
 
     matches = re.compile('<li\s*class="[^"]*TPostMv">(.*?)</li>', re.DOTALL).findall(data)
     for article in matches:
-        tipo = 'tvshow' if 'class=Qlty>SERIE' in article else 'movie'
+        tipo = 'tvshow' if 'class=Qlty>SERIE' in article or 'class="Qlty">SERIE' in article else 'movie'
         if item.search_type not in ['all', tipo]: continue
         sufijo = '' if item.search_type != 'all' else tipo
         
-        url = scrapertools.find_single_match(article, '\s*href=([^ >]+)')
+        url = scrapertools.find_single_match(article, '\s*href=(?:"|)([^ >"]+)')
         if '/pagina-ejemplo' in url: continue
         thumb = scrapertools.find_single_match(article, 'data-src=([^ >]+)')
+        if not thumb: thumb = scrapertools.find_single_match(article, ' src=(?:"|)([^ >"]+)')
         title = scrapertools.find_single_match(article, '<h2 class="Title">([^<]+)</h2>')
-        year = scrapertools.find_single_match(article, '<span\s*class=Year>(\d+)</span>')
-        qlty = scrapertools.find_single_match(article, '<span\s*class=Qlty>([^<]+)</span>')
+        year = scrapertools.find_single_match(article, '<span\s*class=(?:"|)Year(?:"|)>(\d+)</span>')
+        qlty = scrapertools.find_single_match(article, '<span\s*class=(?:"|)Qlty(?:"|)>([^<]+)</span>')
         
         if tipo == 'movie':
             itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, qualities=qlty, fmt_sufijo=sufijo, 
@@ -136,7 +138,7 @@ def list_all(item):
 
     next_page_link = scrapertools.find_single_match(data, ' rel="next" href="([^"]+)"')
     if next_page_link == '':
-        next_page_link = scrapertools.find_single_match(data, '\s*href=([^ >]+) class="next')
+        next_page_link = scrapertools.find_single_match(data, '\s*href=(?:"|)([^ >"]+) class="next')
     if next_page_link:
         if not item.filtro:
             itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_all' ))

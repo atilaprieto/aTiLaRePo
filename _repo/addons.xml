@@ -280,7 +280,7 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.program.WiZaRTiLa" name="WiZaRTiLa" version="1.0.1" provider-name="aTiLa">
+<addon id="plugin.program.WiZaRTiLa" name="WiZaRTiLa" version="1.0.2" provider-name="aTiLa">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
@@ -377,7 +377,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.3.5" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.atresplayer" name="ATRESPLAYER" version="1.3.8" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -639,7 +639,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.1.5" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.dplay_dmax_dkiss" name="DPLAY" version="1.1.7" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -760,7 +760,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.mitele" name="MITELE" version="1.2.5" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.mitele" name="MITELE" version="1.2.7" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -824,7 +824,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.palantir2" name="[COLOR gold]Palantir 2[/COLOR]" version="2.0.16" provider-name="TierraMedia">
+<addon id="plugin.video.palantir2" name="[COLOR gold]Palantir 2[/COLOR]" version="2.0.17" provider-name="TierraMedia">
   <requires>
     <import addon="script.module.six" version="1.11.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -860,7 +860,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.rtve" name="RTVE" version="1.1.3" provider-name="Alex303 - Hiraya Software">
+<addon id="plugin.video.rtve" name="RTVE" version="1.1.5" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -912,51 +912,34 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.tvchopo"
-       name="[B][LOWERCASE][CAPITALIZE][COLOR white]Tv[COLOR gold]chopo[/CAPITALIZE][/LOWERCASE][/B][/COLOR]"
-       version="21"
-       provider-name="equipo-chopo">
- <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.beautifulsoup" version="3.2.1"/>
-    <import addon="script.module.simple.downloader" version="0.9.4"/>
-    <import addon="script.module.beautifulsoup4" />
-    <import addon="script.module.requests" />
-    <import addon="script.module.httplib2" />
-    <import addon="script.module.liveresolver" version="0.1.24" optional="true"/>
-    <import addon="script.module.youtube.dl" optional="true"/>
+<addon
+	id="plugin.video.tvchopo" version="22" name="[B][COLOR white]TV[COLOR gold]CHOPO[/COLOR][/B]" provider-name="equipo tvchopo">
+<requires>
     <import addon="plugin.video.youtube" />
-    <import addon="script.module.urlresolver" />
-	<import addon="script.module.resolveurl" optional="true"/>
-	<import addon="script.module.simplejson" />
-    <import addon="script.module.livestreamer" optional="true"/>
-    <import addon="script.module.pyamf" optional="true"/>
+    <import addon="script.module.requests" />
+    <import addon="script.module.resolveurl" />
+    <import addon="script.module.six" />
   </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
+	<extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	</extension>
 
- <extension point="xbmc.addon.repository" name="tvchoco Jose">
+	 <extension point="xbmc.addon.repository" name="tvchopo">
         <info>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml</info>
         <checksum>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml.md5</checksum>
         <datadir zip="true">https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/</datadir>
     </extension>
 
 
-
-
-  <extension point="xbmc.addon.metadata">
-    <summary>tvchopo addon familiar</summary>
-    <description>
-        addon tvchopo no contiene ningun material propio..
-		todo el contenido es enlazado a las webs mas conocidas
-		de internet.....
-
-	tvchopo ni se vender ni se cobra ni acepta donaciones... si ha sido es el caso  ha sido usted estafado,...para mas informacion entra en nuestro grupo de telegram https://t.me/tvchopo
-
-    </description>
-    <platform>all</platform>
-	<assets>
+	<extension point="xbmc.addon.metadata">
+                <platform>all</platform>
+		<summary lang="en">tvchopo</summary>
+		<summary lang="da">tvchopo</summary>
+		<description lang="en">[B][LOWERCASE][CAPITALIZE][COLOR white]addon principal de la familia tvchopo, valido para kodi 18 y kodi 19.. este addon es [COLOR red]totalmente gratuito no se aceptan donativos ... no permitas que te vendan este addon.. es  gratis  [COLOR white]..entra en telegram [COLOR gold]@tvchopo[COLOR white] y te ayudamos[/COLOR][/CAPITALIZE][/LOWERCASE][/B]</description>
+		<website></website>
+		<license>GPL 2.0</license>
+		<platform>all</platform>
+<assets>
         <icon>icon.jpg</icon>
   <screenshot>resources/screenshots/screenshot1.jpg</screenshot>
   <screenshot>resources/screenshots/screenshot2.jpg</screenshot>
@@ -965,7 +948,8 @@ v.2.1.5
   <screenshot>resources/screenshots/screenshot5.jpg</screenshot>
         <fanart>fanart.png</fanart>
     </assets>
-  </extension>
+		<language>es</language>
+	</extension>
 </addon>
 
 <addon id="plugin.video.Tvchopo.Kids"
@@ -1753,7 +1737,7 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.14" provider-name="gujal">
+<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.17" provider-name="gujal">
     <requires>
         <!-- <import addon="xbmc.python" version="3.0.0" /> -->
         <import addon="script.module.six" />
@@ -1783,7 +1767,7 @@ You can clone the project and host it in your own server.
     </extension>
 </addon>
 
-<addon id="script.module.urlresolver" name="URLResolver" version="5.1.13" provider-name="tvaddons">
+<addon id="script.module.urlresolver" name="URLResolver" version="5.1.15" provider-name="tvaddons">
     <requires>
         <!-- <import addon="xbmc.python" version="3.0.0" /> -->
         <import addon="script.module.six" />

@@ -282,7 +282,7 @@ def findvideos(item):
             dom = '/'.join(url.split('/')[:3])
             
             # ~ https://play.megaplay.cc/players/id5facb5f29ab755.47167764&bg=//image.tmdb.org/t/p/w780/BVgXyHfMxyS1Xu8n48YTpyTpPM.jpg
-            links = scrapertools.find_multiple_matches(data2, '<li onclick(.*?)</li>')
+            links = scrapertools.find_multiple_matches(data2, '<li(?: id="servers"|) onclick(.*?)</li>')
             for lnk in links:
                 vurl = scrapertools.find_single_match(lnk, "go_to_player\('([^']+)")
                 if not vurl: continue
@@ -290,12 +290,13 @@ def findvideos(item):
                 if vurl.startswith('/'): vurl = dom + vurl
                     
                 servidor = scrapertools.find_single_match(lnk, 'player/server/([^."]+)').lower()
+                if not servidor: servidor = scrapertools.find_single_match(lnk, '<span class="serverx">([^<]+)').lower()
                 if servidor == 'descargar': continue # 1fichier?
                 # ~ logger.info(servidor)
                 # ~ lang = 'Esp' if '<p>Castellano' in lnk else 'Lat' if '<p>Latino' in lnk else 'VOSE' if '<p>Subtitulado' in lnk else 'VO'
                 lang = scrapertools.find_single_match(lnk, "<p>([A-z]+)").lower()
 
-                itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
+                itemlist.append(Item( channel = item.channel, action = 'play', server = corregir_servidor(servidor),
                                       title = '', url = vurl,
                                       language = IDIOMAS.get(lang, 'VO')
                                ))
@@ -306,8 +307,7 @@ def findvideos(item):
                     lembed = scrapertools.find_single_match(lnk, 'data-embed="([^"]+)')
                     ltype = scrapertools.find_single_match(lnk, 'data-type="([^"]+)')
                     servidor = scrapertools.find_single_match(lnk, 'title="([^".]+)').lower()
-                    if not servidor:
-                        servidor = scrapertools.find_single_match(lnk, '<span class="serverx">([^<]+)').lower()
+                    if not servidor: servidor = scrapertools.find_single_match(lnk, '<span class="serverx">([^<]+)').lower()
                     # ~ logger.info(servidor)
                 
                     itemlist.append(Item( channel = item.channel, action = 'play', server = corregir_servidor(servidor), referer = url,
@@ -351,7 +351,7 @@ def play(item):
         item.url = item.url.replace('inkapelis.me/fplayer?url=', 'inkapelis.me/redirector.php?url=')
 
     if 'playerd.xyz/' in item.url or 'inkapelis.me/' in item.url:
-        resp = httptools.downloadpage(item.url, headers={'Referer':item.referer}, follow_redirects=False)
+        resp = httptools.downloadpage(item.url, headers={'Referer':item.referer if item.referer else item.url}, follow_redirects=False)
         # ~ /playdir?dir=...
         
         if 'refresh' in resp.headers:

@@ -232,8 +232,9 @@ def findvideos(item):
     if not matches:
         matches = re.compile(' href="([^"]+)" target="_blank" class="link link4k" rel="nofollow" service="Mega4K', re.DOTALL).findall(data)
     for url in matches:
+        if url.startswith('/'): url = host_by_lang('Lat') + url[1:]
         itemlist.append(Item(channel = item.channel, action = 'play', server = 'mega',
-                             title = '', url = host_by_lang('Lat')+url[1:],
+                             title = '', url = url,
                              language = lang, quality = '4K'
                        ))
 
@@ -242,8 +243,9 @@ def findvideos(item):
     if not matches:
         matches = re.compile(' href="([^"]+)" target="_blank" class="link" rel="nofollow" service="BitTorrent', re.DOTALL).findall(data)
     for url in matches:
+        if url.startswith('/'): url = host_by_lang('Lat') + url[1:]
         itemlist.append(Item(channel = item.channel, action = 'play', server = 'torrent',
-                             title = '', url = host_by_lang('Lat')+url[1:],
+                             title = '', url = url,
                              language = lang
                        ))
 
@@ -252,8 +254,9 @@ def findvideos(item):
     if not matches:
         matches = re.compile(' href="([^"]+)" target="_blank" class="link link4k" rel="nofollow" service="BitTorrent4K', re.DOTALL).findall(data)
     for url in matches:
+        if url.startswith('/'): url = host_by_lang('Lat') + url[1:]
         itemlist.append(Item(channel = item.channel, action = 'play', server = 'torrent',
-                             title = '', url = host_by_lang('Lat')+url[1:],
+                             title = '', url = url,
                              language = lang, quality = '4K'
                        ))
 
@@ -263,9 +266,12 @@ def findvideos(item):
 def play(item):
     logger.info()
     itemlist = []
+    
+    if '/ouo.io/' in item.url:
+        item.url = scrapertools.find_single_match(item.url, '\?s=(.*)$')
 
     url = item.url
-    if '/protect/v.php' in item.url or '/vip/v.php' in item.url:
+    if '/protect/v.php' in item.url or '/vip/v.php' in item.url or '/protect/v2.php' in item.url or '/vip/v2.php' in item.url:
         data = do_downloadpage(item.url)
         # ~ logger.debug(data)
 

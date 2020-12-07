@@ -127,34 +127,30 @@ def list_all(item):
         thumb = scrapertools.find_single_match(article, ' data-original="([^"]+)"')
         title = scrapertools.find_single_match(article, '<div class="spotlight_title">(.*?)</div>').strip()
         url = scrapertools.find_single_match(article, ' href="([^"]+)"')
-        year = scrapertools.find_single_match(article, '<span class="slqual sres">(\d+)</span>')
+        year = scrapertools.find_single_match(article, '<span class="slqual sres">(\d{4})</span>')
         quality = 'HD' if '<span class="slqual-HD">HD</span>' in article else ''
         
         if 'data-cfemail' in title: title = scrapertools.clean_cfemail(title)
-            # ~ cfemail = scrapertools.find_single_match(title, ' data-cfemail="([^"]+)"')
-            # ~ r = int(cfemail[:2],16)
-            # ~ email = ''.join([chr(int(cfemail[i:i+2], 16) ^ r) for i in range(2, len(cfemail), 2)])
-            # ~ title = re.sub('<a href=.*?</a>', email, title)
         
         if tipo == 'movie':
             itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
                                         qualities=quality, fmt_sufijo=sufijo,
                                         contentType='movie', contentTitle=title, infoLabels={'year': year} ))
         else:
-            s_e = scrapertools.find_single_match(title, '<div class="info-series">(.*?)</div>')
             title = scrapertools.find_single_match(title, '(.*?)<br').strip()
             title = title[:1].upper() + title[1:] # algunas series no tienen la mayúscula inicial
-            s_e = re.sub('<[^>]*>', '', s_e)
-            season = scrapertools.find_single_match(s_e, 'Temporada (\d+)')
-            if season == '':
-                season = scrapertools.find_single_match(url, '-temp-(\d+)$')
-            if season == '':
-                season = '1'
-                
-            titulo = '%s [COLOR gray](Temporada %s)[/COLOR]' % (title, season)
-            itemlist.append(item.clone( action='episodios', url=url, title=titulo, thumbnail=thumb, 
-                                        qualities=quality, fmt_sufijo=sufijo, 
-                                        contentType='season', contentSerieName=title, contentSeason=season, infoLabels={'year': year} ))
+
+            season = scrapertools.find_single_match(url, '-temp-(\d+)$')
+            if season:
+                titulo = '%s [COLOR gray](Temporada %s)[/COLOR]' % (title, season)
+                itemlist.append(item.clone( action='episodios', url=url, title=titulo, thumbnail=thumb, 
+                                            qualities=quality, fmt_sufijo=sufijo, 
+                                            contentType='season', contentSerieName=title, contentSeason=season, infoLabels={'year': year} ))
+            else:
+                itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, 
+                                            qualities=quality, fmt_sufijo=sufijo, 
+                                            contentType='tvshow', contentSerieName=title, infoLabels={'year': year} ))
+
 
         if len(itemlist) >= perpage: break
 
@@ -175,6 +171,25 @@ def list_all(item):
 
     return itemlist
 
+
+def temporadas(item):
+    logger.info()
+    itemlist = []
+
+    data = do_downloadpage(item.url)
+
+    matches = scrapertools.find_multiple_matches(data, 'class="overviewPlay playLink" href="([^"]+)')
+
+    for url in matches:
+        season = scrapertools.find_single_match(url, '-temp-(\d+)$')
+        if not season: continue
+
+        itemlist.append(item.clone( action = 'episodios', title = 'Temporada ' + season, url = url, 
+                                    contentType = 'season', contentSeason = season ))
+
+    tmdb.set_infoLabels(itemlist)
+
+    return sorted(itemlist, key=lambda it: it.contentSeason)
 
 def episodios(item):
     logger.info()
@@ -294,6 +309,8 @@ def play(item):
         # ~ url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '') # TODO revisar...
         url = do_downloadpage(url, follow_redirects=False, only_headers=True).get('location', '')
         # ~ logger.debug(url)
+        url = url.replace('youtvgratis', 'fembed')
+        
         if url and 'http' not in url:
             if item.server == 'jetload': url = 'https://jetload.net/e/' + url
             else: url = None

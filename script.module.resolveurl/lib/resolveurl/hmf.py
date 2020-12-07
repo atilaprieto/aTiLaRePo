@@ -224,7 +224,6 @@ class HostedMediaFile:
                     if resolver.valid_url(self._url, self._domain):
                         resolvers.append(resolver)
                 except:
-                    # print sys.exc_info()
                     continue
 
             self.__resolvers = resolvers
@@ -267,6 +266,8 @@ class HostedMediaFile:
         except urllib_error.HTTPError as e:
             if isinstance(e, urllib_error.HTTPError):
                 http_code = e.code
+                if http_code == 405:
+                    http_code = 200
             else:
                 http_code = 600
         except urllib_error.URLError as e:

@@ -29,7 +29,7 @@ def list_playlists(item):
     if not item.page: item.page = 1
 
     url = 'https://api.dailymotion.com/playlists?owner=x24nyzt&limit=%d&page=%d&sort=alpha' % (perpage, item.page)
-    url += '&fields=id%2Cname%2Cthumbnail_url%2Cdescription%2Cvideos_total'
+    url += '&fields=id%2Cname%2Cthumbnail_480_url%2Cdescription%2Cvideos_total'
 
     try:
         data = httptools.downloadpage(url).data
@@ -41,7 +41,7 @@ def list_playlists(item):
             plot = '' if not vid['description'] else scrapertools.htmlclean(vid['description'])
 
             itemlist.append(item.clone( action='list_all', title=title, playlist_id=vid['id'], page=1, 
-                                        thumbnail=vid['thumbnail_url'], plot=plot ))
+                                        thumbnail=vid['thumbnail_480_url'], plot=plot ))
 
         if data['has_more']:
             itemlist.append(item.clone( title='>> Página siguiente', action='list_playlists', page = item.page + 1 ))

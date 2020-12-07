@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="Identificación">
-        <setting id="username" type="text" label="Usuario (email)" default="" />
-        <setting id="password" type="text" label="Password" default="" />
+    <category label="Descargas">
+        <setting id="download_dir" type="folder" label="Directorio para las descargas" default="" />
     </category>
 </settings>

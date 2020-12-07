@@ -6,8 +6,8 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-host = 'http://www.online.tucineclasico.es/'
-
+# ~ host = 'http://www.online.tucineclasico.es/'
+host = 'https://online.tucineclasico.es/'
 
 def mainlist(item):
     return mainlist_pelis(item)
@@ -29,22 +29,6 @@ def mainlist_pelis(item):
 
     return itemlist
 
-
-def generos_ant(item):
-    logger.info()
-    itemlist = []
-    
-    data = httptools.downloadpage(host).data
-    
-    bloque = scrapertools.find_single_match(data, '<nav class="genres">(.*?)</ul>')
-    
-    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)</a>\s*<i>([^<]+)</i>')
-    for url, title, num in matches:
-        if num == '0': continue
-        if 'genero/version-original-subtitulada' in url: continue
-        itemlist.append(item.clone( action='list_all', title=title + ' ('+num+')', url=url ))
-
-    return itemlist
 
 def generos(item):
     logger.info()

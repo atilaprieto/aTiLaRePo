@@ -18,7 +18,7 @@ EXCLUDES       = [ADDON_ID]
 CACHETEXT      = 'Yes'
 CACHEAGE       = 30
 # Text File with build info in it.
-BUILDFILE      = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizartila/autobuilds.txt'
+BUILDFILE      = 'http://atilaprieto.myftp.org:1234/compartidatila/Kodi/wizartila/autobuilds.txt'
 # How often you would like it to check for build updates in days
 # 0 being every startup of kodi
 UPDATECHECK    = 0
@@ -37,7 +37,7 @@ ADVANCEDFILE   = 'http://'
 ### Theming Menu Items ##################################
 #########################################################
 
-ICONBUILDS     = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizartila/icon.png'
+ICONBUILDS     = 'http://atilaprieto.myftp.org:1234/compartidatila/Kodi/wizartila/icon.png'
 ICONMAINT      = 'http://'
 ICONAPK        = 'http://'
 ICONADDONS     = 'http://'
@@ -77,8 +77,8 @@ HIDECONTACT    = 'No'
 # You can add \n to do line breaks
 CONTACT        = 'Gracias por elegir WiZaRTiLa.'
 #Images used for the contact window.  http:// for default icon and fanart
-CONTACTICON    = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizartila/icon.png'
-CONTACTFANART  = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizartila/fanart.jpg'
+CONTACTICON    = 'http://atilaprieto.myftp.org:1234/compartidatila/Kodi/wizartila/icon.png'
+CONTACTFANART  = 'http://atilaprieto.myftp.org:1234/compartidatila/Kodi/wizartila/fanart.jpg'
 #########################################################
 
 #########################################################
@@ -88,7 +88,7 @@ CONTACTFANART  = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizartila/fan
 # Enable Auto Update 'Yes' or 'No'
 AUTOUPDATE     = 'Yes'
 # Url to wizard version
-WIZARDFILE     = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizartila/autobuilds.txt'
+WIZARDFILE     = 'http://atilaprieto.myftp.org:1234/compartidatila/Kodi/wizartila/autobuilds.txt'
 #########################################################
 
 #########################################################
@@ -111,7 +111,7 @@ REPOZIPURL     = 'https://raw.githubusercontent.com/atilaprieto/aTiLaRePo/master
 # Enable Notification screen Yes or No
 ENABLE         = 'Yes'
 # Url to notification file
-NOTIFICATION   = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizartila/notify.txt'
+NOTIFICATION   = 'http://atilaprieto.myftp.org:1234/compartidatila/Kodi/wizartila/notify.txt'
 # Use either 'Text' or 'Image'
 HEADERTYPE     = 'Text'
 HEADERMESSAGE  = 'WiZaRTiLa'
@@ -122,5 +122,5 @@ HEADERIMAGE    = 'http://'
 # Font for Notification Window
 FONTSETTINGS   = 'Font13'
 # Background for Notification Window
-BACKGROUND     = 'http://atilaprieto.myftp.org/compartidatila/Kodi/wizartila/fanart.jpg'
+BACKGROUND     = 'http://atilaprieto.myftp.org:1234/compartidatila/Kodi/wizartila/fanart.jpg'
 #########################################################

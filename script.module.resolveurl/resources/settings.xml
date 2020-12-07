@@ -261,9 +261,9 @@
 		<setting id="JetloadResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="JetloadResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="letsupload.io" type="lsep"/>
-		<setting id="AnaVidsResolver_priority" type="number" label="Priority" default="100"/>
-		<setting id="AnaVidsResolver_enabled" type="bool" label="Enabled" default="true"/>
-		<setting id="AnaVidsResolver_login" type="bool" label="login" default="true" visible="false"/>
+		<setting id="LetsUploadResolver_priority" type="number" label="Priority" default="100"/>
+		<setting id="LetsUploadResolver_enabled" type="bool" label="Enabled" default="true"/>
+		<setting id="LetsUploadResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="lewdhost" type="lsep"/>
 		<setting id="LewdHostResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="LewdHostResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -308,6 +308,10 @@
 		<setting id="NewtubeResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="NewtubeResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="NewtubeResolver_login" type="bool" label="login" default="true" visible="false"/>
+		<setting label="NinjaStream" type="lsep"/>
+		<setting id="NinjaStreamResolver_priority" type="number" label="Priority" default="100"/>
+		<setting id="NinjaStreamResolver_enabled" type="bool" label="Enabled" default="true"/>
+		<setting id="NinjaStreamResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="nxload" type="lsep"/>
 		<setting id="NxloadResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="NxloadResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -324,12 +328,12 @@
 		<setting id="OoglyResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="OoglyResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="OoglyResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 4">
 		<setting label="pixeldrain" type="lsep"/>
 		<setting id="PixelDrainResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="PixelDrainResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="PixelDrainResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 4">
 		<setting label="pkspeed.net" type="lsep"/>
 		<setting id="PKSpeedResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="PKSpeedResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -402,12 +406,12 @@
 		<setting id="StreamvidResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="StreamvidResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="StreamvidResolver_login" type="bool" label="login" default="true" visible="false"/>
+	</category>
+	<category label="Resolvers 5">
 		<setting label="streamwire" type="lsep"/>
 		<setting id="StreamWireResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="StreamWireResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="StreamWireResolver_login" type="bool" label="login" default="true" visible="false"/>
-	</category>
-	<category label="Resolvers 5">
 		<setting label="streamz" type="lsep"/>
 		<setting id="StreamzResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="StreamzResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -531,6 +535,10 @@
 		<setting id="VideoMegaResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideoMegaResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VideoMegaResolver_login" type="bool" label="login" default="true" visible="false"/>
+		<setting label="videoseyred" type="lsep"/>
+		<setting id="VideoSeyredResolver_priority" type="number" label="Priority" default="100"/>
+		<setting id="VideoSeyredResolver_enabled" type="bool" label="Enabled" default="true"/>
+		<setting id="VideoSeyredResolver_login" type="bool" label="login" default="true" visible="false"/>
 		<setting label="videowood" type="lsep"/>
 		<setting id="VideowoodResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VideowoodResolver_enabled" type="bool" label="Enabled" default="true"/>
@@ -559,10 +567,6 @@
 		<setting id="VidMolyResolver_priority" type="number" label="Priority" default="100"/>
 		<setting id="VidMolyResolver_enabled" type="bool" label="Enabled" default="true"/>
 		<setting id="VidMolyResolver_login" type="bool" label="login" default="true" visible="false"/>
-		<setting label="vidnode" type="lsep"/>
-		<setting id="VidnodeResolver_priority" type="number" label="Priority" default="100"/>
-		<setting id="VidnodeResolver_enabled" type="bool" label="Enabled" default="true"/>
-		<setting id="VidnodeResolver_login" type="bool" label="login" default="true" visible="false"/>
 	</category>
 	<category label="Resolvers 7">
 		<setting label="vidorg.net" type="lsep"/>

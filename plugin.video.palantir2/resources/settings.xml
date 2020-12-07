@@ -1141,8 +1141,14 @@
 						<heading>30013</heading>
 					</control>
 				</setting>
+				<setting id="TOP_onlyOrigin" type="boolean" label="30017" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
 			</group>
 			<group id="2" label="30014">
+				<visible>False</visible>
 				<setting id="drive_client_id" type="string" label="30015" help="">
 					<level>0</level>
 					<default/>
@@ -1176,24 +1182,24 @@
 			</group>
 			<group id="3" label="30014">
 				<visible>False</visible>
-				<setting id="Alldebrid_user" type="string" label="30012" help="">
+				<setting id="Alldebrid_name" type="string" label="30015" help="">
 					<level>0</level>
 					<default/>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
 					<control type="edit" format="string">
-						<heading>30012</heading>
+						<heading>30015</heading>
 					</control>
 				</setting>
-				<setting id="Alldebrid_password" type="string" label="30013" help="">
+				<setting id="Alldebrid_apikey" type="string" label="30016" help="">
 					<level>0</level>
 					<default/>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
 					<control type="edit" format="string">
-						<heading>30013</heading>
+						<heading>30016</heading>
 					</control>
 				</setting>
 			</group>
