@@ -10,7 +10,7 @@ from core import jsontools, filetools, httptools, scrapertools
 from platformcode import config, logger, platformtools
 
 
-opciones_provider = ['spys.one', 'spys.me', 'proxyscrape.com', 'proxyservers.pro', 'proxy-list.download', 'lista_proxies.txt']
+opciones_provider = ['spys.one', 'spys.me', 'proxyscrape.com', 'proxyservers.pro', 'proxy-list.download', 'hidemy.name', 'httptunnel.ge', 'lista_proxies.txt']
 opciones_tipo = ['Cualquier tipo', 'Elite', 'Anonymous', 'Transparent']
 opciones_pais = ['Cualquier país', 'ES', 'US', 'FR', 'DE', 'CZ', 'IT', 'CH', 'NL', 'MX', 'RU', 'HK', 'SG'] #TODO completar...
 
@@ -132,6 +132,20 @@ def _buscar_proxies(canal, url):
         resp = httptools.downloadpage(url_provider, raise_weberror=False)
         proxies = resp.data.split()
 
+    elif provider == 'hidemy.name':
+        url_provider = 'https://hidemy.name/es/proxy-list/?'
+        url_provider += 'type=' + ('s' if url.startswith('https') else 'h')
+        if pais_proxy != '': url_provider += '&country=' + pais_proxy
+        if tipo_proxy == 'anonymous': url_provider += '&anon=3'
+        elif tipo_proxy == 'transparent': url_provider += '&anon=2'
+        elif tipo_proxy == 'elite': url_provider += '&anon=4'
+        resp = httptools.downloadpage(url_provider, raise_weberror=False)
+
+        proxies = []
+        enlaces = scrapertools.find_multiple_matches(resp.data, '<tr><td>(\d+\.\d+\.\d+\.\d+)</td><td>(\d+)</td>')
+        for prox, puerto in enlaces:
+            proxies.append(prox+':'+puerto)
+
     elif provider == 'spys.one': 
         url_provider = 'http://spys.one/en/free-proxy-list/'
         url_post = 'xpp=0'
@@ -194,6 +208,22 @@ def _buscar_proxies(canal, url):
                 if tipo == 'N' and tipo_proxy != 'transparent': continue
                 elif tipo == 'A' and tipo_proxy != 'anonymous': continue
                 elif tipo == 'H' and tipo_proxy != 'elite': continue
+            if pais_proxy != '': 
+                if pais != pais_proxy: continue
+            
+            proxies.append(prox+':'+puerto)
+
+    elif provider == 'httptunnel.ge': 
+        url_provider = 'http://www.httptunnel.ge/ProxyListForFree.aspx'
+        resp = httptools.downloadpage(url_provider, raise_weberror=False)
+
+        proxies = []
+        enlaces = scrapertools.find_multiple_matches(resp.data, ' target="_new">(\d+\.\d+\.\d+\.\d+)\:(\d+)</a>.*?<td align="center"[^>]*>(T|A|E|U)</td>.*? src="images/flags/([^.]+)\.gif"')
+        for prox, puerto, tipo, pais in enlaces:
+            if tipo_proxy != '': 
+                if tipo == 'T' and tipo_proxy != 'transparent': continue
+                elif tipo == 'A' and tipo_proxy != 'anonymous': continue
+                elif tipo == 'E' and tipo_proxy != 'elite': continue
             if pais_proxy != '': 
                 if pais != pais_proxy: continue
             

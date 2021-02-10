@@ -7,7 +7,7 @@ from core.item import Item
 from core import httptools, scrapertools, servertools, tmdb
 
 
-host = "http://gnula.nu/"
+host = "https://gnula.nu/"
 url_estrenos = host + 'peliculas-online/lista-de-peliculas-online-parte-1/'
 url_recomendadas = host + 'peliculas-online/lista-de-peliculas-recomendadas/'
 

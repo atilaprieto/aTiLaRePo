@@ -29,8 +29,8 @@ def do_downloadpage(url, post=None):
     url = url.replace('seriemega.xyz', 'seriemega.me') # por si viene de enlaces guardados
     url = url.replace('seriemega.me', 'seriesgratismega.xyz') # por si viene de enlaces guardados
 
-    data = httptools.downloadpage(url, post=post).data
-    # ~ data = httptools.downloadpage_proxy('seriemega', url, post=post).data
+    # ~ data = httptools.downloadpage(url, post=post).data
+    data = httptools.downloadpage_proxy('seriemega', url, post=post).data
     return data
 
 
@@ -43,7 +43,7 @@ def mainlist(item):
 
     itemlist.append(item.clone ( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -57,7 +57,7 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone ( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -71,7 +71,7 @@ def mainlist_series(item):
 
     itemlist.append(item.clone ( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -162,7 +162,7 @@ def temporadas(item):
     itemlist = []
 
     data = do_downloadpage(item.url)
-    logger.debug(data)
+    # ~ logger.debug(data)
 
     matches = re.compile(' data-tab="(\d+)"', re.DOTALL).findall(data)
     for numtempo in matches:
@@ -285,7 +285,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info()
+    logger.info(item.url)
     itemlist = []
     item.url = item.url.replace('&#038;', '&')
 
@@ -297,12 +297,15 @@ def play(item):
         if not url.startswith('http'): return itemlist
     
     elif 'trdownload=' in item.url:
-        url = httptools.downloadpage(item.url, headers={'Referer': item.referer}, follow_redirects=False, only_headers=True).headers.get('location', '')
+        url = item.url
 
     else:
-        data = httptools.downloadpage(item.url, headers={'Referer': item.referer}).data
+        data = httptools.downloadpage_proxy('seriemega', item.url, headers={'Referer': item.referer}).data
         # ~ logger.debug(data)
         url = scrapertools.find_single_match(data, '<iframe.*? src="([^"]+)')
+
+    if 'trdownload=' in url:
+        url = httptools.downloadpage_proxy('seriemega', url, headers={'Referer': item.referer}, follow_redirects=False, only_headers=True).headers.get('location', '')
 
     if url:
         if url.startswith('//'): url = 'https:' + url

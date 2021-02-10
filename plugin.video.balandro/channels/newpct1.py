@@ -12,12 +12,12 @@ perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web
 CLONES = [
     # ~ ['pctnew', 'https://pctnew.org/', 'movie, tvshow', 'pctnew.jpg'],
     ['pctnew', 'https://pctmix.com/', 'movie, tvshow', 'pctnew.jpg'],
-    ['descargas2020', 'https://descargas2020.net/', 'movie, tvshow', 'descargas2020.png'],
+    ['descargas2020', 'https://descargas2020.net/', 'movie', 'descargas2020.png'],
     # ~ ['tumejortorrent', 'http://tumejortorrent.site/', 'movie, tvshow', 'tumejortorrent.jpg'],
     # ~ ['tumejortorrent', 'https://tumejortorrent.org/', 'movie, tvshow', 'tumejortorrent.jpg'],
     # ~ ['torrentrapid', 'https://torrentrapid.org/', 'movie, tvshow', 'torrentrapid.png'],
     # ~ ['torrentlocura', 'http://torrentlocura.cc/', 'movie, tvshow', 'torrentlocura.png'],
-    ['pctreload', 'https://pctreload.com/', 'movie, tvshow', 'pctreload.png'] # new
+    ['pctreload', 'https://pctreload1.com/', 'movie, tvshow', 'pctreload.png'] # new
     # ~ ['planetatorrent', 'http://planetatorrent.com/', 'movie, tvshow', 'planetatorrent.png'],
     # ~ ['mispelisyseries', 'http://mispelisyseries.com/', 'movie', 'mispelisyseries.png'],
     # ~ ['tvsinpagar', 'http://www.tvsinpagar.com/', 'movie, tvshow', 'tvsinpagar.png']
@@ -67,7 +67,7 @@ def mainlist_pelis_clon(item):
     enlaces = [
         ['Películas en Castellano', 'peliculas/'],
         ['Películas en Latino', 'peliculas-latino/'],
-        ['Películas en VO', 'peliculas-vo/'],
+        # ~ ['Películas en VO', 'peliculas-vo/'],
         ['Estrenos de cine', 'estrenos-de-cine/'],
         ['Películas en HD', 'peliculas-hd/'],
         ['Películas en HD FullBluRay 1080p', 'peliculas-hd/fullbluray-1080p/'],

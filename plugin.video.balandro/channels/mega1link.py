@@ -45,8 +45,8 @@ def generos(item):
         if '/genero/' not in url: continue
         itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
-    itemlist.append(item.clone ( action = 'list_all', title = 'Bélica', url=HOST + 'belica/' ))
-    itemlist.append(item.clone ( action = 'list_all', title = 'Western', url=HOST + 'western/' ))
+    itemlist.append(item.clone ( action = 'list_all', title = 'Bélica', url=HOST + 'genero/belica/' ))
+    itemlist.append(item.clone ( action = 'list_all', title = 'Western', url=HOST + 'genero/western/' ))
 
     return sorted(itemlist, key=lambda it: it.title)
 

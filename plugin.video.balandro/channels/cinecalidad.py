@@ -8,7 +8,7 @@ from core import httptools, scrapertools, tmdb
 
 
 # ~ DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.to/', 'https://www1.cinecalidad.top/']
-DOMINIOS = ['https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.im/']
+DOMINIOS = ['https://www.cinecalidad.li/', 'https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.im/']
 
 def host_by_lang(lang=''):
     if lang == '': # si no se especifica idioma, obtenerlo de las preferencias de idioma del usuario
@@ -277,7 +277,7 @@ def play(item):
 
         cod_vip = scrapertools.find_single_match(data, 'name="codigovip" value="([^"]+)"')
         if cod_vip:
-            data = httptools.downloadpage(item.url, post={'codigovip': cod_vip}).data
+            data = do_downloadpage(item.url, post={'codigovip': cod_vip})
             # ~ logger.debug(data)
 
         if item.server != 'torrent':

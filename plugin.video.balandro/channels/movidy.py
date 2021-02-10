@@ -12,6 +12,11 @@ host = 'https://movidy.co/'
 
 def do_downloadpage(url, post=None, headers=None):
     url = url.replace('https://xdede.co/', 'https://movidy.co/') # por si viene de enlaces guardados
+    
+    # ~ if not headers: headers = {}
+    # ~ headers['User-Agent'] = 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'
+    # ~ if 'Referer' not in headers: headers['Referer'] = host
+
     data = httptools.downloadpage(url, post=post, headers=headers).data
     # ~ data = httptools.downloadpage_proxy('movidy', url, post=post, headers=headers).data
     return data

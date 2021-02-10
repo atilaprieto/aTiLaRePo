@@ -1,6 +1,13 @@
 Balandro changelog
 ==================
 
+1.5.1:
+    Canales modificados: Cuevana3, Playview, Inkapelis, Cinecalidad, Hdfull, Movidy, 
+    Seriesmetro, Serieflix, Newpct1, Grantorrent, Descargacineclasico, Pelisplay.
+    Servidores modificados: Doodstream, Vidia, Gounlimited, Youtube, Videossh, 
+    Streamtape, Gamovideo, Yourupload.
+    Añadido cliente Torrest para torrents.
+
 1.5.0:
     Canales modificados: Hdfull, Seriesdanko, Seriespapaya, Estrenoscinesaa, Allpeliculas,
     Playview, Dospelis, Inkapelis, Cinecalidad.

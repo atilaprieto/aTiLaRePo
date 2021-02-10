@@ -3,7 +3,7 @@
   "name": "TuPeliHd",
   "thumbnail": "tupelihd.jpg",
 
-  "active": false,
+  "active": true,
 
   "searchable": true,
   "search_types": ["all", "movie", "tvshow"],

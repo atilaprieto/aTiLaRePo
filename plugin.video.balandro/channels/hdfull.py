@@ -42,24 +42,24 @@ def do_downloadpage(url, post=None, referer=None, check_domain=True):
     url = re.sub('^https://[^/]+/', dominio, url)
 
     if not referer: referer = dominio #host
-    if post and '&menu=search&query=' in post: referer = dominio
+    elif host in referer: referer = referer.replace(host, dominio)
 
     # ~ headers = {'Referer': referer}
     headers = {}
     if post: headers = {'Referer': referer}
 
-    # ~ data = httptools.downloadpage_proxy('hdfull', url, post=post, headers=headers).data
-    data = httptools.downloadpage(url, post=post, headers=headers).data
+    # ~ resp = httptools.downloadpage_proxy('hdfull', url, post=post, headers=headers, raise_weberror=False)
+    resp = httptools.downloadpage(url, post=post, headers=headers, raise_weberror=False)
     
-    if check_domain and ('location.replace(' in data or not data):
-        if not data: data = httptools.downloadpage(host).data
+    if check_domain and ('location.replace(' in resp.data or not resp.data or resp.code >= 400):
+        if not resp.data or resp.code >= 400: resp = httptools.downloadpage(host)
         
-        dominio = scrapertools.find_single_match(data, 'location\.replace\("(https://[^/]+/)')
+        dominio = scrapertools.find_single_match(resp.data, 'location\.replace\("(https://[^/]+/)')
         if dominio:
             config.set_setting('dominio', dominio, 'hdfull')
             return do_downloadpage(url, post=post, referer=referer, check_domain=False)
 
-    return data
+    return resp.data
 
 
 def mainlist(item):
@@ -82,7 +82,7 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( action='list_all', title='Últimas actualizadas (40)', url=host+'peliculas-actualizadas', search_type='movie' ))
     itemlist.append(item.clone( action='list_all', title='Últimos estrenos (40)', url=host+'peliculas-estreno', search_type='movie' ))
 
-    # ~ itemlist.append(item.clone( action='list_all', title='Últimas Novedades', url=host+'/peliculas', search_type='movie' )) # == 'Lista por fecha'
+    # ~ itemlist.append(item.clone( action='list_all', title='Últimas Novedades', url=host+'peliculas', search_type='movie' )) # == 'Lista por fecha'
 
     itemlist.append(item.clone( action='list_all', title='Lista por fecha', url=host+'peliculas/date', search_type='movie' ))
     itemlist.append(item.clone( action='list_all', title='Lista por rating IMDB', url=host+'peliculas/imdb_rating', search_type='movie' ))
@@ -158,7 +158,7 @@ def list_all(item):
     if not item.page: item.page = 0
 
     if item.search_post:
-        data = do_downloadpage(item.url, post=item.search_post)
+        data = do_downloadpage(item.url, post=item.search_post, referer=host+('series' if item.search_type == 'tvshow' else 'peliculas'))
     else:
         data = do_downloadpage(item.url)
     # ~ logger.debug(data)
@@ -205,7 +205,7 @@ def list_all(item):
     if buscar_next:
         next_page_link = scrapertools.find_single_match(data, '<a href="([^"]+)">&raquo;</a>')
         if next_page_link:
-            itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, page=0 ))
+            itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, page=0, action='list_all' ))
 
     return itemlist
 

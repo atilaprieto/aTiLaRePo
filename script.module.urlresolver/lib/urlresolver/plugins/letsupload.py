@@ -22,7 +22,7 @@ from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
 
-class AnaVidsResolver(UrlResolver):
+class LetsUploadResolver(UrlResolver):
     name = "letsupload.io"
     domains = ['letsupload.io', 'letsupload.org']
     pattern = r'(?://|\.)(letsupload\.(?:io|org))/([0-9a-zA-Z]+)'

@@ -23,7 +23,7 @@
         
         <setting type="sep"/>
         <setting label="Opciones para servicios externos:" type="lsep"/>
-        <setting id="cliente_torrent" type="labelenum" values="Ninguno|Quasar|Elementum|Torrenter|Torrentin|Pulsar|Stream|Xbmctorrent" label="Cliente externo para Torrents" default="Ninguno"/>
+        <setting id="cliente_torrent" type="labelenum" values="Ninguno|Quasar|Elementum|Torrenter|Torrentin|Pulsar|Stream|Xbmctorrent|Torrest" label="Cliente externo para Torrents" default="Ninguno"/>
 
     </category>
 

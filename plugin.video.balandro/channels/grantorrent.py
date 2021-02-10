@@ -201,6 +201,7 @@ def findvideos(item):
             url = onclick
         else:
             post = scrapertools.find_single_match(onclick, "u:\s*'([^']+)")
+            if not post: post = scrapertools.find_single_match(onclick, "u=([^'\"&]+)")
             if not post: continue
             try:
                 url = base64.b64decode(post)

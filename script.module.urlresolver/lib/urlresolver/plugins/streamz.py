@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import re
 from urlresolver.plugins.lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
@@ -37,7 +38,10 @@ class StreamzResolver(UrlResolver):
 
         if sources:
             headers.update({'Referer': web_url})
-            return helpers.get_redirect_url(helpers.pick_source(sources).replace('getIink', 'getlink'), headers) + helpers.append_headers(headers)
+            vurl = helpers.pick_source(sources)
+            vurl = re.sub('get[a-zA-Z]{4}-', 'getlink-', vurl)
+            vurl = re.sub('get[a-zA-Z]{5}-', 'getlink-', vurl)
+            return helpers.get_redirect_url(vurl, headers) + helpers.append_headers(headers)
 
         raise ResolverError("Video not found")
 

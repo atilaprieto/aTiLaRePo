@@ -24,7 +24,8 @@ def get_video_url(page_url, url_referer=''):
             url = httptools.downloadpage("https:" + url1, headers=referer, follow_redirects=False, only_headers=True).headers.get("location", "")
         else:
             url = scrapertools.find_single_match(data, "file:\s*'([^']+)'")
-    if url:
+
+    if url and '/embed/novideo.mp4' not in url:
         if "vidcache" not in url:
             url = "https://www.yourupload.com%s" % url
             location = httptools.downloadpage(url, headers=referer, follow_redirects=False, only_headers=True)

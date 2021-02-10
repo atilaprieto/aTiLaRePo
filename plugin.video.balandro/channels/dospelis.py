@@ -331,6 +331,34 @@ def findvideos(item):
                               language = IDIOMAS.get(lang, lang)
                        ))
 
+    matches = scrapertools.find_multiple_matches(bloque, "<li id='player-option-\d+'(.*?)</li>")
+    for enlace in matches:
+        # ~ logger.debug(enlace)
+
+        dtype = scrapertools.find_single_match(enlace, "data-type='([^']+)")
+        dpost = scrapertools.find_single_match(enlace, "data-post='([^']+)")
+        dnume = scrapertools.find_single_match(enlace, "data-nume='([^']+)")
+        if dnume == 'trailer': continue
+        if not dtype or not dpost or not dnume: continue
+
+        servidor = scrapertools.find_single_match(enlace, "<span class='server'>([^<.]+)")
+        lang = scrapertools.find_single_match(enlace, "/img/flags/([^.']+)").lower()
+        if not servidor or servidor == 'Desconocido' or not lang:
+            # ~ <span class='title'>Subtitulado / STREAMTAPE</span>
+            # ~ <span class='title'>SUB ESP ¦ DooD</span>
+            aux = scrapertools.find_single_match(enlace, "<span class='title'>([^<]+)")
+            sep = '/' if '/' in aux else '¦' if '¦' in aux else None
+            if sep:
+                if not lang: lang = aux.split(sep)[0].strip().lower()
+                if not servidor or servidor == 'Desconocido': servidor = aux.split(sep)[1]
+
+        servidor = corregir_servidor(servidor)
+
+        itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
+                              title = '', dtype = dtype, dpost = dpost, dnume = dnume, referer = item.url,
+                              language = IDIOMAS.get(lang, lang)
+                       ))
+
     # Ver en línea
     bloque = scrapertools.find_single_match(data, "<div id='videos'(.*?)</table></div></div></div>")
 
@@ -362,7 +390,7 @@ def play(item):
 
     if item.url and host in item.url:
         data = httptools.downloadpage(item.url).data
-        logger.debug(data)
+        # ~ logger.debug(data)
         url = scrapertools.find_single_match(data, '<a id="link".*?href="([^"]+)')
         if url: 
             itemlist.append(item.clone( url=servertools.normalize_url(item.server, url) ))
@@ -373,10 +401,11 @@ def play(item):
     else:
         post = urllib.urlencode( {'action': 'doo_player_ajax', 'post': item.dpost, 'nume': item.dnume, 'type': item.dtype} )
         data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':item.referer}).data
-        logger.debug(data)
+        # ~ logger.debug(data)
 
         url = scrapertools.find_single_match(data, "src='([^']+)")
         if not url: url = scrapertools.find_single_match(data, 'src="([^"]+)')
+        if not url: url = scrapertools.find_single_match(data, '"embed_url":"([^"]+)').replace('\\/', '/')
         if url: 
             if 'jwplayer' in url and 'source=' in url: 
                 # Ej: https://www.dospelis.online/jwplayer-2/?source=12ZOwR37oT0mPRlEdceQ1f2t1jSac8H9U&id=127575&type=gdrive
@@ -388,7 +417,7 @@ def play(item):
 
             elif 'streamcrypt.net/' in url: # Ej: https://streamcrypt.net/embed/streamz.cc/...
                 url = scrapertools.decode_streamcrypt(url)
-            logger.debug(url)
+            # ~ logger.debug(url)
 
             if not url: return itemlist
             servidor = servertools.get_server_from_url(url)

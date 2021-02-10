@@ -26,18 +26,8 @@ ruta_series = 'browse?type=series'
 def do_downloadpage(url, post=None):
     headers = {'Referer': 'https://pepecine.to/'}
 
-    if '/secure/search/' in url or '/secure/titles/' in url:
-        if '/secure/search/' in url:
-            # ~ url = url.replace('verencasa.com', 'pepecinehd.com')
-            url = url.replace('verencasa.com', 'pepecine.to')
-        else:
-            url = url.replace('verencasa.com', 'pepecine.tv')
-        timeout = config.get_setting('httptools_timeout', default=15)
-    else:
-        timeout = 30 # timeout ampliado pq el primer acceso puede tardar en responder
-
     # ~ data = httptools.downloadpage_proxy('pepecine', url, post=post, headers=headers).data
-    data = httptools.downloadpage(url, post=post, headers=headers, timeout=timeout).data
+    data = httptools.downloadpage(url, post=post, headers=headers).data
 
     return data
 

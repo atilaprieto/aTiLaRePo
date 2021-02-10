@@ -3,7 +3,7 @@
   "name": "Movidy",
   "thumbnail": "movidy.jpg",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["all", "movie", "tvshow"],

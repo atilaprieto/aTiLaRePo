@@ -1,12 +1,14 @@
-Version 5.1.17 (December 07, 2020)
+Version 5.1.24 (February 9, 2021)
 - Code Base Changes:
-    - Regression error with PY2
+    - None
 
 - Resolvers Added:
-    - None
+    - megaup.net
  
 - Resolvers Fixed/Updated:
-    - None 
+    - gofile
+    - tvlogy
+
 
 - Resolvers Removed
     - None

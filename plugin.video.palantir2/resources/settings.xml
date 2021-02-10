@@ -16,6 +16,21 @@
 					</constraints>
 					<control type="spinner" format="string"/>
 				</setting>
+				<setting id="RemenberQuery" type="boolean" label="30049" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="NextEpisode" type="boolean" label="30061" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="follow-up" type="boolean" label="30062" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
 			</group>
 			<group id="2" label="30002">
 				<setting id="MenuColor" type="string" label="30003" help="">
@@ -1133,6 +1148,9 @@
 				</setting>
 				<setting id="TOP_password" type="string" label="30013" help="">
 					<level>0</level>
+					<dependencies>
+						<dependency type="enable" operator="!is" setting="TOP_user"></dependency>
+					</dependencies>
 					<default/>
 					<constraints>
 						<allowempty>true</allowempty>
@@ -1143,6 +1161,10 @@
 				</setting>
 				<setting id="TOP_onlyOrigin" type="boolean" label="30017" help="">
 					<level>0</level>
+					<dependencies>
+						<dependency type="enable" operator="!is" setting="TOP_user"></dependency>
+						<dependency type="enable" operator="!is" setting="TOP_password"></dependency>
+					</dependencies>
 					<default>true</default>
 					<control type="toggle"/>
 				</setting>
@@ -1214,18 +1236,6 @@
 							<option label="30122">order by sum(views) desc</option>
 							<option label="30124">order by updated desc</option>
 							<option label="30115">order by nombre COLLATE latin1</option>
-						</options>
-					</constraints>
-					<control type="spinner" format="string"/>
-				</setting>
-				<setting id="Watched" type="integer" label="30021" help="">
-					<level>0</level>
-					<default>1</default>
-					<constraints>
-						<options>
-							<option label="30022">0</option>
-							<option label="30023">1</option>
-							<option label="30024">2</option>
 						</options>
 					</constraints>
 					<control type="spinner" format="string"/>

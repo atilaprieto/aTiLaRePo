@@ -27,12 +27,14 @@ def mainlist(item):
     itemlist.append(item.clone( action='listado', search_type='movie', extra = 'now_playing', title='Películas en Cartelera' ))
     # ~ itemlist.append(item.clone( action='listado', search_type='movie', url = 'movie/upcoming', title='Próximas Películas' ))
     itemlist.append(item.clone( action='generos', search_type='movie', title='Películas por Géneros' ))
+    itemlist.append(item.clone( action='anios', search_type='movie', title='Películas por Años' ))
 
     itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'popular', title='Series más Populares' ))
     itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'top_rated', title='Series Mejor Valoradas' ))
     itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'on_the_air', title='Series emitiéndose actualmente' ))
     # ~ itemlist.append(item.clone( action='listado', search_type='tvshow', url = 'tv/airing_today', title='Series que se emiten Hoy' ))
     itemlist.append(item.clone( action='generos', search_type='tvshow', title='Series por Géneros' ))
+    itemlist.append(item.clone( action='anios', search_type='tvshow', title='Series por Años' ))
 
     itemlist.append(item.clone( action='show_help', title='Información / Ayuda', folder=False, thumbnail=config.get_thumb('help') ))
 
@@ -104,7 +106,6 @@ def descubre(item):
 
     return lista(item, elementos)
 
-
 def generos(item):
     logger.info()
     itemlist = []
@@ -119,6 +120,28 @@ def generos(item):
 
     return sorted(itemlist, key=lambda it: it.title)
 
+
+def descubre_anios(item):
+    logger.info()
+
+    tipo = 'movie' if item.search_type == 'movie' else 'tv'
+    elementos = tmdb.get_discover_anios(tipo, item.extra, item.page)
+
+    return lista(item, elementos)
+
+def anios(item):
+    logger.info()
+    itemlist = []
+
+    from datetime import datetime
+    current_year = int(datetime.today().year)
+
+    to_year = 1950 if item.search_type == 'tvshow' else 1919
+
+    for x in range(current_year, to_year, -1):
+        itemlist.append(item.clone( title=str(x), action='descubre_anios', extra = str(x) ))
+
+    return itemlist
 
 
 def personas(item):

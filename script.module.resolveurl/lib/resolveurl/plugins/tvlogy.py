@@ -17,6 +17,7 @@
 """
 
 import re
+import random
 from resolveurl.plugins.lib import helpers
 from resolveurl import common
 from resolveurl.resolver import ResolveUrl, ResolverError
@@ -25,11 +26,14 @@ from resolveurl.resolver import ResolveUrl, ResolverError
 class TVLogyResolver(ResolveUrl):
     name = "tvlogy.to"
     domains = ["tvlogy.to"]
-    pattern = r'(?://|\.)(tvlogy\.to)/(?:embed/|watch\.php\?v=)?([0-9a-zA-Z]+)'
+    pattern = r'(?://|\.)((?:hls\.)?tvlogy\.to)/(?:embed/|watch\.php\?v=|player/index.php\?data=)?([0-9a-zA-Z]+)'
 
     def get_media_url(self, host, media_id):
+        embeds = ['http://bestarticles.me/', 'http://tellygossips.net/']
         web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.FF_USER_AGENT}
+        headers = {'User-Agent': common.FF_USER_AGENT,
+                   'Referer': random.choice(embeds)}
+
         html = self.net.http_GET(web_url, headers=headers).content
 
         if 'Not Found' in html:
@@ -45,12 +49,16 @@ class TVLogyResolver(ResolveUrl):
             packed = b64decode(packed.encode('ascii'))
             html += '%s</script>' % packed.decode('latin-1').strip()
 
-        sources = helpers.scrape_sources(html)
-        if sources:
-            headers.update({'Referer': web_url, 'Range': 'bytes=0-'})
-            return helpers.pick_source(sources) + helpers.append_headers(headers)
+        source = helpers.scrape_sources(html)
+        if source:
+            headers.update({'Referer': web_url, 'Accept': '*/*'})
+            vsrv = re.findall(r'//(\d+)/', source[0][1])[0]
+            source = re.sub(r"//\d+/", "//{0}/".format(host), source[0][1]) + '?s={0}&d='.format(vsrv)
+            html = self.net.http_GET(source, headers=headers).content
+            sources = re.findall(r'RESOLUTION=\d+x(\d+)\n([^\n]+)', html)
+            return helpers.pick_source(helpers.sort_sources_list(sources)) + helpers.append_headers(headers)
 
         raise ResolverError('Video not found')
 
     def get_url(self, host, media_id):
-        return self._default_get_url(host, media_id, template='https://{host}/embed/{media_id}')
+        return self._default_get_url(host, media_id, template='https://{host}/player/index.php?data={media_id}')

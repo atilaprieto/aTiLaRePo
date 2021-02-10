@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.balandro" name="Balandro" version="1.5.0" provider-name="Balandro">
+<addon id="plugin.video.balandro" name="Balandro" version="1.5.1" provider-name="Balandro">
 
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -16,11 +16,11 @@
 
     <news>Últimas modificaciones de Balandro:
 
-    Canales modificados: Hdfull, Seriesdanko, Seriespapaya, Estrenoscinesaa, Allpeliculas,
-    Playview, Dospelis, Inkapelis, Cinecalidad.
-    Servidores modificados: Youtube, Gamovideo, Streamtape.
-    Corrección bug por cambios de tmdb.
-    Opción en Settings para forzar actualizaciones de fixs.
+    Canales modificados: Cuevana3, Playview, Inkapelis, Cinecalidad, Hdfull, Movidy, 
+    Seriesmetro, Serieflix, Newpct1, Grantorrent, Descargacineclasico, Pelisplay.
+    Servidores modificados: Doodstream, Vidia, Gounlimited, Youtube, Videossh, 
+    Streamtape, Gamovideo, Yourupload.
+    Añadido cliente Torrest para torrents.
     </news>
 
     <assets>

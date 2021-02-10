@@ -2,7 +2,7 @@
   "id": "vidtodo",
   "name": "Vidtodo",
  
-  "active": true,
+  "active": false,
 
   "find_videos": {
     "ignore_urls": [],

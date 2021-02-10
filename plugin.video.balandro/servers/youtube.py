@@ -42,27 +42,33 @@ def extract_flashvars(data):
     flashvars = {}
     found = False
 
-    for line in data.split("\n"):
-        if line.strip().find(";ytplayer.config = ") > 0:
-            found = True
-            p1 = line.find(";ytplayer.config = ") + len(";ytplayer.config = ") - 1
-            p2 = line.rfind(";")
-            if p1 <= 0 or p2 <= 0:
-                continue
-            data = line[p1 + 1:p2]
-            break
-    data = remove_additional_ending_delimiter(data)
+    if 'ytInitialPlayerResponse' in data:
+        aux = scrapertools.find_single_match(data, 'var ytInitialPlayerResponse = (\{.*?\});')
+        if aux: flashvars['player_response'] = aux
+        # ~ else: logger.debug(data)
 
-    if found:
-        data = json.load(data)
-        if assets:
-            flashvars = data["assets"]
-        else:
-            flashvars = data["args"]
+    else:
+        for line in data.split("\n"):
+            if line.strip().find(";ytplayer.config = ") > 0:
+                found = True
+                p1 = line.find(";ytplayer.config = ") + len(";ytplayer.config = ") - 1
+                p2 = line.rfind(";")
+                if p1 <= 0 or p2 <= 0:
+                    continue
+                data = line[p1 + 1:p2]
+                break
+        data = remove_additional_ending_delimiter(data)
 
-    for k in ["html", "css", "js"]:
-        if k in flashvars:
-            flashvars[k] = normalize_url(flashvars[k])
+        if found:
+            data = json.load(data)
+            if assets:
+                flashvars = data["assets"]
+            else:
+                flashvars = data["args"]
+
+        for k in ["html", "css", "js"]:
+            if k in flashvars:
+                flashvars[k] = normalize_url(flashvars[k])
 
     return flashvars
 
@@ -129,6 +135,7 @@ def obtener_js_signature(youtube_page_data):
 
 
 def extract_from_player_response(params, youtube_page_data=''):
+    logger.info()
     video_urls = []
     try:
         pr = json.load(params['player_response'])

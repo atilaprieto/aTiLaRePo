@@ -9,6 +9,23 @@ host = 'https://repelis.io/'
 perpage = 20
 
 
+def item_configurar_proxies(item):
+    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
+    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, host)
+
+def do_downloadpage(url, post=None, headers=None, follow_redirects=True, onlydata=True):
+    # ~ resp = httptools.downloadpage(url, post=post, headers=headers, follow_redirects=follow_redirects)
+    resp = httptools.downloadpage_proxy('repelis', url, post=post, headers=headers, follow_redirects=follow_redirects)
+
+    if onlydata: return resp.data
+    return resp
+
+
 def mainlist(item):
     return mainlist_pelis(item)
 
@@ -27,6 +44,7 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone ( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -34,7 +52,7 @@ def generos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(host).data
+    data = do_downloadpage(host)
 
     matches = scrapertools.find_multiple_matches(data, '<a href="(/genero/[^"]+)">([^<]+)</a>')
 
@@ -89,7 +107,7 @@ def list_all(item):
 
     headers = {'referer': item.url + '?page=' + str(item.page), 'Content-Type': 'application/json'}
 
-    data = httptools.downloadpage(host + 'graph', post = post, headers = headers).data
+    data = do_downloadpage(host + 'graph', post = post, headers = headers)
     # ~ logger.debug(data)
 
     try:
@@ -138,7 +156,7 @@ def findvideos(item):
 
     IDIOMAS = {'es-es': 'Esp', 'es-mx': 'Lat', 'en': 'VOSE'}
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     try:
@@ -174,7 +192,7 @@ def play(item):
     url = item.url.replace('&amp;', '&')
 
     if url.startswith(host):
-        url = httptools.downloadpage(url, follow_redirects = False, only_headers = True).headers.get('location', '')
+        url = do_downloadpage(url, follow_redirects=False, onlydata=False).headers.get('location', '')
 
     if url:
         servidor = servertools.get_server_from_url(url)
@@ -206,7 +224,7 @@ def list_search(item):
 
     headers = {'Content-Type': 'application/json'}
 
-    data = httptools.downloadpage(item.url, post = post, headers = headers).data
+    data = do_downloadpage(item.url, post = post, headers = headers)
     # ~ logger.debug(data)
 
     try:

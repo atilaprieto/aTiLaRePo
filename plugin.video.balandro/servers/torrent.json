@@ -53,6 +53,12 @@
       "id": "plugin.video.torrentin",
       "name": "torrentin",
       "url": "plugin://plugin.video.torrentin/?uri=%s&image="
+    },
+    {
+      "id": "plugin.video.torrest",
+      "name": "torrest",
+      "url": "plugin://plugin.video.torrest/play_url?url=%s",
+      "url_magnet": "plugin://plugin.video.torrest/play_magnet?magnet=%s"
     }
   ]
 

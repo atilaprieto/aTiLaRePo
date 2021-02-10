@@ -10,7 +10,8 @@ from core import httptools, scrapertools, servertools, jsontools, tmdb
 # ~ HOST = "http://www.seriespapaya.com"
 # ~ HOST = "https://www.seriespapaya.net"
 # ~ HOST = "https://www2.seriespapaya.nu/"
-HOST = "https://www.seriespapaya.se/"
+# ~ HOST = "https://www.seriespapaya.se/"
+HOST = "https://www.seriespapaya.io/"
 
 IDIOMAS = {'es': 'Esp', 'lat': 'Lat', 'in': 'Eng', 'ca': 'Cat', 'sub': 'VOSE', 
            'Español Latino':'Lat', 'Español Castellano':'Esp', 'Sub Español':'VOSE'}
@@ -31,6 +32,7 @@ def do_downloadpage(url, post=None, referer=None):
     url = url.replace('seriespapaya.com', 'seriespapaya.net')
     url = url.replace('seriespapaya.net', 'seriespapaya.nu')
     url = url.replace('seriespapaya.nu', 'seriespapaya.se')
+    url = url.replace('seriespapaya.se', 'seriespapaya.io')
     url = url.replace('https://www2.', 'https://www.')
     
     headers = {'Referer': HOST}
@@ -78,7 +80,7 @@ def list_all(item):
 
         itemlist.append(item.clone( action='temporadas', url=urlparse.urljoin(HOST, url), title=name, 
                                     contentType = 'tvshow', contentSerieName = name,
-                                    thumbnail=urlparse.urljoin(HOST, img), infoLabels={'year':year, 'plot': plot} ))
+                                    thumbnail=httptools.get_url_headers(urlparse.urljoin(HOST, img)), infoLabels={'year':year, 'plot': plot} ))
 
     tmdb.set_infoLabels(itemlist)
     
@@ -124,7 +126,7 @@ def series_por_letra_y_grupo(item):
 
         new_item = item.clone( action='temporadas', url=urlparse.urljoin(HOST, url), title=name, 
                                contentType = 'tvshow', contentSerieName = name,
-                               thumbnail=urlparse.urljoin(HOST, img), infoLabels={'year':year, 'plot': plot} )
+                               thumbnail=httptools.get_url_headers(urlparse.urljoin(HOST, img)), infoLabels={'year':year, 'plot': plot} )
 
         itemlist.append(new_item)
 
@@ -174,7 +176,7 @@ def estrenos(item):
         context.append({ 'title': '[COLOR pink]Listar temporadas[/COLOR]',
                          'action': 'temporadas', 'url': url_serie, 'context': '', 'folder': True, 'link_mode': 'update' })
 
-        itemlist.append(item.clone( action='findvideos', title=titulo, url=url, thumbnail=urlparse.urljoin(HOST, img),
+        itemlist.append(item.clone( action='findvideos', title=titulo, url=url, thumbnail=httptools.get_url_headers(urlparse.urljoin(HOST, img)),
                                     contentType='episode', contentSerieName=show, contentSeason=season, contentEpisodeNumber=episode, 
                                     context=context ))
 
@@ -315,7 +317,7 @@ def search(item, texto):
         for show in tvshows:
             itemlist.append(item.clone( action='temporadas', url=urlparse.urljoin(HOST, show["urla"]),
                                         contentType='tvshow', contentSerieName=show["titulo"],
-                                        title=show["titulo"], thumbnail=urlparse.urljoin(HOST, show["img"])
+                                        title=show["titulo"], thumbnail=httptools.get_url_headers(urlparse.urljoin(HOST, show["img"]))
                            ))
 
         tmdb.set_infoLabels(itemlist)
@@ -342,7 +344,7 @@ def search_post(item, texto):
 
         itemlist.append(item.clone( action='temporadas', url=urlparse.urljoin(HOST, url), title=name, 
                                     contentType = 'tvshow', contentSerieName = name,
-                                    thumbnail=urlparse.urljoin(HOST, img) ))
+                                    thumbnail=httptools.get_url_headers(urlparse.urljoin(HOST, img)) ))
 
     tmdb.set_infoLabels(itemlist)
 

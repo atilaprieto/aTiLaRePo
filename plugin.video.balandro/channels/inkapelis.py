@@ -133,7 +133,7 @@ def list_all(item):
             
     tmdb.set_infoLabels(itemlist)
 
-    next_page_link = scrapertools.find_single_match(data, ' href="([^"]+)" ><span class="icon-chevron-right">')
+    next_page_link = scrapertools.find_single_match(data, ' href="([^"]+)"[^>]*><span class="icon-chevron-right">')
     if next_page_link:
         itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_all' ))
 
@@ -210,9 +210,9 @@ def last_seasons(item):
         
     tmdb.set_infoLabels(itemlist)
 
-    next_page_link = scrapertools.find_single_match(data, ' href="([^"]+)" ><span class="icon-chevron-right">')
+    next_page_link = scrapertools.find_single_match(data, ' href="([^"]+)"[^>]*><span class="icon-chevron-right">')
     if next_page_link:
-        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_all' ))
+        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='last_seasons' ))
 
     return itemlist
 
@@ -286,6 +286,7 @@ def findvideos(item):
             for lnk in links:
                 vurl = scrapertools.find_single_match(lnk, "go_to_player\('([^']+)")
                 if not vurl: continue
+                vurl = vurl.replace('https://go.megaplay.cc/index.php?h=', '/playerdir/')
                 if '/playerdir/' in vurl: vurl = '/playdir/' + scrapertools.find_single_match(vurl, "/playerdir/([^&]+)")
                 if vurl.startswith('/'): vurl = dom + vurl
                     

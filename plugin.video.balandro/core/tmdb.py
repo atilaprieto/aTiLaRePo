@@ -606,6 +606,13 @@ def get_discover(tipo, genero='', page=1):
 
     return listado.get_list_resultados()
 
+def get_discover_anios(tipo, anio='', page=1):
+    url = 'discover/' + tipo
+    campo_anio = 'primary_release_year' if tipo == 'movie' else 'first_air_date_year'
+    listado = Tmdb( discover = {'url': url, campo_anio: anio, 'page': page, 'language': 'es'} )
+
+    return listado.get_list_resultados()
+
 def get_list(tipo, lista='', page=1):
     url = tipo + '/' + lista
     listado = Tmdb( lista = {'url': url, 'page': page, 'language': 'es'} )

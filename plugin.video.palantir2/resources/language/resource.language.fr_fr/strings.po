@@ -102,22 +102,6 @@ msgctxt "#30020"
 msgid More..."
 msgstr "Plus..."
 
-msgctxt "#30021"
-msgid "To mark like seen"
-msgstr "Marquer comme vu"
-
-msgctxt "#30022"
-msgid "Never"
-msgstr "Jamais"
-
-msgctxt "#30023"
-msgid "When viewing 80% of the video"
-msgstr "Au visionnage de 80% de la video"
-
-msgctxt "#30024"
-msgid "On having opened the video"
-msgstr "A l'ouverture de la video"
-
 msgctxt "#30025"
 msgid "Maintenance"
 msgstr "Maintenance"
@@ -134,7 +118,9 @@ msgctxt "#30029"
 msgid "Always use resolveUrl"
 msgstr "Utilisez toujours resolveUrl "
 
-
+msgctxt "#30030"
+msgid "Starting [COLOR %s]%s (%sx%s) [/ COLOR] in %s seconds"
+msgstr "Démarrage de [COLOR %s]%s (%sx%s) [/ COLOR] en %s secondes"
 
 # Palantir
 
@@ -199,8 +185,8 @@ msgid "Unknown"
 msgstr "Inconnu"
 
 msgctxt "#30046"
-msgid "It is necessary to have the Team / Drive account configured in settings."
-msgstr "Il est nécessaire de configurer le compte Team/Drive dans les paramètres."
+msgid "Your current version of Palantir 2 is %s. Now available version %s."
+msgstr "Votre version actuelle de Palantir 2 est %s. Maintenant disponible version %s."
 
 msgctxt "#30047"
 msgid "Resolve not available"
@@ -211,12 +197,8 @@ msgid "Changing icons will take effect when you go out and re-enter"
 msgstr "Le changement d'icônes aura effet quand tu sortiras et rentreras a"
 
 msgctxt "#30049"
-msgid "Mark as seen"
-msgstr "Marquer comme vu"
-
-msgctxt "#30050"
-msgid "Clear as seen"
-msgstr "Démarquer comme vu"
+msgid "Remember last search"
+msgstr "Rappelez-vous la dernière recherche "
 
 msgctxt "#30051"
 msgid "We're updating the list of movies and series for you."
@@ -227,8 +209,8 @@ msgid "Vers. %s (More of %s different contents)"
 msgstr "Vers. %s (Plus de %s contenus différents)"
 
 msgctxt "#30053"
-msgid "Error, We were unable to update the contents. Restart Kodi and try again."
-msgstr "Erreur, nous n'avons pas pu actualizer les contenus. Reinicier et reesayer."
+msgid "We were unable to update the contents"
+msgstr "Nous n'avons pas pu actualizer les contenus"
 
 msgctxt "#30054"
 msgid "Updating external dependencies..."
@@ -252,9 +234,50 @@ msgid "Hide MPD links"
 msgstr "Cacher des liens MPD"
 
 msgctxt "#30059"
-msgid "Server %s temporarily out of service"
-msgstr "Serveur %s temporairement hors service"
+msgid "Error playing video. Try again later"
+msgstr "Erreur lors de la lecture de la vidéo. Réessayez plus tard"
 
+msgctxt "#30060"
+msgid "%s Waiting for %s seconds"
+msgstr "%s En attente de %s secondes"
+
+msgctxt "#30061"
+msgid "Start next episode automatically"
+msgstr "Démarre automatiquement l'épisode suivant"
+
+msgctxt "#30062"
+msgid "Show series in follow-up"
+msgstr "Afficher les séries dans le suivi"
+
+msgctxt "#30063"
+msgid "There are no series in follow-up at this time"
+msgstr "Il n'y a pas de série de suivi pour le moment"
+
+msgctxt "#30064"
+msgid "Unmark viewed"
+msgstr "Annuler la marque vue"
+
+msgctxt "#30065"
+msgid "Search trailer"
+msgstr "Chercher trailer"
+
+msgctxt "#30066"
+msgid "No trailer available for %s at this time"
+msgstr "Aucune bande-annonce disponible pour %s pour le moment"
+
+msgctxt "#30067"
+msgid "Searching last episode viewed of season %s"
+msgstr "Recherche du dernier épisode regardé de la saison %s"
+
+msgctxt "#30068"
+msgid "Seasons / Episodes"
+msgstr "Saisons / épisodes"
+
+msgctxt "#30069"
+msgid "Season %s concluded. Check if there are more seasons available"
+msgstr "Saison %s terminée. Vérifiez s'il y a plus de saisons disponibles"
+
+# empty strings from id 30070 to 30099
 
 # moria
 
@@ -421,3 +444,7 @@ msgstr "Films Anime préférés"
 msgctxt "#30141"
 msgid "Favorite Anime Series"
 msgstr "Série Anime préférée"
+
+msgctxt "#30142"
+msgid "Series in follow-up"
+msgstr "Série en suivi"

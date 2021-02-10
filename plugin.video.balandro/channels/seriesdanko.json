@@ -3,7 +3,7 @@
   "name": "SeriesDanko",
   "thumbnail": "seriesdanko.png",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["tvshow"],

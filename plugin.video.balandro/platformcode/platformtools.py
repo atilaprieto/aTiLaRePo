@@ -847,7 +847,8 @@ def play_torrent(mediaurl, parent_item):
     for client in torrent_clients:
         if cliente_torrent == client['name']:
             if xbmc.getCondVisibility('System.HasAddon("%s")' % client['id']):
-                plugin_url = client['url']
+                # ~ plugin_url = client['url']
+                plugin_url = client['url_magnet'] if 'url_magnet' in client and mediaurl.startswith('magnet:') else client['url']
             else:
                 dialog_ok(config.__addon_name, 'Necesitas instalar el cliente Torrent: ' + client['name'], client['id'])
                 return False

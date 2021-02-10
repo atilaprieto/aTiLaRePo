@@ -712,22 +712,6 @@ msgctxt "#30020"
 msgid "More..."
 msgstr ""
 
-msgctxt "#30021"
-msgid "To mark like seen"
-msgstr ""
-
-msgctxt "#30022"
-msgid "Never"
-msgstr ""
-
-msgctxt "#30023"
-msgid "When viewing 80% of the video"
-msgstr ""
-
-msgctxt "#30024"
-msgid "On having opened the video"
-msgstr ""
-
 msgctxt "#30025"
 msgid "Maintenance"
 msgstr ""
@@ -748,6 +732,9 @@ msgctxt "#30029"
 msgid "Always use resolveUrl"
 msgstr ""
 
+msgctxt "#30030"
+msgid "Starting [COLOR %s]%s (%sx%s) [/ COLOR] in %s seconds"
+msgstr ""
 
 # Palantir
 
@@ -812,7 +799,7 @@ msgid "Unknown"
 msgstr ""
 
 msgctxt "#30046"
-msgid "It is necessary to have the Team / Drive account configured in settings."
+msgid "Your current version of Palantir 2 is %s. Now available version %s."
 msgstr ""
 
 msgctxt "#30047"
@@ -824,11 +811,7 @@ msgid "Changing icons will take effect when you go out and re-enter"
 msgstr ""
 
 msgctxt "#30049"
-msgid "Mark as seen"
-msgstr ""
-
-msgctxt "#30050"
-msgid "Clear as seen"
+msgid "Remember last search"
 msgstr ""
 
 msgctxt "#30051"
@@ -840,7 +823,7 @@ msgid "Vers. %s (More of %s different contents)"
 msgstr ""
 
 msgctxt "#30053"
-msgid "Error, We were unable to update the contents. Restart Kodi and try again."
+msgid "We were unable to update the contents"
 msgstr ""
 
 msgctxt "#30054"
@@ -865,11 +848,50 @@ msgid "Hide MPD links"
 msgstr ""
 
 msgctxt "#30059"
-msgid "Server %s temporarily out of service"
+msgid "Error playing video. Try again later"
 msgstr ""
 
+msgctxt "#30060"
+msgid "%s Waiting for %s seconds"
+msgstr ""
 
-# empty strings from id 30060 to 30099
+msgctxt "#30061"
+msgid "Start next episode automatically"
+msgstr ""
+
+msgctxt "#30062"
+msgid "Show series in follow-up"
+msgstr ""
+
+msgctxt "#30063"
+msgid "There are no series in follow-up at this time"
+msgstr ""
+
+msgctxt "#30064"
+msgid "Unmark viewed"
+msgstr ""
+
+msgctxt "#30065"
+msgid "Search trailer"
+msgstr ""
+
+msgctxt "#30066"
+msgid "No trailer available for %s at this time"
+msgstr ""
+
+msgctxt "#30067"
+msgid "Searching last episode viewed of season %s"
+msgstr ""
+
+msgctxt "#30068"
+msgid "Seasons / Episodes"
+msgstr ""
+
+msgctxt "#30069"
+msgid "Season %s concluded. Check if there are more seasons available"
+msgstr ""
+
+# empty strings from id 30070 to 30099
 
 # moria
 
@@ -1031,4 +1053,8 @@ msgstr ""
 
 msgctxt "#30141"
 msgid "Favorite Anime Series"
+msgstr ""
+
+msgctxt "#30142"
+msgid "Series in follow-up"
 msgstr ""

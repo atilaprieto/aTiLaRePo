@@ -25,6 +25,10 @@ def get_aux(page_url):
     url = scrapertools.find_single_match(data, 'document\.getElementById\("videolink"\)\.innerHTML\s*=\s*"([^"]+)')
 
     if not url or (not url.startswith('//') and not url.startswith('http')): 
+        aux = scrapertools.find_single_match(data, '\.innerHTML\s*=\s*["\']([^"\']+)["\']\s*\+\s*["\']([^"\']+)')
+        if aux: url = aux[0] + aux[1]
+
+    if not url or (not url.startswith('//') and not url.startswith('http')): 
         url = scrapertools.find_single_match(data, "elem\['innerHTML'\]\s*=\s*'([^']+)")
 
     if not url or (not url.startswith('//') and not url.startswith('http')): 

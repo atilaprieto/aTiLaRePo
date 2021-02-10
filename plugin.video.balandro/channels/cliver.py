@@ -21,6 +21,7 @@ def configurar_proxies(item):
 def do_downloadpage(url, post=None, headers=None):
     # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
     data = httptools.downloadpage_proxy('cliver', url, post=post, headers=headers).data
+    # ~ logger.debug(data)
 
     if '<title>You are being redirected...</title>' in data:
         try:
@@ -152,7 +153,9 @@ def list_all(item):
     if not item.pagina: item.pagina = 0
 
     if item.pagina == 0 and item.tipo == 'buscador':
-        data = do_downloadpage(item.url, headers={'Cookie': 'tipo_contenido=peliculas'})
+        # ~ data = do_downloadpage(item.url, headers={'Cookie': 'tipo_contenido=peliculas', 'Referer': host})
+        httptools.save_cookie('tipo_contenido', 'peliculas', host.replace('https://', '')[:-1])
+        data = do_downloadpage(item.url, headers={'Referer': host})
     else:
         post = {'tipo': item.tipo, 'pagina': item.pagina}
         if item.adicional: post['adicional'] = item.adicional
@@ -326,6 +329,7 @@ def play(item):
         url = item.url.split('?')[0]
         post = item.url.split('?')[1]
         data = httptools.downloadpage(url, post=post, headers={'Referer': host}).data.replace('\\/', '/')
+        # ~ data = do_downloadpage(url, post=post, headers={'Referer': host}).replace('\\/', '/')
         # ~ logger.debug(data)
         try:
             dom, vid = scrapertools.find_single_match(data, '(https://[^/]+)/player/([^&]+)')
@@ -341,6 +345,7 @@ def play(item):
                 url = dom + '/hls/' + vid + '/' + vid + '.playlist.m3u8'
                 
                 data = httptools.downloadpage(url).data
+                # ~ data = do_downloadpage(url)
                 # ~ logger.debug(data)
                 matches = scrapertools.find_multiple_matches(data, 'RESOLUTION=\d+x(\d+)\s*(.*?\.m3u8)')
                 if matches:

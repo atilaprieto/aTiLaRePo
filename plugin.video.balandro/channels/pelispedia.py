@@ -52,7 +52,7 @@ def generos(item):
 
     data = httptools.downloadpage(host).data
 
-    bloque = scrapertools.find_single_match(data, '<h3 class="widget-title">GENEROS</h3><ul>(.*?)</ul>')
+    bloque = scrapertools.find_single_match(data, '<h3 class="widget-title">(?:GENEROS|Géneros)</h3><ul>(.*?)</ul>')
 
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)</a>')
     for url, title in matches:

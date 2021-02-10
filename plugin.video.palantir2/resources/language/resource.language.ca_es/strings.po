@@ -102,22 +102,6 @@ msgctxt "#30020"
 msgid "More..."
 msgstr "Més..."
 
-msgctxt "#30021"
-msgid "To mark like seen"
-msgstr "Marcar com vist"
-
-msgctxt "#30022"
-msgid "Never"
-msgstr "Mai"
-
-msgctxt "#30023"
-msgid "When viewing 80% of the video"
-msgstr "Veient el 80 % del vídeo"
-
-msgctxt "#30024"
-msgid "On having opened the video"
-msgstr "Quan obriu el vídeo"
-
 msgctxt "#30025"
 msgid "Maintenance"
 msgstr "Manteniment"
@@ -138,6 +122,9 @@ msgctxt "#30029"
 msgid "Always use resolveUrl"
 msgstr "Utilitza sempre resolverUrl"
 
+msgctxt "#30030"
+msgid "Starting [COLOR %s]%s (%sx%s) [/ COLOR] in %s seconds"
+msgstr "Iniciant [COLOR %s]%s (%sx%s) [/ COLOR] a %s segons"
 
 # Palantir
 
@@ -202,8 +189,8 @@ msgid "Unknown"
 msgstr "Desconegut"
 
 msgctxt "#30046"
-msgid "It is necessary to have the Team / Drive account configured in settings."
-msgstr "Cal que el compte Team / Drive estigui configurat a la configuració."
+msgid "Your current version of Palantir 2 is %s. Now available version %s."
+msgstr "La vostra versió actual de Palantir 2 és %s. Ara està disponible la versió %s."
 
 msgctxt "#30047"
 msgid "Resolve not available"
@@ -214,12 +201,8 @@ msgid "Changing icons will take effect when you go out and re-enter"
 msgstr "El canvi d'icones tindrà efecte quan surtiu i tornareu a entrar"
 
 msgctxt "#30049"
-msgid "Mark as seen"
-msgstr "Marcar com vist"
-
-msgctxt "#30050"
-msgid "Clear as seen"
-msgstr "Esborra com vist"
+msgid "Remember last search"
+msgstr "Recordar ultima recerca"
 
 msgctxt "#30051"
 msgid "We're updating the list of movies and series for you."
@@ -230,8 +213,8 @@ msgid "Vers. %s (More of %s different contents)"
 msgstr "Vers. %s (Més de %s contingut diferent)"
 
 msgctxt "#30053"
-msgid "Error, We were unable to update the contents. Restart Kodi and try again."
-msgstr "Error, No hem pogut actualitzar el contingut. Reinicieu kodi i torneu-ho a provar."
+msgid "We were unable to update the contents"
+msgstr "No hem pogut actualitzar el contingut"
 
 msgctxt "#30054"
 msgid "Updating external dependencies..."
@@ -255,11 +238,50 @@ msgid "Hide MPD links"
 msgstr "Amaga els enllaços MPD"
 
 msgctxt "#30059"
-msgid "Server %s temporarily out of service"
-msgstr "Servidor %s temporalment fora de servei"
+msgid "Error playing video. Try again later"
+msgstr "S'ha produït un error en reproduir el vídeo. Prova-ho més tard"
 
+msgctxt "#30060"
+msgid "%s Waiting for %s seconds"
+msgstr "%s Esperant %s segons"
 
-# empty strings from id 30060 to 30099
+msgctxt "#30061"
+msgid "Start next episode automatically"
+msgstr "Inicia següent episodi automàticament"
+
+msgctxt "#30062"
+msgid "Show series in follow-up"
+msgstr "Mostra sèries en seguiment"
+
+msgctxt "#30063"
+msgid "There are no series in follow-up at this time"
+msgstr "No hi ha sèries en seguiment en aquest moment"
+
+msgctxt "#30064"
+msgid "Unmark viewed"
+msgstr "Desmarcar vistos"
+
+msgctxt "#30065"
+msgid "Search trailer"
+msgstr "Cercar tràiler"
+
+msgctxt "#30066"
+msgid "No trailer available for %s at this time"
+msgstr "Cap tràiler disponible per a %s en aquest moment"
+
+msgctxt "#30067"
+msgid "Searching last episode viewed of season %s"
+msgstr "Buscant últim episodi visualitzat de la temporada %s"
+
+msgctxt "#30068"
+msgid "Seasons / Episodes"
+msgstr "Temporades / Episodis"
+
+msgctxt "#30069"
+msgid "Season %s concluded. Check if there are more seasons available"
+msgstr "Temporada %s conclosa. Comproveu si hi ha més temporades disponibles"
+
+# empty strings from id 30070 to 30099
 
 # moria
 
@@ -426,3 +448,7 @@ msgstr "Pel·lícules Anime favorites"
 msgctxt "#30141"
 msgid "Favorite Anime Series"
 msgstr "Sèries Anime favorites"
+
+msgctxt "#30142"
+msgid "Series in follow-up"
+msgstr "Sèries en seguiment"

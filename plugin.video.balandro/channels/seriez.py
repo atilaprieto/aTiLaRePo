@@ -203,6 +203,7 @@ def findvideos(item):
         server = servertools.corregir_servidor(server)
         url = scrapertools.find_single_match(enlace, " href='([^']+)'").strip()
         if not url.startswith('http'): url = host + url[1:]
+        url = url.replace('.html.html', '.html')
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = server.lower(), referer = item.url,
                               title = '', url = url, 
