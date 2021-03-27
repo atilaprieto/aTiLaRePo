@@ -7,14 +7,14 @@ from core.item import Item
 from core import httptools, scrapertools, servertools, tmdb
 
 
-host = "https://gnula.nu/"
+host = "http://gnula.nu/"
+
 url_estrenos = host + 'peliculas-online/lista-de-peliculas-online-parte-1/'
 url_recomendadas = host + 'peliculas-online/lista-de-peliculas-recomendadas/'
 
-IDIOMAS = {'VC':'Esp', 'VL':'Lat', 'VS':'VOSE', 'castellano':'Esp', 'latino':'Lat', 'vose':'VOSE'}
+IDIOMAS = {'VC': 'Esp', 'VL': 'Lat', 'VS': 'Vose', 'castellano': 'Esp', 'latino': 'Lat', 'vose': 'Vose'}
 
 perpage = 15
-
 
 
 def item_configurar_proxies(item):
@@ -27,7 +27,6 @@ def configurar_proxies(item):
     return proxytools.configurar_proxies_canal(item.channel, host)
 
 def do_downloadpage(url, post=None, use_cache=False):
-    # ~ url = url.replace('gnula.nu', 'gnula.???') # por si hay cambio de dominio y viene de enlaces guardados
     # ~ data = httptools.downloadpage(url, post=post, use_cache=use_cache).data
     data = httptools.downloadpage_proxy('gnula', url, post=post, use_cache=use_cache).data
     return data
@@ -44,16 +43,17 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone( title = 'Recomendadas', action = 'list_all', url = url_recomendadas ))
 
-    itemlist.append(item.clone( title = 'Por género', action = 'generos' ))
-
     # Enlaces por idioma según las preferencias del usuario en servidores
-    idio = {'Esp': ['Castellano', 'VC'], 'Lat': ['Latino', 'VL'], 'VO': ['VOSE', 'VS']}
+    idio = {'Esp': ['Castellano', 'VC'], 'Lat': ['Latino', 'VL'], 'VO': ['Subtitulado', 'VS']}
     prefs = config.get_lang_preferences()
     prefs = sorted(prefs.items(), key=lambda p: p[1])
+
     for lg, num in prefs:
         if num == 0: continue
-        itemlist.append(item.clone( title = 'Estrenos %s' % idio[lg][0], action = 'list_all', url = url_estrenos, filtro_lang=idio[lg][1] ))
-        itemlist.append(item.clone( title = 'Recomendadas %s' % idio[lg][0], action = 'list_all', url = url_recomendadas, filtro_lang=idio[lg][1] ))
+        itemlist.append(item.clone( title = '%s estrenos' % idio[lg][0], action = 'list_all', url = url_estrenos, filtro_lang = idio[lg][1] ))
+        itemlist.append(item.clone( title = '%s recomendadas' % idio[lg][0], action = 'list_all', url = url_recomendadas, filtro_lang = idio[lg][1] ))
+
+    itemlist.append(item.clone( title = 'Por género', action = 'generos' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
@@ -88,13 +88,13 @@ def list_all(item):
 
     if item.page == '': item.page = 0
 
-    data = do_downloadpage(item.url, use_cache=True)
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
-    
+
     patron  = '<a class="Ntooltip" href="([^"]+)">([^<]+)<span><br[^<]+'
     patron += '<img src="([^"]+)"></span></a>(.*?)<br'
     matches = re.compile(patron, re.DOTALL).findall(data)
-    
+
     if item.filtro_lang: # reducir lista según idioma
         matches = filter(lambda m: '(%s)' % item.filtro_lang in m[3], matches)
 
@@ -103,7 +103,7 @@ def list_all(item):
         if ' ' not in buscado:
             matches = filter(lambda m: buscado in m[1].lower(), matches)
         else:
-            palabras = filter(lambda p: len(p) > 3, buscado.split(' ')) # descartar palabras demasiado cortas (la de los etc)
+            palabras = filter(lambda p: len(p) > 3, buscado.split(' ')) # descartar palabras demasiado cortas (la, de, los, etc)
             if len(palabras) == 0: return [] # No hay palabras a buscar
             def contiene(texto, palabras):
                 found = False
@@ -111,10 +111,8 @@ def list_all(item):
                     if palabra in texto: found = True; break
                 return found
             matches = filter(lambda m: contiene(m[1].lower(), palabras), matches)
-
-    logger.info('Número total de películas: %d' % len(matches))
-    for url, title, thumb, resto in matches[item.page * perpage:]:
-        
+    # ~ logger.info('Número total de películas: %d' % len(matches))
+    for url, title, thumb, resto in list(matches)[item.page * perpage:]:
         year = scrapertools.find_single_match(url, '-(\d+)-online/$')
         spans = scrapertools.find_multiple_matches(resto, '<span style="[^"]+">([^<]+)</span>')
         langs = []; quality = ''
@@ -126,17 +124,15 @@ def list_all(item):
                 quality = span
                 break
 
-        itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
-                                    languages=', '.join(langs), qualities=quality,
+        itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, languages=', '.join(langs), qualities=quality,
                                     contentType='movie', contentTitle=title, infoLabels={'year': year} ))
 
-        if len(itemlist) >= perpage:
-            break
+        if len(itemlist) >= perpage: break
 
     tmdb.set_infoLabels(itemlist)
 
-    if not item.filtro_search and len(matches) > (item.page + 1) * perpage:
-        itemlist.append(item.clone( title=">> Página siguiente", page=item.page + 1, action='list_all' ))
+    if not item.filtro_search and len(list(matches)) > (item.page + 1) * perpage:
+        itemlist.append(item.clone( title=">> Página siguiente", page=item.page + 1, action='list_all', text_color='coral' ))
 
     return itemlist
 
@@ -153,7 +149,7 @@ def findvideos(item):
 
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
-    
+
     patron = '<em>([^<]+)</em></p>(.*?)<table[^>]*>(.*?)</table>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     if len(matches) == 0:
@@ -164,23 +160,21 @@ def findvideos(item):
         opcs = opcion.split(',')
         lang = opcs[1].strip().lower()
         quality = opcs[2].strip().upper()
-        
+
         links = re.compile('<iframe width="[^"]+" height="[^"]+" src="([^"]+)', re.DOTALL).findall(iframes)
         if not links: links = re.compile('<iframe src="([^"]+)', re.DOTALL).findall(iframes)
         for url in links:
             if url.endswith('/soon') or url.startswith('http://soon.'): continue
-            itemlist.append(Item( channel = item.channel, action = 'play',
-                                  title = '', url = url,
-                                  language = IDIOMAS.get(lang, lang), quality = quality
-                           ))
+
+            itemlist.append(Item( channel = item.channel, action = 'play', title = '', url = url,
+                                  language = IDIOMAS.get(lang, lang), quality = quality ))
 
         links = re.compile('<a href="([^"]+)', re.DOTALL).findall(tabla)
         for url in links:
             if url.endswith('/soon') or url.startswith('http://soon.'): continue
-            itemlist.append(Item( channel = item.channel, action = 'play',
-                                  title = '', url = url,
-                                  language = IDIOMAS.get(lang, lang), quality = quality, quality_num = puntuar_calidad(quality)
-                           ))
+
+            itemlist.append(Item( channel = item.channel, action = 'play', title = '', url = url,
+                                  language = IDIOMAS.get(lang, lang), quality = quality, quality_num = puntuar_calidad(quality) ))
 
     itemlist = servertools.get_servers_itemlist(itemlist)
 

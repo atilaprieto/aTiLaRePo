@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from platformcode import config, logger
-from core.item import Item
-from core import httptools, scrapertools, jsontools, servertools, tmdb
 import re
 
-# ~ host = 'https://seriesf.lv/'
+from platformcode import config, logger, platformtools
+from core.item import Item
+from core import httptools, scrapertools, jsontools, servertools, tmdb
+
 host = 'https://seriesflv.org/'
 
 headers = {'Referer': host}
 
 perpage = 15 # preferiblemente un múltiplo de los elementos que salen en la web (45) para que la subpaginación interna no se descompense
 
-IDIOMAS = {'esp':'Esp', 'lat':'Lat', 'espsub':'VOSE', 'eng':'VO', 'engsub':'VOS', 'es':'Esp', 'la':'Lat', 'sub':'VOSE', 'en':'VO'}
+IDIOMAS = {'esp': 'Esp', 'lat': 'Lat', 'espsub': 'Vose', 'eng': 'VO', 'engsub': 'VOS', 'es': 'Esp', 'la': 'Lat', 'sub': 'Vose', 'en': 'VO'}
 
 
 def mainlist(item):
@@ -23,12 +23,12 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title='Últimos episodios en castellano', action='last_episodes', lang='es' ))
-    itemlist.append(item.clone( title='Últimos episodios en latino', action='last_episodes', lang='la' ))
-    itemlist.append(item.clone( title='Últimos episodios en VOSE', action='last_episodes', lang='sub' ))
-    # ~ itemlist.append(item.clone( title='Últimos episodios en VO', action='last_episodes', lang='en' ))
+    itemlist.append(item.clone( title='Últimos episodios castellano', action='last_episodes', lang='es' ))
+    itemlist.append(item.clone( title='Últimos episodios latino', action='last_episodes', lang='la' ))
+    itemlist.append(item.clone( title='Últimos episodios suubtitulado', action='last_episodes', lang='sub' ))
+    # ~ itemlist.append(item.clone( title='Últimos episodios en version original', action='last_episodes', lang='en' ))
 
-    itemlist.append(item.clone( title='Lista de series', action='list_all', url=host + 'lista-de-series/' ))
+    itemlist.append(item.clone( title='Catálogo por alfabético', action='list_all', url=host + 'lista-de-series/' ))
 
     itemlist.append(item.clone( title='Por género', action = 'generos' ))
     itemlist.append(item.clone( title='Por letra (A - Z)', action='alfabetico' ))
@@ -62,7 +62,8 @@ def generos(item):
         ('reality','Reality Show'), 
         ('talk','Talk Show'), 
         ('western','Western'), 
-    ]
+        ]
+
     for opc, tit in opciones:
         itemlist.append(item.clone( title=tit, url=host + 'genero/' + opc, action='list_all' ))
 
@@ -91,7 +92,7 @@ def last_episodes(item):
 
     # ~ matches = scrapertools.find_multiple_matches(data, '<a href="([^"]+)" class="item-one" lang="%s"(.*?)</a>' % item.lang)
     matches = scrapertools.find_multiple_matches(data, '<a href="([^"]+)" class="item-one"(.*?)</a>')
-    matches = filter(lambda x: 'language/%s.png"' % item.lang in x[1], matches) # seleccionar idioma pedido
+    matches = list(filter(lambda x: 'language/%s.png"' % item.lang in x[1], matches)) # seleccionar idioma pedido
 
     num_matches = len(matches)
     desde = item.page * perpage
@@ -104,9 +105,10 @@ def last_episodes(item):
             season, episode = scrapertools.find_single_match(url, '/(\d+)/(\d+)(?:/|)$')
         except:
             continue
+
         # ~ logger.info('%s %s %s' % (season, episode, title))
         if not title or not season or not episode: continue
-        
+
         titulo = '%sx%s %s' % (season, episode, title)
 
         itemlist.append(item.clone( action='findvideos', url=url, title=titulo, 
@@ -115,7 +117,7 @@ def last_episodes(item):
     tmdb.set_infoLabels(itemlist)
 
     if num_matches > hasta: # subpaginación interna
-        itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='last_episodes' ))
+        itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='last_episodes', text_color='coral' ))
 
     return itemlist
 
@@ -143,25 +145,23 @@ def list_all(item):
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)')
 
         itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, 
-                                    contentType='tvshow', contentSerieName=title, 
-                                    infoLabels={'year': year} ))
+                                    contentType='tvshow', contentSerieName=title, infoLabels={'year': year} ))
 
         if len(itemlist) >= perpage: break
 
     tmdb.set_infoLabels(itemlist)
 
-    # Subpaginación interna y/o paginación de la web
     buscar_next = True
     if num_matches > perpage: # subpaginación interna dentro de la página si hay demasiados items
         hasta = (item.page * perpage) + perpage
         if hasta < num_matches:
-            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_all' ))
+            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_all', text_color='coral' ))
             buscar_next = False
 
     if buscar_next:
         next_page = scrapertools.find_single_match(data, ' href="([^"]+)"\s*><i class="Next')
         if next_page:
-           itemlist.append(item.clone (url = next_page, page = 0, title = '>> Página siguiente', action = 'list_all'))
+           itemlist.append(item.clone (url = next_page, page = 0, title = '>> Página siguiente', action = 'list_all', text_color='coral' ))
 
     return itemlist
 
@@ -173,13 +173,24 @@ def temporadas(item):
     data = httptools.downloadpage(item.url, headers=headers).data
 
     matches = scrapertools.find_multiple_matches(data, '</i> Temporada (\d+)')
+
     for numtempo in matches:
-        itemlist.append(item.clone( action='episodios', title='Temporada %s' % numtempo, 
-                                    contentType='season', contentSeason=numtempo ))
-        
+        title = 'Temporada ' + numtempo
+
+        if len(matches) == 1:
+            platformtools.dialog_notification(item.contentSerieName.replace('&#038;', '&'), 'solo [COLOR tan]' + title + '[/COLOR]')
+            item.page = 0
+            item.contentType = 'season'
+            item.contentSeason = numtempo
+            itemlist = episodios(item)
+            return itemlist
+
+        itemlist.append(item.clone( action = 'episodios', title = title, contentType = 'season', contentSeason = numtempo, page = 0 ))
+
     tmdb.set_infoLabels(itemlist)
 
     return itemlist
+
 
 # Si una misma url devuelve los episodios de todas las temporadas, definir rutina tracking_all_episodes para acelerar el scrap en trackingtools.
 def tracking_all_episodes(item):
@@ -188,7 +199,11 @@ def tracking_all_episodes(item):
 def episodios(item):
     logger.info()
     itemlist = []
+
     color_lang = config.get_setting('list_languages_color', default='red')
+
+    if not item.page: item.page = 0
+    perpage = 50
 
     data = httptools.downloadpage(item.url, headers=headers).data
 
@@ -196,15 +211,20 @@ def episodios(item):
         data = scrapertools.find_single_match(data, '<i class="icon-chevron-right"[^>]*></i> Temporada %s(.*?)</table>' % item.contentSeason)
 
     matches = scrapertools.find_multiple_matches(data, '<tr>(.*?)</tr>')
-    for data_epi in matches:
+
+    for data_epi in matches[item.page * perpage:]:
         if '<th' in data_epi: continue
+
         try:
             url, title = scrapertools.find_single_match(data_epi, '<a href="([^"]+)"[^>]*>([^<]*)</a>')
             season, episode = scrapertools.find_single_match(url, '/(\d+)/(\d+)(?:/|)$')
         except:
             continue
+
         if not url or not season or not episode: continue
-        if item.contentSeason and item.contentSeason != int(season): continue
+
+        if not item.contentSeason: continue
+        elif not str(item.contentSeason) == season: continue
 
         data_lang = ' '.join(scrapertools.find_multiple_matches(data_epi, ' data-src="([^"]+)'))
         languages = ', '.join([IDIOMAS.get(lang, lang) for lang in scrapertools.find_multiple_matches(data_lang, 'img/language/([^\.]+)')])
@@ -212,10 +232,15 @@ def episodios(item):
         titulo = title.replace(item.contentSerieName, '').strip()
         if languages: titulo += ' [COLOR %s][%s][/COLOR]' % (color_lang, languages) # descartar por no ser del todo real por servidores inhabilitados !?
 
-        itemlist.append(item.clone( action='findvideos', url=url, title=titulo, 
-                                    contentType='episode', contentSeason=season, contentEpisodeNumber=episode ))
+        itemlist.append(item.clone( action='findvideos', url=url, title=titulo, contentType='episode', contentSeason=season, contentEpisodeNumber=episode ))
+
+        if len(itemlist) >= perpage:
+            break
 
     tmdb.set_infoLabels(itemlist)
+
+    if len(matches) > (item.page + 1) * perpage:
+        itemlist.append(item.clone( title=">> Página siguiente", action="episodios", page=item.page + 1, text_color='coral' ))
 
     return itemlist
 
@@ -234,6 +259,7 @@ def normalize_server(server):
     # ~ elif server == 'playedtome': server = '1fichier'
     # ~ elif server == 'thevideome': server = 'vevio'
     return server
+
 
 def findvideos(item):
     logger.info()
@@ -263,13 +289,12 @@ def findvideos(item):
             if not url or not server: continue
 
             lang = scrapertools.find_single_match(data_epi, 'img/language/([^\.]+)')
-            
-            itemlist.append(Item( channel = item.channel, action = 'play', server = server,
-                                  title = '', url = url, 
-                                  language = IDIOMAS.get(lang, lang) #, other = tipo
-                           ))
+
+            itemlist.append(Item( channel = item.channel, action = 'play', server = server, title = '', url = url, 
+                                  language = IDIOMAS.get(lang, lang) )) #, other = tipo ))
 
     return itemlist
+
 
 def play(item):
     logger.info()

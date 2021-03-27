@@ -1,0 +1,17 @@
+{
+  "id": "pelishouse",
+  "name": "PelisHouse",
+  "thumbnail": "pelishouse.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow"],
+  "language": ["cast", "lat", "vose"],
+
+  "clusters": ["adults", "news", "rankings", "languages", "years", "vos", "3d"],
+
+  "notes": "Películas: novedades, por género, años e idiomas. Series: novedades."
+}

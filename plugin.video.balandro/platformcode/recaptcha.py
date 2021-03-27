@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-# --------------------------------------------------------------------------------
-# Balandro - Recaptcha
-# --------------------------------------------------------------------------------
+
+import sys
+
+if sys.version_info[0] < 3:
+    pass
+else:
+    unicode = str
 
 import xbmcgui, xbmc
 
@@ -36,7 +40,6 @@ def get_recaptcha_response(sitekey, referer):
 
         return mensaje, imagen, token
 
-
     # Verificar sitekey informado
     if sitekey == '':
        logger.info('Se necesita sitekey para recaptcha!')
@@ -57,7 +60,6 @@ def get_recaptcha_response(sitekey, referer):
     resultado = ''
     monitor = xbmc.Monitor()
     while not monitor.abortRequested():
-
         # Obtener datos de google (mensaje, imagen, token)
         mensaje, imagen, token = goo_get_challenge()
         if mensaje == '' or imagen == '' or token == '':
@@ -69,7 +71,7 @@ def get_recaptcha_response(sitekey, referer):
         mainWindow.doModal()
         result = mainWindow.result
         del mainWindow
-    
+
         # Comprobar respuesta
         if result == '': # Cancelado por el usuario
             break
@@ -88,7 +90,7 @@ def get_recaptcha_response(sitekey, referer):
         # ~ else: # Recargar
 
     return resultado
-    
+
 
 class Recaptcha(xbmcgui.WindowXMLDialog):
 

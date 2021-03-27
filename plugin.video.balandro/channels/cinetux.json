@@ -11,5 +11,7 @@
   "categories": ["movie"],
   "language": ["lat", "cast", "vose"],
 
+  "clusters": ["news", "rankings", "languages", "years", "adults", "vos"],
+
   "notes": "Películas destacadas, actualizadas, por idioma, por género. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
-# Balandro - Tracking (guardar enlaces para seguimiento de películas y series)
-# ------------------------------------------------------------
 
 import os, re, time
 from datetime import datetime
@@ -13,7 +10,6 @@ from core import trackingtools, filetools
 
 
 # Helpers
-# -------
 
 def valor_infolabel(valor, infoLabels):
     if valor in infoLabels: return infoLabels[valor]
@@ -24,9 +20,7 @@ def valor_infolabel_informado(valores, infoLabels):
         if valor in infoLabels: return infoLabels[valor]
     return ''
 
-# ============================
 # Añadir desde menú contextual
-# ============================
 
 def addFavourite(item):
     logger.info()
@@ -36,7 +30,11 @@ def addFavourite(item):
     if item.from_channel: item.__dict__['channel'] = item.__dict__.pop('from_channel')
 
     if item.contentType not in ['movie', 'tvshow', 'season', 'episode']:
-        platformtools.dialog_ok(config.__addon_name, 'Solamente para películas, series, temporadas o capítulos!')
+        notification_d_ok = config.get_setting('notification_d_ok', default=True)
+        if notification_d_ok:
+            platformtools.dialog_ok(config.__addon_name, 'Sólo películas, series, temporadas o capítulos!')
+        else:
+            platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Sólo películas, series, temporadas o capítulos![/COLOR]')
         return False
 
     # Si no está definido tmdb_id seleccionar
@@ -46,7 +44,7 @@ def addFavourite(item):
         from core import tmdb
         ret = tmdb.dialog_find_and_set_infoLabels(item)
         if not ret: return False # Se ha cancelado
-    
+
     # Si está activada la confirmación de tmdb_id
     elif config.get_setting('tracking_confirm_tmdbid', default=False):
         if item.contentType in ['movie', 'tvshow']:
@@ -88,9 +86,7 @@ def addFavourite(item):
     return True
 
 
-# ====================
 # NAVEGACIÓN
-# ====================
 
 def mainlist(item):
     logger.info()
@@ -110,8 +106,10 @@ def mainlist(item):
     itemlist.append(item.clone( title = 'Series (%d)' % count_shows, action = 'mainlist_series', thumbnail=config.get_thumb('tvshow'), context=context ))
 
     itemlist.append(item.clone( title = 'Episodios (%d) recientes' % count_episodes, action = 'mainlist_episodios', thumbnail=config.get_thumb('hot') ))
-    
+
     itemlist.append(item.clone( title='Gestionar listas', action='mainlist_listas' )) 
+
+    itemlist.append(item.clone( channel='helper', title = 'Información ¿ Cómo funciona ?', action = 'show_help_tracking', thumbnail=config.get_thumb('help'), text_color='green' ))
 
     return itemlist
 
@@ -216,15 +214,15 @@ def mainlist_episodios(item):
         thumbnail = valor_infolabel_informado(['episodio_imagen','thumbnail'], infolabels)
 
         fanart = valor_infolabel('fanart', infolabels)
-        
+
         context = [ {'title': 'Temporadas de la serie', 'channel': item.channel, 'action': 'serie_temporadas', 'link_mode': 'update'} ]
-        
+
         itemlist.append(item.clone( action='findvideos', title=titulo, thumbnail = thumbnail, fanart = fanart,
                                     infoLabels = infolabels, context=context ))
 
     if item.desde + tracking_perpage < count_episodes:
         itemlist.append(item.clone( title="Siguiente >>", desde=item.desde + tracking_perpage ))
-    
+
     db.close()
 
     return itemlist
@@ -235,7 +233,7 @@ def serie_temporadas(item):
     logger.info()
     itemlist = []
     item.category = item.contentSerieName
-    
+
     db = trackingtools.TrackingData()
 
     rows = db.get_seasons(item.infoLabels['tmdb_id'])
@@ -273,7 +271,6 @@ def serie_episodios(item):
 
     rows = db.get_episodes(item.infoLabels['tmdb_id'], item.infoLabels['season'], inverso)
     for season, episode, infolabels in rows:
-
         subtitulo = valor_infolabel('episodio_titulo', infolabels)
         if subtitulo == '': subtitulo = 'Capítulo %d' % infolabels['episode']
 
@@ -284,9 +281,9 @@ def serie_episodios(item):
 
         fanart = valor_infolabel('fanart', infolabels)
         if fanart == '': fanart = item.fanart
-        
+
         context = [ {'title': 'Gestionar episodio', 'channel': item.channel, 'action': 'acciones_episodio'} ]
-        
+
         itemlist.append(item.clone( action='findvideos', title=titulo, thumbnail = thumbnail, fanart = fanart,
                                     infoLabels = infolabels, context=context ))
 
@@ -315,7 +312,37 @@ def findvideos(item):
     for channel, url in rows:
         ch_parms = channeltools.get_channel_parameters(channel)
         if ch_parms['active']: # no tener en cuenta canales que ya no existan o estén desactivados
-            opciones.append(platformtools.listitem_to_select(ch_parms['name'], '', ch_parms['thumbnail']))
+            info = ''
+
+            if ch_parms['status'] == 1:
+                info = info + '[COLOR blue][B][I] Preferido [/I][/B][/COLOR]'
+            elif ch_parms['status'] == -1:
+                info = info + '[COLOR lightslategray][B][I] Desactivado [/I][/B][/COLOR]'
+
+            cfg_proxies_channel = 'channel_' + ch_parms['id'] + '_proxies'
+            if config.get_setting(cfg_proxies_channel, default=''):
+                info = info + '[COLOR red][B] Proxies [/B][/COLOR]'
+
+            tipos = ch_parms['search_types']
+            tipos = str(tipos).replace('[', '').replace(']', '').replace("'", '')
+
+            if ch_parms['searchable'] == False:
+                tipos = str(tipos).replace('movie', 'Vídeos')
+                tipos = str(tipos).replace('movie', 'Películas').replace('tvshow', 'Series')
+            else:
+                tipos = str(tipos).replace('movie', 'Películas').replace('tvshow', 'Series').replace('documentary', 'Documentales').replace('all,', '')
+
+            if info: info = info + '  '
+            info = info + '[COLOR mediumspringgreen][B]' + tipos + '[/B][/COLOR]'
+
+            idiomas = ch_parms['language']
+            idiomas = str(idiomas).replace('[', '').replace(']', '').replace("'", '')
+            idiomas = str(idiomas).replace('cast', 'Esp').replace('lat', 'Lat').replace('vose', 'Vose')
+
+            if info: info = info + '  '
+            info = info + '[COLOR mediumaquamarine]' + idiomas + '[/COLOR]'
+
+            opciones.append(platformtools.listitem_to_select(ch_parms['name'], info, ch_parms['thumbnail']))
             opciones_row.append([channel, url])
 
     db.close()
@@ -326,7 +353,7 @@ def findvideos(item):
 
     elif len(opciones) == 1: # Sólo hay un canal, ir a él directamente
         ret = 0
-        
+
     else:
         # TODO? canal preferente preseleccionado u ordenar por updated o último usado ?
         ret = platformtools.dialog_select('¿ De qué canal quieres los enlaces ?', opciones, useDetails=True)
@@ -335,8 +362,7 @@ def findvideos(item):
 
     it_sel = Item().fromurl(opciones_row[ret][1])
     it_sel.infoLabels = infolabels # Añadir infoLabels pq las urls se guardan sin ellos
-    logger.debug(it_sel)
-    
+
     canal = __import__('channels.' + opciones_row[ret][0], fromlist=[''])
     if hasattr(canal, 'findvideos'):
         itemlist = canal.findvideos(it_sel)
@@ -345,14 +371,12 @@ def findvideos(item):
 
     # Para algunos servers (ej: gamovideo) se necesita guardar la url para usar como referer
     if len(itemlist) > 0: itemlist[0].parent_item_url = it_sel.url
-    
+
     return itemlist
 
 
 
-# ==============================
 # Acciones desde menú contextual
-# ==============================
 
 def info_tracking_shows(item):
     logger.info()
@@ -473,15 +497,15 @@ def acciones_peli(item):
 
         dbname_destino = opciones[ret2]
         filename_destino = filetools.join(trackingtools.get_tracking_path(), dbname_destino + '.sqlite')
-        
+
         db.cur.execute('ATTACH DATABASE ? AS db_destino', (filename_destino,))
-        
+
         db.cur.execute('DELETE FROM db_destino.movies WHERE tmdb_id=?', (tmdb_id,))
         db.cur.execute('DELETE FROM db_destino.channels_movies WHERE tmdb_id=?', (tmdb_id,))
 
         db.cur.execute('INSERT INTO db_destino.movies SELECT * FROM movies WHERE tmdb_id=?', (tmdb_id,))
         db.cur.execute('INSERT INTO db_destino.channels_movies SELECT * FROM channels_movies WHERE tmdb_id=?', (tmdb_id,))
-        
+
         if operacion == 'movida':
             db.cur.execute('DELETE FROM movies WHERE tmdb_id=?', (tmdb_id,))
             db.cur.execute('DELETE FROM channels_movies WHERE tmdb_id=?', (tmdb_id,))
@@ -560,7 +584,7 @@ def acciones_serie(item):
 
     elif acciones[ret] == 'Información de enlaces guardados':
         txt = 'Serie [B][COLOR gold]%s[/COLOR][/B] con tmdb_id: %s' % (item.contentSerieName, tmdb_id)
-        
+
         # Mostrar info de tracking
         db.cur.execute('SELECT periodicity, tvdbinfo, lastscrap FROM tracking_shows WHERE tmdb_id=?', (tmdb_id,))
         row = db.cur.fetchone()
@@ -603,7 +627,7 @@ def acciones_serie(item):
             enlaces = db.cur.fetchall()
             for (season,) in enlaces:
                 guardados.append('T%d' % season)
-            
+
             if len(guardados) > 0:
                 if 'Serie' in guardados and len(guardados) == 1: guardados = ['Temporadas y episodios en un mismo enlace']
                 txt += '[CR][COLOR blue]%s[/COLOR]: %s.' % (channel.encode('utf-8'), ', '.join(guardados))
@@ -651,7 +675,7 @@ def acciones_serie(item):
                 return False
             periodicity = 0 if ret == 0 else 24 if ret == 1 else 48 if ret == 2 else 72 if ret == 3 else 24*7
             tvdbinfo = platformtools.dialog_yesno('Tracking', '¿ Quieres que se acceda a tvdb para recuperar datos de los nuevos episodios ? (bastante más lento pero en algunos casos se obtiene más información)')
-            
+
             db.cur.execute('INSERT OR REPLACE INTO tracking_shows (tmdb_id, updated, periodicity, tvdbinfo) VALUES (?, ?, ?, ?)', (tmdb_id, datetime.now(), periodicity, tvdbinfo))
             platformtools.dialog_notification(item.contentSerieName, 'Activada la búsqueda automática de nuevos episodios.')
 
@@ -686,9 +710,9 @@ def acciones_serie(item):
 
         dbname_destino = opciones[ret2]
         filename_destino = filetools.join(trackingtools.get_tracking_path(), dbname_destino + '.sqlite')
-        
+
         db.cur.execute('ATTACH DATABASE ? AS db_destino', (filename_destino,))
-        
+
         db.cur.execute('DELETE FROM db_destino.shows WHERE tmdb_id=?', (tmdb_id,))
         db.cur.execute('DELETE FROM db_destino.channels_shows WHERE tmdb_id=?', (tmdb_id,))
         db.cur.execute('DELETE FROM db_destino.seasons WHERE tmdb_id=?', (tmdb_id,))
@@ -702,7 +726,7 @@ def acciones_serie(item):
         db.cur.execute('INSERT INTO db_destino.channels_seasons SELECT * FROM channels_seasons WHERE tmdb_id=?', (tmdb_id,))
         db.cur.execute('INSERT INTO db_destino.episodes SELECT * FROM episodes WHERE tmdb_id=?', (tmdb_id,))
         db.cur.execute('INSERT INTO db_destino.channels_episodes SELECT * FROM channels_episodes WHERE tmdb_id=?', (tmdb_id,))
-        
+
         if operacion == 'movida':
             db.cur.execute('DELETE FROM shows WHERE tmdb_id=?', (tmdb_id,))
             db.cur.execute('DELETE FROM channels_shows WHERE tmdb_id=?', (tmdb_id,))
@@ -813,11 +837,7 @@ def acciones_episodio(item):
     return True
 
 
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 # Para poder gestionar varias bases de datos de tracking
-# ------------------------------------------------------
 
 def mainlist_listas(item):
     logger.info()
@@ -826,7 +846,7 @@ def mainlist_listas(item):
 
     current_dbname = trackingtools.get_current_dbname()
     tracking_path = trackingtools.get_tracking_path()
-    
+
     import glob
 
     path = filetools.join(tracking_path, '*.sqlite')
@@ -834,7 +854,7 @@ def mainlist_listas(item):
         lista = filetools.basename(fichero)
         nombre = lista.replace('.sqlite', '')
         titulo = nombre if nombre != current_dbname else '[COLOR gold]%s[/COLOR] [lista activa]' % nombre
-        
+
         context = [ {'title': 'Gestionar lista', 'channel': item.channel, 'action': 'acciones_lista', 'lista': lista} ] # ídem que intro pero por si se accede al menú contextual
 
         itemlist.append(item.clone(action='acciones_lista', lista=lista, title=titulo, folder=False, context=context))
@@ -842,7 +862,7 @@ def mainlist_listas(item):
     plot = 'Puedes crear varias listas para guardar películas y series. Por ejemplo una infantil, otras temáticas, otras para cada usuario, etc.'
     plot += ' Desde el menú contextual de cada película o serie tienes la opción de mover o copiar a otras listas.'
     itemlist.append(item.clone(action='crear_lista', title='Crear nueva lista ...', folder=False, plot=plot, thumbnail=config.get_thumb('booklet'))) 
-    
+
     plot = 'Si tienes alguna lista en otros dispositivos de tu red puedes copiarla a este.'
     plot += ' Para poder hacerlo necesitas haber añadido tu dispositivo remoto como fuente desde Kodi y tener acceso a la carpeta dónde tengas las listas.'
     itemlist.append(item.clone(action='copiar_lista', title='Copiar de otro dispositivo ...', folder=False, plot=plot, thumbnail=config.get_thumb('computer'))) 
@@ -860,7 +880,7 @@ def copiar_lista(item):
 
     lista_origen = filetools.basename(origen)
     destino = filetools.join(trackingtools.get_tracking_path(), lista_origen)
-    
+
     if filetools.exists(destino):
         lista_origen = lista_origen.replace('.sqlite', '') + '-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.sqlite'
         destino = filetools.join(trackingtools.get_tracking_path(), lista_origen)
@@ -941,7 +961,7 @@ def renombrar_lista(item):
     if not filetools.exists(fullfilename_current):
         platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista!', item.lista)
         return False
-    
+
     nombre = item.lista.replace('.sqlite', '')
     titulo = platformtools.dialog_input(default=nombre, heading='Nombre de la lista')
     if titulo is None or titulo == '' or titulo == nombre:
@@ -989,7 +1009,7 @@ def eliminar_lista(item):
 
 def informacion_lista(item):
     logger.info()
-    
+
     fullfilename = filetools.join(trackingtools.get_tracking_path(), item.lista)
     if not filetools.exists(fullfilename):
         platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista!', item.lista)

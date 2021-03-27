@@ -11,5 +11,7 @@
   "categories": ["movie", "torrent"],
   "language": ["cast", "lat", "vose"],
 
+  "clusters": ["torrents", "rankings", "years", "vos"],
+
   "notes": "Acceso por separado a Castellano y Latino. Películas: destacadas, por género, por año. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

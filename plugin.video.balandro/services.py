@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
-# Balandro - servicios
-# ------------------------------------------------------------
 
 import threading
 from platformcode import config
 
 
 # Comprobar actualizaciones solamente una vez al iniciar Kodi, no es necesario dejar el servicio corriendo (o sí para dispositivos siempre encendidos !?)
-# -------------------------
 def comprobar_actualizaciones():
     if config.get_setting('addon_update_atstart', default=False):
         from platformcode import updater
@@ -18,7 +14,6 @@ threading.Thread(target=comprobar_actualizaciones).start()
 
 
 # Lanzar servicio para comprobar nuevos capítulos
-# -----------------------------------------------
 def comprobar_nuevos_episodios():
     if config.get_setting('addon_tracking_atstart', default=True):
         interval = int(config.get_setting('addon_tracking_interval', default='12')) * 3600 # horas convertidas a segundos
@@ -37,3 +32,4 @@ def comprobar_nuevos_episodios():
                 break
 
 threading.Thread(target=comprobar_nuevos_episodios).start()
+

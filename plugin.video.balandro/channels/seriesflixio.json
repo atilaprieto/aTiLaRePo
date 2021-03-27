@@ -1,0 +1,17 @@
+{
+  "id": "seriesflixio",
+  "name": "SeriesFlixIo",
+  "thumbnail": "seriesflixio.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["tvshow"],
+
+  "categories": ["tvshow"],
+  "language": ["cast", "lat", "vose"],
+
+  "clusters": ["countries", "producers", "vos"],
+
+  "notes": "Muchas series, por géneros, por productoras y paises."
+}

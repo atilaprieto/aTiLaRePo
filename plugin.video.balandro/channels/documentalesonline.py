@@ -1,38 +1,39 @@
 # -*- coding: utf-8 -*-
 
-from platformcode import config, logger
+from platformcode import logger
 from core.item import Item
 from core import httptools, scrapertools, servertools
 
 
-HOST = "https://www.documentales-online.com"
+host = "https://www.documentales-online.com"
 
 
 def mainlist(item):
     logger.info()
     itemlist = []
-    
-    itemlist.append(item.clone( title='Últimos documentales', action='list_all', url=HOST ))
 
-    itemlist.append(item.clone( title='Por categorías', action='generos' ))
+    itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host ))
+
+    itemlist.append(item.clone( title = 'Por categoría', action = 'categorias' ))
 
     itemlist.append(item.clone( title = 'Buscar documental ...', action = 'search', search_type = 'documentary' ))
 
     return itemlist
 
 
-def generos(item):
+def categorias(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(HOST).data
+    data = httptools.downloadpage(host).data
 
     bloque = scrapertools.find_single_match(data, '<ul class="sub-menu">(.*?)</ul>')
 
     patron = ' href="([^"]+)">([^<]+)'
     matches = scrapertools.find_multiple_matches(bloque, patron)
+
     for url, title in matches:
-        if url.startswith('/'): url = HOST + url
+        if url.startswith('/'): url = host + url
 
         itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
@@ -46,12 +47,12 @@ def list_all(item):
     data = httptools.downloadpage(item.url).data
 
     matches = scrapertools.find_multiple_matches(data, '<article(.*?)</article>')
-    for article in matches:
 
+    for article in matches:
         url, title = scrapertools.find_single_match(article, ' href="([^"]+)">(.*?)</a>')
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)')
         plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<p>(.*?)</p>'))
-        
+
         if '/series-temas/' in url: continue
 
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, plot=plot,
@@ -61,7 +62,7 @@ def list_all(item):
     if not next_page_link:
         next_page_link = scrapertools.find_single_match(data, 'class=\'current\'>\d+</span><a class="page larger" title="[^"]*" href="([^"]+)')
     if next_page_link:
-        itemlist.append(item.clone( title='>> Página siguiente', action='list_all', url = next_page_link ))
+        itemlist.append(item.clone( title='>> Página siguiente', action='list_all', url = next_page_link, text_color='coral' ))
 
     return itemlist
 
@@ -74,14 +75,13 @@ def findvideos(item):
     # ~ logger.debug(data)
 
     matches = scrapertools.find_multiple_matches(data, '<iframe.*?src="(http[^"]+)')
+
     for url in matches:
         if 'amazon-adsystem.com' in url: continue
 
         servidor = servertools.get_server_from_url(url)
         if servidor and servidor != 'directo':
-            itemlist.append(Item( channel = item.channel, action = 'play', server=servidor, 
-                                  title = servidor.capitalize(), url = url, language = 'Esp'
-                           ))
+            itemlist.append(Item( channel = item.channel, action = 'play', server=servidor, title = servidor.capitalize(), url = url, language = 'Esp' ))
 
     return itemlist
 
@@ -89,7 +89,7 @@ def findvideos(item):
 def search(item, texto):
     logger.info()
     try:
-        item.url = HOST + '/?s=' + texto.replace(" ", "+")
+        item.url = host + '/?s=' + texto.replace(" ", "+")
         return list_all(item)
     except:
         import sys

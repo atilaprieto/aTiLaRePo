@@ -11,5 +11,7 @@
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "notes": "Muchas series, con capítulos de estreno en castellano, latino y VOSE, y listado alfabético. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
+  "clusters": ["lasts", "rankings", "vos"],
+
+  "notes": "Web Cerrada Enero/2021. Muchas series, con capítulos de estreno en castellano, latino y VOSE, y listado alfabético. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

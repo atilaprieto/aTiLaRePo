@@ -1,7 +1,7 @@
 {
   "id": "cliver",
   "name": "Cliver",
-  "thumbnail": "cliver.png",
+  "thumbnail": "cliver.jpg",
 
   "active": true,
 
@@ -11,5 +11,7 @@
   "categories": ["movie"],
   "language": ["cast", "lat", "vose"],
 
-  "notes": "Películas por género, por año, por cadena. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
+  "clusters": ["news", "rankings", "years", "vos"],
+
+  "notes": "Películas por género, por año. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

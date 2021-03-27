@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 import binascii
 import logging
 import os
 import struct
-from StringIO import StringIO
+from io import BytesIO
 
 from smb2_constants import *
 from smb_constants import *
@@ -33,7 +35,7 @@ class SMB2Message:
             self.payload.initMessage(self)
 
     def __str__(self):
-        b = StringIO()
+        b = BytesIO()
         b.write('Command: 0x%02X (%s) %s' % ( self.command, SMB2_COMMAND_NAMES.get(self.command, '<unknown>'), os.linesep ))
         b.write('Status: 0x%08X %s' % ( self.status, os.linesep ))
         b.write('Flags: 0x%02X %s' % ( self.flags, os.linesep ))

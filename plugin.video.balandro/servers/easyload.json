@@ -2,7 +2,8 @@
   "id": "easyload",
   "name": "Easyload",
 
-  "active": true,
+  "active": false,
+  "notes": "Cerrado en Diciembre 2020",
 
   "find_videos": {
     "ignore_urls": [],

@@ -8,16 +8,28 @@
     "ignore_urls": [],
     "patterns": [
       {
-        "pattern": "(mega(?:.co|).nz/(?:embed|)(?:\\#\\!|)\\#\\![A-Za-z0-9\\-\\_]+(?:\\!|\\#)[A-Za-z0-9\\-\\_]+)",
+        "pattern": "(mega.co.nz/\\#\\![A-Za-z0-9\\-\\_]+\\![A-Za-z0-9\\-\\_]+)",
         "url": "https://\\1"
       },
       {
-        "pattern": "(mega(?:.co|).nz/\\#F\\![A-Za-z0-9\\-\\_]+\\![A-Za-z0-9\\-\\_]+)",
+        "pattern": "(mega.co.nz/\\#F\\![A-Za-z0-9\\-\\_]+\\![A-Za-z0-9\\-\\_]+)",
         "url": "https://\\1"
       },
       {
-        "pattern": "mega(?:.co|).nz/(?:file|embed)/([A-Za-z0-9\\-\\_\\#\\!]+)",
-        "url": "https://mega.nz/embed#!\\1"
+        "pattern": "(mega.nz/(?:embed|)\\#\\![A-Za-z0-9\\-\\_]+\\![A-Za-z0-9\\-\\_]+)",
+        "url": "https://\\1"
+      },
+      {
+        "pattern": "(mega.nz/\\#F\\![A-Za-z0-9\\-\\_]+\\![A-Za-z0-9\\-\\_]+)",
+        "url": "https://\\1"
+      },
+      {
+        "pattern": "mega.nz/file/([^\\#]+)\\#([A-Za-z0-9-_]+)",
+        "url": "https://mega.nz/#!\\1!\\2"
+      },
+      {
+        "pattern": "mega.nz/embed/([A-Za-z0-9-_]+)\\#([A-Za-z0-9-_]+)",
+        "url": "https://mega.nz/#!\\1!\\2"
       }
     ]
   }

@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import sys
+
+if sys.version_info[0] < 3:
+    import urllib
+else:
+    import urllib.parse as urllib
+
 from core import httptools, scrapertools
 from platformcode import logger
-import urllib
 
 
 def get_video_url(page_url, url_referer=''):

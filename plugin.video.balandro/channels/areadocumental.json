@@ -11,5 +11,7 @@
   "categories": ["documentary"],
   "language": ["vose"],
 
+  "clusters": ["rankings", "categories", "3d"],
+
   "notes": "Documentales en versión original con subtítulos en castellano. Por categorías, series completas, destacados, ..."
 }

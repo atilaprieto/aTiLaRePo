@@ -3,7 +3,7 @@
   "name": "JetLoad",
  
   "active": false,
-  "notes": "Desactivado por defecto pq requiere pairing desde navegador web, pero se puede activar manualmente",
+  "notes": "Desactivado por defecto requiere pairing desde navegador web, pero se puede activar manualmente",
 
   "find_videos": {
     "ignore_urls": [],

@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
-# Balandro - Descargas
-# ------------------------------------------------------------
+
+import sys
+
+if sys.version_info[0] < 3:
+    basestring = basestring
+else:
+    basestring = str
 
 import os, time, glob
 
@@ -20,13 +24,12 @@ if not filetools.exists(download_path):
     filetools.mkdir(download_path)
 
 
-
 def mainlist(item):
     logger.info()
     item.category = 'Descargas'
-    
+
     itemlist = []
-    
+
     if download_path.startswith('smb://'):
         fichs = sorted(filetools.listdir(download_path))
         ficheros = [filetools.join(download_path, fit) for fit in fichs if fit.endswith('.json')]
@@ -58,7 +61,7 @@ def mainlist(item):
 
         else:
             it.title = '[I][COLOR gray][???] %s[/COLOR][/I]' % it.downloadFilename
-            
+
         itemlist.append(it)
 
     return itemlist
@@ -71,7 +74,7 @@ def acciones_enlace(item):
     item.__dict__['action'] = item.__dict__.pop('from_action')
 
     if item.downloadStatus == STATUS_CODES.completed:
-        acciones = ['Reproducir vídeo', 'Eliminar descarga', 'Guardar una copia']
+        acciones = ['Reproducir vídeo', 'Eliminar descarga', 'Guardar una copia en ...']
 
     elif item.downloadStatus == STATUS_CODES.canceled:
         acciones = ['Continuar descarga', 'Eliminar descarga']
@@ -94,7 +97,7 @@ def acciones_enlace(item):
 
         if item.jsonfile and filetools.exists(item.jsonfile):
             filetools.remove(item.jsonfile)
-        
+
         platformtools.itemlist_refresh()
         return True
 
@@ -106,7 +109,7 @@ def acciones_enlace(item):
     elif acciones[ret] == 'Reproducir vídeo':
         import xbmcgui, xbmc
         mediaurl = filetools.join(download_path, item.downloadFilename)
-        
+
         xlistitem = xbmcgui.ListItem(path=mediaurl)
         platformtools.set_infolabels(xlistitem, item, True)
 
@@ -117,7 +120,7 @@ def acciones_enlace(item):
         xbmc.Player().play(playlist, xlistitem)
         return True
 
-    elif acciones[ret] == 'Guardar una copia':
+    elif acciones[ret] == 'Guardar una copia en ...':
         import xbmcgui
         destino_path = xbmcgui.Dialog().browseSingle(3, 'Seleccionar carpeta dónde copiar', 'files', '', False, False, '')
         if not destino_path: return False
@@ -134,6 +137,8 @@ def acciones_enlace(item):
 def save_download(item):
     logger.info()
 
+    notification_d_ok = config.get_setting('notification_d_ok', default=True)
+
     # Si se llega aquí mediante el menú contextual, hay que recuperar los parámetros action y channel
     if item.from_action: item.__dict__["action"] = item.__dict__.pop("from_action")
     if item.from_channel: item.__dict__["channel"] = item.__dict__.pop("from_channel")
@@ -146,7 +151,7 @@ def save_download(item):
 
             # Para algunos servers (ej: gamovideo) se necesita la url para usar como referer
             if item.channel == 'tracking' and len(itemlist) > 0: item.url = itemlist[0].parent_item_url
-            
+
             # Reordenar/Filtrar enlaces
             itemlist = filter(lambda it: it.action == 'play', itemlist) # aunque por ahora no se usan action != 'play' en los findvideos
             from core import servertools
@@ -155,10 +160,13 @@ def save_download(item):
             itemlist = servertools.filter_and_sort_by_language(itemlist)
 
             if len(itemlist) == 0:
-                platformtools.dialog_ok(config.__addon_name, 'No hay enlaces disponibles')
+                if notification_d_ok:
+                    platformtools.dialog_ok(config.__addon_name, 'No hay enlaces disponibles')
+                else:
+                    platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]No hay enlaces disponibles[/COLOR]')
 
             itemlist = platformtools.formatear_enlaces_servidores(itemlist)
-            
+
             import xbmc
             erroneos = []
             # Bucle hasta cancelar o descargar
@@ -193,37 +201,47 @@ def save_download(item):
 
                         else:
                             ok_play = False
-                            platformtools.dialog_ok(config.__addon_name, 'No se puede descargar')
+                            if notification_d_ok:
+                                platformtools.dialog_ok(config.__addon_name, 'No se puede descargar')
+                            else:
+                                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]No se puede descargar[/COLOR]')
 
                     else:
                         ok_play = download_video(itemlist[seleccion], item)
-                    
+
                     if ok_play: break
                     else: erroneos.append(seleccion)
 
         else:
-            platformtools.dialog_ok(config.__addon_name, 'Nada a descargar!')
+            if notification_d_ok:
+                platformtools.dialog_ok(config.__addon_name, 'Nada a descargar!')
+            else:
+                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Nada a descargar![/COLOR]')
 
     except:
         import traceback
         logger.error(traceback.format_exc())
 
-        platformtools.dialog_ok(config.__addon_name, 'Error al descargar!')
-
+        if notification_d_ok:
+            platformtools.dialog_ok(config.__addon_name, 'Error al descargar!')
+        else:
+            platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Error al descargar![/COLOR]')
 
 
 # (parecido a platformtools.play_video pero para descargar)
 def download_video(item, parent_item):
     logger.info(item)
     logger.info(parent_item)
-    
+
+    notification_d_ok = config.get_setting('notification_d_ok', default=True)
+
     if item.video_urls:
         video_urls, puedes, motivo = item.video_urls, True, ""
     else:
         from core import servertools
         url_referer = item.url_referer if item.url_referer else parent_item.url
         video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(item.server, item.url, url_referer=url_referer)
-    
+
     if not puedes:
         platformtools.dialog_ok("No puedes descargar este vídeo porque...", motivo, item.url)
         return False
@@ -245,20 +263,36 @@ def download_video(item, parent_item):
         if mediaurl == '':
             platformtools.dialog_ok(config.__addon_name, 'No se encuentra el vídeo!')
             return False
+
         if mediaurl.endswith('.m3u8') or 'm3u8' in video_urls[seleccion][0].lower():
-            platformtools.dialog_ok(config.__addon_name, 'No se puede descargar en formato m3u8')
+            if notification_d_ok:
+                platformtools.dialog_ok(config.__addon_name, 'Formato m3u8 no se puede descargar')
+            else:
+                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Formato m3u8 no se puede descargar[/COLOR]')
             return False
         if mpd:
-            platformtools.dialog_ok(config.__addon_name, 'No se puede descargar en formato mpd')
+            if notification_d_ok:
+                platformtools.dialog_ok(config.__addon_name, 'Formato mpd no se puede descargar')
+            else:
+                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Formato mpd no se puede descargar[/COLOR]')
             return False
         if mediaurl.startswith('rtmp'):
-            platformtools.dialog_ok(config.__addon_name, 'No se puede descargar en formato rtmp')
+            if notification_d_ok:
+                platformtools.dialog_ok(config.__addon_name, 'Formato rtmp no se puede descargar')
+            else:
+                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Formato rtmp no se puede descargar[/COLOR]')
+            return False
+        if item.server == 'torrent':
+            if notification_d_ok:
+                platformtools.dialog_ok(config.__addon_name, 'Formato torrent no se puede descargar')
+            else:
+                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Formato torrent no se puede descargar[/COLOR]')
             return False
 
         if parent_item.contentType == 'movie':
             file_name = '%s' % parent_item.contentTitle # config.text_clean(...)
         else:
-            file_name = '%s - S%02dE%02d' % (parent_item.contentSerieName, parent_item.contentSeason, parent_item.contentEpisodeNumber)
+            file_name = '%s - S%02dE%02d' % (parent_item.contentSerieName, int(parent_item.contentSeason), int(parent_item.contentEpisodeNumber))
 
         ch_name = parent_item.channel if parent_item.channel != 'tracking' else item.channel
         file_name += ' [%s][%s]' % (ch_name, item.server)
@@ -279,7 +313,7 @@ def do_download(mediaurl, file_name, parent_item, server_item):
 
     # Lanzamos la descarga
     down_stats = downloadtools.do_download(mediaurl, download_path, file_name)
-    
+
     # Actualizar info de la descarga en json
     update_download_json(path_down_json, down_stats)
 
@@ -294,7 +328,7 @@ def do_download(mediaurl, file_name, parent_item, server_item):
 
 
 def write_download_json(path, item):
-    if item.__dict__.has_key('context'): item.__dict__.pop('context')
+    if item.__dict__.__contains__('context'): item.__dict__.pop('context')
     item.downloadStatus = STATUS_CODES.stopped
     item.downloadProgress = 0
     item.downloadSize = 0

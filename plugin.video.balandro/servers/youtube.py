@@ -1,9 +1,24 @@
 # s-*- coding: utf-8 -*-
 
+import sys
+
+if sys.version_info[0] < 3:
+    PY3 = False
+
+    import urllib
+    import urlparse
+else:
+    PY3 = True
+
+    import urllib.parse as urllib
+    import urllib.parse as urlparse
+
+
+import re, base64
+
 from core import httptools, scrapertools, servertools
 from core import jsontools as json
 from platformcode import logger, platformtools
-import re, urllib, urlparse, base64
 
 # ~ https://tyrrrz.me/blog/reverse-engineering-youtube
 
@@ -106,6 +121,7 @@ def label_from_itag(itag):
 
 js_signature = None
 js_signature_checked = False
+
 def obtener_js_signature(youtube_page_data):
     global js_signature, js_signature_checked
     # ~ logger.debug(youtube_page_data)
@@ -135,7 +151,6 @@ def obtener_js_signature(youtube_page_data):
 
 
 def extract_from_player_response(params, youtube_page_data=''):
-    logger.info()
     video_urls = []
     try:
         pr = json.load(params['player_response'])
@@ -155,7 +170,7 @@ def extract_from_player_response(params, youtube_page_data=''):
                     obtener_js_signature(youtube_page_data)
                 if not js_signature: continue
                 vid['url'] = v_url + '&sig=' + urllib.quote(js_signature([v_sig]), safe='')
-                
+
             lbl = ''
             if 'itag' in vid: lbl = label_from_itag(vid['itag'])
             if not lbl and 'qualityLabel' in vid: lbl = vid['qualityLabel']
@@ -167,10 +182,12 @@ def extract_from_player_response(params, youtube_page_data=''):
 
 
 def extract_videos(video_id):
-
     url = 'https://www.youtube.com/get_video_info?video_id=%s&eurl=https://youtube.googleapis.com/v/%s&ssl_stream=1' % (video_id, video_id)
     data = httptools.downloadpage(url).data
     # ~ logger.debug(data)
+
+    if PY3 and isinstance(data, bytes):
+        data = data.decode('utf-8')
 
     video_urls = []
     params = dict(urlparse.parse_qsl(data))
@@ -197,7 +214,6 @@ def extract_videos(video_id):
     if params.get('player_response'):
         video_urls = extract_from_player_response(params, youtube_page_data)
         if len(video_urls) > 0: return video_urls
-
 
     if not params.get('url_encoded_fmt_stream_map'):
         params = dict(urlparse.parse_qsl(data))

@@ -11,5 +11,7 @@
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
 
+  "clusters": ["lasts", "years", "countries", "adults", "vos"],
+
   "notes": "Series por género, año, país, en emisión o finalizadas, populares."
 }

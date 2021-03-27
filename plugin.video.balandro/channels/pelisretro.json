@@ -1,0 +1,17 @@
+{
+  "id": "pelisretro",
+  "name": "PelisRetro",
+  "thumbnail": "pelisretro.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["lat"],
+
+  "clusters": ["classic"],
+
+  "notes": "Películas retro, por género."
+}

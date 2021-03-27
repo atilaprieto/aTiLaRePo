@@ -86,6 +86,11 @@ Note: This code was not written for high-end systems needing a fast
 
 import sys
 
+if sys.version_info[0] < 3:
+    pass
+else:
+    unicode = str
+
 # _pythonMajorVersion is used to handle Python2 and Python3 differences.
 _pythonMajorVersion = sys.version_info[0]
 

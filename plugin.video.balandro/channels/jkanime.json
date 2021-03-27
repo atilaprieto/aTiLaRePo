@@ -1,0 +1,17 @@
+{
+  "id": "jkanime",
+  "name": "JKAnime",
+  "thumbnail": "jkanime.png",
+
+  "active": true,
+
+  "searchable": false,
+  "search_types": ["movie", "tvshow"],
+
+  "categories": ["movie", "tvshow"],
+  "language": ["cast", "lat", "vose", "vo"],
+
+  "clusters": ["anime", "lasts", "vos"],
+
+  "notes": "Web dedicada exclusivamente al anime"
+}

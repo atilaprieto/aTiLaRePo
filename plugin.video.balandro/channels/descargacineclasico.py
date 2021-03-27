@@ -10,16 +10,17 @@ host = 'https://descargacineclasico.net/'
 def mainlist(item):
     return mainlist_pelis(item)
 
+
 def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Lista de películas', action = 'list_all', url = host + 'tag/peliculas/', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host + 'tag/peliculas/', search_type = 'movie' ))
 
-    itemlist.append(item.clone( title = 'Películas en Castellano', action = 'list_all', url = host + 'tag/castellano/', search_type = 'movie' ))
-    itemlist.append(item.clone( title = 'Películas en Latino', action = 'list_all', url = host + 'tag/latino/', search_type = 'movie' ))
-    itemlist.append(item.clone( title = 'Películas en VOSE', action = 'list_all', url = host + 'tag/subtitulada/', search_type = 'movie' ))
-    itemlist.append(item.clone( title = 'Películas en VO', action = 'list_all', url = host + 'tag/vo/', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Castellano', action = 'list_all', url = host + 'tag/castellano/', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Latino', action = 'list_all', url = host + 'tag/latino/', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Subtitulado', action = 'list_all', url = host + 'tag/subtitulada/', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Versión original', action = 'list_all', url = host + 'tag/vo/', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Documentales', action = 'list_all', url = host + 'tag/documentales/', search_type = 'movie' ))
 
@@ -52,10 +53,11 @@ def generos(item):
 
     return itemlist
 
+
 def anios(item):
     logger.info()
     itemlist = []
-    
+
     for ano in range(2013, 1913, -1):
         itemlist.append(item.clone( action = 'list_all', title = str(ano), url = host + 'fecha/' + str(ano) + '/' ))
 
@@ -70,8 +72,8 @@ def list_all(item):
 
     data = httptools.downloadpage(item.url, raise_weberror=raise_weberror).data
     # ~ logger.debug(data)
-    
-    # descartados idiomas pq los VO y VOSE no se acostrumbran a cumplir
+
+    # descartados idiomas pq los VO y Vose no se acostrumbran a cumplir
     patron = '<div class="post-thumbnail">\s*<a href="([^"]+)" title="([^"]+)">\s*'
     patron += '<img width="[^"]*" height="[^"]*" style="[^"]*" src="([^"]+)"'
     patron += '.*?<p>(.*?)</p>'
@@ -91,7 +93,7 @@ def list_all(item):
         else:
             year = '-'
         plot = scrapertools.decodeHtmlentities(plot)
-        
+
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
                                     contentType='movie', contentTitle=title, infoLabels={'year': year, 'plot': plot} ))
 
@@ -100,7 +102,7 @@ def list_all(item):
     next_page_link = scrapertools.find_single_match(data, ' rel=next href=([^ >]+)')
     if not next_page_link: next_page_link = scrapertools.find_single_match(data, ' rel="next" href="([^"]+)"')
     if next_page_link:
-        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_all' ))
+        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_all', text_color='coral' ))
 
     return itemlist
 
@@ -111,9 +113,9 @@ def findvideos(item):
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
-    
+
     if '<h2>Ver online' in data: data = data.split('<h2>Ver online')[1]
-    
+
     patron = '<a href="#(div_\d+_v)" class="MO">\s*'
     patron += '<span>(.*?)</span>\s*'
     patron += '<span>.*?</span>\s*'
@@ -135,23 +137,21 @@ def findvideos(item):
     # ~ logger.debug(matches)
     for div1, lg, qlty, div2, url in matches:
         if div1 != div2: continue
-        
+
         url = url.replace('"', '')
         # ~ if url.startswith('https://adf.ly/'): url = scrapertools.decode_adfly(url)
         if not url.startswith('http'): continue
-        
+
         if '/esp.png' in lg: lang = 'Esp'
         elif '/esp-lat' in lg: lang = 'Lat'
-        elif '/vose.png' in lg or '/dual-sub.png' in lg: lang = 'VOSE'
+        elif '/vose.png' in lg or '/dual-sub.png' in lg: lang = 'Vose'
         else: lang = 'VO'
 
-        itemlist.append(Item( channel = item.channel, action = 'play', server = '',
-                              title = '', url = url, referer = item.url,
-                              language = lang, quality = qlty
-                       ))
+        itemlist.append(Item( channel = item.channel, action = 'play', server = '', title = '', url = url, referer = item.url,
+                              language = lang, quality = qlty ))
 
     itemlist = servertools.get_servers_itemlist(itemlist)
-    
+
     # Dejar desconocidos de adfly como indeterminados para resolverse en el play ya que si se quieren resolver 
     # todos de golpe en findvideos adfly necesita esperas entre las llamadas
     for it in itemlist:
@@ -172,7 +172,7 @@ def play(item):
 
     if item.url != '': 
         itemlist.append(item.clone())
-    
+
     return itemlist
 
 

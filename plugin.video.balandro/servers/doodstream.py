@@ -21,12 +21,14 @@ def get_video_url(page_url, url_referer=''):
     # ~ logger.debug(data)
     
     url = scrapertools.find_single_match(data, "get\('(/pass_md5/[^']+)")
-    token = scrapertools.find_single_match(data, '"?token=([^"&]+)')
-    if url and token:
+    if url:
         headers = {'Referer': page_url}
         data2 = httptools.downloadpage('https://dood.to' + url, headers=headers).data
         # ~ logger.debug(data2)
-        if not data2: return video_urls
+        if not data2: return 'Vídeo sin resolver'
+
+        token = scrapertools.find_single_match(data, '"?token=([^"&]+)')
+        if not token: return video_urls
 
         a = ''.join([random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789') for i in range(10)])
         a += '?token=' + token + '&expiry=' + str(int(time.time()*1000))

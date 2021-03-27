@@ -3,7 +3,7 @@
   "name": "TeleDocumentales",
   "thumbnail": "teledocumentales.jpg",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["documentary"],
@@ -11,5 +11,7 @@
   "categories": ["documentary"],
   "language": ["cast", "vose"],
 
-  "notes": "Documentales en castellano y subtitulados."
+  "clusters": ["categories"],
+
+  "notes": "Web Cerrada Diciembre/2020. Documentales en castellano y subtitulados."
 }

@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
-# Balandro - Listados de peliculas de TMDB
-# ------------------------------------------------------------
 
 from platformcode import config, logger, platformtools
 from core.item import Item
@@ -13,30 +10,44 @@ def mainlist(item):
     itemlist = []
 
     item.category = 'TMDB'
-    
-    itemlist.append(item.clone( action='personas', search_type='cast', title='Buscar por Personas (Interpretación) ...',
+
+    itemlist.append(item.clone( action='personas', search_type='cast', title='Buscar Personas (por Interpretación) ...',
                                 plot = 'Escribir el nombre de un actor o una actriz para listar todas las películas y series en las que ha intervenido.' ))
 
-    itemlist.append(item.clone( action='personas', search_type='crew', title='Buscar por Personas (Dirección) ...',
+    itemlist.append(item.clone( action='personas', search_type='crew', title='Buscar Personas (por Dirección) ...',
                                 plot = 'Escribir el nombre de una persona para listar todas las películas y series que ha dirigido.' ))
 
-    itemlist.append(item.clone( action='listado_personas', search_type='person', extra = 'popular', title='Personas más Populares' ))
+    itemlist.append(item.clone( action='listado_personas', search_type='person', extra = 'popular', title='Personas con Mayor popularidad' ))
 
-    itemlist.append(item.clone( action='listado', search_type='movie', extra = 'popular', title='Películas más Populares' ))
-    itemlist.append(item.clone( action='listado', search_type='movie', extra = 'top_rated', title='Películas Mejor Valoradas' ))
-    itemlist.append(item.clone( action='listado', search_type='movie', extra = 'now_playing', title='Películas en Cartelera' ))
-    # ~ itemlist.append(item.clone( action='listado', search_type='movie', url = 'movie/upcoming', title='Próximas Películas' ))
-    itemlist.append(item.clone( action='generos', search_type='movie', title='Películas por Géneros' ))
-    itemlist.append(item.clone( action='anios', search_type='movie', title='Películas por Años' ))
+    presentar = True
+    if item.search_type == 'tvshow': presentar = False
+    elif item.search_type == 'documentary': presentar = False
+    elif item.extra == 'mixed':
+       if item.search_type == 'movie': presentar = False
 
-    itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'popular', title='Series más Populares' ))
-    itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'top_rated', title='Series Mejor Valoradas' ))
-    itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'on_the_air', title='Series emitiéndose actualmente' ))
-    # ~ itemlist.append(item.clone( action='listado', search_type='tvshow', url = 'tv/airing_today', title='Series que se emiten Hoy' ))
-    itemlist.append(item.clone( action='generos', search_type='tvshow', title='Series por Géneros' ))
-    itemlist.append(item.clone( action='anios', search_type='tvshow', title='Series por Años' ))
+    if presentar:
+        itemlist.append(item.clone( action='listado', search_type='movie', extra = 'now_playing', title='Películas en Cartelera' ))
+        itemlist.append(item.clone( action='listado', search_type='movie', extra = 'popular', title='Películas Más populares' ))
+        itemlist.append(item.clone( action='listado', search_type='movie', extra = 'top_rated', title='Películas Mejor valoradas' ))
+        # ~ itemlist.append(item.clone( action='listado', search_type='movie', url = 'movie/upcoming', title='Próximas Películas' ))
+        itemlist.append(item.clone( action='generos', search_type='movie', title='Películas por Género' ))
+        itemlist.append(item.clone( action='anios', search_type='movie', title='Películas por Año' ))
 
-    itemlist.append(item.clone( action='show_help', title='Información / Ayuda', folder=False, thumbnail=config.get_thumb('help') ))
+    presentar = True
+    if item.search_type == 'movie': presentar = False
+    elif item.search_type == 'documentary': presentar = False
+    elif item.extra == 'mixed':
+       if item.search_type == 'tvshow': presentar = False
+
+    if presentar:
+        itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'on_the_air', title='Series en Emisión' ))
+        itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'popular', title='Series Más populares' ))
+        itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'top_rated', title='Series Mejor valoradas' ))
+        # ~ itemlist.append(item.clone( action='listado', search_type='tvshow', url = 'tv/airing_today', title='Series que se emiten Hoy' ))
+        itemlist.append(item.clone( action='generos', search_type='tvshow', title='Series por Género' ))
+        itemlist.append(item.clone( action='anios', search_type='tvshow', title='Series por Año' ))
+
+    itemlist.append(item.clone( action='show_help', title='Información y ayuda', folder=False, thumbnail=config.get_thumb('help'), text_color='green' ))
 
     return itemlist
 
@@ -82,9 +93,9 @@ def lista(item, elementos):
                                         contentType = 'tvshow', contentSerieName = titulo, infoLabels = {'tmdb_id': elemento['id']} ))
 
     tmdb.set_infoLabels(itemlist)
-    
+
     if len(itemlist) > 0:
-        itemlist.append(item.clone( title='Página siguiente >>', page = item.page + 1 ))
+        itemlist.append(item.clone( title='Página siguiente >>', page = item.page + 1, text_color='coral' ))
 
     return itemlist
 
@@ -94,9 +105,9 @@ def listado(item):
 
     tipo = 'movie' if item.search_type == 'movie' else 'tv'
     elementos = tmdb.get_list(tipo, item.extra, item.page)
-    
+
     return lista(item, elementos)
-    
+
 
 def descubre(item):
     logger.info()
@@ -105,6 +116,7 @@ def descubre(item):
     elementos = tmdb.get_discover(tipo, item.extra, item.page)
 
     return lista(item, elementos)
+
 
 def generos(item):
     logger.info()
@@ -115,7 +127,6 @@ def generos(item):
     # ~ logger.debug(elementos)
 
     for codigo, titulo in elementos[tipo].items():
-
         itemlist.append(item.clone( title=titulo, action='descubre', extra = codigo ))
 
     return sorted(itemlist, key=lambda it: it.title)
@@ -147,28 +158,26 @@ def anios(item):
 def personas(item):
     logger.info()
     itemlist = []
-    
+
     if not item.person_id:
         # Diálogo para introducir el texto de la persona buscada
-        # ------------------------------------------------------
         last_search = config.get_setting('search_last_person', default='')
         tecleado = platformtools.dialog_input(last_search, 'Nombre de la persona a buscar')
         if tecleado is None or tecleado == '':
             return itemlist
         config.set_setting('search_last_person', tecleado)
-        
+
         # Diálogo para escoger entre la lista posible de gente
-        # ----------------------------------------------------
         elementos = tmdb.get_person(tecleado)
-        
+
         if len(elementos) == 0:
-            platformtools.dialog_notification('Persona no encontrada', 'Sin resultados para [COLOR gold]%s[/COLOR]' % tecleado)
-            return itemlist
+            platformtools.dialog_notification(tecleado, '[COLOR coral]Sin resultados[/COLOR]')
+            return
 
         elif len(elementos) == 1:
             item.person_id = elementos[0]['id']
             item.category = elementos[0]['name']
-        
+
         else:
             opciones = []; opciones_ids = [];
             for elemento in elementos:
@@ -185,11 +194,11 @@ def personas(item):
                         info += detalle['name']
                         if 'first_air_date' in detalle:
                             info += ' (TV %s)' % detalle['first_air_date'][:4]
-                    
+
                 thumb = ''
                 if elemento['profile_path']:
                     thumb = 'https://image.tmdb.org/t/p/w235_and_h235_face%s' % elemento['profile_path']
-                
+
                 opciones.append(platformtools.listitem_to_select(elemento['name'], info, thumb))
                 opciones_ids.append(elemento['id'])
 
@@ -199,13 +208,12 @@ def personas(item):
 
             item.person_id = opciones_ids[ret]
             item.category = opciones[ret].getLabel()
-    
+
     # Listar pelis y series de la persona
-    # -----------------------------------
     if not item.page: item.page = 1
 
     elementos = tmdb.get_person_credits(item.person_id, item.search_type)
-    
+
     if item.search_type == 'crew': # filtrar solamente dirección
         elementos = filter(lambda it: 'job' in it and it['job'] == 'Director', elementos)
 
@@ -213,7 +221,7 @@ def personas(item):
     num_elementos = len(elementos)
     desde = (item.page - 1) * perpage
     # ~ logger.info('Hay %d pelis/series para %s' % (num_elementos, item.category))
-    
+
     for elemento in elementos[desde:]:
         titulo = elemento['title'] if 'title' in elemento else elemento['name']
         sufijo = ''
@@ -233,9 +241,9 @@ def personas(item):
         if len(itemlist) >= perpage: break
 
     tmdb.set_infoLabels(itemlist)
-    
+
     if desde + perpage < num_elementos:
-        itemlist.append(item.clone( title='Página siguiente >>', page = item.page + 1 ))
+        itemlist.append(item.clone( title='Página siguiente >>', page = item.page + 1, text_color='coral' ))
 
     return itemlist
 
@@ -256,15 +264,15 @@ def listado_personas(item):
                 info += '%s (%s)' % (detalle['title'], detalle['release_date'][:4])
             else:
                 info += '%s (TV %s)' % (detalle['name'], detalle['first_air_date'][:4])
-            
+
         thumb = ''
         if elemento['profile_path']:
             thumb = 'https://image.tmdb.org/t/p/w235_and_h235_face%s' % elemento['profile_path']
 
         itemlist.append(item.clone( action = 'personas', person_id = elemento['id'], search_type = 'cast', page = 1, 
                                     title = elemento['name'], thumbnail = thumb, plot = info, category = elemento['name'] ))
-        
+
     if len(itemlist) > 0:
-        itemlist.append(item.clone( title='Página siguiente >>', page = item.page + 1 ))
+        itemlist.append(item.clone( title='Página siguiente >>', page = item.page + 1, text_color='coral' ))
 
     return itemlist

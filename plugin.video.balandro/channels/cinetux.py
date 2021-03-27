@@ -1,31 +1,31 @@
 # -*- coding: utf-8 -*-
 
-import re, urllib
 
 from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
 
-# ~ CHANNEL_HOST = "https://www.cinetux.to/"
-CHANNEL_HOST = "https://cinetux.nu/"
+host = "https://cinetux.nu/"
 
-IDIOMAS = {'Latino': 'Lat', 'Subtitulado': 'VOSE', 'Español': 'Esp', 'Espa%C3%B1ol':'Esp', 'SUB': 'VO' }
+IDIOMAS = {'Latino': 'Lat', 'Subtitulado': 'Vose', 'Español': 'Esp', 'Espa%C3%B1ol': 'Esp', 'SUB': 'VO' }
 
 
 def item_configurar_proxies(item):
     plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
-    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + CHANNEL_HOST + ' necesitarás un proxy.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
     return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
 
 def configurar_proxies(item):
     from core import proxytools
-    return proxytools.configurar_proxies_canal(item.channel, CHANNEL_HOST)
+    return proxytools.configurar_proxies_canal(item.channel, host)
 
 def do_downloadpage(url, post=None, headers=None):
+    # ~  por si viene de enlaces guardados
     url = url.replace('http://', 'https://')
-    url = url.replace('cinetux.to/', 'cinetux.nu/')
     url = url.replace('https://www.', 'https://')
+    url = url.replace('cinetux.to/', 'cinetux.nu/')
+
     # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
     data = httptools.downloadpage_proxy('cinetux', url, post=post, headers=headers).data
     return data
@@ -37,14 +37,15 @@ def mainlist(item):
 def mainlist_pelis(item):
     logger.info()
     itemlist = []
-    
-    itemlist.append(item.clone( title='Actualizadas', action='peliculas', url=CHANNEL_HOST + 'pelicula/' ))
-    itemlist.append(item.clone( title='Destacadas', action='peliculas', url=CHANNEL_HOST + 'mas-vistos/?get=movies' ))
-    itemlist.append(item.clone( title='Estrenos', action='peliculas', url=CHANNEL_HOST + 'genero/estrenos/' ))
 
-    itemlist.append(item.clone( title='Por Idioma', action='idiomas' ))
-    itemlist.append(item.clone( title='Por Género', action='generos' ))
-    itemlist.append(item.clone( title='Por Año', action = 'anios' ))
+    itemlist.append(item.clone( title='Catálogo', action='peliculas', url=host + 'pelicula/' ))
+
+    itemlist.append(item.clone( title='Estrenos', action='peliculas', url=host + 'genero/estrenos/' ))
+    itemlist.append(item.clone( title='Destacadas', action='peliculas', url=host + 'mas-vistos/?get=movies' ))
+
+    itemlist.append(item.clone( title='Por idioma', action='idiomas' ))
+    itemlist.append(item.clone( title='Por género', action='generos' ))
+    itemlist.append(item.clone( title='Por año', action = 'anios' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
@@ -56,11 +57,12 @@ def idiomas(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( action='peliculas', title='Español', url= CHANNEL_HOST + 'idioma/espanol/' ))
-    itemlist.append(item.clone( action='peliculas', title='Latino', url= CHANNEL_HOST + 'idioma/latino/' ))
-    itemlist.append(item.clone( action='peliculas', title='VOSE', url= CHANNEL_HOST + 'idioma/subtitulado/' ))
+    itemlist.append(item.clone( action='peliculas', title='Español', url= host + 'idioma/espanol/' ))
+    itemlist.append(item.clone( action='peliculas', title='Latino', url= host + 'idioma/latino/' ))
+    itemlist.append(item.clone( action='peliculas', title='Subtitulado', url= host + 'idioma/subtitulado/' ))
 
     return itemlist
+
 
 def generos(item):
     logger.info()
@@ -68,7 +70,7 @@ def generos(item):
 
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
-    data = do_downloadpage(CHANNEL_HOST)
+    data = do_downloadpage(host)
     bloque = scrapertools.find_single_match(data, '(?s)dos_columnas">(.*?)</ul>')
 
     patron = ' href="/([^"]+)">([^<]+)'
@@ -77,22 +79,23 @@ def generos(item):
         if '/estrenos/' in scrapedurl: continue # se muestra en el menú principal
         if descartar_xxx and scrapertools.es_genero_xxx(scrapedtitle): continue
 
-        itemlist.append(item.clone( action='peliculas', title=scrapedtitle.strip(), url=CHANNEL_HOST + scrapedurl ))
+        itemlist.append(item.clone( action='peliculas', title=scrapedtitle.strip(), url=host + scrapedurl ))
 
     if 'genero/belica/' not in bloque:
-        itemlist.append(item.clone( action='peliculas', title='Bélica', url=CHANNEL_HOST + 'genero/belica/' ))
+        itemlist.append(item.clone( action='peliculas', title='Bélica', url=host + 'genero/belica/' ))
 
     return sorted(itemlist, key=lambda it: it.title)
+
 
 def anios(item):
     logger.info()
     itemlist = []
-    
+
     from datetime import datetime
     current_year = int(datetime.today().year)
 
     for ano in range(current_year, 1938, -1):
-        itemlist.append(item.clone( action = 'peliculas', title = str(ano), url = CHANNEL_HOST + 'ano/' + str(ano) + '/' ))
+        itemlist.append(item.clone( action = 'peliculas', title = str(ano), url = host + 'ano/' + str(ano) + '/' ))
 
     return itemlist
 
@@ -112,6 +115,7 @@ def extraer_show_showalt(title):
 
     return show, showalt
 
+
 def peliculas(item):
     logger.info()
     itemlist = []
@@ -121,28 +125,27 @@ def peliculas(item):
 
     patron = '<article id="[^"]*" class="item movies">(.*?)</article>'
     matches = scrapertools.find_multiple_matches(data, patron)
-    for article in matches:
 
+    for article in matches:
         thumb, title = scrapertools.find_single_match(article, ' src="([^"]+)" alt="([^"]+)')
         url = scrapertools.find_single_match(article, ' href="([^"]+)')
         year = scrapertools.find_single_match(article, '/ano/(\d{4})/')
         plot = scrapertools.find_single_match(article, '<div class="texto">(.*?)</div>')
-        
+
         langs = []
         if 'class="espanol"' in article: langs.append('Esp')
         if 'class="latino"' in article: langs.append('Lat')
-        if 'class="subtitulado"' in article: langs.append('VOSE')
+        if 'class="subtitulado"' in article: langs.append('Vose')
         
         quality = scrapertools.find_single_match(article, '/beta/([^\.]+)\.png')
         if 'calidad' in quality: # ej: calidad-hd.png, nueva-calidad.png
             quality = quality.replace('-', ' ').replace('calidad', '').strip().capitalize()
         else:
             quality = '' # ej: estreno-sub.png, estreno.png
-        
+
         show, showalt = extraer_show_showalt(title)
 
-        itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
-                                    languages=', '.join(langs), qualities=quality,
+        itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, languages=', '.join(langs), qualities=quality,
                                     contentType='movie', contentTitle=show, contentTitleAlt=showalt, infoLabels={'year': year, 'plot': plot} ))
 
     tmdb.set_infoLabels(itemlist)
@@ -151,7 +154,7 @@ def peliculas(item):
     if next_page_link == '':
         next_page_link = scrapertools.find_single_match(data, '<div class=\'resppages\'><a href="([^"]+)')
     if next_page_link != '':
-        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link ))
+        itemlist.append(item.clone( title='>> Página siguiente', action='peliculas', url=next_page_link, text_color='coral' ))
 
     return itemlist
 
@@ -176,6 +179,7 @@ def findvideos(item):
     # ~ logger.debug(data)
 
     matches = scrapertools.find_multiple_matches(data, "<tr id='link-[^']+'>(.*?)</tr>")
+
     for enlace in matches:
         if 'Obtener</a>' in enlace: continue
         # ~ logger.debug(enlace)
@@ -185,7 +189,7 @@ def findvideos(item):
         if not servidor: servidor = scrapertools.find_single_match(enlace, "domain=([^'.]+)")
         servidor = corregir_servidor(servidor.strip().lower())
         uploader = scrapertools.find_single_match(enlace, "author/[^/]+/'>([^<]+)</a>")
-        
+
         enlace = enlace.replace('https://static.cinetux.to/', '/').replace('https://cdn.cinetux.nu/', '/')
         tds = scrapertools.find_multiple_matches(enlace, 'data-lazy-src="/assets/img/([^\.]*)')
         # ~ logger.debug(tds)
@@ -199,11 +203,9 @@ def findvideos(item):
         if not servidor: continue
         if 'Descargar</a>' in enlace and servidor not in ['mega', 'gvideo', 'uptobox']: continue # descartar descargas directas menos Mega y Gvideo
         # ~ logger.debug('%s %s %s %s' % (servidor, quality, lang, enlace))
-        
-        itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, 
-                              title = '', url = url,
-                              language = IDIOMAS.get(lang,lang), quality = quality, quality_num = puntuar_calidad(quality), other = uploader
-                       ))
+
+        itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, title = '', url = url,
+                              language = IDIOMAS.get(lang,lang), quality = quality, quality_num = puntuar_calidad(quality), other = uploader ))
 
 
     matches = scrapertools.find_multiple_matches(data, '<li id="player-option-\d+"(.*?)</li>')
@@ -234,6 +236,7 @@ def findvideos(item):
 
     return itemlist
 
+
 def extraer_video(item, data):
     itemlist = []
     # ~ logger.debug(data)
@@ -248,6 +251,7 @@ def extraer_video(item, data):
             itemlist.append(item.clone( url='https://' + idvideo[1], server='gvideo' ))
     return itemlist
 
+
 def play(item):
     logger.info("play: %s" % item.url)
     itemlist = []
@@ -256,7 +260,7 @@ def play(item):
         data = do_downloadpage(item.url)
         # ~ logger.debug(data)
         new_url = scrapertools.find_single_match(data, '<a id="link"[^>]* href="([^"]+)')
-        if new_url: 
+        if new_url:
             if '&url=' in new_url: new_url = new_url.split('&url=')[1]
             if 'cinetux.me' in new_url:
                 data = do_downloadpage(new_url)
@@ -272,12 +276,12 @@ def play(item):
                 itemlist.append(item.clone( url=new_url ))
 
     else:
-        post = urllib.urlencode( {'action': 'doo_player_ajax', 'post': item.dpost, 'nume': item.dnume, 'type': item.dtype} )
-        data = do_downloadpage(CHANNEL_HOST + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':item.referer})
+        post = {'action': 'doo_player_ajax', 'post': item.dpost, 'nume': item.dnume, 'type': item.dtype}
+        data = do_downloadpage(host + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':item.referer})
         # ~ logger.debug(data)
         new_url = scrapertools.find_single_match(data, "src='([^']+)'")
         if not new_url: new_url = scrapertools.find_single_match(data, 'src="([^"]+)"')
-        if new_url: 
+        if new_url:
             if 'cinetux.me' in new_url:
                 data = do_downloadpage(new_url)
                 # ~ logger.debug(data)
@@ -303,7 +307,7 @@ def busqueda(item):
         url = scrapertools.find_single_match(article, ' href="([^"]+)')
         year = scrapertools.find_single_match(article, '<span class="year">(\d{4})</span>')
         plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<div class="contenido">(.*?)</div>'))
-        
+
         show, showalt = extraer_show_showalt(title)
 
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
@@ -313,14 +317,15 @@ def busqueda(item):
 
     next_page_link = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)')
     if next_page_link != '':
-        itemlist.append(item.clone( action='busqueda', title='>> Página siguiente', url=next_page_link ))
+        itemlist.append(item.clone( action='busqueda', title='>> Página siguiente', url=next_page_link, text_color='coral' ))
 
     return itemlist
+
 
 def search(item, texto):
     logger.info()
 
-    item.url = CHANNEL_HOST + "?s=" + texto.replace(" ", "+")
+    item.url = host + "?s=" + texto.replace(" ", "+")
     try:
         return busqueda(item)
     except:

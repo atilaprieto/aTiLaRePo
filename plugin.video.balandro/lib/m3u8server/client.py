@@ -3,8 +3,8 @@
 import base64, random, time, os
 from threading import Thread
 
-from handler import Handler
-from server import Server
+from .handler import Handler
+from .server import Server
 
 from platformcode import config, logger
 from core import httptools
@@ -56,7 +56,6 @@ class Client(object):
     def add_url(self, url):
         dom = '/'.join(url.split('/')[:3])
         dom_path = '/'.join(url.split('/')[:-1])
-
         try:
             # ~ data = httptools.downloadpage(url).data
             if '/m3u8/index_' in url:
@@ -71,7 +70,7 @@ class Client(object):
                 if lin.startswith('#'): 
                     data_local += lin
                 elif lin.startswith('http'): 
-                    data_local += self.url_base + base64.b64encode(lin)
+                    data_local += self.url_base + base64.b64encode(lin.encode('utf-8')).decode('utf-8')
                 elif lin.startswith('/'): 
                     data_local += self.url_base + base64.b64encode(dom + lin)
                 else: 
@@ -79,7 +78,7 @@ class Client(object):
                 data_local += '\n'
         
             self.file_local = os.path.join(config.get_data_path(), "m3u8hls.m3u8")
-            with open(self.file_local, 'wb') as f: f.write(data_local); f.close()
+            with open(self.file_local, 'w') as f: f.write(data_local); f.close()
         except:
             self.file_local = None
 
@@ -94,7 +93,7 @@ class Client(object):
                 data_local += '\n'
 
             self.file_local = os.path.join(config.get_data_path(), "m3u8hls.m3u8")
-            with open(self.file_local, 'wb') as f: f.write(data_local); f.close()
+            with open(self.file_local, 'w') as f: f.write(data_local); f.close()
         except:
             self.file_local = None
 

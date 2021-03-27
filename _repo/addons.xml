@@ -94,6 +94,46 @@ v2.3.14 (2019-02-10)
   </extension>
 </addon>
 
+<addon id="metadata.common.themoviedb.org"
+       name="The Movie Database Scraper Library"
+       version="3.2.14"
+       provider-name="Team Kodi">
+  <requires>
+    <import addon="xbmc.metadata" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.metadata.scraper.library"
+             library="tmdb.xml"/>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="bg">Библиотека за сваляне на инф. от TMDb</summary>
+    <summary lang="en">TMDb Scraper Library</summary>
+    <summary lang="es">Scraper de peliculas de TMDb</summary>
+    <summary lang="fi">TMDb elokuvatietojen lataajan kirjasto</summary>
+    <summary lang="fr">Scraper TMDb</summary>
+    <summary lang="hu">TMDb leolvasó-könyvtár</summary>
+    <summary lang="nl">TMDb-scraperfuncties</summary>
+    <summary lang="pl">Scraper biblioteki TMDb</summary>
+    <summary lang="pt">Scraper de filmes TMDb</summary>
+    <summary lang="ro">Bibliotecă catalog TMDb</summary>
+    <summary lang="ru">Обработчик для TMDb</summary>
+    <summary lang="se">Skrapebibliotek för TMDb</summary>
+    <summary lang="zh">TMDb刮削器代码库</summary>
+    <description lang="bg">Сваля миниатюри и fanarts от www.themoviedb.org</description>
+    <description lang="en">Download thumbs and fanarts from www.themoviedb.org</description>
+    <description lang="es">Descarga posters y fanart de www.themoviedb.org</description>
+    <description lang="fi">Lataa pienoiskuvia ja fanitaidetta www.themoviedb.org -sivustolta</description>
+    <description lang="fr">Télécharge vignettes et backdrops depuis www.themoviedb.org</description>
+    <description lang="hu">Bélyeg- és fanartképek letöltése a www.themoviedb.org webhelyről</description>
+    <description lang="nl">Miniaturen en fanart ophalen van www.themoviedb.org</description>
+    <description lang="pl">Pobieraj ikony i fanarty z www.themoviedb.org</description>
+    <description lang="pt">Descarregar informação de filmes de www.themoviedb.org</description>
+    <description lang="ro">Descărcați miniaturi și imagini realizate de fani de pe www.themoviedb.org</description>
+    <description lang="ru">Загружать миниатюры и фанарт с www.themoviedb.org</description>
+    <description lang="se">Ladda ner miniatyrer och fanart från www.themoviedb.org</description>
+    <description lang="zh">从www.themoviedb.org下载海报和同人画</description>
+  </extension>
+</addon>
+
 <addon id="metadata.themoviedb.org"
        name="The Movie Database"
        version="5.2.1"
@@ -406,10 +446,8 @@ You can clone the project and host it in your own server.
 	</extension>
 </addon>
 
-<addon id="plugin.video.balandro" name="Balandro" version="1.5.1" provider-name="Balandro">
-
+<addon id="plugin.video.balandro" name="Balandro" version="2.0.0" provider-name="Balandro Team">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
 
   <extension point="xbmc.python.pluginsource" library="default.py">
@@ -417,33 +455,24 @@ You can clone the project and host it in your own server.
   </extension>
 
   <extension point="xbmc.addon.metadata">
-    <summary lang="es">Balandro addon</summary>
-    <description lang="es">Balandro es un navegador para webs con vídeos de películas y series, derivado de pelisalacarta y alfa.</description>
-    <disclaimer lang="es">[COLOR red]The owners and submitters to this addon do not host or distribute any of the content displayed by these addons nor do they have any affiliation with the content providers.[/COLOR]</disclaimer>
-
-    <news>Últimas modificaciones de Balandro:
-
-    Canales modificados: Cuevana3, Playview, Inkapelis, Cinecalidad, Hdfull, Movidy,
-    Seriesmetro, Serieflix, Newpct1, Grantorrent, Descargacineclasico, Pelisplay.
-    Servidores modificados: Doodstream, Vidia, Gounlimited, Youtube, Videossh,
-    Streamtape, Gamovideo, Yourupload.
-    Añadido cliente Torrest para torrents.
-    </news>
-
+    <summary>Balandro es un navegador de páginas webs</summary>
     <assets>
       <icon>icon.png</icon>
     </assets>
+    <news>[COLOR limegreen][B]Especial mención al grupo [COLOR plum][I] Checkers y Testers [/I][COLOR limegreen] por sus contribuciones, aportaciones y sugerencias [/B][/COLOR]
 
+      [COLOR darkorange][B]Media Centers soportados[COLOR plum][I] Kodi 19.x, 18.x y 17.x [/I][/B][/COLOR]
+    </news>
+    <summary>Balandro es un navegador de páginas webs</summary>
+    <description>[COLOR yellow][B]Balandro es un MOD derivado de Pelisalacarta y Alfa,[COLOR mediumaquamarine] y Tiene Como Objeto, Permitir Visualizar Películas, Series y Documentales, Todo a Través de Internet y Directamente Desde su Sistema Media Center. [COLOR orchid]Este Add-On es Tan Solo un Mero Ejercicio de Aprendizaje Del Lenguaje de Programación Python y se Distribuye Sin Ningún Contenido Multimedia Adjunto al Mismo [COLOR lightgrey][I]En Consecuencia Solo Las Webs Son Plenamente Responsables de Los Contenidos Que Publiquen.[/I][/B][/COLOR]</description>
+    <disclaimer>[COLOR tan][B]Está Prohibida su Distribución, Solo o Junto Con Contenidos Multimedia Protegidos Por Los Derechos de Autor. [COLOR chocolate]Si Este Tipo de Contenido Está Prohibido en su País, Solamente Usted Será el Responsable de su Uso. [COLOR white]La Vulneración de Estas Prohibiciones Exonerarán de Cualquier Culpa a sus Autores, [COLOR red]Siendo el Único Responsable Quien lo Haya Distribuido o Utilizado Ilegalmente.[/B][/COLOR]</disclaimer>
     <platform>all</platform>
     <license>GNU GPL v3</license>
     <forum>https://www.mimediacenter.info/foro/viewforum.php?f=44</forum>
     <website>https://balandro.tk</website>
     <email>my@email.com</email>
-    <source>...</source>
   </extension>
-
   <extension point="xbmc.service" library="services.py" start="login|startup"/>
-
 </addon>
 
 <addon id="plugin.video.canalsur" name="CANAL SUR" version="1.0.2" provider-name="Alex303 - Hiraya Software">
@@ -760,7 +789,47 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.mitele" name="MITELE" version="1.2.9" provider-name="Alex303 - Hiraya Software">
+<addon
+	id="plugin.video.koditv" version="2" name="[B][COLOR white]kodi[COLOR aqua]tv[/COLOR][/B]" provider-name="equipo tvchopo">
+<requires>
+    <import addon="plugin.video.youtube" />
+    <import addon="script.module.requests" />
+    <import addon="script.module.resolveurl" />
+    <import addon="script.module.six" />
+  </requires>
+	<extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	</extension>
+
+	 <extension point="xbmc.addon.repository" name="tvchopo">
+        <info>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml</info>
+        <checksum>https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/addons.xml.md5</checksum>
+        <datadir zip="true">https://raw.githubusercontent.com/elchocolate/repotvchopo/master/Repositorio/</datadir>
+    </extension>
+
+
+	<extension point="xbmc.addon.metadata">
+                <platform>all</platform>
+		<summary lang="en"></summary>
+		<summary lang="da"></summary>
+		<description lang="en"></description>
+		<website></website>
+		<license>GPL 2.0</license>
+		<platform>all</platform>
+<assets>
+        <icon>icon.jpg</icon>
+  <screenshot>resources/screenshots/screenshot1.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot2.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot3.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot4.jpg</screenshot>
+  <screenshot>resources/screenshots/screenshot5.jpg</screenshot>
+        <fanart>fanart.png</fanart>
+    </assets>
+		<language>es</language>
+	</extension>
+</addon>
+
+<addon id="plugin.video.mitele" name="MITELE" version="1.3.0" provider-name="Alex303 - Hiraya Software">
 	<requires>
 		<import addon="xbmc.python" version="2.19.0" />
 		<import addon="script.module.requests" version="2.9.1" />
@@ -824,12 +893,11 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.palantir2" name="[COLOR gold]Palantir 2[/COLOR]" version="2.1.3" provider-name="TierraMedia">
+<addon id="plugin.video.palantir2" name="[COLOR gold]Palantir 2[/COLOR]" version="2.1.9" provider-name="TierraMedia">
   <requires>
     <import addon="script.module.six" version="1.11.0"/>
-    <import addon="script.module.resolveurl" version="5.0.00"/>
+    <import addon="script.module.resolveurl" version="5.0.00" optional="true"/>
     <import addon="script.module.pycryptodome"/>
-    <import addon="script.extendedinfo" optional="true"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
@@ -851,11 +919,7 @@ v.2.1.5
         <screenshot>resources/media/Captura3.png</screenshot>
         <screenshot>resources/media/Captura4.png</screenshot>
     </assets>
-    <news>
-        - #mejora: Inicio o continuación automática del último episodio en Series en Seguimiento.
-- Reparado bug en marcado como vistos y puntos de continuación.
-- Reparado bug en la localización de algunos trailers.
-- Reparado bug en listados de mas de 100 episodios.
+    <news>- Reparar pequeños bugs
     </news>
     <forum></forum>
   </extension>
@@ -914,7 +978,7 @@ v.2.1.5
 </addon>
 
 <addon
-	id="plugin.video.tvchopo" version="23" name="[B][COLOR white]TV[COLOR gold]CHOPO[/COLOR][/B]" provider-name="equipo tvchopo">
+	id="plugin.video.tvchopo" version="24" name="[B][COLOR white]tv[COLOR aqua]chopo[/COLOR][/B]" provider-name="equipo tvchopo">
 <requires>
     <import addon="plugin.video.youtube" />
     <import addon="script.module.requests" />
@@ -934,9 +998,9 @@ v.2.1.5
 
 	<extension point="xbmc.addon.metadata">
                 <platform>all</platform>
-		<summary lang="en">tvchopo</summary>
-		<summary lang="da">tvchopo</summary>
-		<description lang="en">[B][LOWERCASE][CAPITALIZE][COLOR white]addon principal de la familia tvchopo, valido para kodi 18 y kodi 19.. este addon es [COLOR red]totalmente gratuito no se aceptan donativos ... no permitas que te vendan este addon.. es  gratis  [COLOR white]..entra en telegram [COLOR gold]@tvchopo[COLOR white] y te ayudamos[/COLOR][/CAPITALIZE][/LOWERCASE][/B]</description>
+		<summary lang="en"></summary>
+		<summary lang="da"></summary>
+	<description lang="en">[B][LOWERCASE][CAPITALIZE][COLOR white]addon principal de la familia tvchopo, valido para kodi 18 y kodi 19.. este addon es [COLOR red]totalmente gratuito no se aceptan donativos ... no permitas que te vendan este addon.. es  gratis  [COLOR white]..entra en telegram [COLOR gold]@tvchopo[COLOR white] y te ayudamos[/COLOR][/CAPITALIZE][/LOWERCASE][/B]</description>
 		<website></website>
 		<license>GPL 2.0</license>
 		<platform>all</platform>
@@ -1009,7 +1073,7 @@ v.2.1.5
   </extension>
 </addon>
 
-<addon id="plugin.video.youtube" name="YouTube" version="6.8.9" provider-name="anxdpanic, bromix">
+<addon id="plugin.video.youtube" name="YouTube" version="6.8.10" provider-name="anxdpanic, bromix">
     <requires>
         <import addon="xbmc.python" version="2.20.0"/>
         <import addon="script.module.six" version="1.11.0"/>
@@ -1023,11 +1087,8 @@ v.2.1.5
     <extension point="xbmc.python.module" library="resources/lib/"/>
     <extension point="xbmc.addon.metadata">
         <news>
-[fix] my subscriptions section using YouTube RSS |contrib: PureHemp|
-[fix] items per page settings on Kodi 19
-[chg] recommendations only available for users with custom history playlist id configured
-[chg] no longer show watch later unless custom watch later playlist is configured
-[rem] remove usage of discontinued api and dual login (no longer required)
+[fix] fix javascript player retrieval and playback of some videos for affected users |contrib: thomazz-nl|
+    - Invalid URL &#39;http://&#39;: No host supplied
         </news>
         <assets>
             <icon>icon.png</icon>
@@ -1141,15 +1202,15 @@ v.2.1.5
     </extension>
   </addon>
 
-<addon id="repository.balandro" name="Balandro Repo" version="1.0.3" provider-name="Balandro">
+<addon id="repository.balandro" name="Balandro Repo" version="1.0.5" provider-name="Balandro">
 	<requires>
-		<import addon="xbmc.addon" version="12.0.0"/>
 	</requires>
 
+	<extension point="xbmc.service" library="service.py" start="startup" />
     <extension point="xbmc.addon.repository" name="Balandro Repo">
-        <info>https://balandro.tk/repo/addons.xml</info>
-        <checksum>https://balandro.tk/repo/addons.xml.md5</checksum>
-        <datadir zip="true">https://balandro.tk/repo</datadir>
+        <info>https://balandro.tk/repo3/addons.xml</info>
+        <checksum>https://balandro.tk/repo3/addons.xml.md5</checksum>
+        <datadir zip="true">https://balandro.tk/repo3</datadir>
     </extension>
 
     <extension point="xbmc.addon.metadata">
@@ -1157,6 +1218,9 @@ v.2.1.5
         <description>Balandro es un navegador para webs con vídeos de películas y series.</description>
         <disclaimer>The owners and submitters to this repository do not host or distribute any of the content displayed by these addons nor do they have any affiliation with the content providers.</disclaimer>
         <platform>all</platform>
+        <assets>
+            <icon>icon.png</icon>
+        </assets>
     </extension>
 
 </addon>
@@ -1436,7 +1500,7 @@ v.2.1.5
 </addon>
 
 <addon id="script.luar"
-  version="0.7.0"
+  version="0.8.1"
   name="Luar"
   provider-name="The Dreamers">
   <requires>
@@ -1489,6 +1553,25 @@ v.2.1.5
     <email></email>
     <source></source>
   </extension>
+</addon>
+
+<addon id="script.module.beautifulsoup4" name="BeautifulSoup4" version="4.9.3" provider-name="Leonard Richardson (leonardr@segfault.org)">
+	<requires>
+		<import addon="xbmc.python" version="2.26.0"/>
+		<import addon="script.module.soupsieve" version="1.9.6"/>
+	</requires>
+	<extension point="xbmc.python.module" library="lib" />
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en_GB">Screen-scraping library</summary>
+		<description lang="en_GB">Beautiful Soup is a library that makes it easy to scrape information from web pages. It sits atop an HTML or XML parser, providing Pythonic idioms for iterating, searching, and modifying the parse tree.</description>
+		<license>MIT</license>
+		<platform>all</platform>
+		<website>https://www.crummy.com/software/BeautifulSoup/</website>
+		<source>https://code.launchpad.net/beautifulsoup</source>
+		<assets>
+			<icon>icon.png</icon>
+		</assets>
+	</extension>
 </addon>
 
 <addon id="script.module.clouddrive.common" name="Cloud Drive Common Module" version="1.2.12" provider-name="Carlos Guzman (cguZZman)">
@@ -1741,14 +1824,42 @@ You can clone the project and host it in your own server.
   </extension>
 </addon>
 
-<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.24" provider-name="gujal">
+<addon id="script.module.requests"
+       name="requests"
+       version="2.22.0"
+       provider-name="kennethreitz">
+  <requires>
+    <import addon="xbmc.python" version="2.25.0"/>
+    <import addon="script.module.urllib3" version="1.22"/>
+    <import addon="script.module.chardet" version="3.0.4"/>
+    <import addon="script.module.idna" version="2.6"/>
+    <import addon="script.module.certifi" version="2017.07.27.1"/>
+  </requires>
+  <extension point="xbmc.python.module"
+             library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Python HTTP for Humans</summary>
+    <description lang="en_GB">Packed for KODI from https://pypi.org/project/requests/</description>
+    <platform>all</platform>
+    <language></language>
+    <license>Apache2</license>
+    <forum></forum>
+    <website>http://python-requests.org</website>
+    <source>https://github.com/Freso/script.module.requests</source>
+    <email>freso.dk AT gmail.com</email>
+    <assets>
+      <icon>resources/icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+
+<addon id="script.module.resolveurl" name="ResolveURL" version="5.1.27" provider-name="gujal">
     <requires>
         <!-- <import addon="xbmc.python" version="3.0.0" /> -->
         <import addon="script.module.six" />
         <import addon="script.module.kodi-six" />
         <import addon="plugin.video.youtube" optional="true" />
         <import addon="script.module.python.twitch" optional="true" />
-        <import addon="script.module.cryptopy" version="1.2.6" optional="true" />
         <import addon="plugin.googledrive" optional="true" />
     </requires>
     <extension point="xbmc.python.module" library="lib" />
@@ -1769,6 +1880,25 @@ You can clone the project and host it in your own server.
             <fanart>fanart.jpg</fanart>
         </assets>
     </extension>
+</addon>
+
+<addon id="script.module.soupsieve" name="Soup Sieve" version="1.9.6+leia.1" provider-name="Isaac Muse">
+	<requires>
+		<import addon="xbmc.python" version="2.26.0"/>
+		<import addon="script.module.backports.functools_lru_cache" version="1.6.1"/>
+	</requires>
+	<extension point="xbmc.python.module" library="lib/" />
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en_GB">A CSS selector library</summary>
+		<description lang="en_GB">Soup Sieve is a CSS selector library designed to be used with Beautiful Soup 4. It aims to provide selecting, matching, and filtering using modern CSS selectors.</description>
+		<license>MIT</license>
+		<platform>all</platform>
+		<website>https://pypi.org/project/soupsieve/</website>
+		<source>https://github.com/facelessuser/soupsieve</source>
+		<assets>
+			<icon>icon.png</icon>
+		</assets>
+	</extension>
 </addon>
 
 <addon id="script.module.urlresolver" name="URLResolver" version="5.1.22" provider-name="tvaddons">

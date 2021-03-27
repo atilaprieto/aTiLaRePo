@@ -1,0 +1,17 @@
+{
+  "id": "tupeliculatv",
+  "name": "TuPeliculaTv",
+  "thumbnail": "tupeliculatv.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast", "lat", "vose", "vo"],
+
+  "clusters": ["adults", "languages", "qualityes", "years", "vos", "3d"],
+
+  "notes": "Peliculas en Español, Latino, Ingles, Subtitulado, por géneros, años y calidades."
+}

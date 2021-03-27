@@ -20,29 +20,14 @@
 
   "clients": [
     {
-      "id": "plugin.video.xbmctorrent",
-      "name": "xbmctorrent",
-      "url": "plugin://plugin.video.xbmctorrent/play/%s"
-    },
-    {
-      "id": "plugin.video.elementum",
-      "name": "elementum",
-      "url": "plugin://plugin.video.elementum/play?uri=%s"
-    },
-    {
-      "id": "plugin.video.pulsar",
-      "name": "pulsar",
-      "url": "plugin://plugin.video.pulsar/play?uri=%s"
-    },
-    {
       "id": "plugin.video.quasar",
       "name": "quasar",
       "url": "plugin://plugin.video.quasar/play?uri=%s"
     },
     {
-      "id": "plugin.video.stream",
-      "name": "stream",
-      "url": "plugin://plugin.video.stream/play/%s"
+      "id": "plugin.video.elementum",
+      "name": "elementum",
+      "url": "plugin://plugin.video.elementum/play?uri=%s"
     },
     {
       "id": "plugin.video.torrenter",
@@ -59,6 +44,21 @@
       "name": "torrest",
       "url": "plugin://plugin.video.torrest/play_url?url=%s",
       "url_magnet": "plugin://plugin.video.torrest/play_magnet?magnet=%s"
+    },
+    {
+      "id": "plugin.video.pulsar",
+      "name": "pulsar",
+      "url": "plugin://plugin.video.pulsar/play?uri=%s"
+    },
+    {
+      "id": "plugin.video.stream",
+      "name": "stream",
+      "url": "plugin://plugin.video.stream/play/%s"
+    },
+    {
+      "id": "plugin.video.xbmctorrent",
+      "name": "xbmctorrent",
+      "url": "plugin://plugin.video.xbmctorrent/play/%s"
     }
   ]
 

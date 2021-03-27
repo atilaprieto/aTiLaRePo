@@ -7,15 +7,22 @@ import datetime
 import os
 import re
 import time
-import urlparse
-import filetools
+import sys
+PY2 = False
+PY3 = False
+if sys.version_info[0] >= 3:
+    from urllib.parse import urlparse
+    PY3 = True
+    unicode = str
+else:
+    PY2 = True
+    from urlparse import urlparse    
 
-from core import httptools, jsontools
+from core import httptools, jsontools, filetools
 from core.item import Item
 from platformcode import config, logger, platformtools
 
 dict_servers_parameters = {}
-
 
 def find_video_items(item=None, data=None):
     """
@@ -65,6 +72,12 @@ def normalize_url(serverid, url):
 
         # Recorre los resultados
         found = False
+        if not isinstance(url, str):
+                url = (str(url))
+        if not PY3 and isinstance(url, unicode):
+            url = url.encode('utf-8', 'strict')
+        elif PY3 and isinstance(url, bytes):
+            url = url.decode('utf-8', 'strict')
         for match in re.compile(pattern["pattern"], re.DOTALL).finditer(url):
             new_url = pattern["url"]
             for x in range(len(match.groups())):
@@ -158,6 +171,12 @@ def findvideosbyserver(data, serverid, disabled_servers=False):
         for pattern in server_parameters["find_videos"].get("patterns", []):
             msg = "%s\npattern: %s" % (serverid, pattern["pattern"])
             # Recorre los resultados
+            if not isinstance(data, str):
+                data = (str(data))
+            if not PY3 and isinstance(data, unicode):
+                data = data.encode('utf-8', 'strict')
+            elif PY3 and isinstance(data, bytes):
+                data = data.decode('utf-8', 'strict')
             for match in re.compile(pattern["pattern"], re.DOTALL).finditer(data):
                 url = pattern["url"]
                 # Crea la url con los datos
@@ -197,7 +216,7 @@ def resolve_video_urls_for_playing(server, url, url_referer=''):
 
     # Si el vídeo es "directo" o "local", no hay que buscar más
     if server == "directo" or server == "local":
-        video_urls.append(["%s [%s]" % (urlparse.urlparse(url)[2][-4:], server), url])
+        video_urls.append(["%s [%s]" % (urlparse(url)[2][-4:], server), url])
 
     else:
         # Parámetros json del server
@@ -228,7 +247,7 @@ def resolve_video_urls_for_playing(server, url, url_referer=''):
         # Llama a get_video_url() del server
         try:
             response = server_module.get_video_url(page_url=url, url_referer=url_referer)
-            if isinstance(response, basestring):
+            if not isinstance(response, list):
                 return [], False, '[%s] %s' % (server_name, response)
             elif len(response) > 0:
                 video_urls.extend(response)
@@ -380,7 +399,7 @@ def corregir_servidor(servidor):
     if servidor in ['netutv', 'waaw', 'waaw1', 'waav', 'netu', 'hqq', 'megavideo', 'megaplay']: return 'netutv'
     elif servidor in ['powvideo', 'povwideo', 'powvldeo', 'powv1deo', 'povw1deo']: return 'powvideo'
     elif servidor in ['streamplay', 'steamplay', 'streamp1ay']: return 'streamplay'
-    elif servidor in ['fembed', 'jplayer', 'feurl']: return 'fembed'
+    elif servidor in ['fembed', 'jplayer', 'feurl', 'femax20']: return 'fembed'
     elif servidor in ['gvideo', 'google', 'google drive', 'gdrive']: return 'gvideo'
     elif servidor in ['vidtodo', 'vidto','vidtodoo','vixtodo']: return 'vidtodo'
     elif servidor in ['mailru', 'my', 'my.mail', 'my.mail.ru']: return 'mailru'

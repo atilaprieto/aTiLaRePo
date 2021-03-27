@@ -55,7 +55,7 @@ def decodeChallengeSecurityBlob(data):
 
         result = nt.getComponentByName('negResult')
         return int(result), str(token)
-    except Exception, ex:
+    except Exception as ex:
         raise BadSecurityBlobError(str(ex))
 
 
@@ -66,7 +66,7 @@ def decodeAuthResponseSecurityBlob(data):
 
         result = nt.getComponentByName('negResult')
         return int(result)
-    except Exception, ex:
+    except Exception as ex:
         raise BadSecurityBlobError(str(ex))
 
 

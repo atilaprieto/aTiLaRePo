@@ -4,15 +4,20 @@
 # ------------------------------------------------------------
 
 import os, sys, re
-import xbmc, xbmcaddon
-
+import xbmc, xbmcaddon, xbmcvfs  
+if sys.version_info[0] >= 3:
+    translatePath = xbmcvfs.translatePath
+    long = int
+    unicode = str
+else:
+    translatePath = xbmc.translatePath   
 
 # GLOBAL ADDON VARIABLES
 # ======================
 
 __base_url = sys.argv[0]
 
-__addon_name = 'Balandro' # TODO obtenir de xbmc...?
+__addon_name = 'Balandro'
 __addon_id = __base_url.replace('plugin://','').replace('/','')
 
 __settings__ = xbmcaddon.Addon(id=__addon_id)
@@ -25,23 +30,23 @@ def build_url(item):
     return __base_url + '?' + item.tourl()
 
 def build_RunPlugin(item):
-    return 'XBMC.RunPlugin(%s?%s)' % (__base_url, item.tourl())
+    return 'RunPlugin(%s?%s)' % (__base_url, item.tourl())
 
 def build_ContainerRefresh(item):
-    return 'XBMC.Container.Refresh(%s?%s)' % (__base_url, item.tourl())
+    return 'Container.Refresh(%s?%s)' % (__base_url, item.tourl())
 
 def build_ContainerUpdate(item, replace=False):
     if replace: # reset the path history
-        return 'XBMC.Container.Update(%s?%s, replace)' % (__base_url, item.tourl())
+        return 'Container.Update(%s?%s, replace)' % (__base_url, item.tourl())
     else:
-        return 'XBMC.Container.Update(%s?%s)' % (__base_url, item.tourl())
+        return 'Container.Update(%s?%s)' % (__base_url, item.tourl())
 
 
 def get_runtime_path():
-    return xbmc.translatePath(__settings__.getAddonInfo('Path'))
+    return translatePath(__settings__.getAddonInfo('Path'))
 
 def get_data_path():
-    dev = xbmc.translatePath(__settings__.getAddonInfo('Profile'))
+    dev = translatePath(__settings__.getAddonInfo('Profile'))
     if not os.path.exists(dev): os.makedirs(dev)
     return dev
 
@@ -69,7 +74,7 @@ def get_thumb(thumb_name, theme='default'):
     ficheros = {
         'movie': 'clapboard', 'tvshow': 'tv', 'documentary': 'genius', 'search': 'magnifyingglass', 
         'videolibrary': 'star', 'downloads': 'download', 'settings': 'settings', 
-        'hot': 'bolt', 'help': 'quote', 'genres': 'swatches'
+        'hot': 'bolt', 'help': 'help', 'genres': 'swatches'
     }
     path = os.path.join(get_runtime_path(), 'resources', 'media', 'themes', theme, ficheros.get(thumb_name, thumb_name) + '.png')
     if os.path.exists(path): return path
@@ -96,7 +101,7 @@ def text_clean(txt, disallowed_chars = '[^a-zA-Z0-9\-_()\[\]. ]+', blank_char = 
     import unicodedata
     try:
         txt = unicode(txt, 'utf-8')
-    except NameError: # unicode is a default on python 3 
+    except: # unicode is a default on python 3 
         pass
     txt = unicodedata.normalize('NFKD', txt).encode('ascii', 'ignore')
     txt = txt.decode('utf-8').strip()
@@ -152,7 +157,7 @@ def get_setting(name, channel="", server="", default=None):
 
     # Translate Path if start with "special://"
     if value.startswith("special://"):
-        value = xbmc.translatePath(value)
+        value = translatePath(value)
 
     # hack para devolver el tipo correspondiente
     if value == "true":
@@ -202,7 +207,7 @@ def set_setting(name, value, channel="", server=""):
 
         __settings__.setSetting(name, value)
 
-    except Exception, ex:
+    except Exception as ex:
         from platformcode import logger
         logger.error("Error al convertir '%s' no se guarda el valor \n%s" % (name, ex))
         return None
@@ -214,7 +219,7 @@ def set_setting(name, value, channel="", server=""):
 
 def get_last_search(search_type):
     if get_setting('search_show_last', default=False):
-        if search_type not in ['all', 'movie', 'tvshow', 'documentary']: search_type = 'all'
+        if search_type not in ['all', 'movie', 'tvshow', 'documentary', 'person']: search_type = 'all'
         last_search = get_setting('search_last_' + search_type, default='')
     else:
         last_search = ''
@@ -222,7 +227,7 @@ def get_last_search(search_type):
     return last_search
 
 def set_last_search(search_type, tecleado):
-    if search_type not in ['all', 'movie', 'tvshow', 'documentary']: search_type = 'all'
+    if search_type not in ['all', 'movie', 'tvshow', 'documentary', 'person']: search_type = 'all'
     set_setting('search_last_' + search_type, tecleado)
 
 

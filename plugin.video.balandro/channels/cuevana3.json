@@ -1,7 +1,7 @@
 {
   "id": "cuevana3",
-  "name": "Cuevana 3",
-  "thumbnail": "cuevana3.png",
+  "name": "Cuevana3",
+  "thumbnail": "cuevana3.jpg",
 
   "active": true,
 
@@ -11,5 +11,7 @@
   "categories": ["movie", "tvshow"],
   "language": ["lat", "cast", "vose"],
 
-  "notes": "Películas por idiomas, por género, estrenos. También series."
+  "clusters": ["news", "rankings", "languages", "lasts", "vos"],
+
+  "notes": "Películas por idiomas, por género, estrenos. También series. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

@@ -11,5 +11,7 @@
   "categories": ["movie"],
   "language": ["cast", "lat", "vose"],
 
+  "clusters": ["classic", "adults", "rankings", "lists", "epochs", "years", "directors", "vos"],
+
   "notes": "Películas clásicas y cine independiente, por géneros, subgéneros, años, directores."
 }

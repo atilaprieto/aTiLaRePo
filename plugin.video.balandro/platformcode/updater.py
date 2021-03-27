@@ -1,93 +1,108 @@
 # -*- coding: utf-8 -*-
-# --------------------------------------------------------------------------------
-# Balandro - Updater (actualizaciones del addon)
-# --------------------------------------------------------------------------------
 
 import os, time, traceback
 
 from platformcode import config, logger, platformtools
-from core import httptools, jsontools, filetools, downloadtools
+from core import httptools, jsontools, filetools, downloadtools, scrapertools
 
 
 def check_addon_updates(verbose=False, force=False):
     logger.info()
 
-    ADDON_UPDATES_JSON = 'https://balandro.tk/addon_updates/updates.json'
-    ADDON_UPDATES_ZIP  = 'https://balandro.tk/addon_updates/updates.zip'
+    get_last_chrome_list()
+
+    ADDON_UPDATES_JSON = 'https://balandro.tk/addon_updates/updates-v2.0.0.json'
+    ADDON_UPDATES_ZIP  = 'https://balandro.tk/addon_updates/updates-v2.0.0.zip'
 
     try:
         last_fix_json = os.path.join(config.get_runtime_path(), 'last_fix.json')   # información de la versión fixeada del usuario
-        # Se guarda en get_runtime_path en lugar de get_data_path para que se elimine al cambiar de versión
+        # Se guarda en get_runtime_path en lugar de get_runtime_path para que se elimine al cambiar de versión
         if force and os.path.exists(last_fix_json): os.remove(last_fix_json)
 
         # Descargar json con las posibles actualizaciones
-        # -----------------------------------------------
         data = httptools.downloadpage(ADDON_UPDATES_JSON, timeout=2).data
-        if data == '': 
-            logger.info('No se encuentran actualizaciones del addon')
+        if data == '':
+            logger.info('No se encuentra addon_updates')
             if verbose:
-                platformtools.dialog_notification('Balandro ya está actualizado', 'No hay ninguna actualización pendiente')
+                platformtools.dialog_notification(config.__addon_name, '[COLOR red]No se encuentra addon_updates[/COLOR]')
             return False
 
         data = jsontools.load(data)
-        if 'addon_version' not in data or 'fix_version' not in data: 
-            logger.info('No hay actualizaciones del addon')
+        if 'addon_version' not in data or 'fix_version' not in data:
+            logger.info('Sin Fix actualizaciones pdtes.')
             if verbose:
-                platformtools.dialog_notification('Balandro ya está actualizado', 'No hay ninguna actualización pendiente')
+                platformtools.dialog_notification(config.__addon_name, '[COLOR coral]Sin Fix actualizaciones pdtes.[/COLOR]')
             return False
 
         # Comprobar versión que tiene instalada el usuario con versión de la actualización
-        # --------------------------------------------------------------------------------
         current_version = config.get_addon_version(with_fix=False)
         if current_version != data['addon_version']:
-            logger.info('No hay actualizaciones para la versión %s del addon' % current_version)
+            logger.info('Versión Incorrecta NO se actualizan Fixes para la versión %s' % current_version)
             if verbose:
-                platformtools.dialog_notification('Balandro ya está actualizado', 'No hay ninguna actualización pendiente')
+                platformtools.dialog_notification(config.__addon_name, '[COLOR red]Versión incorrecta NO se actualizan Fixes[/COLOR]')
             return False
 
         if os.path.exists(last_fix_json):
             lastfix = jsontools.load(filetools.read(last_fix_json))
             if lastfix['addon_version'] == data['addon_version'] and lastfix['fix_version'] == data['fix_version']:
-                logger.info('Ya está actualizado con los últimos cambios. Versión %s.fix%d' % (data['addon_version'], data['fix_version']))
+                logger.info('Está actualizado. Versión %s.fix%d' % (data['addon_version'], data['fix_version']))
                 if verbose:
-                    platformtools.dialog_notification('Balandro ya está actualizado', 'Versión %s.fix%d' % (data['addon_version'], data['fix_version']))
+                    platformtools.dialog_notification(config.__addon_name, '[COLOR plum]Está actualizado versión %s.fix%d[/COLOR]' % (data['addon_version'], data['fix_version']))
                 return False
 
         # Descargar zip con las actualizaciones
-        # -------------------------------------
         localfilename = os.path.join(config.get_data_path(), 'temp_updates.zip')
         if os.path.exists(localfilename): os.remove(localfilename)
 
         down_stats = downloadtools.do_download(ADDON_UPDATES_ZIP, config.get_data_path(), 'temp_updates.zip', silent=True, resume=False)
         if down_stats['downloadStatus'] != 2: # 2:completed
-            logger.info('No se puede descargar la actualización')
+            logger.info('No se pudo descargar la actualización')
             if verbose:
-                platformtools.dialog_notification('Actualización fallida', 'No se puede descargar la actualización')
+                platformtools.dialog_notification(config.__addon_name, '[COLOR red]No se pudo descargar la actualización[/COLOR]')
             return False
-        
+
         # Descomprimir zip dentro del addon
-        # ---------------------------------
-        import xbmc
-        xbmc.executebuiltin('XBMC.Extract("%s", "%s")' % (localfilename, config.get_runtime_path()))
-        time.sleep(2)
-        
+        try:
+            import zipfile
+            dir = zipfile . ZipFile ( localfilename , 'r' )
+            dir . extractall ( config.get_runtime_path())
+            dir . close ( )
+        except:
+            import xbmc
+            xbmc.executebuiltin('Extract("%s", "%s")' % (localfilename, config.get_runtime_path()))
+            time.sleep(2)
+
         # Borrar el zip descargado
-        # ------------------------
         os.remove(localfilename)
-        
+
         # Guardar información de la versión fixeada
-        # -----------------------------------------
-        if 'files' in data: data.pop('files', None)
+        # ~ if 'files' in data: data.pop('files', None)  # necesario para visalizar en helper el contenido del fix
+
         filetools.write(last_fix_json, jsontools.dump(data))
-        
+
         logger.info('Addon actualizado correctamente a %s.fix%d' % (data['addon_version'], data['fix_version']))
         if verbose:
-            platformtools.dialog_notification('Balandro actualizado a', 'Versión %s.fix%d' % (data['addon_version'], data['fix_version']))
+            platformtools.dialog_notification(config.__addon_name, '[COLOR yellow]Actualizado a la versión %s.fix%d[/COLOR]' % (data['addon_version'], data['fix_version']))
         return True
-
     except:
-        logger.error('Error al comprobar actualizaciones del addon!')
+        logger.error('Error comprobación actualizaciones!')
         logger.error(traceback.format_exc())
         if verbose:
-            platformtools.dialog_notification('Balandro actualizaciones', 'Error al comprobar actualizaciones')
+            platformtools.dialog_notification(config.__addon_name, '[COLOR red]Error comprobación actualizaciones[/COLOR]')
         return False
+
+def get_last_chrome_list():
+    logger.info()
+
+    ver_stable_chrome = config.get_setting("ver_stable_chrome", default=True)
+
+    if ver_stable_chrome:
+        try:
+           data = httptools.downloadpage('https://omahaproxy.appspot.com/all?csv=1').data
+           web_last_ver_chrome = scrapertools.find_single_match(data, "win64,stable,([^,]+),")
+        except:
+           web_last_ver_chrome = ''
+
+        if not web_last_ver_chrome == '':
+            config.set_setting('chrome_last_version', web_last_ver_chrome)
+

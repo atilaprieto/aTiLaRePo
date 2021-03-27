@@ -111,8 +111,8 @@ msgid "Reset Cache ResolveUrl"
 msgstr "Réinitialiser le cache ResolveUrl"
 
 msgctxt "#30028"
-msgid "Movie views by year"
-msgstr "Vues de films par an"
+msgid "Sort Movies ..."
+msgstr "Ordonner des films..."
 
 msgctxt "#30029"
 msgid "Always use resolveUrl"
@@ -246,8 +246,8 @@ msgid "Start next episode automatically"
 msgstr "Démarre automatiquement l'épisode suivant"
 
 msgctxt "#30062"
-msgid "Show series in follow-up"
-msgstr "Afficher les séries dans le suivi"
+msgid "Series in follow-up"
+msgstr "Série en suivi"
 
 msgctxt "#30063"
 msgid "There are no series in follow-up at this time"
@@ -277,7 +277,15 @@ msgctxt "#30069"
 msgid "Season %s concluded. Check if there are more seasons available"
 msgstr "Saison %s terminée. Vérifiez s'il y a plus de saisons disponibles"
 
-# empty strings from id 30070 to 30099
+msgctxt "#30070"
+msgid "It is not possible to automatically identify the next episode of this series"
+msgstr "Il n'est pas possible d'identifier automatiquement le prochain épisode de cette série"
+
+msgctxt "#30071"
+msgid " Register for free at uptobox.com and add your account in the settings, to be able to use this server"
+msgstr " Inscrivez-vous gratuitement sur uptobox.com et ajoutez votre compte dans les paramètres, pour pouvoir utiliser ce serveur"
+
+# empty strings from id 30072 to 30099
 
 # moria
 
@@ -445,6 +453,39 @@ msgctxt "#30141"
 msgid "Favorite Anime Series"
 msgstr "Série Anime préférée"
 
-msgctxt "#30142"
-msgid "Series in follow-up"
-msgstr "Série en suivi"
+msgctxt "#30143"
+msgid "Autoplay"
+msgstr "Lecture automatique"
+
+msgctxt "#30144"
+msgid "The link chosen automatically has failed. Choose another from the list"
+msgstr "Le lien choisi automatiquement a échoué. Choisissez-en un autre dans la liste"
+
+msgctxt "#30145"
+msgid "Information about Palantir 2"
+msgstr "Informations sur Palantir 2"
+
+msgctxt "#30146"
+msgid "Last update"
+msgstr "Dernière mise à jour"
+
+msgctxt "#30147"
+msgid "Set this view for movies"
+msgstr "Définir cette vue pour les films"
+
+msgctxt "#30148"
+msgid "Set this view for series"
+msgstr "Définir cette vue pour les séries"
+
+msgctxt "#30149"
+msgid "Set this view for seasons"
+msgstr "Définir cette vue pour les saisons"
+
+msgctxt "#30150"
+msgid "Set this view for episodes"
+msgstr "Définir cette vue pour les épisodes"
+
+msgctxt "#30151"
+msgid "Set this view for menus"
+msgstr "Définir cette vue pour les menus"
+

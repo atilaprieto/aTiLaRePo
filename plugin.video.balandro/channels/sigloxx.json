@@ -1,0 +1,17 @@
+{
+  "id": "sigloxx",
+  "name": "SigloXX",
+  "thumbnail": "sigloxx.jpg",
+
+  "active": true,
+
+  "searchable": false,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast"],
+
+  "clusters": ["classic", "years", "stars", "directors", "lists"],
+
+  "notes": "2000 Películas del Siglo XX."
+}

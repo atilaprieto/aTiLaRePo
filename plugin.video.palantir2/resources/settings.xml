@@ -26,10 +26,17 @@
 					<default>true</default>
 					<control type="toggle"/>
 				</setting>
-				<setting id="follow-up" type="boolean" label="30062" help="">
+				<setting id="follow-up2" type="integer" label="30062" help="">
 					<level>0</level>
-					<default>true</default>
-					<control type="toggle"/>
+					<default>12</default>
+					<constraints>
+						<minimum>0</minimum>
+						<step>12</step>
+						<maximum>48</maximum>
+					</constraints>
+					<control type="slider" format="integer">
+						<popup>false</popup>
+					</control>
 				</setting>
 			</group>
 			<group id="2" label="30002">
@@ -1228,17 +1235,11 @@
 		</category>
 		<category id="mas..." label="30020" help="">
 			<group id="1">
-				<setting id="OrderYear" type="string" label="30028" help="">
+				<setting id="Autoplay" type="boolean" label="30143" help="">
+					<visible>True</visible>
 					<level>0</level>
-					<default> order by sum(views) desc</default>
-					<constraints>
-						<options>
-							<option label="30122">order by sum(views) desc</option>
-							<option label="30124">order by updated desc</option>
-							<option label="30115">order by nombre COLLATE latin1</option>
-						</options>
-					</constraints>
-					<control type="spinner" format="string"/>
+					<default>false</default>
+					<control type="toggle"/>
 				</setting>
 				<setting id="Always_resolveUrl" type="boolean" label="30029" help="">
 					<level>0</level>
@@ -1251,7 +1252,57 @@
 					<control type="toggle"/>
 				</setting>
 			</group>
-			<group id="2" label="30025">
+			<group id = "2" label="30028">
+				<setting id="OrderYear" type="string" label="30116" help="">
+					<level>0</level>
+					<default> order by sum(views) desc</default>
+					<constraints>
+						<options>
+							<option label="30122"> order by sum(views) desc</option>
+							<option label="30124"> order by updated desc</option>
+							<option label="30115"> order by nombre COLLATE latin1</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
+				<setting id="OrderGenre" type="string" label="30114" help="">
+					<level>0</level>
+					<default> order by nombre COLLATE latin1</default>
+					<constraints>
+						<options>
+							<option label="30115"> order by nombre COLLATE latin1</option>
+							<option label="30122"> order by sum(views) desc</option>
+							<option label="30124"> order by updated desc</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
+				<setting id="OrderQuality" type="string" label="30117" help="">
+					<level>0</level>
+					<default> order by updated desc</default>
+					<constraints>
+						<options>
+							<option label="30124"> order by updated desc</option>
+							<option label="30122"> order by sum(views) desc</option>
+							<option label="30115"> order by nombre COLLATE latin1</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
+				<setting id="OrderSpecial" type="string" label="30111" help="">
+					<level>0</level>
+					<default> order by nombre COLLATE latin1</default>
+					<constraints>
+						<options>
+							<option label="30115"> order by nombre COLLATE latin1</option>
+							<option label="30122"> order by sum(views) desc</option>
+							<option label="30124"> order by updated desc</option>
+						</options>
+					</constraints>
+					<control type="spinner" format="string"/>
+				</setting>
+			</group>
+			<group id="3" label="30025">
 				<visible>False</visible>
 				<setting id="reset_resolveurl_cache" type="action" label="30026" help="">
 					<level>0</level>

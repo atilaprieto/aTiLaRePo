@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, servertools, tmdb
-import re
 
 host = 'https://peliculasflix.co/'
 
-perpage = 24 # preferiblemente un múltiplo de los elementos que salen en la web (6x8=48) para que la subpaginación interna no se descompense
+perpage = 24
 
 
 def mainlist(item):
@@ -17,9 +18,9 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Todas las películas', action = 'list_all', url = host + 'ver-peliculas-online/' ))
+    itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host + 'ver-peliculas-online/' ))
 
-    itemlist.append(item.clone( title = 'Por productoras', action = 'generos', search_type = 'movie', grupo = 'productoras' ))
+    itemlist.append(item.clone( title = 'Por productora', action = 'generos', search_type = 'movie', grupo = 'productoras' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
 
@@ -33,8 +34,19 @@ def generos(item):
     itemlist = []
 
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
-    
-    productoras = ['/amazon-prime-video/', '/apple-tv-plus/', '/bbc-one/', '/blim-tv/', '/peliculas-de-claro-video/', '/dc-comics/', '/peliculas-de-disney-plus/', '/hbo-go/', '/movistar-play/', '/peliculas-de-netflix/']
+
+    productoras = [
+        '/amazon-prime-video/',
+        '/apple-tv-plus/',
+        '/bbc-one/',
+        '/blim-tv/',
+        '/peliculas-de-claro-video/',
+        '/dc-comics/',
+        '/peliculas-de-disney-plus/',
+        '/hbo-go/',
+        '/movistar-play/',
+        '/peliculas-de-netflix/'
+        ]
 
     data = httptools.downloadpage(host).data
 
@@ -83,16 +95,16 @@ def list_all(item):
         thumb = scrapertools.find_single_match(article, ' data-src="([^"]+)')
         year = scrapertools.find_single_match(article, '<span class="Date">(\d{4})</span>')
         if not year: year = '-'
+
         plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<div class="Description">\s*<p>(.*?)</p>'))
 
         quality = scrapertools.find_single_match(article, '<span class="Qlty">(.*?)</span>')
         langs = []
         if '/espana.png' in article: langs.append('Esp')
         if '/mexico.png' in article: langs.append('Lat')
-        if '/usa.png' in article: langs.append('VOSE')
+        if '/usa.png' in article: langs.append('Vose')
 
-        itemlist.append(item.clone( action = 'findvideos', url = url, title = title, thumbnail = thumb, 
-                                    languages=', '.join(langs), qualities=quality,
+        itemlist.append(item.clone( action = 'findvideos', url = url, title = title, thumbnail = thumb, languages=', '.join(langs), qualities=quality,
                                     contentType = 'movie', contentTitle = title, infoLabels = {'year': year, 'plot': plot} ))
 
         if len(itemlist) >= perpage: break
@@ -100,17 +112,17 @@ def list_all(item):
     tmdb.set_infoLabels(itemlist)
 
     buscar_next = True
-    if num_matches > perpage: # subpaginación interna dentro de la página si hay demasiados items
+    if num_matches > perpage:
         hasta = (item.page * perpage) + perpage
         if hasta < num_matches:
-            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_all' ))
+            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_all', text_color='coral' ))
             buscar_next = False
 
     if buscar_next:
         if '<nav class="wp-pagenavi">' in data:
             next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"[^>]*><i class="fa-arrow-right"></i></a>')
             if next_page:
-               itemlist.append(item.clone (url = next_page, page=0, title = '>> Página siguiente', action = 'list_all'))
+               itemlist.append(item.clone (url = next_page, page=0, title = '>> Página siguiente', action = 'list_all', text_color='coral' ))
 
     return itemlist
 
@@ -126,7 +138,7 @@ def findvideos(item):
     logger.info()
     itemlist = []
 
-    IDIOMAS = {'castellano': 'Esp', 'latino': 'Lat', 'subtitulado': 'VOSE'}
+    IDIOMAS = {'castellano': 'Esp', 'latino': 'Lat', 'subtitulado': 'Vose'}
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
@@ -146,10 +158,8 @@ def findvideos(item):
 
         url = host + '?trembed=%s&trid=%s&trtype=1' % (data_key, data_id)
 
-        itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, 
-                              title = '', url = url,
-                              language = IDIOMAS.get(lang, lang), quality = qlty
-                       ))
+        itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, title = '', url = url,
+                              language = IDIOMAS.get(lang, lang), quality = qlty ))
 
     return itemlist
 

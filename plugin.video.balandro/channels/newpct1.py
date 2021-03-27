@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import sys
+
+if sys.version_info[0] < 3:
+    pass
+else:
+    unicode = str
+
+
 import os, re
 
 from platformcode import config, logger
@@ -7,23 +15,23 @@ from core.item import Item
 from core import httptools, scrapertools, servertools, tmdb
 
 
-perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (80) para que la subpaginación interna no se descompense
+perpage = 20
+
 
 CLONES = [
-    # ~ ['pctnew', 'https://pctnew.org/', 'movie, tvshow', 'pctnew.jpg'],
-    ['pctnew', 'https://pctmix.com/', 'movie, tvshow', 'pctnew.jpg'],
-    ['descargas2020', 'https://descargas2020.net/', 'movie', 'descargas2020.png'],
+   ['pctreload', 'https://pctreload1.com/', 'movie, tvshow', 'pctreload.png'],
+   ['pctmix', 'https://pctmix.com/', 'movie, tvshow', 'pctmix.jpg'],
+   # - ['descargas2020', 'https://descargas2020.net/', 'movie, tvshow', 'descargas2020.jpg']
+   ['descargas2020', 'https://descargas2020.net/', 'movie', 'descargas2020.jpg']
+   ]
+
     # ~ ['tumejortorrent', 'http://tumejortorrent.site/', 'movie, tvshow', 'tumejortorrent.jpg'],
     # ~ ['tumejortorrent', 'https://tumejortorrent.org/', 'movie, tvshow', 'tumejortorrent.jpg'],
     # ~ ['torrentrapid', 'https://torrentrapid.org/', 'movie, tvshow', 'torrentrapid.png'],
     # ~ ['torrentlocura', 'http://torrentlocura.cc/', 'movie, tvshow', 'torrentlocura.png'],
-    ['pctreload', 'https://pctreload1.com/', 'movie, tvshow', 'pctreload.png'] # new
     # ~ ['planetatorrent', 'http://planetatorrent.com/', 'movie, tvshow', 'planetatorrent.png'],
     # ~ ['mispelisyseries', 'http://mispelisyseries.com/', 'movie', 'mispelisyseries.png'],
     # ~ ['tvsinpagar', 'http://www.tvsinpagar.com/', 'movie, tvshow', 'tvsinpagar.png']
-]
-
-# Notas:
 
 # - Para una misma peli/serie no siempre hay uno sólo enlace, pueden ser múltiples. La videoteca de momento no está preparada para acumular
 #   múltiples enlaces de un mismo canal, así que solamente se guardará el enlace del último agregado.
@@ -53,7 +61,7 @@ def mainlist_pelis(item):
     for clone in CLONES:
         if 'movie' in clone[2]:
             thumb = os.path.join(config.get_runtime_path(), 'resources', 'media', 'channels', 'thumb', clone[3])
-            itemlist.append(item.clone( title = clone[0], action = 'mainlist_pelis_clon', url = clone[1], thumbnail = thumb ))
+            itemlist.append(item.clone( title = clone[0].capitalize(), action = 'mainlist_pelis_clon', url = clone[1], thumbnail = thumb ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
@@ -63,53 +71,42 @@ def mainlist_pelis_clon(item):
     logger.info()
     itemlist = []
     item.category += '~' + item.title
-    
+
     enlaces = [
-        ['Películas en Castellano', 'peliculas/'],
-        ['Películas en Latino', 'peliculas-latino/'],
-        # ~ ['Películas en VO', 'peliculas-vo/'],
-        ['Estrenos de cine', 'estrenos-de-cine/'],
-        ['Películas en HD', 'peliculas-hd/'],
-        ['Películas en HD FullBluRay 1080p', 'peliculas-hd/fullbluray-1080p/'],
-        ['Películas en HD BluRay 1080p', 'peliculas-hd/bluray-1080p/'],
-        ['Películas en HD MicroHD 1080p', 'peliculas-hd/microhd-1080p/'],
-        ['Películas en X264', 'peliculas-x264-mkv/'],
-        ['Películas en 3D', 'peliculas-3d/'],
-        ['Películas en 4K UltraHD', 'peliculas-hd/4kultrahd/'],
-        ['Películas en 4K UHDremux', 'peliculas-hd/4k-uhdremux/'],
-        ['Películas en 4K UHDmicro', 'peliculas-hd/4k-uhdmicro/'],
-        ['Películas en 4K UHDrip', 'peliculas-hd/4k-uhdrip/'],
-        ['Películas en 4K Full UHD4K', 'peliculas-hd/full-uhd4k/'],
-        ['Películas en 4K Webrip', 'peliculas-hd/4k-webrip/']
-    ]
-        # ~ ['Otras películas', 'otras-peliculas/'],
-        # ~ ['Películas en BDremux 1080p', 'peliculas-hd/bdremux-1080p/'],
-        # ~ ['Documentales', 'varios/'], # algunos documentales, pero la mayoría de enlaces son pdfs de revistas, etc.
+        ['Estrenos', 'estrenos-de-cine/'],
+        ['Castellano', 'peliculas/'],
+        ['Latino', 'peliculas-latino/'],
+        # - ['Películas en Subtitulado', 'peliculas-vo/'],
+        ['En HD', 'peliculas-hd/'],
+        ['En HD FullBluRay 1080p', 'peliculas-hd/fullbluray-1080p/'],
+        ['En HD BluRay 1080p', 'peliculas-hd/bluray-1080p/'],
+        ['En HD MicroHD 1080p', 'peliculas-hd/microhd-1080p/'],
+        ['En X264', 'peliculas-x264-mkv/'],
+        ['En 4K UltraHD', 'peliculas-hd/4kultrahd/'],
+        ['En 4K UHDremux', 'peliculas-hd/4k-uhdremux/'],
+        ['En 4K UHDmicro', 'peliculas-hd/4k-uhdmicro/'],
+        ['En 4K UHDrip', 'peliculas-hd/4k-uhdrip/'],
+        ['En 4K Full UHD4K', 'peliculas-hd/full-uhd4k/'],
+        ['En 4K Webrip', 'peliculas-hd/4k-webrip/'],
+        ['En 3D', 'peliculas-3d/']
+        ]
 
     if 'descargas2020.net' in item.url: 
         item.url += 'categoria/'
         enlaces = [
-            ['Películas en Castellano', 'peliculas-castellano/'],
-            ['Películas en Latino', 'peliculas-latino/'],
-            ['Estrenos de cine', 'estrenos-de-cine/'],
-            ['Películas en HD', 'peliculas-hd/'],
-            ['Películas en X264', 'peliculas-x264-mkv/'],
-            ['Películas en 3D', 'peliculas-3d/'],
-            ['Películas en Rip', 'peliculas-rip/']
-        ]
+            ['Estrenos', 'estrenos-de-cine/'],
+            ['Castellano', 'peliculas-castellano/'],
+            ['Latino', 'peliculas-latino/'],
+            ['En HD', 'peliculas-hd/'],
+            ['En X264', 'peliculas-x264-mkv/'],
+            ['En Rip', 'peliculas-rip/'],
+            ['En 3D', 'peliculas-3d/']
+            ]
 
     for enlace in enlaces:
-        # ~ if item.title == 'planetatorrent' and 'x264' in enlace[1]: continue
-
-        if item.title == 'pctnew' and 'otras-peliculas' in enlace[1]: continue
-
-        if item.title == 'descargas2020' and 'otras-peliculas' in enlace[1]: continue
-
-        if item.title == 'pctreload' and 'otras-peliculas' in enlace[1]: continue
-
         itemlist.append(item.clone( title = enlace[0], action = 'list_all', url = item.url + enlace[1], search_type = 'movie' ))
 
-    if item.title == 'pctnew' or item.title == 'descargas2020' or item.title == 'pctreload':
+    if item.title == 'pctmix' or item.title == 'descargas2020' or item.title == 'pctreload':
         itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', url = item.url, search_type = 'movie' ))
 
     return itemlist
@@ -122,11 +119,12 @@ def mainlist_series(item):
     for clone in CLONES:
         if 'tvshow' in clone[2]:
             thumb = os.path.join(config.get_runtime_path(), 'resources', 'media', 'channels', 'thumb', clone[3])
-            itemlist.append(item.clone( title = clone[0], action = 'mainlist_series_clon', url = clone[1], thumbnail = thumb ))
-        
+            itemlist.append(item.clone( title = clone[0].capitalize(), action = 'mainlist_series_clon', url = clone[1], thumbnail = thumb ))
+
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
     return itemlist
+
 
 def mainlist_series_clon(item):
     logger.info()
@@ -134,41 +132,41 @@ def mainlist_series_clon(item):
     item.category += '~' + item.title
 
     enlaces = [
-        ['Series', 'series/'],
-        ['Series HD', 'series-hd/'],
-        ['Series VO', 'series-vo/']
+        ['Catálogo', 'series/'],
+        ['En HD', 'series-hd/'],
+        ['Subtituladas', 'series-vo/']
     ]
+
     if 'descargas2020.net' in item.url: 
         del enlaces[1:]
 
     for enlace in enlaces:
         itemlist.append(item.clone( title = enlace[0], action = 'list_all', url = item.url + enlace[1], search_type = 'tvshow' ))
 
-    if item.title == 'pctnew' or item.title == 'descargas2020' or item.title == 'pctreload':
+    if item.title == 'pctmix' or item.title == 'descargas2020' or item.title == 'pctreload':
         itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', url = item.url, search_type = 'tvshow' ))
 
     return itemlist
 
 
-
-
 def limpiar_titulo(title, quitar_sufijo=''):
     prefijos = ['Ver en linea ', 'Ver online ', 'Descarga Gratis ', 'Descarga Serie HD ',  
                 'Descargar Estreno ', 'Descargar Pelicula ', 'Descargar torrent ']
+
     for prefijo in prefijos:
         if title.startswith(prefijo): title = title[len(prefijo):]
-        
+
     if title.endswith(' en HD'): title = title.replace(' en HD', '')
 
     m = re.match(r"^Descargar (.*?) torrent gratis$", title)
     if m: title = m.group(1)
-    
+
     m = re.match(r"^Descargar (.*?)gratis$", title)
     if m: title = m.group(1)
 
     m = re.match(r"^Descargar (.*?) torrent$", title)
     if m: title = m.group(1)
-    
+
     m = re.match(r"^Pelicula en latino (.*?) gratis$", title)
     if m: title = m.group(1)
 
@@ -189,10 +187,10 @@ def list_all(item):
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
-    
+
     patron = '<li>\s*<a href="([^"]+)" title="([^"]+)">\s*<img src="([^"]+)"[^>]+>'
     patron += '\s*<h2[^>]*>[^<]+</h2>\s*<span>([^<]+)</span>'
-    
+
     matches = re.compile(patron, re.DOTALL).findall(data)
     num_matches = len(matches)
 
@@ -215,14 +213,12 @@ def list_all(item):
                 titulo = '%s [%s]' % (title, m.group(2))
 
         if item.search_type == 'tvshow':
-            itemlist.append(item.clone( action='episodios', url=url, title=titulo, thumbnail=thumb, 
-                                        qualities=quality, 
+            itemlist.append(item.clone( action='episodios', url=url, title=titulo, thumbnail=thumb, qualities=quality, 
                                         contentType='tvshow', contentSerieName=title, infoLabels={'year': year} ))
         else:
-            itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb, 
-                                        qualities=quality, 
+            itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb, qualities=quality, 
                                         contentType='movie', contentTitle=title, infoLabels={'year': year} ))
-        
+
         if len(itemlist) >= perpage: break
 
 
@@ -230,19 +226,18 @@ def list_all(item):
 
     # Subpaginación interna y/o paginación de la web
     buscar_next = True
-    if num_matches > perpage: # subpaginación interna dentro de la página si hay demasiados items
+    if num_matches > perpage:
         hasta = (item.page * perpage) + perpage
         if hasta < num_matches:
-            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1 ))
+            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, text_color='coral' ))
             buscar_next = False
 
     if buscar_next:
         next_page_link = scrapertools.find_single_match(data, '<li><a href="([^"]+)">Next</a>')
         if next_page_link:
-            itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, page=0 ))
+            itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, page=0, text_color='coral' ))
 
     return itemlist
-
 
 
 # Devuelve los episodios de todas las temporadas para scrap en trackingtools
@@ -303,6 +298,7 @@ def episodios(item):
             if title != '': logger.debug('Serie/Temporada/Episodio no detectados! %s' % title)
             # ~ else: logger.debug(article)
             continue
+
         titulo = '%sx%s %s' % (season, episode, show)
 
         itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb, 
@@ -312,17 +308,16 @@ def episodios(item):
 
     next_page_link = scrapertools.find_single_match(data, '<li><a href="([^"]+)">Next</a>')
     if next_page_link:
-        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link ))
-    
-    return itemlist
+        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, text_color='coral' ))
 
+    return itemlist
 
 
 def extrae_idioma(txt):
     if 'Latino' in txt: return 'Lat'
     elif 'Castellano' in txt or txt.startswith('Espa'): return 'Esp'
-    elif 'Subtitulado Espa' in txt: return 'VOSE'
-    elif 'Subtitulado' in txt: return 'VOSE' #'VOS'
+    elif 'Subtitulado Espa' in txt: return 'Vose'
+    elif 'Subtitulado' in txt: return 'Vose'
     else: return 'VO'
 
 
@@ -332,7 +327,7 @@ def findvideos(item):
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
-    
+
     # Enlace torrent
     calidad = ''; idioma = ''
     h1 = scrapertools.find_single_match(data, '<h1[^>]*>(.*?)</h1>')
@@ -343,32 +338,29 @@ def findvideos(item):
         if len(datos) > 1: idioma = extrae_idioma(datos[1])
         if idioma == 'VO' and len(datos) > 2: idioma = extrae_idioma(datos[2]) # a veces no es el segundo []
         if idioma == 'VO' and len(datos) > 3: idioma = extrae_idioma(datos[3]) # a veces no es el tercero []
+
     tamano = scrapertools.find_single_match(data, '<strong>Size:</strong>([^<]+)</span>').strip()
     url = scrapertools.find_single_match(data, 'window.location.href\s*=\s*"([^"]+)')
     if url.startswith('//'): url = 'http:' + url
 
-    itemlist.append(Item(channel = item.channel, action = 'play',
-                         title = '', url = url, server = 'torrent',
-                         language = idioma, quality = calidad, other = tamano
-                   ))
+    itemlist.append(Item(channel = item.channel, action = 'play', title = '', url = url, server = 'torrent',
+                         language = idioma, quality = calidad, other = tamano ))
 
     # Enlaces streaming
     patron = '<div class="box2">([^<]+)</div>\s*<div class="box3">([^<]+)</div>\s*<div class="box4">([^<]+)</div>'
     patron += '\s*<div class="box5"><a href=\'([^\']+)[^>]+>([^<]+)'
-    
+
     matches = re.compile(patron, re.DOTALL).findall(data)
     for servidor, idioma, calidad, url, tipo in matches:
         if url.startswith('javascript:'): continue
         # ~ logger.debug('%s %s %s %s %s' % (tipo, servidor, url, idioma, calidad))
         if 'descargar' in tipo.lower() and servidor != 'uptobox': continue  # Descartar descargas directas (menos uptobox)
-        
-        itemlist.append(Item(channel = item.channel, action = 'play',
-                             title = '', url = url,
-                             language = extrae_idioma(idioma), quality = calidad
-                       ))
+
+        itemlist.append(Item(channel = item.channel, action = 'play', title = '', url = url,
+                             language = extrae_idioma(idioma), quality = calidad ))
 
     itemlist = servertools.get_servers_itemlist(itemlist)
-    
+
     return itemlist
 
 
@@ -380,12 +372,12 @@ def busqueda(item):
     data = httptools.downloadpage(item.url, post=post).data
     # ~ logger.debug(data)
     data = data.replace('\\/', '/')
-    
+
     dominio = item.url.replace('get/result/', '')
-    
+
     patron = '"torrentID":"([^"]+)","torrentName":"([^"]+)","calidad":"([^"]+)","torrentDateAdded":"([^"]+)","torrentSize":"([^"]+)"'
     patron += ',"imagen":"([^"]+)","guid":"([^"]+)"'
-    
+
     matches = re.compile(patron, re.DOTALL).findall(data)
     for tid, tname, tcali, tdate, tsize, timg, tguid in matches:
         url = dominio + tguid
@@ -394,16 +386,16 @@ def busqueda(item):
         is_tvshow = '/serie' in url or '/descargar-serie' in url
         if (item.search_type == 'tvshow' and not is_tvshow) or (item.search_type == 'movie' and is_tvshow): continue
         if url in [it.url for it in itemlist]: continue # descartar urls duplicadas
-        
+
         title = unicode(tname, 'unicode-escape', 'ignore').encode('utf8')
-        
+
         idioma = ''
         if 'Castellano]' in title: idioma = 'Esp'
 
         year = scrapertools.find_single_match(title, '\((\d{4})\)')
         if year: title = title.replace('(%s)' % year, '').strip()
         else: year = '-'
-        
+
         title = re.sub('(\[[^\]]*\])', '', title).strip()
 
         if re.match('.*?temporada \d+ completa', title, flags=re.IGNORECASE): continue # descartar enlaces a temporadas completas
@@ -420,20 +412,18 @@ def busqueda(item):
         if is_tvshow:
             sufijo = '' if item.search_type != 'all' else 'tvshow'
 
-            itemlist.append(item.clone( action='episodios', url=url, title=titulo, thumbnail=thumb, 
-                                        languages=idioma, qualities=tcali, fmt_sufijo=sufijo,
+            itemlist.append(item.clone( action='episodios', url=url, title=titulo, thumbnail=thumb, languages=idioma, qualities=tcali, fmt_sufijo=sufijo,
                                         contentType='tvshow', contentSerieName=title, infoLabels={'year': year} ))
         else:
             sufijo = '' if item.search_type != 'all' else 'movie'
 
-            itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb, 
-                                        languages=idioma, qualities=tcali, fmt_sufijo=sufijo,
+            itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb, languages=idioma, qualities=tcali, fmt_sufijo=sufijo,
                                         contentType='movie', contentTitle=title, infoLabels={'year': year} ))
 
     tmdb.set_infoLabels(itemlist)
-    
+
     if '"items":30,' in data:
-        itemlist.append(item.clone( title='>> Página siguiente', action='busqueda', busca_pagina = item.busca_pagina + 1 ))
+        itemlist.append(item.clone( title='>> Página siguiente', action='busqueda', busca_pagina = item.busca_pagina + 1, text_color='coral' ))
 
     return itemlist
 

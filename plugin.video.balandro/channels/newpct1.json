@@ -11,5 +11,7 @@
   "categories": ["movie", "tvshow", "torrent"],
   "language": ["cast", "lat", "vose"],
 
-  "notes": "Películas y series con enlaces torrent y streaming. Clones de NewPct1: descargas2020, tumejortorrent, torrentrapid, torrentlocura, pctnew, planetatorrent, mispelisyseries, tvsinpagar."
+  "clusters": ["torrents", "news", "lists", "vos", "3d"],
+
+  "notes": "Películas y series con enlaces torrent y streaming. Clones de NewPct1: pctreload, pctmix, descargas2020."
 }

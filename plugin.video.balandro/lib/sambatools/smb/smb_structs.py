@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import binascii
 import logging
 import os
 import struct
 import time
-from StringIO import StringIO
+from io import BytesIO
 
 from smb_constants import *
 
@@ -41,7 +43,7 @@ class ProtocolError(Exception):
         self.smb_message = smb_message
 
     def __str__(self):
-        b = StringIO()
+        b = BytesIO()
         b.write(self.message + os.linesep)
         if self.smb_message:
             b.write('=' * 20 + ' SMB Message ' + '=' * 20 + os.linesep)
@@ -67,7 +69,7 @@ class OperationFailure(Exception):
         self.smb_messages = smb_messages
 
     def __str__(self):
-        b = StringIO()
+        b = BytesIO()
         b.write(self.message + os.linesep)
 
         for idx, m in enumerate(self.smb_messages):
@@ -118,7 +120,7 @@ class SMBMessage:
             self.payload.initMessage(self)
 
     def __str__(self):
-        b = StringIO()
+        b = BytesIO()
         b.write('Command: 0x%02X (%s) %s' % ( self.command, SMB_COMMAND_NAMES.get(self.command, '<unknown>'), os.linesep ))
         b.write('Status: %s %s' % ( str(self.status), os.linesep ))
         b.write('Flags: 0x%02X %s' % ( self.flags, os.linesep ))

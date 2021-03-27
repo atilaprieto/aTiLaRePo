@@ -8,8 +8,10 @@
   "searchable": true,
   "search_types": ["movie"],
 
-  "categories": ["movie"],
+  "categories": ["movie", "torrent"],
   "language": ["cast", "lat", "vose"],
+
+  "clusters": ["torrents", "languages", "qualityes", "vos"],
 
   "notes": "Películas por idiomas, géneros y calidades."
 }

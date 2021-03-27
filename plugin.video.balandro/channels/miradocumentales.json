@@ -3,13 +3,15 @@
   "name": "MiraDocumentales",
   "thumbnail": "miradocumentales.jpg",
 
-  "active": false,
+  "active": true,
 
   "searchable": true,
   "search_types": ["documentary"],
 
   "categories": ["documentary"],
   "language": ["cast"],
+
+  "clusters": ["categories"],
 
   "notes": "Documentales en castellano, aunque no todos tienen vídeos válidos."
 }

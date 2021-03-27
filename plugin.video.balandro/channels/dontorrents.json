@@ -1,0 +1,17 @@
+{
+  "id": "dontorrents",
+  "name": "DonTorrents",
+  "thumbnail": "dontorrents.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow"],
+  "language": ["cast"],
+
+  "clusters": ["torrents", "last", "qualityes"],
+
+  "notes": "Películas, series y documentales con enlaces torrent exclusivamente. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
+}

@@ -3,7 +3,7 @@
   "name": "Openload",
 
   "active": false,
-  "notes": "Cerrado el 01/11/2019",
+  "notes": "Cerrado el 1/11/2019",
 
   "find_videos": {
     "ignore_urls": ["https://openload.co/soon"],

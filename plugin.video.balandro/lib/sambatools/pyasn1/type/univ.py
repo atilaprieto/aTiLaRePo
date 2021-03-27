@@ -1,7 +1,15 @@
+# -*- coding: utf-8 -*-
+
+import sys
+
+if sys.version_info[0] < 3:
+    pass
+else:
+    unicode = str
+
 # ASN.1 "universal" data types
 import math
 import operator
-import sys
 
 from pyasn1 import error
 from pyasn1.codec.ber import eoo

@@ -1,35 +1,36 @@
 # -*- coding: utf-8 -*-
 
-import re, urllib
+import re
 
 from platformcode import config, logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, tmdb, jsontools, servertools
 
 host = 'https://www.dilo.nu/'
+
 host_catalogue = host + 'catalogue'
 
-IDIOMAS = {'la':'Lat', 'es':'Esp', 'en_es':'VOSE', 'en':'VO'}
-
-# Versión de Yape para series
+IDIOMAS = {'la': 'Lat', 'es': 'Esp', 'en_es': 'Vose', 'en': 'VO'}
 
 
 def mainlist(item):
     return mainlist_series(item)
 
+
 def mainlist_series(item):
     logger.info()
     itemlist = []
-    
-    itemlist.append(item.clone( title = 'Lista de series', action = 'list_all', url = host_catalogue ))
-    itemlist.append(item.clone( title = 'Series de la semana', action = 'list_all', url = host_catalogue+'?sort=mosts-week' ))
-    itemlist.append(item.clone( title = 'Últimas actualizadas', action = 'list_all', url = host_catalogue+'?sort=latest' ))
 
-    itemlist.append(item.clone( title = 'Series en emisión', action = 'list_all', url = host_catalogue+'?status=0' ))
-    itemlist.append(item.clone( title = 'Series finalizadas', action = 'list_all', url = host_catalogue+'?status=1' ))
+    itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host_catalogue ))
+
+    itemlist.append(item.clone( title = 'Las de la semana', action = 'list_all', url = host_catalogue+'?sort=mosts-week' ))
+    itemlist.append(item.clone( title = 'Actualizadas', action = 'list_all', url = host_catalogue+'?sort=latest' ))
+
+    itemlist.append(item.clone( title = 'En emisión', action = 'list_all', url = host_catalogue+'?status=0' ))
+    itemlist.append(item.clone( title = 'Finalizadas', action = 'list_all', url = host_catalogue+'?status=1' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos' ))
-    itemlist.append(item.clone( title = 'Por año', action = 'anyos' ))
+    itemlist.append(item.clone( title = 'Por año', action = 'anios' ))
     itemlist.append(item.clone( title = 'Por país', action = 'paises' ))
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
@@ -53,11 +54,12 @@ def generos(item):
 
     if not descartar_xxx:
         itemlist.append(item.clone( action = 'list_all', title = 'xxx / adultos', url = host + 'search?s=adultos' ))
-        #itemlist.append(item.clone( action = 'list_all', title = 'xxx / adultos internacional', url = host + 'internacional-adultos/' ))
+        itemlist.append(item.clone( action = 'temporadas', title = 'xxx / adultos internacional', url = host + 'internacional-adultos/' ))
 
     return sorted(itemlist, key=lambda it: it.title)
 
-def anyos(item):
+
+def anios(item):
     logger.info()
     itemlist = []
 
@@ -66,17 +68,78 @@ def anyos(item):
 
     for x in range(current_year, 1970, -1):
         itemlist.append(item.clone( title=str(x), url=host_catalogue+'?year[]='+str(x), action='list_all' ))
-        
+
     return itemlist
+
 
 def paises(item):
     logger.info()
     itemlist = []
 
-    web_paises = [['AR', 'Argentina'], ['AU', 'Australia'], ['AT', 'Austria'], ['BE', 'B\xc3\xa9lgica'], ['BO', 'Bolivia'], ['BR', 'Brasil'], ['BG', 'Bulgaria'], ['CA', 'Canad\xc3\xa1'], ['CL', 'Chile'], ['CN', 'China'], ['CO', 'Colombia'], ['CR', 'Costa Rica'], ['HR', 'Croacia'], ['CU', 'Cuba'], ['CZ', 'Rep\xc3\xbablica Checa'], ['DK', 'Dinamarca'], ['EC', 'Ecuador'], ['SV', 'El Salvador'], ['FI', 'Finlandia'], ['FR', 'Francia'], ['DE', 'Alemania'], ['GR', 'Grecia'], ['GT', 'Guatemala'], ['HN', 'Honduras'], ['HK', 'Hong Kong'], ['HU', 'Hungr\xc3\xada'], ['IS', 'Islandia'], ['IN', 'India'], ['IE', 'Irlanda'], ['IL', 'Israel'], ['IT', 'Italia'], ['JP', 'Jap\xc3\xb3n'], ['LT', 'Lituania'], ['MY', 'Malasia'], ['MX', 'M\xc3\xa9xico'], ['NL', 'Pa\xc3\xadses Bajos'], ['NZ', 'Nueva Zelanda'], ['NO', 'Noruega'], ['PA', 'Panam\xc3\xa1'], ['PY', 'Paraguay'], ['PE', 'Per\xc3\xba'], ['PL', 'Polonia'], ['PT', 'Portugal'], ['PR', 'Puerto Rico'], ['RO', 'Rumania'], ['RU', 'Rusia'], ['RS', 'Serbia'], ['SG', 'Singapur'], ['ES', 'Espa\xc3\xb1a'], ['SE', 'Suecia'], ['CH', 'Suiza'], ['TH', 'Tailandia'], ['TR', 'Turqu\xc3\xada'], ['UA', 'Ucrania'], ['GB', 'Reino Unido'], ['US', 'Estados Unidos'], ['UY', 'Uruguay'], ['VE', 'Venezuela'] ]
+    web_paises = [
+       ['AR', 'Argentina'],
+       ['AU', 'Australia'],
+       ['AT', 'Austria'],
+       ['BE', 'B\xc3\xa9lgica'],
+       ['BO', 'Bolivia'],
+       ['BR', 'Brasil'],
+       ['BG', 'Bulgaria'],
+       ['CA', 'Canad\xc3\xa1'],
+       ['CL', 'Chile'],
+       ['CN', 'China'],
+       ['CO', 'Colombia'],
+       ['CR', 'Costa Rica'],
+       ['HR', 'Croacia'],
+       ['CU', 'Cuba'],
+       ['CZ', 'Rep\xc3\xbablica Checa'],
+       ['DK', 'Dinamarca'],
+       ['EC', 'Ecuador'],
+       ['SV', 'El Salvador'],
+       ['FI', 'Finlandia'],
+       ['FR', 'Francia'],
+       ['DE', 'Alemania'],
+       ['GR', 'Grecia'],
+       ['GT', 'Guatemala'],
+       ['HN', 'Honduras'],
+       ['HK', 'Hong Kong'],
+       ['HU', 'Hungr\xc3\xada'],
+       ['IS', 'Islandia'],
+       ['IN', 'India'],
+       ['IE', 'Irlanda'],
+       ['IL', 'Israel'],
+       ['IT', 'Italia'],
+       ['JP', 'Jap\xc3\xb3n'],
+       ['LT', 'Lituania'],
+       ['MY', 'Malasia'],
+       ['MX', 'M\xc3\xa9xico'],
+       ['NL', 'Pa\xc3\xadses Bajos'],
+       ['NZ', 'Nueva Zelanda'],
+       ['NO', 'Noruega'],
+       ['PA', 'Panam\xc3\xa1'],
+       ['PY', 'Paraguay'],
+       ['PE', 'Per\xc3\xba'],
+       ['PL', 'Polonia'],
+       ['PT', 'Portugal'],
+       ['PR', 'Puerto Rico'],
+       ['RO', 'Rumania'],
+       ['RU', 'Rusia'],
+       ['RS', 'Serbia'],
+       ['SG', 'Singapur'],
+       ['ES', 'Espa\xc3\xb1a'],
+       ['SE', 'Suecia'],
+       ['CH', 'Suiza'],
+       ['TH', 'Tailandia'],
+       ['TR', 'Turqu\xc3\xada'],
+       ['UA', 'Ucrania'],
+       ['GB', 'Reino Unido'],
+       ['US', 'Estados Unidos'],
+       ['UY', 'Uruguay'],
+       ['VE', 'Venezuela']
+       ]
+
     for x in sorted(web_paises, key=lambda x: x[1]):
         itemlist.append(item.clone( title=x[1], url=host_catalogue+'?country[]='+x[0], action='list_all' ))
-        
+
     return itemlist
 
 
@@ -88,14 +151,14 @@ def list_all(item):
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
-    
+
     matches = re.compile('<div class="col-lg-2 col-md-3 col-6 mb-3">\s*<a(.*?)</a>\s*</div>', re.DOTALL).findall(data)
     for article in matches:
         url = scrapertools.find_single_match(article, ' href="([^"]+)"')
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
         title = scrapertools.find_single_match(article, '<div class="text-white[^"]*">([^<]+)</div>').strip()
         year = scrapertools.find_single_match(article, '<div class="txt-gray-200 txt-size-\d+">(\d+)</div>')
-        
+
         if descartar_xxx and ('/coleccion-adulto-espanol/' in url or '/internacional-adultos/' in url): continue
 
         itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, 
@@ -105,7 +168,7 @@ def list_all(item):
 
     next_page_link = scrapertools.find_single_match(data, '<li class="page-item"><a href="([^"]+)" aria-label="(?:Netx|Next)"')
     if next_page_link:
-        itemlist.append(item.clone( title='>> Página siguiente', url=host_catalogue + next_page_link, action='list_all' ))
+        itemlist.append(item.clone( title='>> Página siguiente', url=host_catalogue + next_page_link, action='list_all', text_color='coral' ))
 
     return itemlist
 
@@ -116,14 +179,34 @@ def temporadas(item):
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
-    
+
     item_id = scrapertools.find_single_match(data, 'data-json=\'\{"item_id": "([^"]+)')
     url = 'https://www.dilo.nu/api/web/seasons.php'
     post = 'item_id=%s' % item_id
     data = jsontools.load(httptools.downloadpage(url, post=post).data)
+
+    # averiguar cuantas temporadas hay
+    tot_temp = 0
+
     for tempo in data:
-        itemlist.append(item.clone( action='episodios', title='Temporada %s' % tempo['number'], item_id = item_id, 
-                                    contentType='season', contentSeason=tempo['number'] ))
+        tot_temp += 1
+        if tot_temp > 1: break
+
+    for tempo in data:
+        title = 'Temporada %s' % tempo['number']
+
+        numtempo = tempo['number']
+
+        if tot_temp == 1:
+            platformtools.dialog_notification(item.contentSerieName.replace('&#038;', '&'), 'solo [COLOR tan]' + title + '[/COLOR]')
+            item.id = item_id
+            item.page = 0
+            item.contentType = 'season'
+            item.contentSeason = numtempo
+            itemlist = episodios(item)
+            return itemlist
+
+        itemlist.append(item.clone( action = 'episodios', title = title, item_id = item_id, contentType = 'season', contentSeason = numtempo, page = 0 ))
 
     tmdb.set_infoLabels(itemlist)
 
@@ -136,7 +219,11 @@ def temporadas(item):
 def episodios(item):
     logger.info()
     itemlist = []
+
     color_lang = config.get_setting('list_languages_color', default='red')
+
+    if not item.page: item.page = 0
+    perpage = 50
 
     if not item.item_id:
         data = httptools.downloadpage(item.url).data
@@ -147,7 +234,8 @@ def episodios(item):
     post = 'item_id=%s&season_number=%s' % (item.item_id, item.contentSeason)
     data = jsontools.load(httptools.downloadpage(url, post=post).data)
     # ~ logger.debug(data)
-    for epi in data:
+
+    for epi in data[item.page * perpage:]:
         titulo = '%sx%s %s' % (epi['season_number'], epi['number'], epi['name'])
         plot = epi['description']
         langs = re.findall('languajes/([^.]+).png', epi['audio'])
@@ -157,7 +245,13 @@ def episodios(item):
         itemlist.append(item.clone( action='findvideos', url=host+epi['permalink']+'/', title=titulo, plot=plot, thumbnail=thumb,
                                     contentType='episode', contentSeason=epi['season_number'], contentEpisodeNumber=epi['number'] ))
 
+        if len(itemlist) >= perpage:
+            break
+
     tmdb.set_infoLabels(itemlist)
+
+    if len(data) > ((item.page + 1) * perpage):
+        itemlist.append(item.clone( title=">> Página siguiente", action="episodios", page=item.page + 1, text_color='coral' ))
 
     return itemlist
 
@@ -168,7 +262,7 @@ def findvideos(item):
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
-    
+
     patron = '<a href="#" class="[^"]*" data-link="([^"]+)".*?\?domain=([^."]+).*?/languajes/([^.]+).png'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for url, servidor, language in matches:
@@ -180,10 +274,8 @@ def findvideos(item):
             # ~ logger.debug('%s %s %s' % (url, language, server))
             server = servertools.corregir_servidor(server)
 
-        itemlist.append(Item( channel = item.channel, action = 'play', server = server,
-                              title = '', url = url,
-                              language = IDIOMAS.get(language, language)
-                       ))
+        itemlist.append(Item( channel = item.channel, action = 'play', server = server, title = '', url = url,
+                              language = IDIOMAS.get(language, language) ))
 
     return itemlist
 
@@ -194,7 +286,7 @@ def play(item):
 
     data = httptools.downloadpage(item.url, raise_weberror=False).data
     # ~ logger.debug(data)
-    
+
     url = scrapertools.find_single_match(data, 'iframe class="" src="([^"]+)')
     if not url: url = scrapertools.find_single_match(data, 'a href="([^"]+)" target="_blank" class="player"')
     if not url:
@@ -207,7 +299,7 @@ def play(item):
 
     if url != '': 
         itemlist.append(item.clone(url = url))
-    
+
     return itemlist
 
 

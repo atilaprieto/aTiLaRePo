@@ -1,0 +1,17 @@
+{
+  "id": "megadedela",
+  "name": "MegadedeLa",
+  "thumbnail": "megadedela.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow"],
+  "language": ["cast", "lat", "vose"],
+
+  "clusters": ["rankings", "years", "countries", "vos"],
+
+  "notes": "Películas y series, , por género, año, país .... "
+}

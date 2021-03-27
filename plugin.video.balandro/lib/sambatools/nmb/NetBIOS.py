@@ -111,7 +111,7 @@ class NetBIOS(NBNS):
 
                 if trn_id == wait_trn_id:
                     return ret
-            except select.error, ex:
+            except select.error as ex:
                 if type(ex) is types.TupleType:
                     if ex[0] != errno.EINTR and ex[0] != errno.EAGAIN:
                         raise ex
@@ -141,7 +141,7 @@ class NetBIOS(NBNS):
 
                 if trn_id == wait_trn_id:
                     return ret
-            except select.error, ex:
+            except select.error as ex:
                 if type(ex) is types.TupleType:
                     if ex[0] != errno.EINTR and ex[0] != errno.EAGAIN:
                         raise ex

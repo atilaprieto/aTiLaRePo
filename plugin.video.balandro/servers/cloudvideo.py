@@ -36,6 +36,7 @@ def get_video_url(page_url, url_referer=''):
 
     return video_urls
 
+
 def extraer_videos(data):
     video_urls = []
 

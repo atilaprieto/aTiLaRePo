@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
-# Balandro - TrackingTools (seguimiento de películas y series)
-# ------------------------------------------------------------
 
 import os, re, time, base64, sqlite3
 from datetime import datetime
 
+from core import filetools, jsontools
 from core.item import Item
 from platformcode import config, logger, platformtools
 
-from core import filetools, jsontools
-
 
 # Funciones auxiliares
-# --------------------
 
 # Devuelve el nombre de la base de datos de tracking activa (sin el sufijo .sqlite)
 def get_current_dbname():
@@ -42,9 +37,7 @@ def date_for_db(fecha, sin_fecha='0000-00-00'):
 
 
 # Clase para cargar y guardar en la bd de tracking
-# ------------------------------------------------
 class TrackingData:
-
     def __init__(self, filename = None):
 
         # Si no se especifica ningún fichero se usa la bd activa (si no existe se crea vacía)
@@ -60,7 +53,7 @@ class TrackingData:
             # PRAGMA user_version para identificar versión de las tablas y crear/alterar en consecuencia
             self.cur.execute('PRAGMA user_version')
             db_user_version = self.cur.fetchone()[0]
-            
+
             if db_user_version == 0:
                 self.create_tables()
                 self.cur.execute('PRAGMA user_version=1')
@@ -130,9 +123,7 @@ class TrackingData:
         elif rollback: self.conn.rollback()
         self.conn.close()
 
-
     # Table: movies
-    # -------------
 
     def movie_exists(self, tmdb_id=''):
         self.cur.execute('SELECT tmdb_id FROM movies WHERE tmdb_id=?', (tmdb_id,))
@@ -148,10 +139,13 @@ class TrackingData:
             return None
 
     def save_movie(self, tmdb_id='', infolabels='', commit=False):
-        title = infolabels['title'].decode('utf-8')
+        try:
+            title = infolabels['title'].decode('utf-8')
+        except:
+            title = infolabels['title']
         aired = date_for_db(infolabels['release_date'])
         self.cur.execute('INSERT OR REPLACE INTO movies (tmdb_id, infolabels, updated, title, aired) VALUES (?, ?, ?, ?, ?)',
-                                  (tmdb_id, base64.b64encode(jsontools.dump(infolabels)), datetime.now(), title, aired ))
+                                  (tmdb_id, base64.b64encode(jsontools.dump(infolabels).encode("utf-8")), datetime.now(), title, aired ))
         if commit: self.conn.commit()
 
     def delete_movie(self, tmdb_id='', commit=False):
@@ -169,7 +163,6 @@ class TrackingData:
         return self.cur.fetchone()[0]
 
     # Table: channels_movies
-    # ----------------------
 
     def movie_channel_exists(self, tmdb_id='', channel=''):
         self.cur.execute('SELECT tmdb_id FROM channels_movies WHERE channel=? AND tmdb_id=?', (channel, tmdb_id))
@@ -198,10 +191,7 @@ class TrackingData:
         self.cur.execute('DELETE FROM channels_movies WHERE channel=? AND tmdb_id=?', (channel, tmdb_id))
         if commit: self.conn.commit()
 
-
-
     # Table: shows
-    # ------------
 
     def show_exists(self, tmdb_id=''):
         self.cur.execute('SELECT tmdb_id FROM shows WHERE tmdb_id=?', (tmdb_id,))
@@ -217,10 +207,13 @@ class TrackingData:
             return None
 
     def save_show(self, tmdb_id='', infolabels='', commit=False):
-        title = infolabels['title'].decode('utf-8')
+        try:
+            title = infolabels['title'].decode('utf-8')
+        except:
+            title = infolabels['title']
         aired = date_for_db(infolabels['aired'])
         self.cur.execute('INSERT OR REPLACE INTO shows (tmdb_id, infolabels, updated, title, aired) VALUES (?, ?, ?, ?, ?)',
-                                  (tmdb_id, base64.b64encode(jsontools.dump(infolabels)), datetime.now(), title, aired ))
+                                  (tmdb_id, base64.b64encode(jsontools.dump(infolabels).encode("utf-8")), datetime.now(), title, aired ))
         if commit: self.conn.commit()
 
     def delete_show(self, tmdb_id='', commit=False):
@@ -242,9 +235,7 @@ class TrackingData:
         self.cur.execute('SELECT COUNT(*) FROM shows')
         return self.cur.fetchone()[0]
 
-
     # Table: channels_shows
-    # ---------------------
 
     def show_channel_exists(self, tmdb_id='', channel=''):
         self.cur.execute('SELECT tmdb_id FROM channels_shows WHERE channel=? AND tmdb_id=?', (channel, tmdb_id))
@@ -275,9 +266,7 @@ class TrackingData:
         self.cur.execute('DELETE FROM channels_episodes WHERE channel=? AND tmdb_id=?', (channel, tmdb_id))
         if commit: self.conn.commit()
 
-
     # Table: seasons
-    # --------------
 
     def season_exists(self, tmdb_id='', season=0):
         self.cur.execute('SELECT tmdb_id FROM seasons WHERE tmdb_id=? AND season=?', (tmdb_id, int(season)))
@@ -294,7 +283,7 @@ class TrackingData:
 
     def save_season(self, tmdb_id='', season=0, infolabels='', commit=False):
         self.cur.execute('INSERT OR REPLACE INTO seasons (tmdb_id, season, infolabels, updated) VALUES (?, ?, ?, ?)',
-                                  (tmdb_id, int(season), base64.b64encode(jsontools.dump(infolabels)), datetime.now() ))
+                                  (tmdb_id, int(season), base64.b64encode(jsontools.dump(infolabels).encode('utf-8')), datetime.now() ))
         if commit: self.conn.commit()
 
     def delete_season(self, tmdb_id='', season=0, commit=False):
@@ -309,9 +298,7 @@ class TrackingData:
         rows = self.cur.fetchall()
         return [ [row[0], jsontools.load(base64.b64decode(row[1]))] for row in rows]
 
-
     # Table: channels_seasons
-    # -----------------------
 
     def season_channel_exists(self, tmdb_id='', season=0, channel=''):
         self.cur.execute('SELECT tmdb_id FROM channels_seasons WHERE channel=? AND tmdb_id=? AND season=?', (channel, tmdb_id, int(season)))
@@ -341,9 +328,7 @@ class TrackingData:
         self.cur.execute('DELETE FROM channels_episodes WHERE channel=? AND tmdb_id=? AND season=?', (channel, tmdb_id, int(season)))
         if commit: self.conn.commit()
 
-
     # Table: episodes
-    # ---------------
 
     def episode_exists(self, tmdb_id='', season=0, episode=0):
         self.cur.execute('SELECT tmdb_id FROM episodes WHERE tmdb_id=? AND season=? AND episode=?', (tmdb_id, int(season), int(episode)))
@@ -361,7 +346,7 @@ class TrackingData:
     def save_episode(self, tmdb_id='', season=0, episode=0, infolabels='', commit=False):
         aired = date_for_db(infolabels['aired'])
         self.cur.execute('INSERT OR REPLACE INTO episodes (tmdb_id, season, episode, infolabels, updated, aired) VALUES (?, ?, ?, ?, ?, ?)',
-                                  (tmdb_id, int(season), int(episode), base64.b64encode(jsontools.dump(infolabels)), datetime.now(), aired ))
+                                  (tmdb_id, int(season), int(episode), base64.b64encode(jsontools.dump(infolabels).encode("utf-8")), datetime.now(), aired ))
         if commit: self.conn.commit()
 
     def delete_episode(self, tmdb_id='', season=0, episode=0, commit=False):
@@ -387,9 +372,7 @@ class TrackingData:
         rows = self.cur.fetchall()
         return [ [row[0], row[1], row[2], jsontools.load(base64.b64decode(row[3]))] for row in rows]
 
-
     # Table: channels_episodes
-    # ------------------------
 
     def episode_channel_exists(self, tmdb_id='', season=0, episode=0, channel=''):
         self.cur.execute('SELECT tmdb_id FROM channels_episodes WHERE channel=? AND tmdb_id=? AND season=? AND episode=?', (channel, tmdb_id, int(season), int(episode)))
@@ -418,9 +401,7 @@ class TrackingData:
         self.cur.execute('DELETE FROM channels_episodes WHERE channel=? AND tmdb_id=? AND season=? AND episode=?', (channel, tmdb_id, int(season), int(episode)))
         if commit: self.conn.commit()
 
-
     # Table: tracking_shows
-    # ---------------------
 
     def tracking_show_exists(self, tmdb_id=''):
         self.cur.execute('SELECT tmdb_id FROM tracking_shows WHERE tmdb_id=?', (tmdb_id,))
@@ -432,10 +413,7 @@ class TrackingData:
         row = self.cur.fetchone()
         return row
 
-
-
 # Funciones scrap para películas y series
-# ---------------------------------------
     # Los infoLabels se guardan en las tablas de movies, shows, seasons, episodes.
     # Las urls (el item con el que se llamará al canal) se guardan en las tablas channels_*.
     # Las urls se guardan sin infoLabels para aligerar y pq ya se almacenan en las tablas de movies, shows, seasons, episodes.
@@ -445,11 +423,11 @@ class TrackingData:
 
     # Cuando se guarda una peli/serie/temporada/episodio desde un canal, se hace scrap con update_infolabels=False, update_urls=True
     # Sólo se actualizan los infolabels si no existen, y siempre se actualizan las urls del canal.
-    
+
     # Cuando desde una serie se buscan nuevos episodios, se hace scrap con update_infolabels=False, update_urls=False
     # Sólo se actualizan los infolabels si no existen, y sólo se actualizan las urls del canal si no existen.
     # Además en este caso la rutina devolverá un msg con las novedades.
-    
+
     # Lo de no actualizar infolabels si ya existen es para conservar los existentes por si el usuario los ha cambiado.
 
 
@@ -460,6 +438,7 @@ def scrap_and_save_movie(item, op='add'):
     #
     # Devuelve True si se completa ok y False en caso contrario, más un texto con la información del error o proceso ok
     #
+
     logger.info()
     tmdb_id = item.infoLabels['tmdb_id']
 
@@ -467,7 +446,7 @@ def scrap_and_save_movie(item, op='add'):
     if item.contentType != 'movie': return False, 'contentType no contemplado!'
 
     # Tipo de scrap a realizar
-    # ------------------------
+
     if op == 'add':
         # Al añadir una película desde el menú contextual, actualizar siempre urls, infolabels solamente si no existen.
         update_infolabels = False
@@ -476,21 +455,17 @@ def scrap_and_save_movie(item, op='add'):
         return False, 'Invalid op!'
 
     # Conexión bd
-    # -----------
     db = TrackingData()
 
     # Datos a nivel de la película
-    # ----------------------------
     if update_infolabels or not db.movie_exists(tmdb_id):
         db.save_movie(tmdb_id, item.infoLabels)
-    
+
     # Datos a nivel de película+canal
-    # -------------------------------
     if update_urls or not db.movie_channel_exists(tmdb_id, item.channel):
         db.save_movie_channel(tmdb_id, item.channel, item.clone(infoLabels={}).tourl())
 
     # Cerrar conexión bd
-    # ------------------
     db.close(commit=True)
 
     return True, 'Seguimiento película con tmdb_id: %s' % tmdb_id
@@ -515,6 +490,7 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
     #
     # Devuelve True si se completa ok y False en caso contrario, más un texto con la información del error o proceso ok
     #
+
     logger.info()
     tmdb_id = item.infoLabels['tmdb_id']
 
@@ -522,7 +498,6 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
     if item.contentType not in ['tvshow', 'season', 'episode']: return False, 'contentType no contemplado!'
 
     # Tipo de scrap a realizar
-    # ------------------------
     if op == 'add':
         # Al añadir una serie/temp/epi desde el menú contextual, actualizar siempre urls, infolabels solamente si no existen.
         update_infolabels = False
@@ -531,16 +506,14 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
         # Al buscar nuevos episodios, actualizar urls e infolabels solamente si no existen (episodios nuevos).
         update_infolabels = False
         update_urls = False
-    else: 
+    else:
         return False, 'Invalid op!'
 
     # Conexión bd
-    # -----------
     db = TrackingData()
     cambios = [] # Para apuntar los cambios hechos en caso de refresco para buscar nuevos episodios
 
     # Datos a nivel de la serie
-    # -------------------------
     if not db.show_exists(tmdb_id):  # Si no existe dar de alta
         if item.contentType == 'tvshow': # Si proviene de una serie ya se tienen los infolabels
             db.save_show(tmdb_id, item.infoLabels)
@@ -549,15 +522,13 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
             from core import tmdb
             tmdb.set_infoLabels_item(it)
             db.save_show(tmdb_id, it.infoLabels)
-    
+
     # Datos a nivel de serie+canal
-    # ----------------------------
     if item.contentType == 'tvshow': # Si proviene de serie, guardar su url
         if update_urls or not db.show_channel_exists(tmdb_id, item.channel):
             db.save_show_channel(tmdb_id, item.channel, item.clone(infoLabels={}).tourl())
 
     # Cargar itemlist a tratar
-    # ------------------------
     if item.contentType in ['season', 'episode']:
         itemlist = [item]
 
@@ -571,7 +542,7 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
         # Excepción con newpct1, usar sólo tracking_all al añadir para que recorra todos los episodios, pero para actualizar mirar solamente en la primera página de episodios.
         if item.channel == 'newpct1' and op == 'new_episodes': buscar_tracking_all = False
         else: buscar_tracking_all = True
-        
+
         if buscar_tracking_all and hasattr(canal, 'tracking_all_episodes'):
             itemlist = getattr(canal, 'tracking_all_episodes')(item)
         else:
@@ -587,9 +558,8 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
     # Si es una actualización y el canal devuelve temporadas en lugar de episodios, solamente buscar episodios nuevos en la última temporada
     if op == 'new_episodes' and itemlist[0].contentType == 'season' and len(itemlist) > 1:
         itemlist = itemlist[-1:]
-    
+
     # Datos a nivel de temporadas/episodios
-    # -------------------------------------
 
     # Si el canal devuelve una lista de temporadas
     if itemlist[0].contentType == 'season':
@@ -602,7 +572,7 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
             # ~ logger.debug(it)
             if it.contentType != 'season': continue
             if it.infoLabels['tmdb_id'] != tmdb_id: continue
-
+            
             # Guardar datos de la temporada
             if update_infolabels or not db.season_exists(tmdb_id, it.contentSeason):
                 db.save_season(tmdb_id, it.contentSeason, it.infoLabels)
@@ -610,7 +580,7 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
             # Guardar url para temporada+canal
             if update_urls or not db.season_channel_exists(tmdb_id, it.contentSeason, it.channel):
                 db.save_season_channel(tmdb_id, it.contentSeason, it.channel, it.clone(infoLabels={}).tourl())
-                cambios.append('T%d' % it.contentSeason)
+                cambios.append('T%d' % int(it.contentSeason))
 
             # Llamar al canal para obtener episodios de la temporada
             if hasattr(canal, it.action):
@@ -633,7 +603,7 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
                 # Guardar url para episodio+canal
                 if update_urls or not db.episode_channel_exists(tmdb_id, it_epi.contentSeason, it_epi.contentEpisodeNumber, it_epi.channel):
                     db.save_episode_channel(tmdb_id, it_epi.contentSeason, it_epi.contentEpisodeNumber, it_epi.channel, it_epi.clone(infoLabels={}).tourl())
-                    cambios.append('%dx%d' % (it_epi.contentSeason, it_epi.contentEpisodeNumber))
+                    cambios.append('%dx%d' % (int(it_epi.contentSeason), int(it_epi.contentEpisodeNumber)))
 
     # Si el canal devuelve una lista de episodios
     elif itemlist[0].contentType == 'episode':
@@ -651,9 +621,9 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
                     from core import tmdb
                     tmdb.set_infoLabels_item(it)
                     db.save_season(tmdb_id, it.contentSeason, it.infoLabels)
-                    cambios.append('T%d' % it_epi.contentSeason)
+                    cambios.append('T%d' % int(it_epi.contentSeason))
                 ant_season = it_epi.contentSeason
-            
+
             # Guardar datos del episodio
             if update_infolabels or not db.episode_exists(tmdb_id, it_epi.contentSeason, it_epi.contentEpisodeNumber):
                 if tvdbinfo and it_epi.infoLabels['tvdb_id']:
@@ -664,7 +634,7 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
             # Guardar url para episodio+canal
             if update_urls or not db.episode_channel_exists(tmdb_id, it_epi.contentSeason, it_epi.contentEpisodeNumber, it_epi.channel):
                 db.save_episode_channel(tmdb_id, it_epi.contentSeason, it_epi.contentEpisodeNumber, it_epi.channel, it_epi.clone(infoLabels={}).tourl())
-                cambios.append('%dx%d' % (it_epi.contentSeason, it_epi.contentEpisodeNumber))
+                cambios.append('%dx%d' % (int(it_epi.contentSeason), int(it_epi.contentEpisodeNumber)))
 
     else:
         db.close()
@@ -677,7 +647,6 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
 
 
     # Cerrar conexión bd
-    # ------------------
     db.close(commit=True)
 
     # Si es una actualización informar de los cambios
@@ -691,9 +660,7 @@ def scrap_and_save_tvshow(item, op='add', tvdbinfo=False):
     return True, 'Seguimiento serie con tmdb_id: %s' % tmdb_id
 
 
-
 # Funciones para buscar nuevos episodios de una serie
-# ---------------------------------------------------
 
 # Si se llama desde el menú contextual de una serie, se muestra el progreso y el resultado.
 # Si se llama desde un servicio, no se muestra progreso. Notification final configurable?
@@ -708,7 +675,7 @@ def search_new_episodes(tmdb_id, show_progress=False, tvdbinfo=False):
 
     itemlist = [] # lista de items para actualizar cada canal
     tot_cambios = {} # cambios hechos en cada canal
-    
+
     db = TrackingData()
 
     # Enlaces a nivel de la serie
@@ -775,16 +742,16 @@ def search_new_episodes(tmdb_id, show_progress=False, tvdbinfo=False):
 
     # devolver si ha habido cambios
     n_cambios = 0
-    for ch, cambios in tot_cambios.iteritems():
+    for ch, cambios in tot_cambios.items():
         if cambios is not None and cambios != 'Error' and len(cambios) > 0:
             n_cambios += 1
-        
+
     return True, n_cambios #'Actualización completada.'
 
 
 def muestra_cambios_canales(tot_cambios):
     itemlist = []
-    for ch, cambios in tot_cambios.iteritems():
+    for ch, cambios in tot_cambios.items():
         if cambios is None:
             itemlist.append('[COLOR gray]%s: pendiente[/COLOR]' % ch)
         elif cambios == 'Error':
@@ -818,24 +785,22 @@ def check_and_scrap_new_episodes(notification=True):
             dt_diff = dt_hoy - dt_scrap
             horas_dif = (dt_diff.days * 24) + (dt_diff.seconds / 3600)
             tratar = int(horas_dif) >= int(periodicity)
-            logger.info('tmdb_id: %s se actualizó hace %d horas. Tratar ahora: %s. Periodicidad serie: %d' % (tmdb_id.encode('utf-8'), horas_dif, tratar, int(periodicity)))
+            logger.info('tmdb_id: %s se actualizó hace %d horas. Tratar ahora: %s. Periodicidad serie: %d' % (tmdb_id.encode('utf-8'), int(horas_dif), tratar, int(periodicity)))
 
         if tratar:
             n_series += 1
             done, msg = search_new_episodes(tmdb_id, show_progress=False, tvdbinfo=tvdbinfo)
             if isinstance(msg, int) and msg > 0: n_cambios += 1
 
-    tit = 'Búsqueda efectuada en %d series.' % n_series
+    tit = 'Búsqueda efectuada en %d series.' % int(n_series)
     if n_cambios == 0: tit += ' Sin novedades.'
-    else: tit += ' Novedades en %d de ellas.' % n_cambios
+    else: tit += ' Novedades en %d de ellas.' % int(n_cambios)
     logger.info(tit)
     if notification:
         platformtools.dialog_notification('Nuevos episodios', tit)
 
 
- 
 # Funciones para actualizar solamente infoLabels
-# ----------------------------------------------
 
 def update_infolabels_movie(tmdb_id):
     logger.info()
@@ -872,7 +837,6 @@ def update_infolabels_show(tmdb_id, with_tvdb=False):
     cambios = []
 
     # Serie
-    # -----
     infolabels = db.get_show(tmdb_id)
     it = Item(infoLabels = infolabels)
     # ~ logger.debug(it)
@@ -883,7 +847,6 @@ def update_infolabels_show(tmdb_id, with_tvdb=False):
         cambios.append('Serie')
 
     # Temporadas
-    # ----------
     rows = db.get_seasons(tmdb_id)
     num_rows = len(rows)
     n = 0
@@ -894,11 +857,11 @@ def update_infolabels_show(tmdb_id, with_tvdb=False):
         # ~ logger.debug(it)
         if base64.b64encode(jsontools.dump(infolabels)) != base64.b64encode(jsontools.dump(it.infoLabels)):
             db.save_season(tmdb_id, season, it.infoLabels)
-            cambios.append('T%d' % season)
+            cambios.append('T%d' % int(season))
 
         n += 1
         perc = int(n / num_rows * 100)
-        progreso.update(perc, tit, 'Procesada temporada %d' % season)
+        progreso.update(perc, tit, 'Procesada temporada %d' % int(season))
         if progreso.iscanceled(): break
 
     # Para episodios podrían ser demasiadas llamadas a tmdb, mejor hacerlo por una temporada concreta
@@ -925,8 +888,8 @@ def update_infolabels_episodes(tmdb_id, season=-1, episode=-1, with_tvdb=False):
 
     tit = 'Actualizando episodios desde ' + ('TVDB' if with_tvdb else 'TMDB')
     if season == -1: subtit = 'Todas las temporadas ...'
-    elif episode == -1: subtit = 'Temporada %d ...' % season
-    else: subtit = 'Temporada %d Episodio %d ...' % (season, episode)
+    elif episode == -1: subtit = 'Temporada %d ...' % int(season)
+    else: subtit = 'Temporada %d Episodio %d ...' % (int(season), int(episode))
     progreso = platformtools.dialog_progress(tit, subtit)
 
     db = TrackingData()
@@ -943,11 +906,11 @@ def update_infolabels_episodes(tmdb_id, season=-1, episode=-1, with_tvdb=False):
         scrapper.set_infoLabels_item(it)
         if base64.b64encode(jsontools.dump(infolabels)) != base64.b64encode(jsontools.dump(it.infoLabels)):
             db.save_episode(tmdb_id, season, episode, it.infoLabels)
-            cambios.append('%dx%d' % (season, episode))
+            cambios.append('%dx%d' % (int(season), int(episode)))
 
         n += 1
         perc = int(n / num_rows * 100)
-        progreso.update(perc, tit, 'Procesado episodio %dx%d' % (season, episode))
+        progreso.update(perc, tit, 'Procesado episodio %dx%d' % (int(season), int(episode)))
         if progreso.iscanceled(): break
 
     progreso.close()
@@ -960,9 +923,7 @@ def update_infolabels_episodes(tmdb_id, season=-1, episode=-1, with_tvdb=False):
     return commit, msg
 
 
-
 # Funciones para actualizar marcas de visto/no visto en la bd de Kodi
-# -------------------------------------------------------------------
 
 # season = -1 para todos los episodios de una serie. != -1 para todos los episodios de una temporada concreta
 def update_season_watched(tmdb_id, season=-1, watched=False):
@@ -989,22 +950,21 @@ def update_season_watched(tmdb_id, season=-1, watched=False):
         if n == 0:
             if watched:
                 platformtools.execute_sql_kodi('INSERT INTO files (idPath, strFilename, playCount) VALUES (?, ?, ?)', (idPath, item_url, 1))
-                logger.info('Marcado como visto %dx%d' % (season, episode))
+                logger.info('Marcado como visto %dx%d' % (int(season), int(episode)))
         else:
             idFile = results[0][0]
             if results[0][1] is None and watched:
                 platformtools.execute_sql_kodi('UPDATE files SET playCount=? WHERE idFile=?', (1, idFile))
-                logger.info('Marcado como visto %dx%d idFile: %s' % (season, episode, idFile))
+                logger.info('Marcado como visto %dx%d idFile: %s' % (int(season), int(episode), idFile))
 
             elif results[0][1] is not None and not watched:
                 platformtools.execute_sql_kodi('UPDATE files SET playCount=? WHERE idFile=?', (None, idFile))
-                logger.info('Marcado como NO visto %dx%d idFile: %s' % (season, episode, idFile))
-        
+                logger.info('Marcado como NO visto %dx%d idFile: %s' % (int(season), int(episode), idFile))
+
     return True
 
 
 # Funciones para recuperar datos de una peli / episodio
-# -----------------------------------------------------
 
 # A un item mínimo (contentType,tmdb_id,season,episode) asignarle los infoLabels guardados
 def set_infolabels_from_min(item):
@@ -1018,6 +978,10 @@ def set_infolabels_from_min(item):
     db.close()
 
     item.infoLabels = infolabels
-    if item.infoLabels['thumbnail']: item.thumbnail = item.infoLabels['thumbnail']
-    if item.infoLabels['fanart']: item.fanart = item.infoLabels['fanart']
+    try:
+        if item.infoLabels['thumbnail']: item.thumbnail = item.infoLabels['thumbnail']
+    except: pass
+    try:
+        if item.infoLabels['fanart']: item.fanart = item.infoLabels['fanart']
+    except: pass
 

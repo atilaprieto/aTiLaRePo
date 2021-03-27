@@ -1,0 +1,17 @@
+{
+  "id": "playdede",
+  "name": "PlayDede",
+  "thumbnail": "playdede.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow"],
+  "language": ["cast", "lat", "vose"],
+
+  "clusters": ["news", "rankings", "years", "lasts", "vos", "anime"],
+
+  "notes": "Películas y Series, por género, por año, ..."
+}

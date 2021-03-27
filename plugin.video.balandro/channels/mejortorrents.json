@@ -1,0 +1,17 @@
+{
+  "id": "mejortorrents",
+  "name": "MejorTorrents",
+  "thumbnail": "mejortorrents.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow", "torrent"],
+  "language": ["cast"],
+
+  "clusters": ["torrents", "classic", "news", "rankings", "years", "lasts"],
+
+  "notes": "Películas y series con enlaces torrent exclusivamente. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
+}

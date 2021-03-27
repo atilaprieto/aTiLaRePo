@@ -1,0 +1,17 @@
+{
+  "id": "seriesmanta",
+  "name": "SeriesManta",
+  "thumbnail": "Seriesmanta.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow"],
+  "language": ["cast", "lat", "vose"],
+
+  "clusters": ["rankings", "years", "stars", "vos"],
+
+  "notes": "Películas: novedades, por género. Series: últimos episodios, por género."
+}

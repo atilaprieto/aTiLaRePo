@@ -1,0 +1,17 @@
+{
+  "id": "seriesretro",
+  "name": "SeriesRetro",
+  "thumbnail": "seriesretro.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["tvshow"],
+
+  "categories": ["tvshow"],
+  "language": ["lat"],
+
+  "clusters": ["classic", "lasts"],
+
+  "notes": "Series retro, por género en idioma orignal de emisión."
+}

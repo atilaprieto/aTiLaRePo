@@ -5,12 +5,22 @@
 
 import base64
 import copy
-import os
-import urllib
-from HTMLParser import HTMLParser
+import os, sys
 
 from core import jsontools as json
 
+PY3 = False
+PY2 = False
+
+if sys.version_info[0] >= 3:
+    PY3 = True
+    unicode = str
+    from urllib.parse import quote, unquote_plus, unquote
+    from html.parser import HTMLParser
+else:
+    PY2 = True
+    from urllib import quote, unquote_plus, unquote
+    from HTMLParser import HTMLParser
 
 class InfoLabels(dict):
     def __str__(self):
@@ -31,7 +41,7 @@ class InfoLabels(dict):
             super(InfoLabels, self).__setitem__('imdb_id', str(value))
 
         elif name == "mediatype" and value not in ["video", "movie", "tvshow", "season", "episode", "musicvideo"]:
-            super(InfoLabels, self).__setitem__('mediatype', '')
+            super(InfoLabels, self).__setitem__('mediatype', 'list')
 
         elif name in ['tmdb_id', 'tvdb_id', 'noscrap_id']:
             super(InfoLabels, self).__setitem__(name, str(value))
@@ -57,12 +67,12 @@ class InfoLabels(dict):
         elif key == 'code':
             code = []
             # Añadir imdb_id al listado de codigos
-            if 'imdb_id' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('imdb_id'):
+            if 'imdb_id' in list(super(InfoLabels, self).keys()) and super(InfoLabels, self).__getitem__('imdb_id'):
                 code.append(super(InfoLabels, self).__getitem__('imdb_id'))
 
             # Completar con el resto de codigos
             for scr in ['tmdb_id', 'tvdb_id', 'noscrap_id']:
-                if scr in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__(scr):
+                if scr in list(super(InfoLabels, self).keys()) and super(InfoLabels, self).__getitem__(scr):
                     value = "%s%s" % (scr[:-2], super(InfoLabels, self).__getitem__(scr))
                     code.append(value)
 
@@ -76,7 +86,7 @@ class InfoLabels(dict):
             return code
 
         elif key == 'mediatype': # "video", "movie", "tvshow", "season", "episode", "musicvideo"
-            if 'tvshowtitle' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('tvshowtitle') != "":
+            if 'tvshowtitle' in list(super(InfoLabels, self).keys()) and super(InfoLabels, self).__getitem__('tvshowtitle') != "":              
 
                 if 'episode' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('episode') != "":
                     return 'episode'
@@ -155,6 +165,8 @@ class Item(object):
         Función llamada al modificar cualquier atributo del item, modifica algunos atributos en función de los datos
         modificados.
         """
+        if PY3:
+            name = self.toutf8(name)
         value = self.toutf8(value)
         if name == "__dict__":
             for key in value:
@@ -200,7 +212,7 @@ class Item(object):
             if isinstance(value, dict):
                 value_defaultdict = InfoLabels(value)
                 self.__dict__["infoLabels"] = value_defaultdict
-
+        if not isinstance(name, str): name = name.decode("utf-8", "strict")
         else:
             super(Item, self).__setattr__(name, value)
 
@@ -310,9 +322,13 @@ class Item(object):
                     valor = dic[var].tostring(',\r\t\t')
                 else:
                     valor = dic[var].tostring()
+            elif PY3 and isinstance(dic[var], bytes):
+                    valor = "'%s'" % dic[var].decode('utf-8')
+                                
             else:
                 valor = str(dic[var])
-
+            if PY3 and isinstance(var, bytes):
+                var = var.decode('utf-8')     
             ls.append(var + "= " + valor)
 
         return separator.join(ls)
@@ -324,13 +340,16 @@ class Item(object):
 
         Uso: url = item.tourl()
         """
-        dump = json.dump(self.__dict__)
+        try:
+            dump = json.dump(self.__dict__).encode("utf8")
+        except:
+            dump = json.dump(self.__dict__)
         # if empty dict
         if not dump:
             # set a str to avoid b64encode fails
-            dump = ""
-        return urllib.quote(base64.b64encode(dump))
-
+            dump = "".encode("utf8")
+        #return quote(base64.b64encode(dump))
+        return str(quote(base64.b64encode(dump)))
     def fromurl(self, url):
         """
         Genera un item a partir de una cadena de texto. La cadena puede ser creada por la funcion tourl() o tener
@@ -345,7 +364,7 @@ class Item(object):
         decoded = False
         try:
             if 'action=' not in url: # Si tiene action= es que no está b64encodeado
-                str_item = base64.b64decode(urllib.unquote(url))
+                str_item = base64.b64decode(unquote(url))
                 json_item = json.load(str_item, object_hook=self.toutf8)
                 if json_item is not None and len(json_item) > 0:
                     self.__dict__.update(json_item)
@@ -354,7 +373,7 @@ class Item(object):
             pass
 
         if not decoded:
-            url = urllib.unquote_plus(url)
+            url = unquote_plus(url)
             dct = dict([[param.split("=")[0], param.split("=")[1]] for param in url.split("&") if "=" in param])
             self.__dict__.update(dct)
             self.__dict__ = self.toutf8(self.__dict__)
@@ -434,6 +453,8 @@ class Item(object):
             unicode_title = unicode(value, "utf8", "ignore")
             return HTMLParser().unescape(unicode_title).encode("utf8")
         except:
+            if PY3 and isinstance(value, bytes):
+                value = value.decode("utf8")
             return value
 
     def toutf8(self, *args):
@@ -445,13 +466,18 @@ class Item(object):
         else:
             value = self.__dict__
 
-        if type(value) == unicode:
-            return value.encode("utf8")
+        if isinstance(value, unicode):
+            value = value.encode("utf8")
+            if PY3: value = value.decode("utf8")
+            return value
 
-        elif type(value) == str:
+        elif not PY3 and isinstance(value, str):
             return unicode(value, "utf8", "ignore").encode("utf8")
+            
+        elif PY3 and isinstance(value, bytes):
+            return value.decode("utf8")
 
-        elif type(value) == list:
+        elif isinstance(value, list):
             for x, key in enumerate(value):
                 value[x] = self.toutf8(value[x])
             return value
@@ -459,11 +485,12 @@ class Item(object):
         elif isinstance(value, dict):
             newdct = {}
             for key in value:
-                v = self.toutf8(value[key])
-                if type(key) == unicode:
-                    key = key.encode("utf8")
+                value_unc = self.toutf8(value[key])
+                key_unc = self.toutf8(key)
+                #if isinstance(key, unicode):
+                #    key = key.encode("utf8")
 
-                newdct[key] = v
+                newdct[key_unc] = value_unc
 
             if len(args) > 0:
                 if isinstance(value, InfoLabels):

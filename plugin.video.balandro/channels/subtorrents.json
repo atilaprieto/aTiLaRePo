@@ -1,0 +1,17 @@
+{
+  "id": "subtorrents",
+  "name": "SubTorrents",
+  "thumbnail": "subtorrents.jpg",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["all", "movie", "tvshow"],
+
+  "categories": ["movie", "tvshow", "torrent"],
+  "language": ["vo", "vose", "lat", "cast"],
+
+  "clusters": ["torrents", "news", "qualityes", "vos", "3d"],
+
+  "notes": "Películas y series con enlaces torrent exclusivamente."
+}

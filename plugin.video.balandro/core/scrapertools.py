@@ -1,7 +1,25 @@
 # -*- coding: utf-8 -*-
-# --------------------------------------------------------------------------------
-# Scraper tools for reading and processing web elements
-# --------------------------------------------------------------------------------
+
+import sys
+
+if sys.version_info[0] < 3:
+    PY3 = False
+
+    import htmlentitydefs
+    from htmlentitydefs import name2codepoint as n2cp
+
+    import urllib
+    import urlparse
+else:
+    PY3 = True
+
+    unicode = str
+    unichr = chr
+
+    import html.entities as htmlentitydefs
+    from html.entities import name2codepoint as n2cp
+
+    import urllib.parse as urlparse
 
 import re, time
 
@@ -72,9 +90,12 @@ def unescape(text):
             # character reference
             try:
                 if text[:3] == "&#x":
-                    return unichr(int(text[3:-1], 16)).encode("utf-8")
+                    text = unichr(int(text[3:-1], 16)).encode("utf-8")
                 else:
-                    return unichr(int(text[2:-1])).encode("utf-8")
+                    text = unichr(int(text[2:-1])).encode("utf-8")
+                if PY3 and isinstance(text, bytes):
+                    text = text.decode("utf-8")
+                return text
 
             except ValueError:
                 logger.error("error de valor")
@@ -82,8 +103,13 @@ def unescape(text):
         else:
             # named entity
             try:
-                import htmlentitydefs
+                if PY3:
+                    import html.entities as htmlentitydefs
+                else:
+                    import htmlentitydefs
                 text = unichr(htmlentitydefs.name2codepoint[text[1:-1]]).encode("utf-8")
+                if PY3 and isinstance(text, bytes):
+                    text = text.decode("utf-8")
             except KeyError:
                 logger.error("keyerror")
                 pass
@@ -101,15 +127,20 @@ def decodeHtmlentities(string):
     entity_re = re.compile("&(#?)(\d{1,5}|\w{1,8});")
 
     def substitute_entity(match):
-        from htmlentitydefs import name2codepoint as n2cp
         ent = match.group(2)
         if match.group(1) == "#":
-            return unichr(int(ent)).encode('utf-8')
+            ent = unichr(int(ent)).encode('utf-8')
+            if PY3 and isinstance(ent, bytes):
+                ent = ent.decode("utf-8")
+            return ent
         else:
             cp = n2cp.get(ent)
 
             if cp:
-                return unichr(cp).encode('utf-8')
+                cp = unichr(cp).encode('utf-8')
+                if PY3 and isinstance(cp, bytes):
+                    cp = cp.decode("utf-8")
+                return cp
             else:
                 return match.group()
 
@@ -306,11 +337,11 @@ def remove_htmltags(string):
 def remove_show_from_title(title, show):
     # print slugify(title)+" == "+slugify(show)
     # Quita el nombre del programa del título
-    if slugify(title).startswith(slugify(show)):
 
+    if slugify(title).startswith(slugify(show)):
         # Convierte a unicode primero, o el encoding se pierde
-        title = unicode(title, "utf-8", "replace")
-        show = unicode(show, "utf-8", "replace")
+        if not PY3: title = unicode(title, "utf-8", "replace")
+        if not PY3: show = unicode(show, "utf-8", "replace")
         title = title[len(show):].strip()
 
         if title.startswith("-"):
@@ -321,13 +352,16 @@ def remove_show_from_title(title, show):
 
         # Vuelve a utf-8
         title = title.encode("utf-8", "ignore")
+        if PY3 and isinstance(title, bytes):
+            title = title.decode("utf-8")
         show = show.encode("utf-8", "ignore")
+        if PY3 and isinstance(show, bytes):
+            show = show.decode("utf-8")
 
     return title
 
 
 def get_filename_from_url(url):
-    import urlparse
     parsed_url = urlparse.urlparse(url)
     try:
         filename = parsed_url.path
@@ -345,7 +379,6 @@ def get_filename_from_url(url):
 
 
 # def get_domain_from_url(url):
-#     import urlparse
 #     parsed_url = urlparse.urlparse(url)
 #     try:
 #         filename = parsed_url.netloc
@@ -401,7 +434,7 @@ def get_season_and_episode(title):
 # DECRYPTERS:
 
 def decode_adfly(url, unquoted=True):
-    import base64, urllib
+    import base64
 
     def resolve(code):
         zeros = ''

@@ -11,6 +11,7 @@
 #
 #   Original concept and code by Mike C. Fletcher.
 #
+
 import sys
 
 from pyasn1.type import error

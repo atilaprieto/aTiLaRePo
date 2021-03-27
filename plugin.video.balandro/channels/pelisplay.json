@@ -3,13 +3,15 @@
   "name": "PelisPlay",
   "thumbnail": "pelisplay.png",
 
-  "active": false,
+  "active": true,
 
   "searchable": true,
   "search_types": ["all", "movie", "tvshow"],
 
   "categories": ["movie", "tvshow"],
   "language": ["cast", "lat", "vose"],
+
+  "clusters": ["adults", "news", "rankings", "producers", "vos"],
 
   "notes": "Películas y Series, Estrenos, Netflix, por Géneros. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

@@ -11,5 +11,7 @@
   "categories": ["movie", "tvshow"],
   "language": ["lat", "cast", "vose"],
 
+  "clusters": ["news", "years", "lists", "vos", "anime"],
+
   "notes": "Películas por género, Series, principalmente en latino. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

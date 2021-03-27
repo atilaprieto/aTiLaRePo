@@ -1,20 +1,32 @@
+# -*- coding: utf-8 -*-
+
+import sys
+
+if sys.version_info[0] < 3:
+    import urllib
+    import urllib2
+
+    from urllib import (splitport, splitattr, splituser, splitpasswd)
+else:
+    import urllib as urllib2
+    import urllib.error as urllib2
+
+    import urllib.parse as urllib
+    import urllib.request as urllib2
+
+    import urllib.parse.urlsplit as (splitport, splitattr, splituser, splitpasswd)
+
 import mimetools
 import mimetypes
 import os
 import socket
-import sys
 import tempfile
-import urllib2
-from urllib import (unquote, addinfourl, splitport, splitattr, splituser, splitpasswd)
 
 from nmb.NetBIOS import NetBIOS
 
 from smb.SMBConnection import SMBConnection
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from io import BytesIO
 
 USE_NTLM = True
 MACHINE_NAME = None
@@ -39,7 +51,7 @@ class SMBHandler(urllib2.BaseHandler):
             user, passwd = splitpasswd(user)
         else:
             passwd = None
-        host = unquote(host)
+        host = urllib.unquote(host)
         user = user or ''
 
         domain = ''
@@ -60,7 +72,7 @@ class SMBHandler(urllib2.BaseHandler):
         if path.startswith('/'):
             path = path[1:]
         dirs = path.split('/')
-        dirs = map(unquote, dirs)
+        dirs = map(urllib.unquote, dirs)
         service, path = dirs[0], '/'.join(dirs[1:])
 
         try:
@@ -72,7 +84,7 @@ class SMBHandler(urllib2.BaseHandler):
                 filelen = conn.storeFile(service, path, data_fp)
 
                 headers = "Content-length: 0\n"
-                fp = StringIO("")
+                fp = BytesIO("")
             else:
                 fp = self.createTempFile()
                 file_attrs, retrlen = conn.retrieveFile(service, path, fp)
@@ -85,11 +97,11 @@ class SMBHandler(urllib2.BaseHandler):
                 if retrlen is not None and retrlen >= 0:
                     headers += "Content-length: %d\n" % retrlen
 
-            sf = StringIO(headers)
+            sf = BytesIO(headers)
             headers = mimetools.Message(sf)
 
-            return addinfourl(fp, headers, req.get_full_url())
-        except Exception, ex:
+            return urllib.addinfourl(fp, headers, req.get_full_url())
+        except Exception as ex:
             raise urllib2.URLError, ('smb error: %s' % ex), sys.exc_info()[2]
 
     def createTempFile(self):

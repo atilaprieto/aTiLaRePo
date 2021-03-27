@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
-# tvdb
-# ------------------------------------------------------------
-# Scraper para el site thetvdb.com usando API v2.1
-# Utilizado para obtener datos de series para la videoteca
-# del addon y también Kodi.
-# ------------------------------------------------------------
+
+import sys
+
+if sys.version_info[0] < 3:
+    import urllib
+    import urllib2
+else:
+    import urllib as urllib2
+    import urllib.error as urllib2
+    import urllib.parse as urllib
+    import urllib.request as urllib2
 
 import re
-import urllib2
 
-from core import jsontools
-from core import scrapertools
+
+from core import jsontools, scrapertools
 from core.item import InfoLabels
-from platformcode import config, logger
-from platformcode import platformtools
+from platformcode import config, logger, platformtools
 
 HOST = "https://api.thetvdb.com"
 HOST_IMAGE = "https://thetvdb.com/banners/"
@@ -59,6 +61,7 @@ DICT_GENRE = {
     'Travel': 'Viaje',
     # 'Western': 'Western'
 }
+
 DICT_MPAA = {'TV-Y': 'Público pre-infantil: niños menores de 6 años', 'TV-Y7': 'Público infantil: desde 7 años',
              'TV-G': 'Público general: sin supervisión familiar', 'TV-PG': 'Guía paterna: Supervisión paternal',
              'TV-14': 'Mayores de 14 años', 'TV-MA': 'Mayores de 17 años'}
@@ -147,6 +150,7 @@ def set_infoLabels_item(item):
 
 
     """
+
     global otvdb_global
 
     def __leer_datos(otvdb_aux):
@@ -215,7 +219,7 @@ def set_infoLabels_item(item):
                         break
 
                 _next = list_episodes['links']['next']
-                if type(_next) == int:
+                if isinstance(_next, int):
                     page = _next
                 else:
                     break
@@ -287,7 +291,6 @@ def set_infoLabels_item(item):
             __leer_datos(otvdb_global)
             # La busqueda ha encontrado un resultado valido
             return len(item.infoLabels)
-
 
 
 class Tvdb:
@@ -363,7 +366,7 @@ class Tvdb:
             html = response.read()
             response.close()
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -391,7 +394,7 @@ class Tvdb:
             html = response.read()
             response.close()
 
-        except urllib2.HTTPError, err:
+        except urllib2.HTTPError as err:
             logger.error("err.code es %s" % err.code)
             # si hay error 401 es que el token se ha pasado de tiempo y tenemos que volver a llamar a login
             if err.code == 401:
@@ -399,7 +402,7 @@ class Tvdb:
             else:
                 raise
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -478,6 +481,7 @@ class Tvdb:
             ]
         }
         """
+
         logger.info()
         if id_episode and self.episodes.get(id_episode):
             return self.episodes.get(id_episode)
@@ -485,7 +489,6 @@ class Tvdb:
         params = {"airedSeason": "%s" % season, "airedEpisode": "%s" % episode}
 
         try:
-            import urllib
             params = urllib.urlencode(params)
 
             url = HOST + "/series/%s/episodes/query?%s" % (_id, params)
@@ -497,7 +500,7 @@ class Tvdb:
             html = response.read()
             response.close()
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -549,6 +552,7 @@ class Tvdb:
             }
         }
         """
+
         logger.info()
 
         try:
@@ -560,7 +564,7 @@ class Tvdb:
             html = response.read()
             response.close()
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -633,6 +637,7 @@ class Tvdb:
             }
         }
         """
+
         if semaforo:
             semaforo.acquire()
         logger.info()
@@ -647,8 +652,8 @@ class Tvdb:
             html = response.read()
             response.close()
 
-        except Exception, ex:
-            if type(ex) == urllib2.HTTPError:
+        except Exception as ex:
+            if isinstance(ex, urllib_error.HTTPError):
                 logger.debug("code es %s " % ex.code)
 
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
@@ -689,10 +694,10 @@ class Tvdb:
           "status": "string"
         }
         """
+
         logger.info()
 
         try:
-
             params = {}
             if name:
                 params["name"] = name
@@ -701,7 +706,6 @@ class Tvdb:
             elif zap2it_id:
                 params["zap2itId"] = zap2it_id
 
-            import urllib
             params = urllib.urlencode(params)
 
             DEFAULT_HEADERS["Accept-Language"] = lang
@@ -713,8 +717,8 @@ class Tvdb:
             html = response.read()
             response.close()
 
-        except Exception, ex:
-            if type(ex) == urllib2.HTTPError:
+        except Exception as ex:
+            if isinstance(ex, urllib_error.HTTPError):
                 logger.debug("code es %s " % ex.code)
 
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
@@ -788,6 +792,7 @@ class Tvdb:
             }
         }
         """
+
         logger.info()
         resultado = {}
 
@@ -802,8 +807,8 @@ class Tvdb:
             html = response.read()
             response.close()
 
-        except Exception, ex:
-            if type(ex) == urllib2.HTTPError:
+        except Exception as ex:
+            if isinstance(ex, urllib_error.HTTPError):
                 logger.debug("code es %s " % ex.code)
 
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
@@ -839,6 +844,7 @@ class Tvdb:
         @rtype: dict
 
         """
+
         logger.info()
 
         if self.result.get('image_season_%s' % season):
@@ -856,8 +862,6 @@ class Tvdb:
             image += "_%s" % season
 
         try:
-
-            import urllib
             params = urllib.urlencode(params)
             DEFAULT_HEADERS["Accept-Language"] = lang
             url = HOST + "/series/%s/images/query?%s" % (_id, params)
@@ -868,7 +872,7 @@ class Tvdb:
             html = response.read()
             response.close()
 
-        except Exception, ex:
+        except Exception as ex:
             message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
             logger.error("error en: %s" % message)
 
@@ -892,6 +896,7 @@ class Tvdb:
         @return: diccionario con los actores
         @rtype: dict
         """
+
         logger.info()
 
         url = HOST + "/series/%s/actors" % _id
@@ -914,6 +919,7 @@ class Tvdb:
             hubiese nada cargado. Se puede utilizar este metodo para saber si una busqueda ha dado resultado o no.
         @rtype: str
         """
+
         return str(self.result.get('id', ""))
 
     def get_list_results(self):
@@ -922,6 +928,7 @@ class Tvdb:
         @rtype: list
         @return: lista de resultados
         """
+
         logger.info()
         list_results = []
 

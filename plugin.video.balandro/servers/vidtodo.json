@@ -3,6 +3,7 @@
   "name": "Vidtodo",
  
   "active": false,
+  "notes": "Cerrado en Enero 2021",
 
   "find_videos": {
     "ignore_urls": [],

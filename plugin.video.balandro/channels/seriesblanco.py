@@ -2,14 +2,14 @@
 
 import re
 
-from platformcode import config, logger
+from platformcode import config, logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
 
 host = 'https://seriesblanco.org/'
 
-IDIOMAS = { 'es':'Esp', 'la':'Lat', 'sub':'VOSE' }
+IDIOMAS = { 'es': 'Esp', 'la': 'Lat', 'sub': 'Vose' }
 
 
 # ~ def item_configurar_proxies(item):
@@ -22,7 +22,10 @@ IDIOMAS = { 'es':'Esp', 'la':'Lat', 'sub':'VOSE' }
     # ~ return proxytools.configurar_proxies_canal(item.channel, host)
 
 def do_downloadpage(url, post=None, headers=None):
-    url = url.replace('seriesblanco.info', 'seriesblanco.org').replace('http://', 'https://') # por si viene de enlaces guardados
+    # ~ por si viene de enlaces guardados
+    url = url.replace('http://', 'https://')
+    url = url.replace('seriesblanco.info', 'seriesblanco.org')
+
     data = httptools.downloadpage(url, post=post, headers=headers).data
     # ~ data = httptools.downloadpage_proxy('seriesblanco', url, post=post, headers=headers).data
     return data
@@ -35,8 +38,8 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title='Últimas 30 añadidas', action='list_all', url= host + 'ultimas-series-anadidas/' ))
-    itemlist.append(item.clone( title='Lista por orden alfabético', action='list_all', url= host + 'lista-de-series/' ))
+    itemlist.append(item.clone( title='Últimas añadidas', action='list_all', url= host + 'ultimas-series-anadidas/' ))
+    itemlist.append(item.clone( title='Catálogo por alfabético', action='list_all', url= host + 'lista-de-series/' ))
 
     itemlist.append(item.clone( title='Por género', action='generos' ))
     itemlist.append(item.clone( title='Por letra (A - Z)', action='alfabetico' ))
@@ -81,8 +84,7 @@ def list_all(item):
     patron = '<div style="float.*?<a href="([^"]+)">.*?src="([^"]+)".*?data-original-title="([^"]+)">'
     matches = re.compile(patron, re.DOTALL).findall(data)
     for url, thumb, title in matches:
-        itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, 
-                                    contentType='tvshow', contentSerieName=title ))
+        itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, contentType='tvshow', contentSerieName=title ))
 
     if len(matches) == 0:
         patron = '<div style="float.*?<a href="([^"]+)">.*?src="([^"]+)"'
@@ -90,8 +92,7 @@ def list_all(item):
         for url, thumb in matches:
             title = url.split('/')[-2].replace('-', ' ').capitalize()
 
-            itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, 
-                                        contentType='tvshow', contentSerieName=title ))
+            itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, contentType='tvshow', contentSerieName=title ))
 
     tmdb.set_infoLabels(itemlist)
 
@@ -101,7 +102,7 @@ def list_all(item):
         if next_page == '':
             next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" ><i class="Next fa fa-chevron-right"')
         if next_page != '':
-            itemlist.append(item.clone( title='Página siguiente >>', url=next_page, action='list_all' ))
+            itemlist.append(item.clone( title='Página siguiente >>', url=next_page, action='list_all', text_color='coral' ))
 
     return itemlist
 
@@ -113,10 +114,20 @@ def temporadas(item):
     data = do_downloadpage(item.url)
 
     matches = re.compile('<span itemprop="seasonNumber" class="fa fa-arrow-down">.*?Temporada (\d+)', re.DOTALL).findall(data)
+
     for numtempo in matches:
-        itemlist.append(item.clone( action='episodios', title='Temporada %s' % numtempo, 
-                                    contentType='season', contentSeason=numtempo ))
-        
+        title = 'Temporada ' + numtempo
+
+        if len(matches) == 1:
+            platformtools.dialog_notification(item.contentSerieName.replace('&#038;', '&'), 'solo [COLOR tan]' + title + '[/COLOR]')
+            item.page = 0
+            item.contentType = 'season'
+            item.contentSeason = numtempo
+            itemlist = episodios(item)
+            return itemlist
+
+        itemlist.append(item.clone( action = 'episodios', title = title, contentType = 'season', contentSeason = numtempo, page = 0 ))
+
     tmdb.set_infoLabels(itemlist)
 
     return sorted(itemlist, key=lambda it: it.contentSeason)
@@ -130,17 +141,22 @@ def tracking_all_episodes(item):
 def episodios(item):
     logger.info()
     itemlist = []
+
     color_lang = config.get_setting('list_languages_color', default='red')
+
+    if not item.page: item.page = 0
+    perpage = 50
 
     data = do_downloadpage(item.url)
 
     if item.contentSeason: # reducir datos a la temporada pedida
-        data = scrapertools.find_single_match(data, '<div id="collapse%d"(.*?)</table>' % item.contentSeason)
+        data = scrapertools.find_single_match(data, '<div id="collapse%s"(.*?)</table>' % str(item.contentSeason))
 
     matches = re.compile('<tr class="table-hover">(.*?)</tr>', re.DOTALL).findall(data)
-    for data_epi in matches:
 
+    for data_epi in matches[item.page * perpage:]:
         url = scrapertools.find_single_match(data_epi, ' href="([^"]+)')
+
         try:
             season, episode, title = scrapertools.find_single_match(data_epi, '<span itemprop="episodeNumber">(\d+)\s*(?:x|X)\s*(\d+)</span>([^<]*)</a>')
         except:
@@ -148,13 +164,18 @@ def episodios(item):
 
         languages = scrapertools.find_multiple_matches(data_epi, 'images/language/([^.]+)\.png')
         languages = list(dict.fromkeys(languages))
-        
+
         titulo = '%sx%s %s [COLOR %s][%s][/COLOR]' % (season, episode, title, color_lang, ', '.join([IDIOMAS.get(lang, lang) for lang in languages]))
 
-        itemlist.append(item.clone( action='findvideos', url=url, title=titulo, 
-                                    contentType='episode', contentSeason=season, contentEpisodeNumber=episode ))
+        itemlist.append(item.clone( action='findvideos', url=url, title=titulo, contentType='episode', contentSeason=season, contentEpisodeNumber=episode ))
+
+        if len(itemlist) >= perpage:
+            break
 
     tmdb.set_infoLabels(itemlist)
+
+    if len(matches) > (item.page + 1) * perpage:
+        itemlist.append(item.clone( title=">> Página siguiente", action="episodios", page=item.page + 1, text_color='coral' ))
 
     return itemlist
 
@@ -175,7 +196,7 @@ def findvideos(item):
     matches = re.compile('<tr class="odd">(.*?)</tr>', re.DOTALL).findall(data)
     for data_link in matches:
         if ' data-tipo="descarga"' in data_link and 'Uptobox' not in data_link: continue # descartar descargas (menos uptobox)
-        
+
         age = scrapertools.find_single_match(data_link, '<span>([^<]+)').strip()[:10]  # quitar hora
         lang = scrapertools.find_single_match(data_link, 'images/language/([^.]+)\.png')
         calidad = scrapertools.find_single_match(data_link, '<td>([^<]+)</td>\s*<td>\s*<button').strip()
@@ -185,14 +206,13 @@ def findvideos(item):
         except:
             url = scrapertools.find_single_match(data_link, ' data-enlace="([^"]+)')
             href = item.url
+
         servidor = scrapertools.find_single_match(data_link, ' data-server="([^"]+)').replace('www.', '').lower()
         servidor = servidor.split('.', 1)[0]
         servidor = servertools.corregir_servidor(servidor)
 
-        itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, url = url, url_referer = href,
-                              title = '', 
-                              language = IDIOMAS.get(lang, lang), quality = calidad, quality_num = puntuar_calidad(calidad), other = age
-                       ))
+        itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, url = url, url_referer = href, title = '', 
+                              language = IDIOMAS.get(lang, lang), quality = calidad, quality_num = puntuar_calidad(calidad), other = age ))
 
     return itemlist
 

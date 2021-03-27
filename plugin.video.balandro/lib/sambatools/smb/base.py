@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+
+import sys
+
+if sys.version_info[0] < 3:
+    pass
+else:
+    unicode = str
+
 import hmac
 from datetime import datetime
 
@@ -259,7 +268,7 @@ class SMB(NMBSession):
                             self.onAuthOK()
                         else:
                             raise ProtocolError('SMB2_COM_SESSION_SETUP status is 0 but security blob negResult value is %d' % result, message.raw_data, message)
-                    except securityblob.BadSecurityBlobError, ex:
+                    except securityblob.BadSecurityBlobError as ex:
                         raise ProtocolError(str(ex), message.raw_data, message)
                 elif message.status == 0xc0000016:  # STATUS_MORE_PROCESSING_REQUIRED
                     self.session_id = message.session_id
@@ -267,7 +276,7 @@ class SMB(NMBSession):
                         result, ntlm_token = securityblob.decodeChallengeSecurityBlob(message.payload.security_blob)
                         if result == securityblob.RESULT_ACCEPT_INCOMPLETE:
                             self._handleSessionChallenge(message, ntlm_token)
-                    except ( securityblob.BadSecurityBlobError, securityblob.UnsupportedSecurityProvider ), ex:
+                    except ( securityblob.BadSecurityBlobError, securityblob.UnsupportedSecurityProvider ) as ex:
                         raise ProtocolError(str(ex), message.raw_data, message)
                 elif message.status == 0xc000006d:  # STATUS_LOGON_FAILURE
                     self.has_authenticated = False
@@ -1578,14 +1587,14 @@ c8 4f 32 4b 70 16 d3 01 12 78 5a 47 bf 6e e1 88
                                 self.onAuthOK()
                             else:
                                 raise ProtocolError('SMB_COM_SESSION_SETUP_ANDX status is 0 but security blob negResult value is %d' % result, message.raw_data, message)
-                        except securityblob.BadSecurityBlobError, ex:
+                        except securityblob.BadSecurityBlobError as ex:
                             raise ProtocolError(str(ex), message.raw_data, message)
                     elif message.status.internal_value == 0xc0000016:  # STATUS_MORE_PROCESSING_REQUIRED
                         try:
                             result, ntlm_token = securityblob.decodeChallengeSecurityBlob(message.payload.security_blob)
                             if result == securityblob.RESULT_ACCEPT_INCOMPLETE:
                                 self._handleSessionChallenge(message, ntlm_token)
-                        except ( securityblob.BadSecurityBlobError, securityblob.UnsupportedSecurityProvider ), ex:
+                        except ( securityblob.BadSecurityBlobError, securityblob.UnsupportedSecurityProvider ) as ex:
                             raise ProtocolError(str(ex), message.raw_data, message)
                     elif message.status.internal_value == 0xc000006d:  # STATUS_LOGON_FAILURE
                         self.has_authenticated = False

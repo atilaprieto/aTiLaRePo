@@ -9,7 +9,9 @@
   "search_types": ["all", "movie", "tvshow"],
 
   "categories": ["movie", "tvshow"],
-  "language": ["cast", "lat", "vose"],
+  "language": ["cast", "lat", "vose", "vo"],
 
-  "notes": "Películas y Series, por género, por año, ..."
+  "clusters": ["news", "rankings", "years", "lasts", "stars", "directors", "vos"],
+
+  "notes": "Web Cerrada Enero/2021. Películas y Series, por género, por año, ..."
 }

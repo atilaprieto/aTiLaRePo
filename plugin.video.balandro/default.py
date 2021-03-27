@@ -1,30 +1,34 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
-# Balandro - Main
-# ------------------------------------------------------------
 
-import os, sys, urllib2
+import sys
 
-from platformcode import config, logger, platformtools
+from platformcode import  config, platformtools, logger
+
+if sys.version_info[0] < 3:
+    import urllib2
+else:
+    import urllib.error as urllib2
+
+
+import os
+
 from core.item import Item
-
 from platformcode.config import WebErrorException
 
-
-logger.info('Starting with %s' % sys.argv[1])
+logger.info('[COLOR blue]Starting with %s[/COLOR]' % sys.argv[1])
 
 # Obtener parámetros de lo que hay que ejecutar
-# ---------------------------------------------
+
 if sys.argv[2]:
     item = Item().fromurl(sys.argv[2])
 else:
     item = Item(channel='mainmenu', action='mainlist')
 
-logger.debug(item)
+sys.path.append(os.path.join(config.get_runtime_path(), 'lib'))
 
 
 # Establecer si channel es un canal web o un módulo
-# -------------------------------------------------
+
 tipo_channel = ''
 
 if item.channel == '' or item.action == '':
@@ -41,11 +45,10 @@ else:
             tipo_channel = 'modules.'
         else:
             logger.error('Channel/Module not found, nothing to do')
-            logger.debug(item)
 
 
 # Ejecutar según los parámetros recibidos
-# ---------------------------------------
+
 if tipo_channel != '':
     try:
         canal = __import__(tipo_channel + item.channel, fromlist=[''])
@@ -68,13 +71,15 @@ if tipo_channel != '':
                 else:
                     last_search = config.get_last_search(item.search_type)
                     tecleado = platformtools.dialog_input(last_search, 'Texto a buscar')
-                    
+
                 if tecleado is not None and tecleado != '':
                     itemlist = canal.search(item, tecleado)
                     if item.buscando == '': config.set_last_search(item.search_type, tecleado)
                 else:
                     itemlist = []
-                    # ~ itemlist = False # desactivado pq provoca ERROR: GetDirectory en el log
+                    # ~ (desactivar si provoca ERROR: GetDirectory en el log)
+                    item.folder = False
+                    itemlist = False
 
             # cualquier otra acción se ejecuta en el canal, y se renderiza si devuelve una lista de items
             else:
@@ -84,14 +89,14 @@ if tipo_channel != '':
                 else:
                     logger.info('Action not found in channel')
                     itemlist = [] if item.folder else False  # Si item.folder kodi espera un listado
-            
+
             if type(itemlist) == list:
                 logger.info('renderizar itemlist')
                 platformtools.render_items(itemlist, item)
 
-            # ~ elif itemlist == None: # Si kodi espera un listado (desactivado pq igualmente sale ERROR: GetDirectory en el log)
-                # ~ logger.info('sin renderizar')
-                # ~ platformtools.render_no_items()
+            elif itemlist == None: # Si kodi espera un listado (desactivar si provoca ERROR: GetDirectory en el log)
+                logger.info('sin renderizar')
+                platformtools.render_no_items()
 
             elif itemlist == True:
                 logger.info('El canal ha ejecutado correctamente una acción que no devuelve ningún listado.')
@@ -99,7 +104,7 @@ if tipo_channel != '':
             elif itemlist == False:
                 logger.info('El canal ha ejecutado una acción que no devuelve ningún listado.')
 
-    except urllib2.URLError, e:
+    except urllib2.URLError as e:
         import traceback
         logger.error(traceback.format_exc())
 
@@ -114,10 +119,10 @@ if tipo_channel != '':
             logger.error("Codigo de error HTTP : %d" % e.code)
             platformtools.dialog_ok(config.__addon_name, "El sitio web no funciona correctamente (error http %d)" % e.code)
 
-    except WebErrorException, e:
+    except WebErrorException as e:
         import traceback
         logger.error(traceback.format_exc())
-        
+
         # Ofrecer buscar en otros canales o en el mismo canal, si está activado en la configuración
         if item.contentType in ['movie', 'tvshow', 'season', 'episode'] and config.get_setting('tracking_weberror_dialog', default=True):
             if item.action == 'findvideos': platformtools.play_fake()
@@ -125,17 +130,16 @@ if tipo_channel != '':
             item_search = platformtools.dialogo_busquedas_por_fallo_web(item)
             if item_search is not None:
                 platformtools.itemlist_update(item_search)
-                
+
         else:
-            platformtools.dialog_ok('Error en el canal ' + item.channel, 
-                                    'La web de la que depende parece no estar disponible, puede volver a intentarlo, si el problema persiste verifique mediante un navegador la web: %s' % (e) )
+            platformtools.dialog_ok('[COLOR red]Error en el canal [COLOR coral]' + item.channel.capitalize() + '[/COLOR]', 
+                                    'La web asociada a este canal, parece no estar disponible, puede volver a intentarlo pasados unos minutos, y si el problema persiste verifique mediante un navegador de internet la web: [COLOR cyan][B]%s[/B][/COLOR]' % (e) )
 
     except:
         import traceback
         logger.error(traceback.format_exc())
-        platformtools.dialog_ok(
-            "Error inesperado en el canal " + item.channel,
-            "Puede deberse a un fallo de conexión, la web del canal ha cambiado su estructura, o un error interno del addon. Para saber más detalles, consulta el log.")
+        platformtools.dialog_ok('[COLOR red]Error inesperado en [COLOR coral]' + item.channel.capitalize() + '[/COLOR]',
+            'Puede deberse a un fallo de conexión, o que la web asociada a este canal ha cambiado su estructura, o bien a un error interno del addon. Para saber más detalles, consulta el log de su Media Center.')
 
 
-logger.info('Ending with %s' % sys.argv[1])
+logger.info('[COLOR blue]Ending with %s[/COLOR]' % sys.argv[1])

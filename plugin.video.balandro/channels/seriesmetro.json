@@ -11,5 +11,7 @@
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
 
+  "clusters": ["vos", "anime"],
+
   "notes": "Muchas series y acceso por géneros."
 }

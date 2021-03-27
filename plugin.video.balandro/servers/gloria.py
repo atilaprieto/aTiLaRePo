@@ -27,6 +27,6 @@ def get_video_url(page_url, url_referer=''):
         video_urls.append([lbl, src])
 
     # primero m3u8, y luego mp4 por orden asc
-    video_urls.sort(key=lambda x: 0 if x[0] == 'm3u8' else int(scrapertools.find_single_match(x[0], '\d+x(\d+)')) if 'x' in x[0] else 1)
+    video_urls.sort(key=lambda x: 0 if x[0] == 'm3u8' else int(scrapertools.find_single_match(x[0], '\d+x(\d+)')))
     
     return video_urls

@@ -11,5 +11,7 @@
   "categories": ["movie", "tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "notes": "Películas y Series en castellano."
+  "clusters": ["vos"],
+
+  "notes": "Películas y Series en castellano. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

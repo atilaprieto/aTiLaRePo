@@ -11,5 +11,7 @@
   "categories": ["movie"],
   "language": ["cast", "lat", "vose"],
 
+  "clusters": ["rankings", "languages", "qualityes", "years", "countries", "vos"],
+
   "notes": "Películas por idioma, género, calidad, año, país."
 }

@@ -1,0 +1,110 @@
+[COLOR coral]Balandro[/COLOR]  [COLOR yellow]Marzo/2021[/COLOR]
+
+2.0.0:
+   Compatible con Python3
+
+   Novedades:
+      Nuevo Menu:
+         Nueva opcion Canales
+         Nueva opcion Grupos
+         Nueva opcion Animes
+         Nueva opcion Adultos
+         Nueva opcion Ayuda
+
+      Nueva gestion de Proxies
+      Nueva gestion de Torrents
+      Nueva gestion de Busquedas
+
+      Nueva Configuracion:
+         Re-distribucion informacion por agrupaciones
+         Control Parental
+         Mas opciones personalizables
+
+      Numero de Canales:
+         74 Canales
+         50 de Peliculas
+         40 de Series
+         29 de Peliculas y Series
+           6 de Documentales
+           2 de Animes
+           2 de Adultos
+
+   Nuevos Canales:
+      AnimeFenix
+      CineDeAntes
+      CinematteFlix
+      ClasicoTv
+      CliverSite
+      ClubCine
+      Cuevana3Video
+      DocumaniaTv
+      DonTorrents
+      EntrePeliculasySeries
+      HdfullSe
+      HomeCine
+      JKAnime
+      LegalmenteGratis
+      MegadedeLa
+      MejorTorrents
+      MovidyMobi
+      PctFenix
+      PelisHouse
+      PelisRetro
+      Playdede
+      PornHd
+      SeriesAntiguas
+      SeriesFlixIo
+      SeriesManta
+      SeriesPapayaTo
+      SeriesRetro
+      SigloXX
+      SubTorrents
+      Tekilaz
+      TupeliculaTv
+      TvSeries
+      VerPeliculasGratis
+
+   Canales Reactivados:
+      CiberDocumentales
+      MiraDoumentales
+      TorrentDivx
+
+   Canales Desactivados:
+      DesTotal
+      SeriesDanko
+
+   Canales Anulados:
+      CienciaTv
+      DocumaniacosEsp
+      GDrive
+      MasPeliculas
+      Movidy
+      PepeCine
+      SeriesPapaya
+      TeleDocumentales
+
+   Canales que pueden usar proxies (Bloqueo Operadoras):
+      CineCalidad
+      CineTux
+      Cliver
+      CliverSite
+      Cuevana3
+      DocumaniaTv
+      DonTorrents
+      Gnula
+      GranTorrent
+      HdFull
+      PelisPlay
+      PelisVips
+      PlayView
+      RePelis
+      SerieMega
+      SubTorrents
+      TorrenDivx
+
+  Nuevos Servidores:
+      Letsupload
+      Movcloud
+      Racaty
+      Streamsb
+      Zplayer

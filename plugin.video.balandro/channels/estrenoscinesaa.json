@@ -11,5 +11,7 @@
   "categories": [ "movie" ],
   "language": ["cast"],
 
+  "clusters": ["producers", "lists"],
+
   "notes": "Peliculas en Castellano, por géneros."
 }

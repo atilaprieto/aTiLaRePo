@@ -45,8 +45,6 @@ def extract_sources(data):
         if url.startswith('//'): url = 'https:' + url
 
         if url.endswith('.m3u8'):
-            video_urls.append(['m3u8', url])
-
             aux = httptools.downloadpage(url).data
             # ~ logger.debug(aux)
             
@@ -57,6 +55,8 @@ def extract_sources(data):
                     if '/index-v1-a1.m3u8' not in url2: continue
                     url2 = url2.replace('/hls/', '/').replace('/index-v1-a1.m3u8', '/v.mp4')
                     video_urls.append(['mp4 '+res2+'p', url2])
+
+            if len(video_urls) == 0: video_urls.append(['m3u8', url])
 
         else:
             lbl = scrapertools.find_single_match(vid, 'label:\s*"([^"]+)')

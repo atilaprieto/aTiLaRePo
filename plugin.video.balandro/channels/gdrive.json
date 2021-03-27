@@ -1,0 +1,16 @@
+{
+  "id": "gdrive",
+  "name": "Gdrive",
+  "thumbnail": "gdrive.jpg",
+
+  "active": false,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast"],
+
+  "notes": "Lista privada de películas y series en Google Drive"
+
+}

@@ -2,12 +2,19 @@
 
 import re
 
-from platformcode import config, logger, platformtools
+from platformcode import logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, servertools, tmdb
 
-# ~ host = 'https://seriesmetro.com/'
 host = 'https://seriesmetro.net/'
+
+
+def do_downloadpage(url, post=None, headers=None, raise_weberror=True):
+    # ~ por si viene de enlaces guardados
+    url = url.replace('seriesmetro.com', 'seriesmetro.net')
+
+    data = httptools.downloadpage(url, post=post, headers=headers, raise_weberror=raise_weberror).data
+    return data
 
 
 def mainlist(item):
@@ -18,11 +25,11 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone ( title='Todas las series', action ='list_all', url = host + 'series' ))
-
-    itemlist.append(item.clone ( title='Por orden alfabético', action = 'alfabetico' ))
+    itemlist.append(item.clone ( title='Catálogo', action ='list_all', url = host + 'series' ))
 
     itemlist.append(item.clone ( title='Por género', action = 'generos' ))
+
+    itemlist.append(item.clone ( title='Por letra (A - Z)', action = 'alfabetico' ))
 
     itemlist.append(item.clone ( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
@@ -34,39 +41,40 @@ def generos(item):
     itemlist = []
 
     opciones = [
-        ('genero-accion','Acción'), 
-        ('accion','Acción (bis)'), 
-        ('action-adventure','Action & Adventure'), 
-        ('aventura','Aventura'), 
-        ('animacion','Animación'), 
-        ('genero-animes','Anime'), 
-        ('genero-ciencia-ficcion','Ciencia ficción'), 
-        ('ciencia-ficcion','Ciencia ficción (bis)'), 
-        ('comedia','Comedia'), 
-        ('genero-comedia','Comedia (bis)'), 
-        ('crimen','Crimen'), 
-        ('genero-dibujos','Dibujos'), 
-        ('documental','Documental'), 
-        ('genero-documental','Documental (bis)'), 
-        ('genero-drama','Drama'), 
-        ('drama','Drama (bis)'), 
-        ('familia','Familia'), 
-        ('fantasia','Fantasía'), 
-        ('genero-fantastico','Fantástico'), 
-        ('kids','Kids'), 
-        ('misterio','Misterio'), 
-        ('musica','Música'), 
-        ('reality','Reality'), 
-        ('genero-romance','Romance'), 
-        ('romance','Romance (bis)'), 
-        ('sci-fi-fantasy','Sci-Fi & Fantasy'), 
-        ('talk','Talk'), 
-        ('genero-telenovela','Telenovela'), 
-        ('genero-thriller','Thriller'), 
-        ('terror','Terror'), 
-        ('war-politics','War & Politics'), 
-        ('western','Western'), 
-    ]
+        ('genero-accion', 'Acción'),
+        ('accion', 'Acción (bis)'),
+        ('action-adventure', 'Action & Adventure'),
+        ('aventura', 'Aventura'),
+        ('animacion', 'Animación'),
+        ('genero-animes', 'Anime'),
+        ('genero-ciencia-ficcion', 'Ciencia ficción'),
+        ('ciencia-ficcion', 'Ciencia ficción (bis)'),
+        ('comedia', 'Comedia'),
+        ('genero-comedia', 'Comedia (bis)'),
+        ('crimen', 'Crimen'),
+        ('genero-dibujos', 'Dibujos'),
+        ('documental', 'Documental'),
+        ('genero-documental', 'Documental (bis)'),
+        ('genero-drama', 'Drama'),
+        ('drama', 'Drama (bis)'),
+        ('familia', 'Familia'),
+        ('fantasia', 'Fantasía'),
+        ('genero-fantastico', 'Fantástico'),
+        ('kids', 'Kids'),
+        ('misterio', 'Misterio'),
+        ('musica', 'Música'),
+        ('reality', 'Reality'),
+        ('genero-romance', 'Romance'),
+        ('romance', 'Romance (bis)'),
+        ('sci-fi-fantasy', 'Sci-Fi & Fantasy'),
+        ('talk', 'Talk'),
+        ('genero-telenovela', 'Telenovela'),
+        ('genero-thriller', 'Thriller'),
+        ('terror', 'Terror'),
+        ('war-politics', 'War & Politics'),
+        ('western', 'Western')
+        ]
+
     for opc, tit in opciones:
         itemlist.append(item.clone( title=tit, url=host + 'ver/' + opc + '/', action='list_all' ))
 
@@ -86,7 +94,7 @@ def list_all(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     if '</main>' in data: data = data.split('</main>')[0]
     elif '<aside class="sidebar"' in data: data = data.split('<aside class="sidebar"')[0]
@@ -96,6 +104,7 @@ def list_all(item):
         url = scrapertools.find_single_match(article, ' href="([^"]+)" class="lnk-blk"')
         title = scrapertools.find_single_match(article, '<h2 class="entry-title">(.*?)</h2>')
         if not url or not title: continue
+
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
         if thumb.startswith('//'): thumb = 'https:' + url
         year = scrapertools.find_single_match(article, '<span class="date">(\d+)</span>')
@@ -103,14 +112,13 @@ def list_all(item):
         plot = scrapertools.find_single_match(article, '<p><p>(.*?)</p>')
 
         itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, 
-                                    contentType='tvshow', contentSerieName=title, 
-                                    infoLabels={'year': year, 'plot': scrapertools.htmlclean(plot)} ))
+                                    contentType='tvshow', contentSerieName=title, infoLabels={'year': year, 'plot': scrapertools.htmlclean(plot)} ))
 
     tmdb.set_infoLabels(itemlist)
 
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"[^>]*><i class="fa-arrow-right">')
     if next_page:
-       itemlist.append(item.clone (url = next_page, title = '>> Página siguiente', action = 'list_all'))
+       itemlist.append(item.clone (url = next_page, title = '>> Página siguiente', action = 'list_all', text_color='coral' ))
 
     return itemlist
 
@@ -119,19 +127,31 @@ def temporadas(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     dobject = scrapertools.find_single_match(data, 'data-object\s*=\s*"([^"]+)')
     if not dobject: return itemlist
 
     matches = scrapertools.find_multiple_matches(data, '<li class="sel-temp"><a data-post="([^"]+)" data-season="([^"]+)')
+
     for dpost, tempo in matches:
-        itemlist.append(item.clone( action='episodios', title='Temporada ' + tempo, dobject=dobject, dpost=dpost,
-                                    contentType = 'season', contentSeason = tempo ))
+        title = 'Temporada ' + tempo
+
+        if len(matches) == 1:
+            platformtools.dialog_notification(item.contentSerieName.replace('&#038;', '&'), 'solo [COLOR tan]' + title + '[/COLOR]')
+            item.dobject = dobject
+            item.dpost = dpost
+            item.contentType = 'season'
+            item.contentSeason = tempo
+            itemlist = episodios(item)
+            return itemlist
+
+        itemlist.append(item.clone( action = 'episodios', title = title, dobject = dobject, dpost = dpost, contentType = 'season', contentSeason = tempo ))
 
     tmdb.set_infoLabels(itemlist)
 
     return itemlist
+
 
 #TODO!? limitar episodios a mostrar y no hacer paginación automàtica (menos añadiendo a videoteca) !? Ej: El señor de los cielos (74 episodios temp 1)
 def episodios(item): 
@@ -139,9 +159,9 @@ def episodios(item):
     itemlist = []
 
     if not item.dobject or not item.dpost or not item.contentSeason: return itemlist
-    
+
     post = {'action': 'action_select_season', 'post': item.dpost, 'object': item.dobject, 'season': item.contentSeason}
-    data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post).data
+    data = do_downloadpage(host + 'wp-admin/admin-ajax.php', post=post)
     # ~ logger.debug(data)
 
     # ~ while True:
@@ -159,7 +179,7 @@ def episodios(item):
         next_page = scrapertools.find_single_match(data, '<a class="next page-numbers" href="[^"]*page/(\d+)/')
         if next_page:
             post = {'action': 'action_pagination_ep', 'object': item.dobject, 'season': item.contentSeason, 'page': next_page}
-            data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post).data
+            data = do_downloadpage(host + 'wp-admin/admin-ajax.php', post=post)
             # ~ logger.debug(data)
         else:
             break
@@ -173,9 +193,9 @@ def findvideos(item):
     logger.info()
     itemlist = []
 
-    IDIOMAS = {'Español Latino':'Lat', 'Latino':'Lat', 'Español Castellano':'Esp', 'Español':'Esp', 'Sub Latino':'VOSE', 'Sub Español':'VOSE', 'Sub':'VOSE', 'Ingles':'VO'}
+    IDIOMAS = {'Español Latino':'Lat', 'Latino':'Lat', 'Español Castellano':'Esp', 'Español':'Esp', 'Sub Latino':'Vose', 'Sub Español':'Vose', 'Sub':'Vose', 'Ingles':'VO'}
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     dterm = scrapertools.find_single_match(data, ' data-term="([^"]+)')
@@ -183,47 +203,55 @@ def findvideos(item):
 
     matches = scrapertools.find_multiple_matches(data, '<a data-opt="([^"]+)".*?<span class="option">(?:Cload|CinemaUpload) - ([^<]*)')
     for dopt, lang in matches:
-        itemlist.append(Item( channel = item.channel, action = 'play', server = 'directo',
-                              title = '', dterm = dterm, dopt = dopt, url = item.url, 
-                              language = IDIOMAS.get(lang, lang) #, other = dopt
-                       ))
+        itemlist.append(Item( channel = item.channel, action = 'play', server = 'directo', title = '', dterm = dterm, dopt = dopt, url = item.url, 
+                              language = IDIOMAS.get(lang, lang) ))   #, other = dopt
+
 
     return itemlist
+
 
 def play(item):
     logger.info()
     itemlist = []
 
     post = {'action': 'action_player_series', 'term_id': item.dterm, 'ide': item.dopt}
-    data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post, raise_weberror=False).data
+    data = do_downloadpage(host + 'wp-admin/admin-ajax.php', post=post, raise_weberror=False)
     # ~ logger.debug(data)
 
     url = scrapertools.find_single_match(data, '(?i)<iframe[^>]* src="([^"]+)')
     if not url: return itemlist
     url = url.replace('&#038;', '&')
 
-    data = httptools.downloadpage(url, headers={'Referer': item.url}, raise_weberror=False).data
+    data = do_downloadpage(url, headers={'Referer': item.url}, raise_weberror=False)
     # ~ logger.debug(data)
 
     url = scrapertools.find_single_match(data, '(?i)<iframe[^>]* src="([^"]+)')
     if not url: return itemlist
 
+    if '/cinemaupload.com/' in url:
+        url = url.replace('/cinemaupload.com/', '/embed.cload.video/')
+
     if 'embed.cload' in url:
-        data = httptools.downloadpage(url, headers={'Referer': host}, raise_weberror=False).data
+        data = do_downloadpage(url, headers={'Referer': host}, raise_weberror=False)
         # ~ logger.debug(data)
         if '<div class="g-recaptcha"' in data or 'Solo los humanos pueden ver' in data:
             headers = {'Referer': host, 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}
-            data = httptools.downloadpage(item.url, headers=headers, raise_weberror=False).data
+            data = do_downloadpage(item.url, headers=headers, raise_weberror=False)
             # ~ logger.debug(data)
             new_url = scrapertools.find_single_match(data, '<div id="option-players".*?src="([^"]+)"')
             if new_url:
                 new_url = new_url.replace('/cinemaupload.com/', '/embed.cload.video/')
-                data = httptools.downloadpage(new_url, raise_weberror=False).data
+                data = do_downloadpage(new_url, raise_weberror=False)
                 # ~ logger.debug(data)
 
         url = scrapertools.find_single_match(data, 'file:\s*"([^"]+)')
         if url:
-            if '/manifest.mpd' in url:
+            if '/download/' in url:
+                url = url.replace('//download/', '/files/').replace('/download/', '/files/')
+                itemlist.append(item.clone( url = url, server = 'directo' ))
+                return itemlist
+
+            elif '/manifest.mpd' in url:
                 if platformtools.is_mpd_enabled():
                     itemlist.append(['mpd', url, 0, '', True])
                 itemlist.append(['m3u8', url.replace('/users/', 'hls/users/', 1).replace('/manifest.mpd', '/index.m3u8')])

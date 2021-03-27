@@ -14,6 +14,7 @@ import time
 import zlib
 
 
+
 from threading import Lock
 
 from six.moves import urllib_parse
@@ -28,11 +29,13 @@ try:
     translatePath = xbmcvfs.translatePath
 except:
     translatePath =  xbmc.translatePath
-
-runtime_path = translatePath(xbmcaddon.Addon().getAddonInfo('Path'))
-data_path = translatePath(xbmcaddon.Addon().getAddonInfo('Profile'))
+addon = xbmcaddon.Addon()
+addon_name = addon.getAddonInfo('name')
+localize = addon.getLocalizedString
+runtime_path = translatePath(addon.getAddonInfo('Path'))
+data_path = translatePath(addon.getAddonInfo('Profile'))
 image_path = os.path.join(runtime_path, 'resources', 'media')
-extendedinfo = xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)')
+
 kodi_version = re.match("\d+\.\d+", xbmc.getInfoLabel('System.BuildVersion'))
 kodi_version = float(kodi_version.group(0)) if kodi_version else 0.0
 
@@ -87,8 +90,11 @@ except Exception as e:
 else:
     O011 = ii11.MODE_OFB
 
-# Clases auxiliares
 
+
+
+
+# Clases auxiliares
 class Item(object):
     defaults = {}
 
@@ -195,9 +201,14 @@ class Video(object):
             if 'label' in self.__dict__:
                 return self.label
             else:
-                label = ("%s " % self.server) if 'server' in self.__dict__ else ''
-                label += ('(%s) '% self.type.upper()) if not self.res else self.res
-                #label += self.res
+                lng = {'es': u'Castellano', 'fr': u'Frances', 'en': u'Ingles', 'ru': u'Ruso', 'de': u'Aleman'} #ISO_639-1
+                label = ("%s: " % self.server) if 'server' in self.__dict__ else ''
+                label += ("%s " % lng.get(self.lang, localize(30045))) if self.lang else ''
+                if self.res:
+                    res_num = re.findall(r'(\d+)', self.res)
+                    label += "[%s]" % (res_num[0] + 'p') if res_num else self.res
+                else:
+                    label += ("(%s)" % self.type.upper())
                 return label
 
         else:

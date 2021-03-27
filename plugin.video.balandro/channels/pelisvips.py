@@ -2,26 +2,26 @@
 
 import re
 
-from platformcode import config, logger
+from platformcode import logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
 
-HOST = 'https://pelisvips.com/'
+host = 'https://pelisvips.com/'
 
-IDIOMAS = {'es_es':'Esp', 'la_la':'Lat', 'en_es':'VOSE', 'en_en':'VO', 
-           'castellano':'Esp', 'latino':'Lat', 'subtitulada':'VOSE', 
-           'es':'Esp', 'la':'Lat', 'sub':'VOSE'}
+
+IDIOMAS = {'es_es': 'Esp', 'la_la': 'Lat', 'en_es': 'Vose', 'en_en': 'VO', 
+           'castellano': 'Esp', 'latino': 'Lat', 'subtitulada': 'Vose', 'es': 'Esp', 'la': 'Lat', 'sub': 'Vose'}
 
 
 def item_configurar_proxies(item):
     plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
-    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + HOST + ' necesitarás un proxy.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
     return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
 
 def configurar_proxies(item):
     from core import proxytools
-    return proxytools.configurar_proxies_canal(item.channel, HOST)
+    return proxytools.configurar_proxies_canal(item.channel, host)
 
 def do_downloadpage(url, post=None):
     # ~ data = httptools.downloadpage(url).data
@@ -37,14 +37,14 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title='Últimas actualizadas', action='list_all', url=HOST ))
+    itemlist.append(item.clone( title='Catálogo', action='list_all', url=host ))
 
-    itemlist.append(item.clone( title='Estrenos', action='list_all', url=HOST + 'genero/estrenos/' ))
-    itemlist.append(item.clone( title='Netflix', action='list_all', url=HOST + 'genero/netflix/' ))
+    itemlist.append(item.clone( title='Estrenos', action='list_all', url=host + 'genero/estrenos/' ))
+    itemlist.append(item.clone( title='Netflix', action='list_all', url=host + 'genero/netflix/' ))
 
-    itemlist.append(item.clone( title='Castellano', action='list_all', url=HOST + 'ver-idioma/castellano/' ))
-    itemlist.append(item.clone( title='Latino', action='list_all', url=HOST + 'ver-idioma/latino/' ))
-    itemlist.append(item.clone( title='Subtitulado', action='list_all', url=HOST + 'ver-idioma/subtitulada/' ))
+    itemlist.append(item.clone( title='Castellano', action='list_all', url=host + 'ver-idioma/castellano/' ))
+    itemlist.append(item.clone( title='Latino', action='list_all', url=host + 'ver-idioma/latino/' ))
+    itemlist.append(item.clone( title='Subtitulado', action='list_all', url=host + 'ver-idioma/subtitulada/' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
     itemlist.append(item.clone( title = 'Por calidad', action = 'calidades', search_type = 'movie' ))
@@ -60,10 +60,10 @@ def calidades(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title='Nueva calidad', action='list_all', url=HOST + 'genero/nueva-calidad/' ))
-    itemlist.append(item.clone( title='HD 1080p', action='list_all', url=HOST + 'ver-calidad/hd1080p/' ))
-    itemlist.append(item.clone( title='HD 720p', action='list_all', url=HOST + 'ver-calidad/hd720p/' ))
-    itemlist.append(item.clone( title='Br screener', action='list_all', url=HOST + 'ver-calidad/br-screener/' ))
+    itemlist.append(item.clone( title='En nueva calidad', action='list_all', url=host + 'genero/nueva-calidad/' ))
+    itemlist.append(item.clone( title='En HD 1080p', action='list_all', url=host + 'ver-calidad/hd1080p/' ))
+    itemlist.append(item.clone( title='En HD 720p', action='list_all', url=host + 'ver-calidad/hd720p/' ))
+    itemlist.append(item.clone( title='En BR screener', action='list_all', url=host + 'ver-calidad/br-screener/' ))
 
     return itemlist
 
@@ -72,7 +72,7 @@ def generos(item):
     logger.info()
     itemlist = []
 
-    data = do_downloadpage(HOST)
+    data = do_downloadpage(host)
 
     bloque = scrapertools.find_single_match(data, '>Películas por género</div>(.*?)</div>')
 
@@ -124,7 +124,7 @@ def list_all(item):
 
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink" rel="next" href="([^"]+)')
     if next_page != '':
-        itemlist.append(item.clone( title='>> Página siguiente', action='list_all', url = next_page ))
+        itemlist.append(item.clone( title='>> Página siguiente', action='list_all', url = next_page, text_color='coral' ))
 
     return itemlist
 
@@ -145,7 +145,7 @@ def findvideos(item):
 
             url = url.replace('www.pelisup.com/v/', 'www.fembed.com/v/')
             url = url.replace('www.pelispp.com/v/', 'www.fembed.com/v/')
-            if HOST in url:
+            if host in url:
                 servidor = 'directo' # '' indeterminado sería más correcto pero como parecen todos de googleapis ponemos directo
             else:
                 servidor = servertools.get_server_from_url(url, disabled_servers=True)
@@ -167,7 +167,7 @@ def play(item):
     logger.info()
     itemlist = []
 
-    if HOST in item.url:
+    if host in item.url:
         data = do_downloadpage(item.url)
         # ~ logger.debug(data)
         url = scrapertools.find_single_match(data, "sources:.*?'file':\s*'([^']+)")
@@ -219,7 +219,7 @@ def list_search(item):
 
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink" rel="next" href="([^"]+)')
     if next_page != '':
-        itemlist.append(item.clone( title='>> Página siguiente', action='list_search', url = next_page ))
+        itemlist.append(item.clone( title='>> Página siguiente', action='list_search', url = next_page, text_color='coral' ))
 
     return itemlist
 
@@ -227,7 +227,7 @@ def list_search(item):
 def search(item, texto):
     logger.info("texto: %s" % texto)
     try:
-        item.url = HOST + '?s=' + texto.replace(" ", "+")
+        item.url = host + '?s=' + texto.replace(" ", "+")
         return list_search(item)
     except:
         import sys

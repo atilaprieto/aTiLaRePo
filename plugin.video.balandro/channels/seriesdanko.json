@@ -5,11 +5,13 @@
 
   "active": false,
 
-  "searchable": true,
+  "searchable": false,
   "search_types": ["tvshow"],
 
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
+
+  "clusters": ["adults", "lasts", "vos"],
 
   "notes": "Capítulos de estreno en castellano y VOSE, listado alfabético de series."
 }

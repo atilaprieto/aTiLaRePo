@@ -1,0 +1,17 @@
+{
+  "id": "cienciatv",
+  "name": "CienciaTv",
+  "thumbnail": "cienciatv.jpg",
+
+  "active": false,
+
+  "searchable": true,
+  "search_types": ["documentary"],
+
+  "categories": ["documentary"],
+  "language": ["cast"],
+
+  "clusters": ["categories"],
+
+  "notes": "Web Cerrada Diciembre/2020. Documentales en castellano, aunque no todos tienen vídeos válidos."
+}

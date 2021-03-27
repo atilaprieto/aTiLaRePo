@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
-# channeltools - Herramientas para canales
-# ------------------------------------------------------------
 
 import os, glob
 
@@ -22,12 +19,12 @@ def get_channels_list(filtros={}):
         if channel_parameters['id'] != channel:
             logger.error('El id: %s no coincide con el fichero del canal: %s' % (channel_parameters['id'], channel))
             continue
-        
+
         seleccionar = True
-        for parametro, valor in filtros.iteritems():
+        for parametro, valor in filtros.items():
             if parametro in channel_parameters:
                 # Para listas no seleccionar si el valor no está en la lista
-                if parametro in ['categories', 'language', 'search_types']:
+                if parametro in ['categories', 'language', 'search_types', 'clusters']:
                     if valor not in channel_parameters[parametro]: seleccionar = False; break
                 # Para status, no seleccionar si no tiene el valor mínimo
                 elif parametro == 'status':
@@ -38,7 +35,7 @@ def get_channels_list(filtros={}):
 
         if not seleccionar: 
             continue
-            
+
         itemlist.append(channel_parameters)
 
     channels_list_order = config.get_setting('channels_list_order', default=False) # False:orden alfabético True:preferidos al principio
@@ -51,7 +48,6 @@ def get_channels_list(filtros={}):
 
 
 def get_channel_parameters(channel_name):
-
     datos = get_channel_json(channel_name)
 
     # valores por defecto si no existen:
@@ -63,6 +59,7 @@ def get_channel_parameters(channel_name):
     datos['language'] = datos.get('language', list())
     datos['notes'] = datos.get('notes', '')
     datos['adult'] = datos.get('adult', False)
+    datos['clusters'] = datos.get('clusters', '')
     datos['thumbnail'] = datos.get('thumbnail', '')
 
     # ajustar paths:
@@ -83,7 +80,7 @@ def get_channel_json(channel_name):
         if filetools.isfile(channel_path):
             channel_json = jsontools.load(filetools.read(channel_path))
 
-    except Exception, ex:
+    except Exception as ex:
         template = "An exception of type %s occured. Arguments:\n%r"
         message = template % (type(ex).__name__, ex.args)
         logger.error(" %s" % message)

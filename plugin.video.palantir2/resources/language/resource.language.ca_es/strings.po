@@ -115,8 +115,8 @@ msgid "Reset Cache Extendedinfo"
 msgstr "Reiniciar Cache Extendedinfo"
 
 msgctxt "#30028"
-msgid "Movie views by year"
-msgstr "Vistes de pel·lícules per any"
+msgid "Sort Movies ..."
+msgstr "Ordenar pel·lícules ..."
 
 msgctxt "#30029"
 msgid "Always use resolveUrl"
@@ -250,8 +250,8 @@ msgid "Start next episode automatically"
 msgstr "Inicia següent episodi automàticament"
 
 msgctxt "#30062"
-msgid "Show series in follow-up"
-msgstr "Mostra sèries en seguiment"
+msgid "Series in follow-up"
+msgstr "Sèries en seguiment"
 
 msgctxt "#30063"
 msgid "There are no series in follow-up at this time"
@@ -281,7 +281,15 @@ msgctxt "#30069"
 msgid "Season %s concluded. Check if there are more seasons available"
 msgstr "Temporada %s conclosa. Comproveu si hi ha més temporades disponibles"
 
-# empty strings from id 30070 to 30099
+msgctxt "#30070"
+msgid "It is not possible to automatically identify the next episode of this series"
+msgstr "No és possible indentificar automàticament el proper episodi d'aquesta sèrie"
+
+msgctxt "#30071"
+msgid " Register for free at uptobox.com and add your account in the settings, to be able to use this server"
+msgstr " Registreu-vos gratis a uptobox.com i afegeix el teu compte en els ajustos, per poder utilitzar aquest servidor"
+
+# empty strings from id 30072 to 30099
 
 # moria
 
@@ -449,6 +457,38 @@ msgctxt "#30141"
 msgid "Favorite Anime Series"
 msgstr "Sèries Anime favorites"
 
-msgctxt "#30142"
-msgid "Series in follow-up"
-msgstr "Sèries en seguiment"
+msgctxt "#30143"
+msgid "Autoplay"
+msgstr "Reproducció automàtica"
+
+msgctxt "#30144"
+msgid "The link chosen automatically has failed. Choose another from the list"
+msgstr "L'enllaç triat automàticament ha fallat. Trieu-ne un altre de la llista"
+
+msgctxt "#30145"
+msgid "Information about Palantir 2"
+msgstr "Informació sobre Palantir 2"
+
+msgctxt "#30146"
+msgid "Last update"
+msgstr "Darrera actualització"
+
+msgctxt "#30147"
+msgid "Set this view for movies"
+msgstr "Estableix aquesta visualització per a pel·lícules"
+
+msgctxt "#30148"
+msgid "Set this view for series"
+msgstr "Estableix aquesta vista per a sèries"
+
+msgctxt "#30149"
+msgid "Set this view for seasons"
+msgstr "Estableix aquesta vista per temporades"
+
+msgctxt "#30150"
+msgid "Set this view for episodes"
+msgstr "Estableix aquesta visualització per als episodis"
+
+msgctxt "#30151"
+msgid "Set this view for menus"
+msgstr "Estableix aquesta vista per als menús"

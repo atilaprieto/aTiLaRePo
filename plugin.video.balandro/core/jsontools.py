@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
-# --------------------------------------------------------------------------------
-# json_tools - JSON load and parse functions with library detection
-# --------------------------------------------------------------------------------
+
+import sys
+
+if sys.version_info[0] < 3:
+    PY3 = False
+else:
+    unicode = str
+
+    PY3 = True
 
 import traceback
 
@@ -60,11 +66,15 @@ def dump(*args, **kwargs):
 
 def to_utf8(dct):
     if isinstance(dct, dict):
-        return dict((to_utf8(key), to_utf8(value)) for key, value in dct.iteritems())
+        return dict((to_utf8(key), to_utf8(value)) for key, value in dct.items())
     elif isinstance(dct, list):
         return [to_utf8(element) for element in dct]
     elif isinstance(dct, unicode):
-        return dct.encode('utf-8')
+        dct = dct.encode('utf8')
+        if PY3: dct = dct.decode('utf8')
+        return dct
+    elif PY3 and isinstance(dct, bytes):
+        return dct.decode('utf-8')
     else:
         return dct
 

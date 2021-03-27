@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# AppArmor decoder
 
 import re
 from core import scrapertools

@@ -4,7 +4,7 @@ from core import httptools, scrapertools
 from platformcode import logger
 from lib import jsunpack
 
-# Funciona para descargar el vídeo pero falla para reproducir
+# Funciona para descargar el vídeo pero falla en ocasiones al reproducir
 
 
 def get_video_url(page_url, url_referer=''):

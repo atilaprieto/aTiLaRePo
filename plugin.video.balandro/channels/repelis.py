@@ -8,7 +8,6 @@ host = 'https://repelis.io/'
 
 perpage = 20
 
-
 def item_configurar_proxies(item):
     plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
     plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
@@ -33,18 +32,26 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Últimas actualizadas', action = 'list_all', url = host + 'explorar/' ))
+    itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host + 'explorar/' ))
 
-    itemlist.append(item.clone( title = 'Castellano', action = 'list_all', url = host + 'peliculas-castellano/', grupo = 'lang', grupo_det='es-es' ))
-    itemlist.append(item.clone( title = 'Latino', action = 'list_all', url = host + 'peliculas-latino/', grupo = 'lang', grupo_det='es-mx' ))
-    itemlist.append(item.clone( title = 'Subtitulado', action = 'list_all', url = host + 'peliculas-subtituladas/', grupo = 'lang', grupo_det='en' ))
-
+    itemlist.append(item.clone( title = 'Por idioma', action = 'idiomas', search_type = 'movie' ))
     itemlist.append(item.clone ( title = 'Por género', action = 'generos', search_type = 'movie' ))
     itemlist.append(item.clone ( title = 'Por año', action = 'anios', search_type = 'movie' ))
 
     itemlist.append(item.clone ( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
     itemlist.append(item_configurar_proxies(item))
+    return itemlist
+
+
+def idiomas(item):
+    logger.info()
+    itemlist = []
+
+    itemlist.append(item.clone( title = 'Castellano', action = 'list_all', url = host + 'peliculas-castellano/', grupo = 'lang', grupo_det='es-es' ))
+    itemlist.append(item.clone( title = 'Latino', action = 'list_all', url = host + 'peliculas-latino/', grupo = 'lang', grupo_det='es-mx' ))
+    itemlist.append(item.clone( title = 'Subtitulado', action = 'list_all', url = host + 'peliculas-subtituladas/', grupo = 'lang', grupo_det='en' ))
+
     return itemlist
 
 
@@ -113,7 +120,7 @@ def list_all(item):
     try:
         matches = jsontools.load(data)
         # ~ logger.debug(matches)
-        
+
         key = 'movies2019' if item.grupo == 'anys' else 'movies'
 
         for movie in matches['data'][key]:
@@ -131,7 +138,7 @@ def list_all(item):
         tmdb.set_infoLabels(itemlist)
 
         if len(itemlist) > 1:
-            itemlist.append(item.clone( title = '>> Página siguiente', page = item.page + 1, action = 'list_all' ))
+            itemlist.append(item.clone( title = '>> Página siguiente', page = item.page + 1, action = 'list_all', text_color='coral' ))
     except:
         pass
 
@@ -150,11 +157,12 @@ def corregir_servidor(servidor):
     if servidor == 'myv': return 'myvi'
     return servidor
 
+
 def findvideos(item):
     logger.info()
     itemlist = []
 
-    IDIOMAS = {'es-es': 'Esp', 'es-mx': 'Lat', 'en': 'VOSE'}
+    IDIOMAS = {'es-es': 'Esp', 'es-mx': 'Lat', 'en': 'Vose'}
 
     data = do_downloadpage(item.url)
     # ~ logger.debug(data)
@@ -201,7 +209,6 @@ def play(item):
             itemlist.append(item.clone( url = url, server = servidor ))
 
     return itemlist
-
 
 
 def search(item, texto):

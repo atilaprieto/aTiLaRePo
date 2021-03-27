@@ -1,19 +1,52 @@
-Balandro changelog
-==================
+[COLOR coral]Balandro[/COLOR]
+
+[COLOR yellow]2021[/COLOR]
+
+2.0.0:
+    Compatible con Python3
+    Nuevo Menu
+    Nueva gestion de Proxies, Torrents y Busquedas
+    Nuevas opciones Grupos y Ayuda
+    Nueva Configuracion
+    Nuevos canales:
+       AnimeFenix, CineDeAntes, CinematteFlix, ClasicoTv, CliverSite, ClubCine,
+       Cuevana3Video, DocumaniaTv, DonTorrents, EntrePeliculasySeries,
+       HdfullSe, HomeCine, JKAnime, LegalmenteGratis, MegadedeLa,
+       MejorTorrents, MovidyMobi, PctFenix, Playdede, PelisHouse,
+       PelisRetro, PornHd, SeriesAntiguas, SeriesFlixIo, SeriesManta,
+       SeriesPapayaTo, SeriesRetro, SigloXX, SubTorrents, Tekilaz,
+       TupeliculaTv, TvSeries, VerPeliculasGratis
+    Canales reactivados:
+       CiberDocumentales, MiraDoumentales, TorrentDivx
+    Canales inactivos:
+       DesTotal, SeriesDanko
+    Canales anulados:
+       CienciaTv, DocumaniacosEsp, GDrive, MasPeliculas, Movidy, PepeCine,
+       SeriesPapaya, TeleDocumentales
+    Nuevos servidores:
+       Letsupload, Movcloud, Racaty, Streamsb, Zplayer
+
+1.5.2:
+    Canales modificados: Cinecalidad, Hdfull, Seriesmetro, SeriesFlix, Pelispedia, Repelis,
+    Seriesblanco, Newpct1, Seriemega, Seriez, Cliver, Seriespapaya, Seriesdanko, Pepecine.
+    Servidores modificados: Filesim, Gamovideo, Clipwatching, Vidtodo, Easyload.
+    Incorporado nuevo proveedor de proxies.
 
 1.5.1:
     Canales modificados: Cuevana3, Playview, Inkapelis, Cinecalidad, Hdfull, Movidy, 
     Seriesmetro, Serieflix, Newpct1, Grantorrent, Descargacineclasico, Pelisplay.
     Servidores modificados: Doodstream, Vidia, Gounlimited, Youtube, Videossh, 
     Streamtape, Gamovideo, Yourupload.
-    Añadido cliente Torrest para torrents.
+    Incorporado cliente Torrest para torrents.
+
+[COLOR yellow]2020[/COLOR]
 
 1.5.0:
     Canales modificados: Hdfull, Seriesdanko, Seriespapaya, Estrenoscinesaa, Allpeliculas,
     Playview, Dospelis, Inkapelis, Cinecalidad.
     Servidores modificados: Youtube, Gamovideo, Streamtape.
     Corrección bug por cambios de tmdb.
-    Opción en Settings para forzar actualizaciones de fixs.
+    Opcion en Settings para forzar actualizaciones de fixs.
 
 1.4.23:
     Canales modificados: Hdfull, Pepecine, Seriespapaya, Dilo, Dospelis, Movidy.
@@ -100,7 +133,7 @@ Balandro changelog
 1.4.6:
     Canales modificados: Descargacineclasico, Grantorrent, Inkapelis, Xdede, Allpeliculas, Cinetux. 
     Servidores modificados: Mystream, Streamz, Gamovideo, Digiload, Fembed.
-    Añadida una nueva opción para buscar proxies.
+    Incorporada una nueva opcion para buscar proxies.
 
 1.4.5:
     Canales modificados: Retroseriestv, Hdfull, Seriesdanko, Inkapelis, Elhogardelaprendiz. 
@@ -119,7 +152,7 @@ Balandro changelog
 1.4.2:
     Canales modificados: Cuevana3, Xdede, Dospelis, Pelisplay, Hdfull.
     Servidores modificados: Powvideo, Streamplay, Upstream, Netutv, Youtube, Videomega.
-    Nueva opción en Configuración/Otros para descartar listas eróticas/xxx.
+    Nueva opcion en Configuración/Otros para descartar listas eróticas/xxx.
 
 1.4.1:
     Canales nuevos: Dospelis.
@@ -134,6 +167,8 @@ Balandro changelog
     Yourupload, Thevideobee, Videobin, Gvideo.
     Contemplado indeterminado en configuración filtrar/ordenar enlaces por servidores.
 
+[COLOR yellow]2019[/COLOR]
+
 1.3.15:
     Canales modificados: Playview, Xdede, Miradocumentales, Cinetux.
     Servidores modificados: Powvideo, Streamplay, Videomega, Bdupload, 
@@ -142,17 +177,17 @@ Balandro changelog
 1.3.14:
     Canales modificados: Pepecine, Clasicofilm, Retroseriestv, Cliver, Cinecalidad.
     Servidores modificados: Mixdrop, Vidcloud, Thevid, Netutv, Jetload, Openplay.
-    En Descargas añadida opción para guardar una copia del vídeo a otra carpeta, usb.
+    En Descargas incorporada opcion para guardar una copia del vídeo a otra carpeta, usb.
 
 1.3.13:
     Canales modificados: Pelisplay, InkaSeries, Cinecalidad, Playview, Grantorrent, Cuevana3.
     Servidores modificados: Powvideo, Streamplay, JetLoad, Gounlimited, Videomega, Upstream.
-    Corregido pequeño bug en enlaces guardados con ciertos servidores (ej: gamovideo).
+    Corregido bug en enlaces guardados con ciertos servidores (ej: gamovideo).
 
 1.3.12:
     Canales modificados: Cinecalidad, Wikiseries.
     Servidores modificados: Jetload, Upvid, Mixdrop, Prostream, Vidia, Powvideo, Vidfast.
-    En la Ayuda, añadido apartado explicando la Utilización de proxies.
+    En la Ayuda, incorporado apartado explicando la Utilización de proxies.
 
 1.3.11:
     Canales modificados: Cuevana3, Pelisplay, Xdede, Cineonline, Cliver.
@@ -187,7 +222,7 @@ Balandro changelog
     Servidores modificados: OnlyStream, RapidVideo, JetLoad.
     Servidores desactivados: StreamCloud, NetuTv.
     Canales modificados: Dilo, Cuevana3, Cliver.
-    Pequeños retoques en Buscar / Listas Tmdb.
+    Retoques en Buscar / Listas Tmdb.
 
 1.3.4:
     Servidores modificados: StreamPlay, OnlyStream, TheVid.
@@ -198,55 +233,55 @@ Balandro changelog
     Servidores modificados: NetuTv.
     Canales modificados: CanalPelis, GranTorrent, Gnula, Cuevana3, RetroSeriesTv.
     En Configuración/Otros se puede desactivar el pitido en las notificaciones.
-    Pequeños retoques internos.
+    Retoques internos.
 
 1.3.2:
     Servidores modificados: VidCloud, Vup, VidMoly, Hxload.
-    Canales añadidos: ClasicoFilm.
+    Canales nuevo: ClasicoFilm.
     Canales modificados: CineCalidad, GranTorrent.
 
 1.3.1:
-    Nueva sección de Géneros en el menú principal para acceder a los principales
+    Nueva sección de Géneros en el menu principal para acceder a los principales
     géneros de cada canal.
     Canales modificados: Tv-Vip, CanalPelis, CineTux, Cuevana3.
 
 1.3.0:
     Nueva sección de canales Documentales.
     Cuando solo hay un enlace al reproducir se activa directamente el autoplay.
-    Servidores añadidos: DailyMotion, Vk, Vimeo.
-    Canales añadidos: Cliver y Documentales.
+    Servidores Incorporados: DailyMotion, Vk, Vimeo.
+    Canales Incorporado: Cliver y Documentales.
     Canales modificados: HdFull, SeriesBlanco, CanalPelis.
 
 1.2.17:
     Canales modificados: SeriesPapaya, CanalPelis, WikiSeries, GranTorrent, CineTux.
     Servidores modificados: JawCloud, StreamPlay.
-    Opción en la configuración para ordenar por calidades.
+    Opcion en la configuración para ordenar por calidades.
 
 1.2.16:
-    Añadido canal PelisPlay, modificados: Tv-Vip, PelisIpad, InkaPelis, SeriesPapaya, 
+    Nuevo canal PelisPlay, modificados: Tv-Vip, PelisIpad, InkaPelis, SeriesPapaya, 
     Yape, Dilo, SerieZ.
-    Añadido servidor Mega, modificado Openload.
+    Nuevo servidor Mega, modificado Openload.
 
 1.2.15:
     Servidores modificados: Vidtodo, Powvideo, Streamplay, Cloudvideo, Vshare.
     Canales modificados: Cinefox, GnulaBiz, CanalPelis.
-    Añadido canal SeriesRetroTv.
-    En búsquedas globales los canales sin resultados se muestran al final.
+    Nuevo canal SeriesRetroTv.
+    En busquedas globales los canales sin resultados se muestran al final.
     Modificados logos de algunos canales.
-    Pequeños retoques internos.
+    Retoques internos.
 
 1.2.14:
-    Dentro del menú Buscar, consultas a TMDB por personas, pelis y series.
+    Dentro del menu Buscar, consultas a TMDB por personas, pelis y series.
     Canales modificados: NewPct1, Gnula, InkaPelis, InkaSeries, DescargaCineClasico.
     Canales desactivados: SoloCastellano, EstaDePelis.
     Servidores modificados: Gamovideo, Jetload, Fembed, Openload, Vidtodo.
     Servidores desactivados: Vevio, TheVideoMe.
-    Pequeños retoques internos.
+    Retoques internos.
 
 1.2.13:
     Canales modificados: PeliculasHd, CineCalidad, Tv-Vip, PelisIpad, Dilo, Yape.
     Servidores modificados: Flashx, MegaUp, Vimple, GamoVideo.
-    Las últimas búsquedas se guardan por películas y series por separado.
+    Las ultimas busquedas se guardan por películas y series por separado.
 
 1.2.12:
     Canales modificados: Pepecine, NewPct1, PeliculasHd, InkaPelis.
@@ -261,20 +296,20 @@ Balandro changelog
     Canales modificados: Pepecine, InkaPelis, SeriesPapaya, NewPct1, Tv-Vip, 
         PelisIpad, SeriesDanko.
     Canales eliminados: PelisPedia, PeliculasHd, Repelis.
-    Pequeños retoques internos.
+    Retoques internos.
 
 1.2.10:
     Correcciones en canales: CineCalidad, SeriesPapaya.
-    Añadido canal PelisIpad.
+    Nuevo canal PelisIpad.
     Correcciones en servidores: PowVideo, StreamPlay.
-    Añadidos servidores GoUnlimited, VeryStream, VideoFiles.
-    Añadida opción para proxies en el canal SeriesPapaya.
+    Incorporados servidores GoUnlimited, VeryStream, VideoFiles.
+    Nueva opcion para proxies en el canal SeriesPapaya.
 
 1.2.9:
     Correcciones en canales: Cuevana3, Cinetux, InkaPelis, Tv-Vip.
     Correcciones en servidores: Streamplay, Xdrive, Flashx, Gamovideo.
-    En el canal Tv-Vip añadidas series y subcategorías de películas.
-    Pequeños retoques internos.
+    En el canal Tv-Vip Incorporadas series y subcategorías de películas.
+    Retoques internos.
 
 1.2.8:
     Correcciones en canales: Seriez.
@@ -295,7 +330,7 @@ Balandro changelog
     Correcciones en canales InkaPelis e InkaSeries.
 
 1.2.5:
-    Opción en la configuración para desactivar autoplay en canales concretos.
+    Opcion en la configuración para desactivar autoplay en canales concretos.
     Retoques en el canal Tv-Vip.
     Desactivado canal Pelis123 pq la web ya no funciona.
     Corrección para webs que usan cloudflare (Cinefox, Gnula).
@@ -303,53 +338,55 @@ Balandro changelog
     Habilitar acceso a Gnula via proxies.
 
 1.2.4:
-    Opción en la configuración para recordar la última búsqueda realizada.
+    Opcion en la configuración para recordar la ultima busqueda realizada.
     Correcciones en canales Cinefox, Gnula_biz, Pelis123.
     Correcciones en servidores Openload, GamoVideo, Streamplay.
     Desactivado servidor Netutv por necesitar recaptcha.
-    Pequeños retoques internos.
+    Retoques internos.
 
 1.2.3:
     Corregidos canales Cinecalidad y SeriesBlanco.
     Corregidos servidores TheVid, GamoVideo y PowVideo.
-    Añadido canal Tv-Vip (en fase experimental, desactivado por defecto).
+    Nuevo canal Tv-Vip (en fase experimental, desactivado por defecto).
     Retoques internos (opciones para proxys y caché).
 
 1.2.2:
-    Opción para desactivar las llamadas a tmdb y explicación en la ayuda.
-    Añadidos canales PlayView y CineOnline, corregido canal HdFull.
-    Añadidos servidores Vivo y TheVideoBee.
+    Opcion para desactivar las llamadas a tmdb y explicación en la ayuda.
+    Nuevos canales PlayView y CineOnline, corregido canal HdFull.
+    Nuevos servidores Vivo y TheVideoBee.
     Corregido buscador de Gnula_biz.
     Retoques menores.
 
 1.2.1:
     Se pueden copiar listas de enlaces guardados de otros dispositivos.
-    Añadidos canales InkaPelis e InkaSeries.
-    Reactivado servidor Netutv, corregido Xdrive, añadido Vshare.
-    Pequeñas correcciones en el buscador y en el lanzado de torrents.
+    Nuevas canales InkaPelis e InkaSeries.
+    Reactivado servidor Netutv, corregido Xdrive, Incorporado Vshare.
+    Correcciones en el buscador y en el lanzado de torrents.
+
+[COLOR yellow]2018[/COLOR]
 
 1.2.0:
     Cambio de nombre, AlfaLite pasa a llamarse Balandro y se desvincula de Alfa.
-    Añadido canal Repelis, servidor YourUpload.
+    Nuevo canal Repelis, servidor YourUpload.
     Retoques menores.
 
 1.1.21:
-    Añadidos HdFull y StreamPelis.
+    Incorporados HdFull y StreamPelis.
     Formateo de títulos configurable para los listados de películas y series en canales.
-    Colores del menú contextual configurables.
+    Colores del menu contextual configurables.
     Desactivado server netutv hasta encontrar una solución más estable.
     Actualizaciones y retoques menores.
-    Añadido changelog.txt
+    Incorporado changelog.txt
 
+[COLOR gold]Versiones anteriores[/COLOR]
 
-Versiones anteriores:
-
-    Retoques en Enlaces guardados. Añadido filtrado por idiomas configurable. Bugs varios. 
-    Correcciones en la búsqueda de nuevos episodios.
+1.0.xx:
+    Retoques en Enlaces guardados. Incorporado filtrado por idiomas configurable. Bugs varios. 
+    Correcciones en la busqueda de nuevos episodios.
     Pragma para identificar versión de bd. Poder mostrar los episodios de una temporada en orden inverso.
-    Añadido dev-notes.txt con anotaciones sobre el desarrollo.
+    Incorporado dev-notes.txt con anotaciones sobre el desarrollo.
     Correcciones Tmdb. WikiSeries. Buscar exacto/parecido. PeliculasHd. Cuevana3. Gnula.
     Servertools, netutv. Internal tests. Servers.
     Clones de Newpct1. Yape. Dilo. SerieZ. Grantorrent (pelis). Pelis123. Canalpelis.
-    Autoplay y filtros para servidores preferentes, última opción y descartados.
+    Autoplay y filtros para servidores preferentes, ultima opcion y descartados.
     Correcciones varias. Gnula_biz clon de cinefox sin cloudflare. Tráilers youtube de tmdb.

@@ -11,5 +11,9 @@
   "categories": ["movie"],
   "language": ["cast", "vose"],
 
+  "clusters": ["classic"],
+
+  "clusters": ["classic", "years", "stars", "directors"],
+
   "notes": "Películas clásicas, por géneros, años, directores, actores."
 }

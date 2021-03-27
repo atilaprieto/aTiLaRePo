@@ -3,6 +3,7 @@
   "name": "Streamcloud",
 
   "active": false,
+  "notes": "Servidor cerrado",
 
   "find_videos": {
     "ignore_urls": [

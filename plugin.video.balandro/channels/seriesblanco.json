@@ -11,5 +11,7 @@
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
 
+  "clusters": ["adults", "lasts", "vos"],
+
   "notes": "Series por género, por letra, ..."
 }

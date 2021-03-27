@@ -2,13 +2,13 @@
 
 import re, base64
 
-from platformcode import config, logger, platformtools
+from platformcode import logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-HOST = 'https://mega1link.com/'
+host = 'https://mega1link.com/'
 
-perpage = 20 # preferiblemente un múltiplo de los elementos que salen en la web (5x8=40) para que la subpaginación interna no se descompense
+perpage = 20
 
 
 def mainlist(item):
@@ -17,15 +17,15 @@ def mainlist(item):
 def mainlist_pelis(item):
     logger.info()
     itemlist = []
-    
-    itemlist.append(item.clone( title='Últimas actualizadas', action='list_all', url=HOST + 'peliculas/' ))
 
-    itemlist.append(item.clone( title='Castellano', action='list_all', url=HOST + 'tag/espanol-castellano/' ))
-    itemlist.append(item.clone( title='Latino', action='list_all', url=HOST + 'tag/espanol-latino/' ))
-    itemlist.append(item.clone( title='Subtitulado', action='list_all', url=HOST + 'tag/subtitulada/' ))
+    itemlist.append(item.clone( title='Catálogo', action='list_all', url=host + 'peliculas/' ))
+
+    itemlist.append(item.clone( title='Castellano', action='list_all', url=host + 'tag/espanol-castellano/' ))
+    itemlist.append(item.clone( title='Latino', action='list_all', url=host + 'tag/espanol-latino/' ))
+    itemlist.append(item.clone( title='Subtitulado', action='list_all', url=host + 'tag/subtitulada/' ))
 
     itemlist.append(item.clone ( title = 'Por género', action = 'generos', search_type = 'movie' ))
-    itemlist.append(item.clone ( title = 'Por calidades', action = 'calidades', search_type = 'movie' ))
+    itemlist.append(item.clone ( title = 'Por calidad', action = 'calidades', search_type = 'movie' ))
 
     itemlist.append(item.clone ( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
@@ -36,31 +36,32 @@ def generos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(HOST).data
+    data = httptools.downloadpage(host).data
 
     bloque = scrapertools.find_single_match(data, 'Genero</a>\s*<ul class="sub-menu">(.*?)</ul>')
-    
+
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)')
     for url, title in matches:
         if '/genero/' not in url: continue
         itemlist.append(item.clone( action='list_all', title=title, url=url ))
 
-    itemlist.append(item.clone ( action = 'list_all', title = 'Bélica', url=HOST + 'genero/belica/' ))
-    itemlist.append(item.clone ( action = 'list_all', title = 'Western', url=HOST + 'genero/western/' ))
+    itemlist.append(item.clone ( action = 'list_all', title = 'Bélica', url=host + 'genero/belica/' ))
+    itemlist.append(item.clone ( action = 'list_all', title = 'Western', url=host + 'genero/western/' ))
 
     return sorted(itemlist, key=lambda it: it.title)
+
 
 def calidades(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(HOST).data
+    data = httptools.downloadpage(host).data
 
     bloque = scrapertools.find_single_match(data, 'Calidad</a>\s*<ul class="sub-menu">(.*?)</ul>')
-    
+
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)')
     for url, title in matches:
-        itemlist.append(item.clone( action='list_all', title=title, url=url ))
+        itemlist.append(item.clone( action='list_all', title='En ' + title, url=url ))
 
     return itemlist
 
@@ -105,19 +106,18 @@ def list_all(item):
 
     # Subpaginación interna y/o paginación de la web
     buscar_next = True
-    if num_matches > perpage: # subpaginación interna dentro de la página si hay demasiados items
+    if num_matches > perpage:
         hasta = (item.page * perpage) + perpage
         if hasta < num_matches:
-            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_all' ))
+            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_all', text_color='coral' ))
             buscar_next = False
 
     if buscar_next:
         next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"[^>]*><span class="icon-chevron-right')
         if next_page:
-           itemlist.append(item.clone (url = next_page, page = 0, title = '>> Página siguiente', action = 'list_all'))
+           itemlist.append(item.clone (url = next_page, page = 0, title = '>> Página siguiente', action = 'list_all', text_color='coral'))
 
     return itemlist
-
 
 
 # Asignar un numérico según las calidades del canal, para poder ordenar por este valor
@@ -130,8 +130,8 @@ def puntuar_calidad(txt):
 def findvideos(item):
     logger.info()
     itemlist = []
-    
-    IDIOMAS = {'Español Castellano': 'Esp', 'Español Latino': 'Lat', 'Subtitulada': 'VOSE'}
+
+    IDIOMAS = {'Español Castellano': 'Esp', 'Español Latino': 'Lat', 'Subtitulada': 'Vose'}
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
@@ -147,22 +147,21 @@ def findvideos(item):
         if url.startswith('//'): url = 'https:' + url
         server = servertools.corregir_servidor(scrapertools.find_single_match(lin, "domain=([^.']+)"))
         if not url or not server: continue
-        
+
         qlty = scrapertools.find_single_match(lin, "<strong class='quality'>([^<]+)").replace('mp4', '').strip()
         lang = scrapertools.find_single_match(lin, "<td>([^<]+)")
 
-        itemlist.append(Item( channel = item.channel, action = 'play', server = server,
-                              title = '', url = url, 
-                              language = IDIOMAS.get(lang, lang), quality = qlty, quality_num = puntuar_calidad(qlty)
-                       ))
+        itemlist.append(Item( channel = item.channel, action = 'play', server = server, title = '', url = url, 
+                              language = IDIOMAS.get(lang, lang), quality = qlty, quality_num = puntuar_calidad(qlty) ))
 
     return itemlist
+
 
 def play(item):
     logger.info()
     itemlist = []
 
-    if item.url.startswith(HOST):
+    if item.url.startswith(host):
         data = httptools.downloadpage(item.url).data
         # ~ logger.debug(data)
         url = scrapertools.find_single_match(data, '<a id="link"[^>]*href="([^"]+)')
@@ -171,7 +170,6 @@ def play(item):
             if servidor and servidor != 'directo':
                 url = servertools.normalize_url(servidor, url)
                 itemlist.append(item.clone( url=url, server=servidor ))
-        
     else:
         itemlist.append(item.clone())
 
@@ -196,7 +194,7 @@ def list_search(item):
         if not year: year = scrapertools.find_single_match(article, '<span>(\d{4})</span>')
         if not year: year = scrapertools.find_single_match(title, '\((\d{4})\)')
         plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<p>(.*?)</p>'))
-        
+
         if year:
             title = re.sub(' %s$' % year, '', title)
             title = re.sub(' \(%s\)$' % year, '', title)
@@ -207,19 +205,20 @@ def list_search(item):
 
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
                                     contentType='movie', contentTitle=title, infoLabels={'year': year, 'plot': plot}, contentTitleAlt = title_alt ))
-            
+
     tmdb.set_infoLabels(itemlist)
 
     next_page_link = scrapertools.find_single_match(data, ' href="([^"]+)"[^>]*><span class="icon-chevron-right">')
     if next_page_link:
-        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_search' ))
+        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_search', text_color='coral' ))
 
     return itemlist
+
 
 def search(item, texto):
     logger.info("texto: %s" % texto)
     try:
-        item.url = HOST + '/?s=' + texto.replace(" ", "+")
+        item.url = host + '/?s=' + texto.replace(" ", "+")
         return list_search(item)
     except:
         import sys
