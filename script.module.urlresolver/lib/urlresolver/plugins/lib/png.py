@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # encoding=utf-8
-# flake8: noqa
 #
 # png.py - PNG encoder/decoder in pure Python
 #
@@ -292,11 +291,9 @@ except NameError:
 try:
     bytes('', 'ascii')
 
-    def strtobytes(x):
-        return bytes(x, 'iso8859-1')
+    def strtobytes(x): return bytes(x, 'iso8859-1')
 
-    def bytestostr(x):
-        return str(x, 'iso8859-1')
+    def bytestostr(x): return str(x, 'iso8859-1')
 except (NameError, TypeError):
     # We get NameError when bytes() does not exist (most Python
     # 2.x versions), and TypeError when bytes() exists but is on
@@ -1528,7 +1525,7 @@ class Writer(object):
             def line():
                 scanline = array('B', infile.read(row_bytes))
                 return scanline
-        for _ in range(self.height):
+        for y in range(self.height):
             yield line()
 
     def array_scanlines(self, pixels):
@@ -1539,7 +1536,7 @@ class Writer(object):
         # Values per row
         vpr = self.width * self.planes
         stop = 0
-        for _ in range(self.height):
+        for y in range(self.height):
             start = stop
             stop = start + vpr
             yield pixels[start:stop]
@@ -3151,7 +3148,6 @@ def write_pnm(file, width, height, pixels, meta):
         file.write(struct.pack(fmt, *row))
     file.flush()
 
-
 def color_triple(color):
     """
     Convert a command line colour value to a RGB triple of integers.
@@ -3169,7 +3165,6 @@ def color_triple(color):
         return (int(color[1:5], 16),
                 int(color[5:9], 16),
                 int(color[9:13], 16))
-
 
 def _add_common_options(parser):
     """Call *parser.add_option* for each of the options that are

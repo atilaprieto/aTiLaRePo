@@ -1,5 +1,5 @@
 '''
-    Plugin for UrlResolver
+    urlresolver XBMC Addon
     Copyright (C) 2016 Gujal
 
 This program is free software: you can redistribute it and/or modify
@@ -16,24 +16,52 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from urlresolver.plugins.lib import helpers
-from urlresolver import common
+from urlparse import urlparse
+from lib import helpers
+from urlresolver.common import Net, RAND_UA
 from urlresolver.resolver import UrlResolver, ResolverError
-
 
 class FastplayResolver(UrlResolver):
     name = 'fastplay.sx'
     domains = ['fastplay.sx', 'fastplay.cc', 'fastplay.to']
-    pattern = r'(?://|\.)(fastplay\.(?:sx|cc|to))/(?:flash-|embed-)?([0-9a-zA-Z]+)'
+    pattern = '(?://|\.)(fastplay\.(?:sx|cc|to))/(?:flash-|embed-)?([0-9a-zA-Z]+)'
+
+    def __init__(self):
+        self.net = Net()
+        self.userAgent = RAND_UA
+        self.net.set_user_agent(self.userAgent)
+        self.desktopHeaders = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Upgrade-Insecure-Requests': '1',
+            'DNT': '1'
+        }
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.FF_USER_AGENT}
-        html = self.net.http_GET(web_url, headers=headers).content
-        sources = helpers.scrape_sources(html)
+        r = self.net.http_GET(web_url, headers=self.desktopHeaders)
+
+        sources = helpers.scrape_sources(
+            r.content,
+            generic_patterns=False,
+            patterns=['''file:.*?['"](?P<url>.*?)['"](?:.*?label.*?['"](?P<label>.*?)['"])?''']
+        )
         if sources:
-            return helpers.pick_source(sources) + helpers.append_headers(headers)
-        raise ResolverError('Video cannot be located.')
+
+            # Headers for requesting media (copied from Firefox).
+            parsedUrl = urlparse(r.get_url())
+            kodiHeaders = {
+                'User-Agent': self.userAgent,
+                'Accept': 'video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5',
+                'Referer': '%s://%s/' % (parsedUrl.scheme, parsedUrl.netloc),
+                'Cookie': '; '.join(cookie.name + '=' + cookie.value for cookie in self.net._cj)
+            }
+
+            sources = helpers.sort_sources_list(sources)
+            return helpers.pick_source(sources) + helpers.append_headers(kodiHeaders)
+
+        raise ResolverError('Unable to locate video')
+
 
     def get_url(self, host, media_id):
-        return self._default_get_url(host, media_id, template='https://fastplay.to/embed-{media_id}.html')
+        return self._default_get_url(host, media_id, template='http://fastplay.to/embed-{media_id}.html')

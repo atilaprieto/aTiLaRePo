@@ -1,5 +1,5 @@
-"""
-Plugin for URLResolver
+'''
+vidzi urlresolver plugin
 Copyright (C) 2014 Eldorado
 
 This program is free software: you can redistribute it and/or modify
@@ -14,20 +14,18 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
 
-from urlresolver.plugins.__generic_resolver__ import GenericResolver
-from urlresolver.plugins.lib import helpers
+from lib import helpers
+from urlresolver.resolver import UrlResolver, ResolverError
 
-
-class VidziResolver(GenericResolver):
+class VidziResolver(UrlResolver):
     name = "vidzi"
     domains = ["vidzi.tv", "vidzi.nu"]
-    pattern = r'(?://|\.)(vidzi\.(?:tv|nu))/(?:embed-)?([0-9a-zA-Z]+)'
-
+    pattern = '(?://|\.)(vidzi\.(?:tv|nu))/(?:embed-)?([0-9a-zA-Z]+)'
+    
     def get_media_url(self, host, media_id):
-        return helpers.get_media_url(self.get_url(host, media_id),
-                                     patterns=[r'''["']?(?:file|url)["']?\s*[:=]\s*["'](?P<url>[^"']+)''']).replace(' ', '%20')
+        return helpers.get_media_url(self.get_url(host, media_id), patterns=['''["']?(?:file|url)["']?\s*[:=]\s*["'](?P<url>[^"']+)''']).replace(' ', '%20')
 
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id, template='https://vidzi.nu/embed-{media_id}.html')

@@ -1,6 +1,6 @@
 '''
-    Plugin for UrlResolver
-    Copyright (C) 2016 gujal
+    urlresolver Kodi plugin
+    Copyright (C) 2016
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,19 +16,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from urlresolver.plugins.__generic_resolver__ import GenericResolver
-from urlresolver.plugins.lib import helpers
+from lib import helpers
+from urlresolver.resolver import UrlResolver, ResolverError
 
-
-class DateMuleResolver(GenericResolver):
+class DateMuleResolver(UrlResolver):
     name = "datemule"
     domains = ["datemule.co", "datemule.com"]
-    pattern = r'(?://|\.)(datemule\.(?:co|com))/watch/(?:featured/)?([\w-]+)'
+    pattern = '(?://|\.)(datemule\.(?:co|com))/watch/(?:featured/)?([\w-]+)'
 
     def get_media_url(self, host, media_id):
-        return helpers.get_media_url(self.get_url(host, media_id),
-                                     patterns=[r'''(?:hls|mp4)\s*:\s*\[?['"](?P<url>[^'"]+)'''],
-                                     generic_patterns=False).replace(' ', '%20')
+        return helpers.get_media_url(self.get_url(host, media_id), patterns=['''(?:hls|mp4)\s*:\s*\[?['"](?P<url>[^'"]+)''']).replace(' ', '%20')
 
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id, 'https://www.datemule.com/watch/{media_id}')

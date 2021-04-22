@@ -1,6 +1,6 @@
-"""
-    Plugin for UrlResolver
-    Copyright (C) 2016 gujal
+'''
+    urlresolver Kodi plugin
+    Copyright (C) 2016 Gujal
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,10 +14,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
+'''
 import re
-from urlresolver.plugins.lib import helpers
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -25,7 +24,10 @@ from urlresolver.resolver import UrlResolver, ResolverError
 class TVLogyResolver(UrlResolver):
     name = "tvlogy.to"
     domains = ["tvlogy.to"]
-    pattern = r'(?://|\.)((?:hls\.)?tvlogy\.to)/(?:embed/|watch\.php\?v=|player/index.php\?data=)?([0-9a-zA-Z]+)'
+    pattern = '(?://|\.)(tvlogy\.to)/(?:embed/|watch\.php\?v=)?([0-9a-zA-Z]+)'
+
+    def __init__(self):
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
@@ -38,23 +40,19 @@ class TVLogyResolver(UrlResolver):
         if 'Video is processing' in html:
             raise ResolverError('File still being processed')
 
-        packed = re.search(r"JuicyCodes\.Run\((.+?)\)", html, re.I)
+        packed = re.search("JuicyCodes\.Run\((.+?)\)", html, re.I)
         if packed:
             from base64 import b64decode
             packed = packed.group(1).replace('"', '').replace('+', '')
-            packed = b64decode(packed.encode('ascii'))
-            html += '%s</script>' % packed.decode('latin-1').strip()
+            packed = b64decode(packed)
+            html += '%s</script>' % packed.strip()
 
-        source = helpers.scrape_sources(html)
-        if source:
-            headers.update({'Referer': web_url, 'Accept': '*/*'})
-            vsrv = re.findall(r'//(\d+)/', source[0][1])[0]
-            source = re.sub(r"//\d+/", "//{0}/".format(host), source[0][1]) + '?s={0}&d='.format(vsrv)
-            html = self.net.http_GET(source, headers=headers).content
-            sources = re.findall(r'RESOLUTION=\d+x(\d+)\n([^\n]+)', html)
-            return helpers.pick_source(helpers.sort_sources_list(sources)) + helpers.append_headers(headers)
+        sources = helpers.scrape_sources(html)
+        if sources:
+            headers.update({'Referer': web_url, 'Range': 'bytes=0-'})
+            return helpers.pick_source(sources) + helpers.append_headers(headers)
 
         raise ResolverError('Video not found')
 
     def get_url(self, host, media_id):
-        return self._default_get_url(host, media_id, template='https://{host}/player/index.php?data={media_id}')
+        return self._default_get_url(host, media_id, template='https://{host}/embed/{media_id}')

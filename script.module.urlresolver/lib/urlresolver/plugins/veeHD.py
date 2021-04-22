@@ -1,5 +1,5 @@
 """
-Plugin for UrlResolver
+urlresolver XBMC Addon
 Copyright (C) 2011 t0mm0
 
 This program is free software: you can redistribute it and/or modify
@@ -18,24 +18,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import re
 import os
-from six.moves import urllib_parse
+import urllib
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
-
 
 class VeeHDResolver(UrlResolver):
     name = "VeeHD"
     domains = ["veehd.com"]
-    pattern = r'(?://|\.)(veehd\.com)/video/([0-9A-Za-z]+)'
+    pattern = '(?://|\.)(veehd\.com)/video/([0-9A-Za-z]+)'
 
     profile_path = common.profile_path
     cookie_file = os.path.join(profile_path, '%s.cookies' % name)
 
     def __init__(self):
-        try:
-            os.makedirs(os.path.dirname(self.cookie_file))
-        except OSError:
-            pass
+        self.net = common.Net()
+        try: os.makedirs(os.path.dirname(self.cookie_file))
+        except OSError: pass
 
     # UrlResolver methods
     def get_media_url(self, host, media_id):
@@ -46,7 +44,7 @@ class VeeHDResolver(UrlResolver):
         html = self.net.http_GET(web_url).content
 
         # two possible playeriframe's: stream and download
-        for match in re.finditer(r'playeriframe.+?src\s*:\s*"([^"]+)', html):
+        for match in re.finditer('playeriframe.+?src\s*:\s*"([^"]+)', html):
             player_url = 'http://%s%s' % (host, match.group(1))
             html = self.net.http_GET(player_url).content
 
@@ -57,17 +55,17 @@ class VeeHDResolver(UrlResolver):
                 self.net.http_GET(frame_url)
                 html = self.net.http_GET(player_url).content
 
-            patterns = [r'"video/divx"\s+src="([^"]+)', r'"url"\s*:\s*"([^"]+)', 'href="([^"]+(?:mp4|avi))']
+            patterns = ['"video/divx"\s+src="([^"]+)', '"url"\s*:\s*"([^"]+)', 'href="([^"]+(?:mp4|avi))']
             for pattern in patterns:
                 r = re.search(pattern, html)
                 if r:
-                    stream_url = urllib_parse.unquote(r.group(1))
+                    stream_url = urllib.unquote(r.group(1))
                     return stream_url
 
         raise ResolverError('File Not Found or Removed')
 
     def get_url(self, host, media_id):
-        return self._default_get_url(host, media_id, template='http://{host}/video/{media_id}')
+        return 'http://veehd.com/video/%s' % media_id
 
     # SiteAuth methods
     def login(self):

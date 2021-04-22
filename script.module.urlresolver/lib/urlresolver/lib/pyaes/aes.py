@@ -1,4 +1,3 @@
-# flake8: noqa
 #@PydevCodeAnalysisIgnore
 # The MIT License (MIT)
 #

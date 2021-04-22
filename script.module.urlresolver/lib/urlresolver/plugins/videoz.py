@@ -1,5 +1,5 @@
 '''
-    Plugin for UrlResolver
+    urlresolver Kodi plugin
     Copyright (C) 2019
 
     This program is free software: you can redistribute it and/or modify
@@ -16,20 +16,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from urlresolver.plugins.lib import helpers
-from urlresolver.plugins.__generic_resolver__ import GenericResolver
+from lib import helpers
+from urlresolver.resolver import UrlResolver
 
 
-class VideozResolver(GenericResolver):
+class VideozResolver(UrlResolver):
     name = "videoz"
     domains = ["videoz.me"]
-    pattern = r'(?://|\.)(videoz\.me)/(?:embed-)?([0-9a-zA-Z]+)'
+    pattern = '(?://|\.)(videoz\.me)/(?:embed-)?([0-9a-zA-Z]+)'
 
     def get_media_url(self, host, media_id):
-        return helpers.get_media_url(self.get_url(host, media_id),
-                                     patterns=[r'''file\s*:\s*["'](?P<url>[^"']+)'''],
-                                     generic_patterns=False,
-                                     result_blacklist=['dl']).replace(' ', '%20')
+        return helpers.get_media_url(self.get_url(host, media_id), patterns=['''file\s*:\s*["'](?P<url>[^"']+)'''], generic_patterns=False, result_blacklist=['dl']).replace(' ', '%20')
 
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id)

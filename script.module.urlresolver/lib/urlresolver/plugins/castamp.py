@@ -1,5 +1,5 @@
 """
-    Plugin for URLResolver
+    urlresolver XBMC Addon
     Copyright (C) 2011 t0mm0
 
     This program is free software: you can redistribute it and/or modify
@@ -19,13 +19,15 @@ import random
 import re
 import math
 from urlresolver import common
-from urlresolver.resolver import UrlResolver, ResolverError  # @UnusedImport ResolverError
-
+from urlresolver.resolver import UrlResolver, ResolverError
 
 class CastampResolver(UrlResolver):
     name = "castamp"
     domains = ["castamp.com"]
-    pattern = r'(?://|\.)(castamp\.com)/embed\.php\?c=(.*?)&'
+    pattern = '(?://|\.)(castamp\.com)/embed\.php\?c=(.*?)&'
+
+    def __init__(self):
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)

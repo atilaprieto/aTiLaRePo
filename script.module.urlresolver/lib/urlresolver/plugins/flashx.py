@@ -17,20 +17,21 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
 import re
-from six.moves import urllib_error
+import urllib2
 import json
-from urlresolver.plugins.lib import helpers
+from lib import helpers
 from urlresolver import common
 from urlresolver.common import i18n
-from urlresolver.resolver import UrlResolver, ResolverError  # @UnusedImport
+from urlresolver.resolver import UrlResolver, ResolverError
 
 
 class FlashxResolver(UrlResolver):
     name = "flashx"
     domains = ["flashx.tv", "flashx.to", "flashx.sx", "flashx.bz", "flashx.cc"]
-    pattern = r'(?://|\.)(flashx\.(?:tv|to|sx|cc|bz))/(?:embed-|dl\?|embed.php\?c=)?([0-9a-zA-Z]+)'
+    pattern = '(?://|\.)(flashx\.(?:tv|to|sx|cc|bz))/(?:embed-|dl\?|embed.php\?c=)?([0-9a-zA-Z]+)'
 
     def __init__(self):
+        self.net = common.Net()
         self.headers = {'User-Agent': common.RAND_UA}
 
     def get_media_url(self, host, media_id):
@@ -39,7 +40,7 @@ class FlashxResolver(UrlResolver):
             result = self.__auth_ip(media_id)
 
         if result:
-            return helpers.get_media_url(result, patterns=[r'''src:\s*["'](?P<url>[^"']+).+?res:\s*(?P<label>\d+)'''], result_blacklist=["trailer"], generic_patterns=False).replace(' ', '%20')
+            return helpers.get_media_url(result, patterns=['''src:\s*["'](?P<url>[^"']+).+?res:\s*(?P<label>\d+)'''], result_blacklist=["trailer"], generic_patterns=False).replace(' ', '%20')
 
         raise ResolverError(i18n('no_ip_authorization'))
 
@@ -58,7 +59,7 @@ class FlashxResolver(UrlResolver):
             js_result = json.loads(self.net.http_GET(url, headers=self.headers).content)
         except ValueError:
             raise ResolverError('Unusable Authorization Response')
-        except urllib_error.HTTPError as e:
+        except urllib2.HTTPError as e:
             if e.code == 401:
                 js_result = json.loads(str(e.read()))
             else:

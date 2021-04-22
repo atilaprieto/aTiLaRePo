@@ -9,14 +9,13 @@
 
 import re
 
-
 class JJDecoder(object):
 
     def __init__(self, jj_encoded_data):
         self.encoded_str = jj_encoded_data
 
     def clean(self):
-        return re.sub(r'^\s+|\s+$', '', self.encoded_str)
+        return re.sub('^\s+|\s+$', '', self.encoded_str)
 
     def checkPalindrome(self, Str):
         startpos = -1
@@ -41,7 +40,7 @@ class JJDecoder(object):
     def decode(self):
 
         self.encoded_str = self.clean()
-        startpos, endpos, gv, _ = self.checkPalindrome(self.encoded_str)
+        startpos, endpos, gv, gvl = self.checkPalindrome(self.encoded_str)
 
         if startpos == endpos:
             raise Exception('No data!')
@@ -304,6 +303,6 @@ class JJDecoder(object):
                             data = data[1:]
                             match += 1
                     continue
-            print('No match : ' + data)
+            print 'No match : ' + data
             break
         return out

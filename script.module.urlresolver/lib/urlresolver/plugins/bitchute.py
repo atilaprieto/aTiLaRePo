@@ -1,6 +1,7 @@
 """
-    Plugin for UrlResolver
-    Copyright (C) 2020 gujal
+    URLResolver Kodi module
+    Bitchute plugin
+    Copyright (C) 2019 twilight0
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,20 +17,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from urlresolver.plugins.__generic_resolver__ import GenericResolver
-from urlresolver.plugins.lib import helpers
+from __generic_resolver__ import UrlResolver
+from lib import helpers
+from urlresolver import common
 
 
-class BitchuteResolver(GenericResolver):
+class BitchuteResolver(UrlResolver):
 
     name = "bitchute.com"
     domains = ['bitchute.com']
     pattern = r'(?://|\.)(bitchute\.com)/(?:video|embed)/([\w-]+)/'
 
+    def __init__(self):
+
+        self.net = common.Net()
+        self.headers = {'User-Agent': common.RAND_UA}
+
     def get_media_url(self, host, media_id):
-        return helpers.get_media_url(self.get_url(host, media_id),
-                                     patterns=[r'''source src=['"](?P<url>https.+?\.mp4)['"]\s*type=['"]video/mp4['"]'''],
-                                     generic_patterns=False)
+
+        web_url = self.get_url(host, media_id)
+        response = self.net.http_GET(web_url, headers=self.headers)
+
+        sources = helpers.scrape_sources(
+            response.content, patterns=[r'''source src=['"](?P<url>https.+?\.mp4)['"] type=['"]video/mp4['"]''']
+        )
+
+        self.headers.update({'Referer': web_url})
+
+        return helpers.pick_source(sources) + helpers.append_headers(self.headers)
 
     def get_url(self, host, media_id):
+
         return self._default_get_url(host, media_id, 'https://www.{host}/video/{media_id}')

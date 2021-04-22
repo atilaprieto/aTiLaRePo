@@ -2,7 +2,7 @@
     OVERALL CREDIT TO:
         t0mm0, Eldorado, VOINAGE, BSTRDMKR, tknorris, smokdpi, TheHighway
 
-    Plugin for URLResolver
+    urlresolver XBMC Addon
     Copyright (C) 2011 t0mm0
 
     This program is free software: you can redistribute it and/or modify
@@ -18,9 +18,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from urlresolver.plugins.__generic_resolver__ import GenericResolver
-from urlresolver.plugins.lib import helpers
-
+from __generic_resolver__ import GenericResolver
+from lib import helpers
 
 class VidwatchResolver(GenericResolver):
     name = "vidwatch.me"
@@ -28,8 +27,7 @@ class VidwatchResolver(GenericResolver):
     pattern = r'(?://|\.)(vidwatch\d*\.me)/(?:embed-)?([a-zA-Z0-9]+)'
 
     def get_media_url(self, host, media_id):
-        return helpers.get_media_url(self.get_url(host, media_id),
-                                     patterns=[r'''file:\s*['"](?P<url>[^'"]+)'''])
+        return helpers.get_media_url(self.get_url(host, media_id), patterns=[r'''file:\s*['"](?P<url>[^'"]+)'''])
 
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id, template='https://vidwatch.me/embed-{media_id}.html')

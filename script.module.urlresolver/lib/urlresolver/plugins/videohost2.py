@@ -17,30 +17,35 @@
 """
 
 import re
-import base64
 from urlresolver import common
-from urlresolver.plugins.lib import helpers
+from lib import helpers
 from urlresolver.resolver import UrlResolver, ResolverError
-
 
 class VideoHost2Resolver(UrlResolver):
     name = 'videohost2.com'
     domains = ['videohost2.com']
-    pattern = r'(?://|\.)(videohost2\.com)/playh\.php\?id=([0-9a-f]+)'
+    pattern = '(?://|\.)(videohost2\.com)/playh\.php\?id=([0-9a-f]+)'
+
+    def __init__(self):
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.FF_USER_AGENT}
-        html = self.net.http_GET(web_url).content
-        r = re.search(r"atob\('([^']+)", html)
+        resp = self.net.http_GET(web_url)
+        html = resp.content
+        r = re.search("atob\('([^']+)", html)
 
         if r:
-            html = base64.b64decode(r.group(1).encode('ascii'))
-            r2 = re.search(r"source\s*src='([^']+)", html.decode('latin-1'))
+            stream_page = r.group(1).decode('base64')
+            r2 = re.search("source\s*src='([^']+)", stream_page)
             if r2:
-                return r2.group(1) + helpers.append_headers(headers)
+                stream_url = r2.group(1)
+            else:
+                raise ResolverError('no file located')
+        else:
+            raise ResolverError('no file located')
 
-        raise ResolverError('no file located')
+        return stream_url + helpers.append_headers({'User-Agent': common.FF_USER_AGENT})
 
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id, 'http://{host}/playh.php?id={media_id}')

@@ -1,5 +1,5 @@
 """
-    Plugin for URLResolver
+    Kodi urlresolver plugin
     Copyright (C) 2020  script.module.urlresolver
 
     This program is free software: you can redistribute it and/or modify
@@ -16,13 +16,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from urlresolver.plugins.__generic_resolver__ import GenericResolver
-
+from __generic_resolver__ import GenericResolver
+from lib import helpers
 
 class LiveLeakResolver(GenericResolver):
     name = "liveleak"
     domains = ["liveleak.com"]
-    pattern = r'(?://|\.)(liveleak\.com)/view\?t=([0-9A-Za-z_]+)'
+    pattern = '(?://|\.)(liveleak\.com)/view\?t=([0-9A-Za-z_]+)'
 
     def get_url(self, host, media_id):
         return self._default_get_url(host, media_id, template='https://www.{host}/view?t={media_id}')

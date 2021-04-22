@@ -1,6 +1,7 @@
 """
-    Plugin for UrlResolver
-    Copyright (C) 2020 gujal
+    urlresolver XBMC Addon
+    Copyright (C) 2011 anilkuj
+    Copyright (C) 2019 cache-sk
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,8 +18,7 @@
 """
 
 import json
-from six.moves import urllib_error, urllib_request
-from urlresolver.plugins.lib import helpers
+from lib import helpers
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
@@ -26,41 +26,31 @@ from urlresolver.resolver import UrlResolver, ResolverError
 class VeohResolver(UrlResolver):
     name = "veoh"
     domains = ["veoh.com"]
-    pattern = r'(?://|\.)(veoh\.com)/(?:watch/|.+?permalinkId=)?([0-9a-zA-Z/]+)'
+    pattern = '(?://|\.)(veoh\.com)/(?:watch/|.+?permalinkId=)?([0-9a-zA-Z/]+)'
+
+    def __init__(self):
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
-        web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.CHROME_USER_AGENT, 'Referer': web_url}
-        html = self.net.http_GET(web_url, headers=headers).content
-        _data = json.loads(html)
-        if 'video' in _data and 'src' in _data.get('video', ''):
-            sources = []
-            _src = _data['video']['src']
-            if 'HQ' in _src:
-                sources.append(('HQ', _src['HQ']))
-            if 'Regular' in _src:
-                sources.append(('RQ', _src['Regular']))
+        try:
+            _json = self.net.http_GET("https://www.veoh.com/watch/getVideo/" + media_id).content
+            _data = json.loads(_json)
+            if 'video' in _data and 'src' in _data['video']:
+                sources = []
+                _src = _data['video']['src']
+                if 'HQ' in _src:
+                    sources.append(('HD', _src['HQ']))
+                if 'Regular' in _src:
+                    sources.append(('SD', _src['Regular']))
+                
+                if len(sources) > 0:
+                    return helpers.pick_source(sources)
 
-            if len(sources) > 0:
-                return self._redirect_test(helpers.pick_source(sources)) + helpers.append_headers(headers)
-
-        raise ResolverError('Unable to locate video')
+                raise ResolverError('File Not Found or removed')
+        except:
+            pass    
+        
+        raise ResolverError('Unknown error')
 
     def get_url(self, host, media_id):
-        return self._default_get_url(host, media_id, template='https://www.{host}/watch/getVideo/{media_id}')
-
-    def _redirect_test(self, url):
-        opener = urllib_request.build_opener()
-        opener.addheaders = [('User-agent', common.CHROME_USER_AGENT),
-                             ('Referer', 'https://www.veoh.com/')]
-        try:
-            resp = opener.open(url)
-            if url != resp.geturl():
-                return resp.geturl()
-            else:
-                return url
-        except urllib_error.HTTPError as e:
-            if e.code == 403:
-                if url != e.geturl():
-                    return e.geturl()
-            raise ResolverError('File not found')
+        return 'http://veoh.com/watch/%s' % media_id

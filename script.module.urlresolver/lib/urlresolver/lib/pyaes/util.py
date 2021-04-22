@@ -1,4 +1,3 @@
-# flake8: noqa
 # The MIT License (MIT)
 #
 # Copyright (c) 2014 Richard Moore

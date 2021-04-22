@@ -1,5 +1,5 @@
 """
-    Plugin for UrlResolver
+    Kodi urlresolver plugin
     Copyright (C) 2016  tknorris
 
     This program is free software: you can redistribute it and/or modify
@@ -15,29 +15,31 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import re
 import urllib
 from urlresolver import common
 from urlresolver.resolver import UrlResolver, ResolverError
 
-
 class TudouResolver(UrlResolver):
     name = 'Tudou'
     domains = ['tudou.com']
-    pattern = r'(?://|\.)(tudou\.com)/programs/view/([0-9a-zA-Z]+)'
+    pattern = '(?://|\.)(tudou\.com)/programs/view/([0-9a-zA-Z]+)'
+
+    def __init__(self):
+        self.net = common.Net()
 
     def get_media_url(self, host, media_id):
         web_url = self.get_url(host, media_id)
-        headers = {'User-Agent': common.FF_USER_AGENT}
+
         html = self.net.http_GET(web_url).content
 
-        swf = re.findall(r'(http.+?\.swf)', html)[0]
-        sid = re.findall(r'areaCode\s*:\s*"(\d+)', html)[0]
-        oid = re.findall(r'"k"\s*:\s*(\d+)', html)[0]
+        swf = re.findall('(http.+?\.swf)', html)[0]
+        sid = re.findall('areaCode\s*:\s*"(\d+)', html)[0]
+        oid = re.findall('"k"\s*:\s*(\d+)', html)[0]
 
         f_url = 'http://v2.tudou.com/f?id=%s&sid=%s&hd=3&sj=1' % (oid, sid)
-        headers.update({'Referer': swf})
+        headers = {'User-Agent': common.FF_USER_AGENT, 'Referer': swf}
+
         html = self.net.http_GET(f_url, headers=headers).content
 
         url = re.findall('>(http.+?)<', html)[0]
@@ -46,9 +48,11 @@ class TudouResolver(UrlResolver):
         video = self.net.http_HEAD(url, headers=headers).get_headers()
         video = [i for i in video if 'video' in i]
 
-        if video:
-            url += '|%s' % urllib.urlencode(headers)
-            return url
+        if not video:
+            raise ResolverError('File not found')
+
+        url += '|%s' % urllib.urlencode(headers)
+        return url
 
         raise ResolverError('Unable to locate link')
 

@@ -1,5 +1,5 @@
 """
-    Plugin for URLResolver
+    urlresolver XBMC Addon
     Copyright (C) 2013 Bstrdsmkr
 
     This program is free software: you can redistribute it and/or modify
@@ -19,17 +19,17 @@
 from urlresolver import common
 from urlresolver.common import i18n
 from urlresolver.resolver import UrlResolver, ResolverError
-from six.moves import urllib_parse
+import urlparse
+import urllib
 import json
 
 logger = common.log_utils.Logger.get_logger(__name__)
 logger.disable()
 
-
 class SimplyDebridResolver(UrlResolver):
     name = "Simply-Debrid"
     domains = ["*"]
-    base_url = r'https://simply-debrid.com/kapi.php?'
+    base_url = 'https://simply-debrid.com/kapi.php?'
 
     def __init__(self):
         self.hosts = []
@@ -42,7 +42,7 @@ class SimplyDebridResolver(UrlResolver):
     def get_media_url(self, host, media_id):
         if self.token is not None:
             try:
-                query = urllib_parse.urlencode({'action': 'generate', 'u': media_id, 'token': self.token})
+                query = urllib.urlencode({'action': 'generate', 'u': media_id, 'token': self.token})
                 url = self.base_url + query
                 response = self.net.http_GET(url).content
                 if response:
@@ -58,7 +58,7 @@ class SimplyDebridResolver(UrlResolver):
 
     def login(self):
         try:
-            query = urllib_parse.urlencode({'action': 'login', 'u': self.username, 'p': self.password})
+            query = urllib.urlencode({'action': 'login', 'u': self.username, 'p': self.password})
             url = self.base_url + query
             response = self.net.http_GET(url).content
             js_result = json.loads(response)
@@ -79,7 +79,7 @@ class SimplyDebridResolver(UrlResolver):
     @common.cache.cache_method(cache_limit=8)
     def get_all_hosters(self):
         try:
-            query = urllib_parse.urlencode({'action': 'filehosting'})
+            query = urllib.urlencode({'action': 'filehosting'})
             url = self.base_url + query
             response = self.net.http_GET(url).content
             hosts = [i['domain'] for i in json.loads(response)]
@@ -92,14 +92,11 @@ class SimplyDebridResolver(UrlResolver):
     def valid_url(self, url, host):
         if not self.hosts:
             self.hosts = self.get_all_hosters()
-
+            
         if url:
-            try:
-                host = urllib_parse.urlparse(url).hostname
-            except:
-                host = 'unknown'
-        if host.startswith('www.'):
-            host = host.replace('www.', '')
+            try: host = urlparse.urlparse(url).hostname
+            except: host = 'unknown'
+        if host.startswith('www.'): host = host.replace('www.', '')
         if any(host in item for item in self.hosts):
             return True
 
