@@ -9,6 +9,8 @@ from core import httptools, scrapertools, tmdb, servertools
 
 host = 'https://online.tucineclasico.es/'
 
+perpage = 25
+
 
 def mainlist(item):
     return mainlist_pelis(item)
@@ -17,12 +19,12 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone ( title = 'Catálogo', action = 'list_all', url = host + 'peliculas/' ))
+    itemlist.append(item.clone ( title = 'Catálogo', action = 'list_all', url = host + 'peliculas/?get=movies' ))
 
     itemlist.append(item.clone ( title = 'Más vistas', action = 'list_all', url = host + 'tendencias/?get=movies' ))
 
     itemlist.append(item.clone ( title = 'Más valoradas', action = 'list_all', url = host + '22-2/?get=movies' ))
-    itemlist.append(item.clone ( title = 'Subtitulado', action = 'list_all', url = host + 'genero/version-original-subtitulada/' ))
+    itemlist.append(item.clone ( title = 'Subtitulado', action = 'list_all', url = host + 'genero/version-original-subtitulada/?get=movies' ))
 
     itemlist.append(item.clone ( title = 'Por género', action = 'generos', search_type = 'movie' ))
     itemlist.append(item.clone ( title = 'Por año', action = 'anios', search_type = 'movie' ))
@@ -32,31 +34,13 @@ def mainlist_pelis(item):
     return itemlist
 
 
-def generos_ant(item):
-    logger.info()
-    itemlist = []
-
-    data = httptools.downloadpage(host).data
-
-    bloque = scrapertools.find_single_match(data, '<nav class="genres">(.*?)</ul>')
-
-    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)</a>\s*<i>([^<]+)</i>')
-    for url, title, num in matches:
-        if num == '0': continue
-        if 'genero/version-original-subtitulada' in url: continue
-
-        itemlist.append(item.clone( action='list_all', title=title + ' ('+num+')', url=url ))
-
-    return sorted(itemlist, key = lambda it: it.title)
-
-
 def generos(item):
     logger.info()
     itemlist = []
 
     data = httptools.downloadpage(host).data
 
-    bloque = scrapertools.find_single_match(data, '<ul id="menu-generos" class="menu">(.*?)</ul>')
+    bloque = scrapertools.find_single_match(data, '<nav class="genres">(.*?)</ul>')
 
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)"[^>]*>([^<]+)')
     for url, title in matches:
@@ -82,20 +66,25 @@ def anios(item):
     for ano in range(1948, 1921, -1):
         itemlist.append(item.clone( action = 'list_all', title = str(ano), url = host + 'lanzamiento/' + str(ano) + '/' ))
 
-    return sorted(itemlist, key = lambda it: it.title)
+    return sorted(itemlist, key = lambda it: it.title, reverse=True)
 
 
 def list_all(item): 
     logger.info()
     itemlist = []
 
+    if not item.page: item.page = 0
+
     data = httptools.downloadpage(item.url).data
-    if '<h1>' in data: data = data.split('<h1>')[1] # descartar lista de destacadas
+    if '<h2>' in data: data = data.split('<h2>')[1] # descartar lista de destacadas
     if '<div class="dt_mainmeta">' in data: data = data.split('<div class="dt_mainmeta">')[0] # descartar lista de más vistas
     # ~ logger.debug(data)
 
     matches = re.compile('<article(.*?)</article>', re.DOTALL).findall(data)
-    for article in matches:
+
+    num_matches = len(matches)
+
+    for article in matches[item.page * perpage:]:
         url = scrapertools.find_single_match(article, ' href="([^"]+)"')
         title = scrapertools.find_single_match(article, '<h4>(.*?)</h4>')
         if not title: title = scrapertools.find_single_match(article, ' alt="([^"]+)"')
@@ -105,16 +94,31 @@ def list_all(item):
         year = scrapertools.find_single_match(article, '<span>(\d{4})</span>')
         if not year: year = scrapertools.find_single_match(article, ' (\d{4})</span>')
         if not year: year = '-'
+
+        if ('(' + year + ')') in title:
+            title = title.replace(('(' + year + ')'), '')
+
         plot = scrapertools.find_single_match(article, '<div class="texto">(.*?)</div>')
 
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
                                     contentType='movie', contentTitle=title, infoLabels={'year': year, 'plot': plot} ))
 
+        if len(itemlist) >= perpage: break
+
     tmdb.set_infoLabels(itemlist)
 
-    next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"[^>]*><span class="icon-chevron-right">')
-    if next_page:
-       itemlist.append(item.clone (url = next_page, title = '>> Página siguiente', action = 'list_all', text_color='coral' ))
+    # Subpaginación interna y/o paginación de la web
+    buscar_next = True
+    if num_matches > perpage:
+        hasta = (item.page * perpage) + perpage
+        if hasta < num_matches:
+            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_all', text_color='coral' ))
+            buscar_next = False
+
+    if buscar_next:
+        next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"[^>]*><span class="fas fa-chevron-right">')
+        if next_page:
+            itemlist.append(item.clone (url = next_page, page = 0, title = '>> Página siguiente', action = 'list_all', text_color='coral' ))
 
     return itemlist
 
@@ -127,8 +131,8 @@ def get_url(dpost, dnume, dtype, referer):
     data = httptools.downloadpage(host + 'wp-admin/admin-ajax.php', post=post, headers={'Referer':referer}, raise_weberror=False).data
     # ~ logger.debug(data)
 
-    url = scrapertools.find_single_match(data, "(?i) src='([^']+)")
-    if not url: url = scrapertools.find_single_match(data, '(?i) src="([^"]+)')
+    url = scrapertools.find_single_match(data, "(?i) src=.*?'([^']+)")
+    if not url: url = scrapertools.find_single_match(data, '(?i) src=.*?"([^"]+)')
 
     return url
 
@@ -142,30 +146,26 @@ def findvideos(item):
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
 
-    # Fuentes de vídeo
     bloque = scrapertools.find_single_match(data, "<ul id='playeroptionsul'(.*?)</ul>")
 
     matches = scrapertools.find_multiple_matches(bloque, "<li id='player-option-(\d+)'(.*?)</li>")
+
     for optnum, enlace in matches:
         # ~ logger.debug(enlace)
         lang = scrapertools.find_single_match(enlace, "/img/flags/([^.']+)").lower()
 
-        bloque = scrapertools.find_single_match(data, "<div id='source-player-%s' class='source-box'><div class='pframe'>(.*?)</div></div>" % optnum)
-        # ~ logger.debug(bloque)
+        dtype = scrapertools.find_single_match(enlace, "data-type='([^']+)")
+        dpost = scrapertools.find_single_match(enlace, "data-post='([^']+)")
+        dnume = scrapertools.find_single_match(enlace, "data-nume='([^']+)")
+        if not dtype or not dpost or not dnume or dnume == 'trailer': continue
 
-        urls = scrapertools.find_multiple_matches(bloque, '(?i)<iframe.*? src=(?:"|\')([^"\']+)')
-        if not urls:
-            dtype = scrapertools.find_single_match(enlace, "data-type='([^']+)")
-            dpost = scrapertools.find_single_match(enlace, "data-post='([^']+)")
-            dnume = scrapertools.find_single_match(enlace, "data-nume='([^']+)")
-            if not dtype or not dpost or not dnume or dnume == 'trailer': continue
-            urls = [get_url(dpost, dnume, dtype, item.url)]
+        url = get_url(dpost, dnume, dtype, item.url)
+        url = url.replace('\\/', '/')
 
-        for url in urls:
-            if not url: continue
-            # ~ logger.info(url)
+        if url:
             servidor = servertools.get_server_from_url(url)
             if not servidor or servidor == 'directo': continue
+
             url = servertools.normalize_url(servidor, url)
 
             itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, title = '', url = url, language = IDIOMAS.get(lang, lang) ))
@@ -177,10 +177,15 @@ def list_search(item):
     logger.info()
     itemlist = []
 
+    if not item.page: item.page = 0
+
     data = httptools.downloadpage(item.url).data
 
     matches = re.compile('<div class="result-item">(.*?)</article>', re.DOTALL).findall(data)
-    for article in matches:
+
+    num_matches = len(matches)
+
+    for article in matches[item.page * perpage:]:
         url = scrapertools.find_single_match(article, ' href="([^"]+)"')
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
         title = scrapertools.find_single_match(article, ' alt="([^"]+)"')
@@ -188,6 +193,10 @@ def list_search(item):
 
         year = scrapertools.find_single_match(article, '<span class="year">(\d+)</span>')
         if not year: year = scrapertools.find_single_match(article, '<span>(\d{4})</span>')
+
+        if ('(' + year + ')') in title:
+            title = title.replace(('(' + year + ')'), '')
+
         plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<p>(.*?)</p>'))
 
         langs = []
@@ -198,11 +207,22 @@ def list_search(item):
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, languages = ', '.join(langs), 
                                     contentType='movie', contentTitle=title, infoLabels={'year': year, 'plot': plot} ))
 
+        if len(itemlist) >= perpage: break
+
     tmdb.set_infoLabels(itemlist)
 
-    next_page_link = scrapertools.find_single_match(data, ' href="([^"]+)"[^>]*><span class="icon-chevron-right">')
-    if next_page_link:
-        itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, action='list_search', text_color='coral' ))
+    # Subpaginación interna y/o paginación de la web
+    buscar_next = True
+    if num_matches > perpage:
+        hasta = (item.page * perpage) + perpage
+        if hasta < num_matches:
+            itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_search', text_color='coral' ))
+            buscar_next = False
+
+    if buscar_next:
+        next_page_link = scrapertools.find_single_match(data, ' href="([^"]+)"[^>]*><span class="fas fa-chevron-right">')
+        if next_page_link:
+            itemlist.append(item.clone( title='>> Página siguiente', url=next_page_link, page = 0, action='list_search', text_color='coral' ))
 
     return itemlist
 

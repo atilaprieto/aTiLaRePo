@@ -1,0 +1,17 @@
+{
+  "id": "sbembed",
+  "name": "Sbembed",
+
+  "active": true,
+
+  "find_videos": {
+    "ignore_urls": [],
+    "patterns": [
+      {
+        "pattern": "http(?:s|)://sbembed.com/(?:embed-|d/|e/|)([A-z0-9]+)",
+        "url": "https://sbembed.com/play/\\1"
+      }
+    ]
+  }
+
+}

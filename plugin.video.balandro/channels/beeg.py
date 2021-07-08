@@ -16,9 +16,9 @@ perpage = 30
 
 
 def get_api_key():
-    data = httptools.downloadpage(host).data
-    url = scrapertools.find_single_match(data, '<link href=(\/js\/app\.[a-zA-Z0-9_]+\.js)')
-    data2 = httptools.downloadpage(host[:-1] + url).data
+    data = httptools.downloadpage(host, headers={'User-agent': httptools.get_user_agent()}).data
+    url = scrapertools.find_single_match(data, '<link href="(\/js\/app\.[a-zA-Z0-9_]+\.js)"')
+    data2 = httptools.downloadpage(host[:-1] + url, headers={'User-agent': httptools.get_user_agent()}).data
     url_api = scrapertools.find_single_match(data2, 'r="([^"]+)",')
 
     # ~ logger.info(url_api)

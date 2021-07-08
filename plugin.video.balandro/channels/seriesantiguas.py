@@ -7,7 +7,15 @@ from core.item import Item
 from core import httptools, scrapertools, servertools, tmdb
 
 
-host = 'https://www.seriesantiguas.com/'
+host = 'https://www.seriesantiguas.net/'
+
+
+def do_downloadpage(url, post=None, headers=None):
+    # ~ por si viene de enlaces guardados
+    url = url.replace('www.seriesantiguas.com', 'www.seriesantiguas.net')
+
+    data = httptools.downloadpage(url, post=post, headers=headers).data
+    return data
 
 
 def mainlist(item):
@@ -36,7 +44,7 @@ def list_all(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     matches = scrapertools.find_multiple_matches(data, "<div class='post hentry'>(.*?)</h2>")
 
@@ -44,10 +52,16 @@ def list_all(item):
 
     for match in matches:
         url = scrapertools.find_single_match(match, '<a href="(.*?)"')
+        if not url: url = scrapertools.find_single_match(match, "<a href='(.*?)'")
+
         title = scrapertools.find_single_match(match, "<img alt='(.*?)'")
+        if not title: title = scrapertools.find_single_match(match, "<img alt='(.*?)'")
+
         if not url or not title: continue
 
         thumb = scrapertools.find_single_match(match, 'src="(.*?)"')
+        if not thumb: thumb = scrapertools.find_single_match(match, "src='(.*?)'")
+
         year = '-'
 
         itemlist.append(item.clone( action = 'temporadas', url = url, title = title, thumbnail = thumb, 
@@ -56,13 +70,16 @@ def list_all(item):
     tmdb.set_infoLabels(itemlist)
 
     if num_matches >= 6:
-        patron = "<a class='blog-pager-older-link'"
-        next_page = scrapertools.find_single_match(data,  patron + '.*?href="(.*?)"')
+        if "<span id='blog-pager-older-link'>" in data:
+            block = scrapertools.find_single_match(data, "<span id='blog-pager-older-link'>(.*?)</a>")
 
-        if next_page:
-            next_page = next_page.replace('&max-results=6', '&max-results=20')
+            next_page = scrapertools.find_single_match(block, "<a class='blog-pager-older-link'" + '.*?href="(.*?)"')
+            if not next_page: next_page = scrapertools.find_single_match(block, "<a class='blog-pager-older-link'" + ".*?href='(.*?)'")
 
-            itemlist.append(item.clone (url = next_page, title = '>> Página siguiente', action = 'list_all', text_color='coral' ))
+            if next_page:
+                next_page = next_page.replace('&max-results=6', '&max-results=20')
+
+                itemlist.append(item.clone (url = next_page, title = '>> Página siguiente', action = 'list_all', text_color='coral' ))
 
     return itemlist
 
@@ -71,12 +88,11 @@ def temporadas(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
-    patron = "<div class='post-body entry-content'>.*?title=.*?"
-    url_serie = scrapertools.find_single_match(data, patron + '<a href="(.*?)"')
+    url_serie = scrapertools.find_single_match(data, "<div class='post-body entry-content'>.*?title=.*?" + '<a href="(.*?)"')
 
-    data = httptools.downloadpage(url_serie).data
+    data = do_downloadpage(url_serie)
 
     bloque = scrapertools.find_single_match(data, '>Temporadas<(.*?)</ul></li>')
     matches = scrapertools.find_multiple_matches(bloque, "<a href='(.*?)'>Temp (.*?)</a>")
@@ -90,6 +106,8 @@ def temporadas(item):
 
     for url, numtempo in matches:
         title = 'Temporada ' + numtempo
+
+        url = url + '?max-results=100'
 
         if tot_temp == 1:
             platformtools.dialog_notification(item.contentSerieName.replace('&#038;', '&'), 'solo [COLOR tan]' + title + '[/COLOR]')
@@ -107,6 +125,7 @@ def temporadas(item):
 
     return itemlist
 
+
 def episodios(item):
     logger.info()
     itemlist = []
@@ -114,7 +133,7 @@ def episodios(item):
     if not item.page: item.page = 0
     perpage = 50
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     matches = scrapertools.find_multiple_matches(data, "<div class='post hentry'>(.*?)</h2>")
 
@@ -144,14 +163,16 @@ def episodios(item):
 
     return itemlist
 
+
 def findvideos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     bloque = scrapertools.find_single_match(data, "<div class='post-body entry-content'>(.*?)<div class='post-footer'>")
+
     matches = scrapertools.find_multiple_matches(bloque, '<iframe.*?src="(.*?)"')
 
     for url in matches:

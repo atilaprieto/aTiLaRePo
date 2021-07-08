@@ -7,7 +7,7 @@ from core.item import Item
 from core import httptools, scrapertools, tmdb
 
 
-host = 'https://www.mejortorrents1.net'
+host = 'https://www.mejortorrento.com'
 
 
 selecc_pelis = host + '/peliculas-buscador.html'
@@ -15,21 +15,20 @@ selecc_pelis = host + '/peliculas-buscador.html'
 perpage = 30
 
 
-# ~ def item_configurar_proxies(item):
-    # ~ plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
-    # ~ plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
-    # ~ return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+def item_configurar_proxies(item):
+    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
+    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
 
-# ~ def configurar_proxies(item):
-    # ~ from core import proxytools
-    # ~ return proxytools.configurar_proxies_canal(item.channel, host)
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, host)
 
 
-def do_downloadpage(url, post=None):
-    data = httptools.downloadpage(url, post=post).data
-    # ~ data = httptools.downloadpage_proxy('mejortorrents', url, post=post).data
-    # ~ logger.debug(data)
 
+def do_downloadpage(url, post=None, headers=None):
+    # ~ data = httptools.downloadpage(url, post=post).data
+    data = httptools.downloadpage_proxy('mejortorrents', url, post=post, headers=headers).data
     return data
 
 
@@ -42,7 +41,7 @@ def mainlist(item):
 
     itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -64,7 +63,7 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -84,7 +83,7 @@ def mainlist_series(item):
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -137,7 +136,7 @@ def list_all(item):
 
     if not item.page: item.page = 0
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 
     matches = scrapertools.find_multiple_matches(data, r'href="([^"]+)">([^<]+)</a>.*?<b>(.*?)<')
@@ -193,7 +192,7 @@ def list_last(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 
     if item.search_type == 'movie':
@@ -265,9 +264,9 @@ def list_selecc(item):
         else:
             post = 'campo=contador_total&valor=' + str(item.down) + '&valor2=&valor3=&valor4=3&submit=Buscar'
 
-        data = httptools.downloadpage(item.url, post=post, headers=headers).data
+        data = do_downloadpage(item.url, post=post, headers=headers)
     else:
-        data = httptools.downloadpage(item.url).data
+        data = do_downloadpage(item.url)
 
     data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 
@@ -330,6 +329,7 @@ def puntuar_calidad(txt):
       '720p',
       'bluray720p',
       'microhd720p',
+      'microhd-1080p',
       '1080p',
       'fullbluray',
       '4khdr',
@@ -344,7 +344,7 @@ def episodios(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     if item.search_type == 'documentary':
          bloque = scrapertools.find_single_match(data, 'Listado de los episodios(.*)Marcar/Desmarcar Todos')
@@ -353,6 +353,8 @@ def episodios(item):
 
     matches = scrapertools.find_multiple_matches(bloque, "<a href='([^']+)'>(.*?)<")
 
+    i = 0
+
     for url, title in matches:
         if not url.startswith('/'): url = '/' + url
         url = url.replace('&amp;', '&')
@@ -360,7 +362,10 @@ def episodios(item):
 
         if item.grupo == 'selecc': title = title + '  ' + item.title
 
-        itemlist.append(item.clone( action='findvideos', url = url, title = title ))
+        i += 1
+
+        itemlist.append(item.clone( action='findvideos', url = url, title = title,
+                                    contentType='episode', contentSeason = 1, contentEpisodeNumber = i ))
 
     return itemlist
 
@@ -371,7 +376,7 @@ def findvideos(item):
 
     url = ''
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     if item.search_type == 'movie':
         data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;|<br>', '', data)
@@ -390,7 +395,7 @@ def findvideos(item):
             new_url = new_url.replace('&amp;', '&')
             new_url = host + new_url
 
-            data = httptools.downloadpage(new_url).data
+            data = do_downloadpage(new_url)
 
             qlty = item.qualities
 
@@ -398,7 +403,7 @@ def findvideos(item):
         if not url.startswith('/'): url = '/' + url
 
         try:
-           data = httptools.downloadpage(host + url).data
+           data = do_downloadpage(host + url)
            url_t = scrapertools.find_single_match(data, r"name: '([^']+)")
            if not url_t: url_t = scrapertools.find_single_match(data, "Pincha <a href='([^']+)")
         except:
@@ -431,7 +436,7 @@ def list_search(item):
 
     if not item.page: item.page = 0
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
 
     data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 

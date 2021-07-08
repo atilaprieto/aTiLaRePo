@@ -3,7 +3,7 @@
   "name": "RockFile",
 
   "active": false,
-  "notes": "TODO, requiere captcha con imagen",
+  "notes": "Requiere captcha",
 
   "find_videos": {
     "ignore_urls": [],

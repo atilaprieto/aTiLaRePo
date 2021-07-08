@@ -8,10 +8,10 @@
   "searchable": true,
   "search_types": ["all", "movie", "tvshow"],
 
-  "categories": ["movie", "tvshow"],
+  "categories": ["movie", "tvshow", "torrent"],
   "language": ["cast"],
 
-  "clusters": ["torrents", "last", "qualityes"],
+  "clusters": ["torrents", "last", "qualityes", "kids", "docs"],
 
   "notes": "Películas, series y documentales con enlaces torrent exclusivamente. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

@@ -1142,7 +1142,7 @@
 			</group>
 		</category>
 		<category id="cuentas" label="30010" help="">
-			<group id="1" label="30011">
+			<group id="Top" label="30011">
 				<setting id="TOP_user" type="string" label="30012" help="">
 					<level>0</level>
 					<default/>
@@ -1156,7 +1156,7 @@
 				<setting id="TOP_password" type="string" label="30013" help="">
 					<level>0</level>
 					<dependencies>
-						<dependency type="enable" operator="!is" setting="TOP_user"></dependency>
+						<dependency type="visible" operator="!is" setting="TOP_user"></dependency>
 					</dependencies>
 					<default/>
 					<constraints>
@@ -1169,67 +1169,60 @@
 				<setting id="TOP_onlyOrigin" type="boolean" label="30017" help="">
 					<level>0</level>
 					<dependencies>
-						<dependency type="enable" operator="!is" setting="TOP_user"></dependency>
-						<dependency type="enable" operator="!is" setting="TOP_password"></dependency>
+						<dependency type="visible" operator="!is" setting="TOP_user"></dependency>
+						<dependency type="visible" operator="!is" setting="TOP_password"></dependency>
 					</dependencies>
 					<default>true</default>
 					<control type="toggle"/>
 				</setting>
 			</group>
-			<group id="2" label="30014">
-				<visible>False</visible>
-				<setting id="drive_client_id" type="string" label="30015" help="">
+			<group id="Alldebrid" label="30014">
+				<setting id="Alldebrid_enabled" type="boolean" label="30072" help="">
 					<level>0</level>
-					<default/>
-					<constraints>
-						<allowempty>true</allowempty>
-					</constraints>
-					<control type="edit" format="string">
-						<heading>30015</heading>
-					</control>
+					<default>false</default>
+					<control type="toggle"/>
 				</setting>
-				<setting id="drive_client_secret" type="string" label="30016" help="">
+				<setting id="Alldebrid_onlyOrigin" type="boolean" label="30073" help="">
 					<level>0</level>
-					<default/>
-					<constraints>
-						<allowempty>true</allowempty>
-					</constraints>
-					<control type="edit" format="string">
-						<heading>30016</heading>
-					</control>
+					<dependencies>
+						<dependency type="visible" operator="is" setting="Alldebrid_enabled">true</dependency>
+					</dependencies>
+					<default>false</default>
+					<control type="toggle"/>
 				</setting>
-				<setting id="drive_code" type="string" label="30017" help="">
+				<setting id="Alldebrid_apikey" type="string" label="" help="">
+					<visible>False</visible>
 					<level>0</level>
 					<default/>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
-					<control type="edit" format="string">
-						<heading>30017</heading>
-					</control>
+					<control type="edit" format="string" />
 				</setting>
 			</group>
-			<group id="3" label="30014">
-				<visible>False</visible>
-				<setting id="Alldebrid_name" type="string" label="30015" help="">
+			<group id="Realdebrid" label="30015">
+				<setting id="Realdebrid_enabled" type="boolean" label="30072" help="">
 					<level>0</level>
-					<default/>
-					<constraints>
-						<allowempty>true</allowempty>
-					</constraints>
-					<control type="edit" format="string">
-						<heading>30015</heading>
-					</control>
+					<default>false</default>
+					<control type="toggle"/>
 				</setting>
-				<setting id="Alldebrid_apikey" type="string" label="30016" help="">
+				<setting id="Realdebrid_token" type="string" label="" help="">
+					<visible>False</visible>
 					<level>0</level>
 					<default/>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
-					<control type="edit" format="string">
-						<heading>30016</heading>
-					</control>
+					<control type="edit" format="string" />
+				</setting>
+				<setting id="Realdebrid_refresh_token" type="string" label="" help="">
+					<visible>False</visible>
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="edit" format="string" />
 				</setting>
 			</group>
 		</category>
@@ -1241,11 +1234,11 @@
 					<default>false</default>
 					<control type="toggle"/>
 				</setting>
-				<setting id="Always_resolveUrl" type="boolean" label="30029" help="">
+				<!--setting id="Always_resolveUrl" type="boolean" label="30029" help="">
 					<level>0</level>
 					<default>false</default>
 					<control type="toggle"/>
-				</setting>
+				</setting-->
 				<setting id="MPD_hidde" type="boolean" label="30058" help="">
 					<level>0</level>
 					<default>true</default>
@@ -1307,14 +1300,6 @@
 				<setting id="reset_resolveurl_cache" type="action" label="30026" help="">
 					<level>0</level>
 					<data>RunPlugin(plugin://script.module.resolveurl/?mode=reset_cache)</data>
-					<constraints>
-						<allowempty>true</allowempty>
-					</constraints>
-					<control type="button" format="action"/>
-				</setting>
-				<setting id="reset_extendedinfo_cache" type="action" label="30027" help="">
-					<level>0</level>
-					<data>RunScript(script.extendedinfo,info=deletecache)</data>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>

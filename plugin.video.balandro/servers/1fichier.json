@@ -3,7 +3,7 @@
   "name": "1Fichier",
  
   "active": false,
-  "notes": "Debrider required",
+  "notes": "Requiere Debrider",
 
   "find_videos": {
     "ignore_urls": [],

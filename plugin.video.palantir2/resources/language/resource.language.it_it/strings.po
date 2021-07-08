@@ -69,24 +69,12 @@ msgid "Top/Uptobox server"
 msgstr "Server Top/Uptobox"
 
 msgctxt "#30012"
-msgid "Account email"
-msgstr "Indirizzo e-mail"
+msgid "Add Email or User"
+msgstr "Aggiungi email o utente"
 
 msgctxt "#30013"
 msgid "Password"
 msgstr "Password"
-
-msgctxt "#30014"
-msgid "Alldebrid"
-msgstr "Alldebrid"
-
-msgctxt "#30015"
-msgid "Apikey Name"
-msgstr "Nome apikey "
-
-msgctxt "#30016"
-msgid "Apikey Code"
-msgstr "Codice Apikey"
 
 msgctxt "#30017"
 msgid "Always play at full resolution (only Premium)"
@@ -287,10 +275,38 @@ msgid "It is not possible to automatically identify the next episode of this ser
 msgstr "Non è possibile identificare automaticamente il prossimo episodio di questa serie"
 
 msgctxt "#30071"
-msgid " Register for free at uptobox.com and add your account in the settings, to be able to use this server"
-msgstr " Registrati gratuitamente su uptobox.com e aggiungi il tuo account nelle impostazioni, per poter utilizzare questo server"
+msgid " Register for free at uptobox.com and add your account in the Palantir 2 settings, to be able to use this server"
+msgstr " Registrati gratuitamente su uptobox.com e aggiungi il tuo account nelle impostazioni di Palantir 2, per poter utilizzare questo server"
 
-# empty strings from id 30072 to 30099
+msgctxt "#30072"
+msgid "Activate"
+msgstr "Attivare"
+
+msgctxt "#30073"
+msgid "Always play at full resolution"
+msgstr "Riproduci sempre alla massima risoluzione"
+
+msgctxt "#30074"
+msgid "Enter [COLOR blue]'%s'[/ COLOR] with your user data and enter the pin [COLOR red]%s[/ COLOR] "
+msgstr "Inserisci [COLOR blue]'%s'[/ COLOR] con i tuoi dati utente e inserisci il pin [COLOR red]%s[/ COLOR] "
+
+msgctxt "#30075"
+msgid "before %s minutes and %s seconds."
+msgstr "prima di %s minuti e %s secondi."
+
+msgctxt "#30076"
+msgid "Your Alldebrid account has been paired with Palantir 2"
+msgstr "Il tuo account Alldebrid è stato associato a Palantir 2"
+
+msgctxt "#30077"
+msgid "Failed to pair your %s account"
+msgstr "Impossibile accoppiare il tuo account %s"
+
+msgctxt "#30078"
+msgid "Time exceeded"
+msgstr "Tempo superato"
+
+# empty strings from id 30079 to 30099
 
 # moria
 
@@ -494,3 +510,6 @@ msgctxt "#30151"
 msgid "Set this view for menus"
 msgstr "Imposta questa visualizzazione per i menu"
 
+msgctxt "#30152"
+msgid "To resolve this link it is necessary to install ResolveUrl"
+msgstr "Per risolvere questo collegamento è necessario installare ResolveUrl"

@@ -6,11 +6,29 @@ from platformcode import config, logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, tmdb, jsontools, servertools
 
+
 host = 'https://www.dilo.nu/'
 
 host_catalogue = host + 'catalogue'
 
 IDIOMAS = {'la': 'Lat', 'es': 'Esp', 'en_es': 'Vose', 'en': 'VO'}
+
+
+def item_configurar_proxies(item):
+    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
+    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, host)
+
+def do_downloadpage(url, post=None, headers=None, follow_redirects=True, only_headers=False, raise_weberror=True):
+    # ~ resp = httptools.downloadpage(url, post=post, headers=headers, follow_redirects=follow_redirects, only_headers=only_headers, raise_weberror=raise_weberror)
+    resp = httptools.downloadpage_proxy('dilo', url, post=post, headers=headers, follow_redirects=follow_redirects, only_headers=only_headers, raise_weberror=raise_weberror)
+
+    if only_headers: return resp.headers
+    return resp.data
 
 
 def mainlist(item):
@@ -22,6 +40,8 @@ def mainlist_series(item):
     itemlist = []
 
     itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host_catalogue ))
+
+    itemlist.append(item.clone( title = 'Nuevos episodios', action = 'last_episodes', url = host ))
 
     itemlist.append(item.clone( title = 'Las de la semana', action = 'list_all', url = host_catalogue+'?sort=mosts-week' ))
     itemlist.append(item.clone( title = 'Actualizadas', action = 'list_all', url = host_catalogue+'?sort=latest' ))
@@ -35,6 +55,8 @@ def mainlist_series(item):
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
+    itemlist.append(item_configurar_proxies(item))
+
     return itemlist
 
 
@@ -44,7 +66,7 @@ def generos(item):
 
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
-    data = httptools.downloadpage(host_catalogue).data
+    data = do_downloadpage(host_catalogue)
 
     patron = '<input type="checkbox" class="[^"]+" id="[^"]+" value="([^"]+)" name="genre\[\]">'
     patron += '\s*<label class="custom-control-label" for="[^"]+">([^<]+)</label>'
@@ -149,7 +171,7 @@ def list_all(item):
 
     descartar_xxx = config.get_setting('descartar_xxx', default=False)
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     matches = re.compile('<div class="col-lg-2 col-md-3 col-6 mb-3">\s*<a(.*?)</a>\s*</div>', re.DOTALL).findall(data)
@@ -177,13 +199,13 @@ def temporadas(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     item_id = scrapertools.find_single_match(data, 'data-json=\'\{"item_id": "([^"]+)')
     url = 'https://www.dilo.nu/api/web/seasons.php'
     post = 'item_id=%s' % item_id
-    data = jsontools.load(httptools.downloadpage(url, post=post).data)
+    data = jsontools.load(do_downloadpage(url, post=post))
 
     # averiguar cuantas temporadas hay
     tot_temp = 0
@@ -226,13 +248,13 @@ def episodios(item):
     perpage = 50
 
     if not item.item_id:
-        data = httptools.downloadpage(item.url).data
+        data = do_downloadpage(item.url)
         # ~ logger.debug(data)
         item.item_id = scrapertools.find_single_match(data, 'data-json=\'\{"item_id": "([^"]+)')
 
     url = 'https://www.dilo.nu/api/web/episodes.php'
     post = 'item_id=%s&season_number=%s' % (item.item_id, item.contentSeason)
-    data = jsontools.load(httptools.downloadpage(url, post=post).data)
+    data = jsontools.load(do_downloadpage(url, post=post))
     # ~ logger.debug(data)
 
     for epi in data[item.page * perpage:]:
@@ -256,11 +278,61 @@ def episodios(item):
     return itemlist
 
 
+def last_episodes(item):
+    logger.info()
+    itemlist = []
+
+    descartar_xxx = config.get_setting('descartar_xxx', default=False)
+
+    if not item.page: item.page = 0
+
+    perpage = 25
+
+    data = do_downloadpage(item.url)
+    # ~ logger.debug(data)
+
+    data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
+
+    bloque = scrapertools.find_single_match(data, '>Nuevos episodios<(.*?)>Nuevas series<')
+    matches = scrapertools.find_multiple_matches(bloque, '<a class="media"(.*?)</a>')
+
+    num_matches = len(matches)
+
+    for match in matches[item.page * perpage:]:
+        if descartar_xxx and ('/coleccion-adulto-espanol/' in url or '/internacional-adultos/' in url): continue
+
+        url = scrapertools.find_single_match(match, ' href="([^"]+)"')
+
+        title = scrapertools.find_single_match(match, ' title="([^"]+)"')
+        titulo = title.replace(' Online sub español', '').strip()
+
+        thumb = scrapertools.find_single_match(match, ' src="([^"]+)"')
+        name = scrapertools.find_single_match(match, ' style="max.*?">(.*?)</div>')
+
+        temp_epis = titulo.replace(titulo, name)
+
+        season = scrapertools.find_single_match(temp_epis, '(.*?)x')
+        episode = scrapertools.find_single_match(temp_epis, '.*?x(.*?)')
+
+        itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb, contentSerieName=name,
+                                   contentType='episode', contentSeason=season, contentEpisodeNumber=episode ))
+
+        if len(itemlist) >= perpage:
+            break
+
+    tmdb.set_infoLabels(itemlist)
+
+    if num_matches > ((item.page + 1) * perpage):
+        itemlist.append(item.clone( title=">> Página siguiente", action="last_episodes", page=item.page + 1, text_color='coral' ))
+
+    return itemlist
+
+
 def findvideos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     # ~ logger.debug(data)
 
     patron = '<a href="#" class="[^"]*" data-link="([^"]+)".*?\?domain=([^."]+).*?/languajes/([^.]+).png'
@@ -284,7 +356,7 @@ def play(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url, raise_weberror=False).data
+    data = do_downloadpage(item.url, raise_weberror=False)
     # ~ logger.debug(data)
 
     url = scrapertools.find_single_match(data, 'iframe class="" src="([^"]+)')
@@ -295,7 +367,7 @@ def play(item):
         if action and token: url = host + action + '?token=' + token
 
     if host in url:
-        url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
+        url = do_downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
 
     if url != '': 
         itemlist.append(item.clone(url = url))

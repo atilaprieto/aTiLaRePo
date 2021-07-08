@@ -11,7 +11,7 @@
   "categories": ["documentary"],
   "language": ["cast"],
 
-  "clusters": ["rankings", "categories", "adults"],
+  "clusters": ["rankings", "categories", "adults", "docs"],
 
   "notes": "Documentales en castellano por categorías, series, top 100. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

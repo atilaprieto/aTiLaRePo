@@ -3,12 +3,20 @@
 import os, re
 
 from platformcode import config, logger, platformtools
-from core import httptools, scrapertools, jsontools
+from core import httptools, scrapertools, filetools, jsontools
+
+
+color_alert = config.get_setting('notification_alert_color', default='red')
+color_infor = config.get_setting('notification_infor_color', default='pink')
+color_adver = config.get_setting('notification_adver_color', default='violet')
+color_avis  = config.get_setting('notification_avis_color', default='yellow')
+color_exec  = config.get_setting('notification_exec_color', default='cyan')
 
 
 channels_poe = [
         ['documaniatv', 'https://www.documaniatv.com/'],
         ['gdrive', 'https://drive.google.com/drive/'],
+        ['hdfull', 'https://hdfull.me/'],
         ['playdede', 'https://playdede.com']
         ]
 
@@ -29,14 +37,16 @@ def test_channel(channel_name):
     filename_json = os.path.join(config.get_runtime_path(), 'channels', channel_json)
 
     try:
-       with open(filename_json, 'r') as f: data = f.read(); f.close()
+       data = filetools.read(filename_json)
        params = jsontools.load(data)
     except:
-       platformtools.dialog_notification(config.__addon_name, 'Falta [COLOR red]' + channel_json + '[/COLOR]')
+       el_canal = ('Falta [B][COLOR %s]' + channel_json) % color_alert
+       platformtools.dialog_notification(config.__addon_name, el_canal + '[/COLOR][/B]')
        return
 
     if params['active'] == False:
-        platformtools.dialog_notification(config.__addon_name, '[COLOR blue]' + channel_name + '[COLOR red] inactivo [/COLOR]')
+        el_canal = ('[B][COLOR %s]' + channel_name) % color_avis
+        platformtools.dialog_notification(config.__addon_name, el_canal + '[COLOR %s] inactivo [/COLOR][/B]' % color_alert)
         return
 
     txt = test_internet()
@@ -47,13 +57,20 @@ def test_channel(channel_name):
     txt += 'search_types: ' + str(params['search_types']) + '[CR]'
     txt += 'categories: ' + str(params['categories']) + '[CR]'
     txt += 'language: ' + str(params['language']) + '[CR]'
-    txt += 'clusters: ' + str(params['clusters']) + '[CR]'
+
+    try:
+       txt += 'clusters: ' + str(params['clusters']) + '[CR]'
+    except:
+       pass
+
     txt += 'notes: ' + str(params['notes'])
 
     channel_py = channel_id + '.py'
     filename_py = os.path.join(config.get_runtime_path(), 'channels', channel_py)
 
-    dominio = ''
+    dominio = config.get_setting('dominio', channel_id, default='')
+
+    host = ''
 
     channel_poe = "'" + channel_id + "'"
     esta_en_poe = False
@@ -69,32 +86,37 @@ def test_channel(channel_name):
     if not esta_en_poe:
        channel_poe = ''
 
-       try:
-          with open(filename_py, 'r') as f: data = f.read(); f.close()
-       except:
-          platformtools.dialog_notification(config.__addon_name, 'Falta [COLOR red]' + channel_py + '[/COLOR]')
-          return
+       if dominio:
+           host = dominio
+       else:
+           try:
+              data = filetools.read(filename_py)
+           except:
+              el_canal = ('Falta [B][COLOR %s]' + channel_py) % color_alert
+              platformtools.dialog_notification(config.__addon_name, el_canal + '[/COLOR][/B]')
+              return
 
-       part_py = 'mainlist'
-       if 'configurar_proxies' in data: part_py = 'configurar_proxies'
-       elif 'do_downloadpage' in data: part_py = 'do_downloadpage'
+           part_py = 'mainlist'
+           if 'configurar_proxies' in data: part_py = 'configurar_proxies'
+           elif 'do_downloadpage' in data: part_py = 'do_downloadpage'
 
-       bloc = scrapertools.find_single_match(data.lower(), '(.*?)' + part_py)
-       bloc = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', bloc)
+           bloc = scrapertools.find_single_match(data.lower(), '(.*?)' + part_py)
+           bloc = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', bloc)
 
-       host = scrapertools.find_single_match(bloc, 'host.*?"(.*?)"')
-       if not host:
-           host = scrapertools.find_single_match(bloc, "host.*?'(.*?)'")
+           host = scrapertools.find_single_match(bloc, 'host.*?"(.*?)"')
+           if not host:
+               host = scrapertools.find_single_match(bloc, "host.*?'(.*?)'")
 
     host = host.strip()
 
     if not host:
-        dominio = config.get_setting('dominio', channel_id, default='')
         if dominio:
             host = dominio
-        else:
-            platformtools.dialog_notification(config.__addon_name, 'Falta host [COLOR red]' + channel_py + '[/COLOR]')
-            return
+
+    if not host:
+        el_canal = ('Falta host/clon [B][COLOR %s]' + channel_py) % color_alert
+        platformtools.dialog_notification(config.__addon_name, el_canal + '[/COLOR][/B]')
+        return
 
     txt = info_channel(channel_name, channel_poe, host, dominio, txt)
 
@@ -102,7 +124,8 @@ def test_channel(channel_name):
 
 
 def info_channel(channel_name, channel_poe, host, dominio, txt):
-    platformtools.dialog_notification(config.__addon_name, 'Accediendo [COLOR blue]' + channel_name + '[/COLOR]')
+    el_canal = ('Accediendo [B][COLOR %s]' + channel_name) % color_avis
+    platformtools.dialog_notification(config.__addon_name, el_canal + '[/COLOR][/B]')
 
     channel_id = channel_name.lower()
 
@@ -128,7 +151,8 @@ def info_channel(channel_name, channel_poe, host, dominio, txt):
 
 
 def acces_channel(channel_name, host, dominio, txt, follow_redirects=True):
-    platformtools.dialog_notification(config.__addon_name, 'Testeando [COLOR moccasin]' + channel_name + '[/COLOR]')
+    el_canal = ('Testeando [B][COLOR %s]' + channel_name) % color_infor
+    platformtools.dialog_notification(config.__addon_name, el_canal + '[/COLOR][/B]')
 
     channel_id = channel_name.lower()
 
@@ -186,21 +210,25 @@ def test_server(server_name):
     server_json = server_id + '.json'
     filename_json = os.path.join(config.get_runtime_path(), 'servers', server_json)
 
+
     try:
-       with open(filename_json, 'r') as f: data = f.read(); f.close()
+       data = filetools.read(filename_json)
        dict_server = jsontools.load(data)
     except:
-       platformtools.dialog_notification(config.__addon_name, 'Falta [COLOR red]' + server_json + '[/COLOR]')
+       el_server = ('Falta [B][COLOR %s]' + server_json) % color_alert
+       platformtools.dialog_notification(config.__addon_name, el_server + '[/COLOR][/B]')
        return
 
     if dict_server['active'] == False:
-        platformtools.dialog_notification(config.__addon_name, '[COLOR blue]' + server_name + '[COLOR red] inactivo [/COLOR]')
+        el_server = ('[B][COLOR %s]' + server_name) % color_avis
+        platformtools.dialog_notification(config.__addon_name, el_server + '[COLOR %s] inactivo [/COLOR][/B]' % color_alert)
         return
 
     if 'find_videos' in dict_server:
         dict_server['find_videos']['patterns'] = dict_server['find_videos'].get('patterns', list())
     else:
-        platformtools.dialog_notification(config.__addon_name, '[COLOR blue]' + server_name + 'Falta [COLOR red] find_videos [/COLOR]')
+        el_server = ('[B][COLOR %s]' + server_name) % color_avis
+        platformtools.dialog_notification(config.__addon_name, el_server + 'Falta [COLOR %s] find_videos [/COLOR][/B]' % color_alert)
         return
 
     txt = test_internet()
@@ -212,7 +240,8 @@ def test_server(server_name):
         servers = scrapertools.find_multiple_matches(str(bloc), ".*?'url'.*?'(.*?)'")
 
     if not servers:
-        platformtools.dialog_notification(config.__addon_name, 'Falta url [COLOR red]' + server_name + '[/COLOR]')
+        el_server = ('Falta url [B][COLOR %s]' + server_name) % color_alert
+        platformtools.dialog_notification(config.__addon_name, el_server + '[/COLOR][/B]')
         return
 
     url_servidor = ''
@@ -262,7 +291,8 @@ def test_server(server_name):
 
 
 def info_server(server_name, server_poe, url, txt):
-    platformtools.dialog_notification(config.__addon_name, 'Accediendo [COLOR blue]' + server_name + '[/COLOR]')
+    el_server = ('Accediendo [B][COLOR %s]' + server_name) % color_infor
+    platformtools.dialog_notification(config.__addon_name, el_server + '[/COLOR][/B]')
 
     server_id = server_name.lower()
 
@@ -281,7 +311,8 @@ def info_server(server_name, server_poe, url, txt):
     return txt
 
 def acces_server(server_name, url, txt, follow_redirects=True):
-    platformtools.dialog_notification(config.__addon_name, 'Testeando [COLOR moccasin]' + server_name + '[/COLOR]')
+    el_server = ('Testeando [B][COLOR %s]' + server_name) % color_avis
+    platformtools.dialog_notification(config.__addon_name, el_server + '[/COLOR][/B]')
 
     server_id = server_name.lower()
 
@@ -324,26 +355,31 @@ def acces_server(server_name, url, txt, follow_redirects=True):
 
 
 def test_internet():
-    platformtools.dialog_notification(config.__addon_name, 'Comprobando [COLOR blue]Internet[/COLOR]')
+    platformtools.dialog_notification(config.__addon_name, 'Comprobando [B][COLOR %s]Internet[/COLOR][/B]' % color_avis)
 
-    hay_internet = True
     your_ip = ''
 
     try:
        data = httptools.downloadpage('http://httpbin.org/ip').data
-       if len(data) == 0: hay_internet = False
-       else:
-          your_ip = scrapertools.find_single_match(data, 'origin".*?"(.*?)"')
-          if not your_ip: hay_internet = False
+       data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
+       your_ip = scrapertools.find_single_match(str(data), '.*?"origin".*?"(.*?)"')
     except:
-       hay_internet = False
-       your_ip = '[COLOR blue]No se ha podido comprobar[/COLOR]'
+       pass
 
-    if not hay_internet:
-	    platformtools.dialog_ok(config.__addon_name, '[COLOR red]Parece que NO hay conexión con internet.[/COLOR]', 'Compruebelo realizando cualquier Búsqueda, desde un Navegador Web ')
+    if not your_ip:
+        try:
+           your_ip = httptools.downloadpage('http://ipinfo.io/ip').data
+        except:
+           pass
 
-    if not hay_internet: 
-        if your_ip == '': your_ip = '[COLOR red] Sin Conexión [/COLOR]'
+    if not your_ip:
+        try:
+           your_ip = httptools.downloadpage('http://www.icanhazip.com/').data
+        except:
+           pass
+
+    if not your_ip:
+        your_ip = '[COLOR red] Sin Conexión [/COLOR]'
 
     txt = '[COLOR moccasin][B]Internet:[/B][/COLOR]  %s ' % your_ip
     txt += '[CR][CR]'

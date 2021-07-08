@@ -11,7 +11,7 @@
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["producers", "vos"],
+  "clusters": ["producers", "countries", "kids", "docs", "vos"],
 
   "notes": "Muchas series, por géneros, por productoras."
 }

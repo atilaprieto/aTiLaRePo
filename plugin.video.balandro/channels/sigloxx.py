@@ -30,9 +30,30 @@ def mainlist_pelis(item):
     itemlist.append(item.clone ( title = 'Por dirección, guionistas, productores', action = 'biografias', url = host2 + 'directores/' ))
     itemlist.append(item.clone ( title = 'Por compositores, escritores, novelistas', action = 'biografias', url = host2 + 'otras-biografias/' ))
 
+    itemlist.append(item.clone ( title = 'Sagas', action = 'sagas', url = host2 + 'sagas/', search_type = 'movie' ))
+
     # ~ itemlist.append(item.clone ( title = 'Por letra (A - Z)', action='alfabetico' ))
 
     # ~ itemlist.append(item.clone ( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
+
+    return itemlist
+
+
+def sagas(item):
+    logger.info()
+    itemlist = []
+
+    data = httptools.downloadpage(item.url).data
+
+    bloque = scrapertools.find_single_match(data, '>Sagas</h2>(.*?)</main><!-- #main -->')
+
+    matches = scrapertools.find_multiple_matches(bloque, '.*?<a href="(.*?)".*?title="(.*?)"')
+    logger.info("check-000-sxx: %s" % bloque)
+
+    for url, title in matches:
+        if not title: continue
+
+        itemlist.append(item.clone( action = 'list_filmografias', title = title, url = url ))
 
     return itemlist
 

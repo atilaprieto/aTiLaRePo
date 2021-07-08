@@ -11,7 +11,7 @@
   "categories": [ "movie", "tvshow" ],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["rankings", "years", "lasts", "vos", "anime"],
+  "clusters": ["rankings", "years", "lasts", "kids", "docs", "vos", "anime"],
 
   "notes": "Peliculas y Series en Español, Latino, Subtitulado, por géneros y años."
 }

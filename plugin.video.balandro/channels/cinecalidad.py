@@ -13,8 +13,9 @@ from platformcode import config, logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, tmdb
 
+host = 'https://www.cinecalidad.im/'
 
-dominios = ['https://www.cinecalidad.li/', 'https://www.cinecalidad.eu/', 'https://www.cinecalidad.is/', 'https://www.cinecalidad.im/']
+# ~ dominios = ['https://www.cinecalidad.is/', 'https://www.cinecalidad.li/', 'https://www.cinecalidad.eu/', 'https://www.cinecalidad.im/']
 
 
 def host_by_lang(lang=''):
@@ -23,48 +24,57 @@ def host_by_lang(lang=''):
         pref_lat = config.get_setting('preferencia_idioma_lat', default='2')
         lang = 'Esp' if pref_esp != 0 and (pref_lat == 0 or pref_esp <= pref_lat) else 'Lat'
 
-    dominio = config.get_setting('dominio', 'cinecalidad', default=dominios[0])
-    if dominio not in dominios: dominio = dominios[0]
-    if lang == 'Lat': return dominio
-    if lang == 'Esp': return dominio + 'espana/'
-    return dominio
+    # ~ dominio = config.get_setting('dominio', 'cinecalidad', default=dominios[0])
+    # ~ if dominio not in dominios: dominio = dominios[0]
+    # ~ if lang == 'Lat': return dominio
+    # ~ if lang == 'Esp': return dominio + 'espana/'
+    # ~ return dominio
+
+    if lang == 'Lat': return host
+    if lang == 'Esp': return host + 'espana/'
+    return host
 
 
-def item_configurar_dominio(item):
-    plot = 'Este canal tiene varios posibles dominios. Si uno no te funciona puedes probar con los otros antes de intentarlo con proxies.'
-    return item.clone( title = 'Configurar dominio a usar ...', action = 'configurar_dominio', folder=False, plot=plot, text_color='green' )
+# ~ def item_configurar_dominio(item):
+    # ~ plot = 'Este canal tiene varios posibles dominios. Si uno no te funciona puedes probar con los otros antes de intentarlo con proxies.'
+    # ~ return item.clone( title = 'Configurar dominio a usar ...', action = 'configurar_dominio', folder=False, plot=plot, text_color='yellowgreen' )
 
 
-def configurar_dominio(item):
-    dominio = config.get_setting('dominio', 'cinecalidad', default=dominios[0])
-    num_dominio = dominios.index(dominio) if dominio in dominios else 0
-    ret = platformtools.dialog_select('Dominio a usar', dominios, preselect=num_dominio)
-    if ret == -1: return False
-    config.set_setting('dominio', dominios[ret], 'cinecalidad')
-    return True
+# ~ def configurar_dominio(item):
+    # ~ dominio = config.get_setting('dominio', 'cinecalidad', default=dominios[0])
+    # ~ num_dominio = dominios.index(dominio) if dominio in dominios else 0
+    # ~ ret = platformtools.dialog_select('Dominio a usar CineCalidad', dominios, preselect=num_dominio)
+    # ~ if ret == -1: return False
+    # ~ config.set_setting('dominio', dominios[ret], 'cinecalidad')
+    # ~ return True
 
 
-def item_configurar_proxies(item):
-    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
-    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host_by_lang('Lat') + ' necesitarás un proxy.'
-    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+# ~ def item_configurar_proxies(item):
+    # ~ plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    # ~ plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host_by_lang('Lat') + ' necesitarás un proxy.'
+    # ~ return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
 
 
-def configurar_proxies(item):
-    from core import proxytools
-    return proxytools.configurar_proxies_canal(item.channel, host_by_lang(''))
+# ~ def configurar_proxies(item):
+    # ~ from core import proxytools
+    # ~ return proxytools.configurar_proxies_canal(item.channel, host_by_lang(''))
 
 
 def do_downloadpage(url, post=None, headers=None):
     # ~  por si viene de enlaces guardados
-    dominio = config.get_setting('dominio', 'cinecalidad', default=dominios[0])
-    if dominio not in dominios: dominio = dominios[0]
-    for dom in dominios:
-        url = url.replace('https://www1.', 'https://www.')
-        url = url.replace(dom, dominio)
+    # ~ dominio = config.get_setting('dominio', 'cinecalidad', default=dominios[0])
+    # ~ if dominio not in dominios: dominio = dominios[0]
+    # ~ for dom in dominios:
+        # ~ url = url.replace('https://www1.', 'https://www.')
+        # ~ url = url.replace(dom, dominio)
 
-    # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
-    data = httptools.downloadpage_proxy('cinecalidad', url, post=post, headers=headers).data
+    url = url.replace('https://www1.', 'https://www.')
+    url = url.replace('/www.cinecalidad.is/', host)
+    url = url.replace('/www.cinecalidad.li/', host)
+    url = url.replace('/www.cinecalidad.eu/', host)
+
+    data = httptools.downloadpage(url, post=post, headers=headers).data
+    # ~ data = httptools.downloadpage_proxy('cinecalidad', url, post=post, headers=headers).data
     return data
 
 
@@ -78,8 +88,8 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title = 'Castellano', action = 'mainlist_pelis_lang', idioma = 'Esp' ))
     itemlist.append(item.clone( title = 'Latino', action = 'mainlist_pelis_lang', idioma = 'Lat' ))
 
-    itemlist.append(item_configurar_dominio(item))
-    itemlist.append(item_configurar_proxies(item))
+    # ~ itemlist.append(item_configurar_dominio(item))
+    # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -99,8 +109,8 @@ def mainlist_pelis_lang(item):
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
-    itemlist.append(item_configurar_dominio(item))
-    itemlist.append(item_configurar_proxies(item))
+    # ~ itemlist.append(item_configurar_dominio(item))
+    # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -166,7 +176,7 @@ def peliculas(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for url, thumb, title, plot in matches:
-        if url.startswith('/'): url = host_by_lang('Lat')+url[1:]
+        if url.startswith('/'): url = host_by_lang('Lat') + url[1:]
         title = re.sub('&lt;!--.*?--&gt;', '', title)
         m = re.match(r"^(.*?)\((\d+)\)$", title)
         if m:
@@ -304,6 +314,20 @@ def play(item):
             url = scrapertools.find_single_match(data, 'value="(magnet.*?)"')
 
     if url:
+        if url.endswith('.torrent'):
+            if config.get_setting('proxies', item.channel, default=''):
+                import os
+            
+                data = do_downloadpage(url)
+                file_local = os.path.join(config.get_data_path(), "temp.torrent")
+                with open(file_local, 'wb') as f: f.write(data); f.close()
+
+                itemlist.append(item.clone( url = file_local, server = 'torrent' ))
+            else:
+                itemlist.append(item.clone( url = url, server = 'torrent' ))
+
+            return itemlist
+
         itemlist.append(item.clone(url = url))
 
     return itemlist

@@ -11,7 +11,7 @@
   "categories": ["tvshow"],
   "language": ["lat"],
 
-  "clusters": ["classic", "rankings"],
+  "clusters": ["classic", "rankings", "kids"],
 
   "notes": "Muchas series retro infantiles."
 }

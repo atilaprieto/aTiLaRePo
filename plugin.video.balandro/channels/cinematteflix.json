@@ -11,7 +11,7 @@
   "categories": ["movie"],
   "language": ["cast", "vose"],
 
-  "clusters": ["classic", "rankings", "lists", "epochs", "years", "vos"],
+  "clusters": ["classic"],
 
-  "notes": "Películas por categorias, años y colecciones."
+  "notes": "Películas por géneros."
 }

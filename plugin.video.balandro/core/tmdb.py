@@ -613,6 +613,11 @@ def get_discover(tipo, genero='', page=1):
 
     return listado.get_list_resultados()
 
+def get_discover_networks(tipo, network='', page=1):
+    url = 'discover/' + tipo
+    listado = Tmdb( discover = {'url': url, 'with_companies': network, 'page': page, 'language': 'es'} )
+    return listado.get_list_resultados()
+
 def get_discover_anios(tipo, anio='', page=1):
     url = 'discover/' + tipo
     campo_anio = 'primary_release_year' if tipo == 'movie' else 'first_air_date_year'
@@ -1746,7 +1751,9 @@ class Tmdb(object):
 
             elif k == 'credits_cast' or k == 'temporada_cast' or k == 'episodio_guest_stars':
                 dic_aux = dict((name, character) for (name, character) in l_castandrole)
-                l_castandrole.extend([(p['name'], p['character'] if 'character' in p else p['character_name']) for p in v if p['name'] not in dic_aux.keys() and ('character' in p or 'character_name' in p)])
+                try:
+                    l_castandrole.extend([(p['name'], p['character'] if 'character' in p else p['character_name']) for p in v if p['name'] not in dic_aux.keys() and ('character' in p or 'character_name' in p)])
+                except: pass
 
             elif k == 'videos':
                 if not isinstance(v, list):
@@ -1776,11 +1783,15 @@ class Tmdb(object):
                         l_director = list(set(l_director + [crew['name']]))
 
                     elif crew['job'].lower() in ('screenplay', 'writer'):
-                        l_writer = list(set(l_writer + [crew['name']]))
+                        try:
+                            l_writer = list(set(l_writer + [crew['name']]))
+                        except: pass
 
             elif k == 'created_by':
                 for crew in v:
-                    l_writer = list(set(l_writer + [crew['name']]))
+                    try:
+                        l_writer = list(set(l_writer + [crew['name']]))
+                    except: pass
 
             elif isinstance(v, str) or isinstance(v, int) or isinstance(v, float):
                 ret_infoLabels[k] = v

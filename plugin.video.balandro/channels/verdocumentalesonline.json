@@ -11,7 +11,7 @@
   "categories": ["documentary"],
   "language": ["cast"],
 
-  "clusters": ["rankings", "lists"],
+  "clusters": ["rankings", "lists", "docs"],
 
   "notes": "Canal de dailymotion especializado en documentales en castellano."
 }

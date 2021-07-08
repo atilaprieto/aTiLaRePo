@@ -156,6 +156,8 @@ def findvideos(item):
 
         servidor = corregir_servidor(scrapertools.find_single_match(match, '-dns">(.*?)</p>'))
 
+        if servidor == 'damedamehoy': servidor = 'directo'
+
         url = host + '?trembed=%s&trid=%s&trtype=1' % (data_key, data_id)
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, title = '', url = url,
@@ -171,6 +173,18 @@ def play(item):
     # ~ logger.debug(data)
 
     url = scrapertools.find_single_match(data, 'src="([^"]+)"')
+
+    if '/damedamehoy.xyz/' in url:
+        url = url.replace('https://damedamehoy.xyz/embed.html#', 'https://damedamehoy.xyz/details.php?v=')
+        data = httptools.downloadpage(url).data
+
+        url = scrapertools.find_single_match(data, '"file":"(.*?)"')
+
+        url = url.replace('\\/', '/')
+
+        if url:
+           itemlist.append(item.clone( url=url, server='directo'))
+           return itemlist
 
     if '/flixplayer.' in url:
        data = httptools.downloadpage(url).data

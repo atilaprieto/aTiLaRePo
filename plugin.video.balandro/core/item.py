@@ -174,6 +174,7 @@ class Item(object):
             return
 
         # Descodificamos los HTML entities
+
         if name in ["title", "plot", "fulltitle", "contentPlot", "contentTitle"]:
             value = self.decode_html(value)
 
@@ -453,8 +454,10 @@ class Item(object):
             unicode_title = unicode(value, "utf8", "ignore")
             return HTMLParser().unescape(unicode_title).encode("utf8")
         except:
-            if PY3 and isinstance(value, bytes):
-                value = value.decode("utf8")
+            if PY3:
+                if isinstance(value, bytes):
+                    value = value.decode("utf8")
+                value = HTMLParser().unescape(value)
             return value
 
     def toutf8(self, *args):

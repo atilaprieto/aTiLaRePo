@@ -291,8 +291,8 @@ def episodios(item):
         episode = scrapertools.find_single_match(article, 'data-ep="([^"]+)')
         plot = scrapertools.find_single_match(article, '<p><p style=".*?">(.*?)</p>').strip()
 
-        if not item.contentSeason: continue
-        elif not str(item.contentSeason) == season: continue
+        if item.contentSeason:
+           if not str(item.contentSeason) == str(season): continue
 
         if len(episode) == 1:
             nro_epi = '0' + episode

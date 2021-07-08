@@ -1,0 +1,17 @@
+{
+  "id": "pelisxd",
+  "name": "PelisXd",
+  "thumbnail": "pelisxd.png",
+
+  "active": true,
+
+  "searchable": true,
+  "search_types": ["movie"],
+
+  "categories": ["movie"],
+  "language": ["cast", "lat", "vose"],
+
+  "clusters": ["countries", "kids", "docs", "vos"],
+
+  "notes": "Acceso por separado a Castellano, Latino y Subtitulado. Películas por género."
+}

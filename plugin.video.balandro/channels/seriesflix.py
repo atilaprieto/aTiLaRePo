@@ -6,12 +6,15 @@ from platformcode import logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, servertools, tmdb
 
-host = 'https://seriesflix.to/'
+host = 'https://seriesflix.nu/'
 
 perpage = 24
 
 
 def do_downloadpage(url, post=None, headers=None):
+    # ~ por si viene de enlaces guardados
+    url = url.replace('/seriesflix.to/', '/seriesflix.nu/')
+
     data = httptools.downloadpage(url, post=post, headers=headers).data
 
     if '<title>You are being redirected...</title>' in data:
@@ -40,26 +43,11 @@ def mainlist_series(item):
 
     itemlist.append(item.clone( title = 'Por productora', action = 'generos', search_type = 'tvshow', grupo = 'productoras' ))
     itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'tvshow' ))
-    # ~ itemlist.append(item.clone( title = 'Por país', action = 'paises', search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Por país', action = 'paises', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Por letra (A - Z)', action='alfabetico' ))
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
-
-    return itemlist
-
-
-def alfabetico(item):
-    logger.info()
-    itemlist = []
-
-    for letra in '#ABCDEFGHIJKLMNOPQRSTUVWXYZ':
-        letras = letra.lower()
-        if letras == '#': letras = '0-9'
-
-        url = host + 'letras/' + letras + '/'
-
-        itemlist.append(item.clone( action = 'list_alfa', title = letra, url = url ))
 
     return itemlist
 
@@ -118,6 +106,21 @@ def paises(item):
         if title == 'Espanolas': title = 'Españolas'
 
         itemlist.append(item.clone( title = title, url = url, action = 'list_all' ))
+
+    return itemlist
+
+
+def alfabetico(item):
+    logger.info()
+    itemlist = []
+
+    for letra in '#ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+        letras = letra.lower()
+        if letras == '#': letras = '0-9'
+
+        url = host + 'letras/' + letras + '/'
+
+        itemlist.append(item.clone( action = 'list_alfa', title = letra, url = url ))
 
     return itemlist
 

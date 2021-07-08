@@ -41,9 +41,9 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Últimos episodios', action = 'last_episodes', url = host + 'episodes/', grupo = 'Episodios', search_type = 'tvshow' ))
-
     itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host + 'series/', grupo = 'Series', search_type = 'tvshow' ))
+
+    itemlist.append(item.clone( title = 'Últimos episodios', action = 'last_episodes', url = host + 'episodes/', grupo = 'Episodios', search_type = 'tvshow' ))
 
     # ~ No hay ninguna serie
     # ~ itemlist.append(item.clone( title = 'Destacadas', action = 'list_all', url = host + 'category/destacadas/?type=series', grupo = 'Destacadas', search_type = 'tvshow' ))
@@ -212,7 +212,7 @@ def last_episodes(item):
 
         url = scrapertools.find_single_match(match, '<a href="([^"]+)"')
 
-        nro_epis = scrapertools.find_single_match(temp_epis, '.*?x(.*?)')
+        nro_epis = scrapertools.find_single_match(temp_epis, '.*?x(.*?)$')
 
         itemlist.append(item.clone( action = 'findvideos', url = url, title = titulo, thumbnail = thumb,
                                    contentType = 'episode', contentSerieName = title, contentSeason = item.contentSeason, contentEpisodeNumber = nro_epis ))
@@ -286,7 +286,7 @@ def episodios(item):
 
         url = scrapertools.find_single_match(match, '<a href="([^"]+)"')
 
-        nro_epis = scrapertools.find_single_match(temp_epis, '.*?x(.*?)')
+        nro_epis = scrapertools.find_single_match(temp_epis, '.*?x(.*?)$')
 
         itemlist.append(item.clone( action = 'findvideos', url = url, title = titulo, thumbnail = thumb,
                                     contentType = 'episode', contentSeason = item.contentSeason, contentEpisodeNumber = nro_epis ))

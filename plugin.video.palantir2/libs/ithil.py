@@ -201,7 +201,7 @@ class Video(object):
             if 'label' in self.__dict__:
                 return self.label
             else:
-                lng = {'es': u'Castellano', 'fr': u'Frances', 'en': u'Ingles', 'ru': u'Ruso', 'de': u'Aleman'} #ISO_639-1
+                lng = {'es': u'Castellano', 'fr': u'Frances', 'en': u'Ingles', 'ru': u'Ruso', 'de': u'Aleman', 'it':'Italiano'} #ISO_639-1
                 label = ("%s: " % self.server) if 'server' in self.__dict__ else ''
                 label += ("%s " % lng.get(self.lang, localize(30045))) if self.lang else ''
                 if self.res:

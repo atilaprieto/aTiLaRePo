@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import os
+import os, re
+import xbmcgui, xbmc
 
 from platformcode import config, logger, platformtools
 from core.item import Item
 from core import filetools
+
+
+color_alert = config.get_setting('notification_alert_color', default='red')
+color_infor = config.get_setting('notification_infor_color', default='pink')
+color_adver = config.get_setting('notification_adver_color', default='violet')
+color_avis  = config.get_setting('notification_avis_color', default='yellow')
+color_exec  = config.get_setting('notification_exec_color', default='cyan')
 
 
 # Abrir ventana de Configuración
@@ -13,12 +21,14 @@ def open_settings(item):
 
     config.__settings__.openSettings()
 
+    platformtools.itemlist_refresh()
+
 
 # Comprobar nuevos episodios en cualquiera de las series en seguimiento
 def comprobar_nuevos_episodios(item):
     logger.info()
 
-    platformtools.dialog_notification(config.__addon_name, 'Comprobando si existe nuevos episodios', time=2000, sound=False)
+    platformtools.dialog_notification(config.__addon_name, 'Comprobando existencia nuevos episodios', time=2000, sound=False)
 
     from core import trackingtools
     trackingtools.check_and_scrap_new_episodes()
@@ -28,20 +38,23 @@ def comprobar_nuevos_episodios(item):
 def check_addon_updates(item):
     logger.info()
 
-    platformtools.dialog_notification(config.__addon_name, 'Comprobando actualizaciones')
+    platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Comprobando actualizaciones[/B][/COLOR]' % color_infor)
 
     from platformcode import updater
     updater.check_addon_updates(verbose=True)
 
+    platformtools.itemlist_refresh()
 
 # Comprobar actualizaciones (llamada desde una opción de la Configuración)
 def check_addon_updates_force(item):
     logger.info()
 
-    platformtools.dialog_notification(config.__addon_name, 'Forzando actualizaciones')
+    platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Forzando actualizaciones[/B][/COLOR]' % color_avis)
 
     from platformcode import updater
     updater.check_addon_updates(verbose=True, force=True)
+
+    platformtools.itemlist_refresh()
 
 
 # Borrar caché de TMDB (llamada desde una opción de la Configuración)
@@ -58,10 +71,9 @@ def drop_db_cache(item):
 def clean_db_cache(item):
     logger.info()
 
-    platformtools.dialog_notification(config.__addon_name, 'Inspeccionado la Caché de Tmdb')
+    platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Inspeccionado la Caché de Tmdb[/B][/COLOR]' % color_infor)
 
     import sqlite3, time
-    from core import filetools
 
     fecha_caducidad = time.time() - (31 * 24 * 60 * 60) # al cabo de 31 días
 
@@ -79,11 +91,11 @@ def clean_db_cache(item):
     txt += ' y contiene [COLOR gold]%s[/COLOR] registros.' % numregs
     txt += ' ¿ Borrar los [COLOR blue]%s[/COLOR] registros que tienen más de un mes de antiguedad de Tmdb ?' % numregs_expired
 
-    if platformtools.dialog_yesno('Limpiar caché Tmdb', txt): 
+    if platformtools.dialog_yesno('Limpiar la caché de Tmdb', txt): 
         c.execute('DELETE FROM tmdb_cache WHERE added < ?', (fecha_caducidad,))
         conn.commit()
         conn.execute('VACUUM')
-        platformtools.dialog_notification(config.__addon_name, 'Limpiado Caché Tmdb', time=2000, sound=False)
+        platformtools.dialog_notification(config.__addon_name, 'Limpiada Caché Tmdb', time=2000, sound=False)
 
     conn.close()
 
@@ -96,7 +108,6 @@ def more_info(item):
     if item.from_action: item.__dict__['action'] = item.__dict__.pop('from_action')
     if item.from_channel: item.__dict__['channel'] = item.__dict__.pop('from_channel')
 
-    import xbmcgui
     from core import tmdb
 
     tmdb.set_infoLabels_item(item)
@@ -111,7 +122,6 @@ def more_info(item):
 def search_trailers(item):
     logger.info()
 
-    import xbmcgui, xbmc
     from core.tmdb import Tmdb
 
     tipo = 'movie' if item.contentType == 'movie' else 'tv'
@@ -135,14 +145,16 @@ def search_trailers(item):
         if notification_d_ok:
             platformtools.dialog_ok(nombre, 'No se encuentra ningún tráiler en TMDB')
         else:
-            platformtools.dialog_notification(nombre, '[COLOR moccasin]No se encuentra ningún tráiler en TMDB[/COLOR]')
+            platformtools.dialog_notification(nombre, '[B][COLOR %s]Sin ningún tráiler en TMDB[/COLOR][/B]' % color_alert)
     else:
         while not xbmc.Monitor().abortRequested(): # (while True)
             ret = xbmcgui.Dialog().select('Tráilers para %s' % nombre, opciones, useDetails=True)
             if ret == -1: break
 
             platformtools.dialog_notification(resultados[ret]['name'], 'Cargando tráiler ...', time=3000, sound=False)
+
             from core import servertools
+
             if 'youtube' in resultados[ret]['url']:
                 video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing('youtube', resultados[ret]['url'])
             else:
@@ -155,7 +167,7 @@ def search_trailers(item):
                 while not xbmc.Monitor().abortRequested() and xbmc.Player().isPlaying():
                     xbmc.sleep(1000)
             else:
-                platformtools.dialog_notification(resultados[ret]['name'], 'No se puede reproducir el tráiler', time=3000, sound=False)
+                platformtools.dialog_notification(resultados[ret]['name'], 'No se pudo reproducir el tráiler', time=3000, sound=False)
 
             if len(resultados) == 1: break # si sólo hay un vídeo no volver al diálogo de tráilers
 
@@ -167,46 +179,80 @@ def manto_proxies(item):
 
     filtros = {'searchable': True}
 
-    opciones = []
-
     ch_list = channeltools.get_channels_list(filtros=filtros)
 
     if not ch_list:
-        platformtools.dialog_notification(config.__addon_name, 'No hay canales de este tipo')
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Sin canales de este tipo[/B][/COLOR]' % color_adver)
         return
 
-    if platformtools.dialog_yesno(config.__addon_name, '[COLOR red]¿ Confirma Eliminar los Proxies existentes en Todos los canales ?[/COLOR]'):
+    if platformtools.dialog_yesno(config.__addon_name, '[COLOR red]¿ Confirma Eliminar los Proxies memorizados en Todos los canales ?[/COLOR]'):
        for ch in ch_list:
+           if not 'proxies' in ch['notes'].lower():
+               continue
+
+           # por NAME vensiones anteriores a 2.0
+           cfg_proxies_channel = 'channel_' + ch['name'] + '_proxies'
+
+           if config.get_setting(cfg_proxies_channel, default=''):
+               config.set_setting(cfg_proxies_channel, '')
+
+               cfg_proxytools_max_channel = 'channel_' + ch['name'] + '_proxytools_max'
+               if config.get_setting(cfg_proxytools_max_channel, default=''): config.set_setting(cfg_proxytools_max_channel, '')
+
+               cfg_proxytools_provider = 'channel_' + ch['name'] + '_proxytools_provider'
+               if config.get_setting(cfg_proxytools_provider, default=''): config.set_setting(cfg_proxytools_provider, '')
+
+           # por ID
            cfg_proxies_channel = 'channel_' + ch['id'] + '_proxies'
            cfg_proxytools_max_channel = 'channel_' + ch['id'] + '_proxytools_max'
+           cfg_proxytools_provider = 'channel_' + ch['id'] + '_proxytools_provider'
 
            if not config.get_setting(cfg_proxies_channel, default=''):
                if not config.get_setting(cfg_proxytools_max_channel, default=''):
-                   continue
+                   if not config.get_setting(cfg_proxytools_provider, default=''):
+                       continue
 
-           config.set_setting(cfg_proxies_channel, '')
-           config.get_setting(cfg_proxytools_max_channel, '')
+           if config.get_setting(cfg_proxies_channel, default=''): config.set_setting(cfg_proxies_channel, '')
+           if config.get_setting(cfg_proxytools_max_channel, default=''): config.set_setting(cfg_proxytools_max_channel, '')
+           if config.get_setting(cfg_proxytools_provider, default=''): config.set_setting(cfg_proxytools_provider, '')
 
-       platformtools.dialog_notification(config.__addon_name, 'Proxies eliminados')
+       platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Proxies eliminados[/B][/COLOR]' % color_infor)
 
 
 def manto_params(item):
     logger.info()
 
-    if platformtools.dialog_yesno(config.__addon_name, '¿ Confirma Restablecer a sus valores por defecto los Parámetros Internos del addon ?'):
+    if platformtools.dialog_yesno(config.__addon_name, "Se quitarán: 'Logins' en canales, 'Dominios' seleccionados en los canales, 'Canales Excluidos' en búsquedas, 'Canales Excluidos' en buscar proxies global, y se Inicializarán otros 'Parámetros'.", '[COLOR yellow]¿ Confirma Restablecer a sus valores por defecto los Parámetros Internos del addon ?[/COLOR]'):
         config.set_setting('adults_password', '')
 
         config.set_setting('channel_cinecalidad_dominio', '')
+
         config.set_setting('channel_documaniatv_rua', '')
+
         config.set_setting('channel_hdfull_dominio', '')
+        config.set_setting('channel_hdfull_hdfull_login', False)
+        config.set_setting('channel_hdfull_hdfull_password', '')
+        config.set_setting('channel_hdfull_hdfull_username', '')
+
+        config.set_setting('channel_playdede_playdede_login', False)
+        config.set_setting('channel_playdede_playdede_password', '')
+        config.set_setting('channel_playdede_playdede_username', '')
+
+        config.set_setting('search_excludes_movies', '')
+        config.set_setting('search_excludes_tvshows', '')
+        config.set_setting('search_excludes_documentaries', '')
+        config.set_setting('search_excludes_mixed', '')
+        config.set_setting('search_excludes_all', '')
+
+        config.set_setting('proxysearch_excludes', '')
 
         # ~ config.set_setting('downloadpath', '')  No funciona
 
-        config.set_setting('chrome_last_version', '88.0.4324.152')
+        config.set_setting('chrome_last_version', '89.0.4389.100')
 
         config.set_setting('debug', '0')
 
-        platformtools.dialog_notification(config.__addon_name, 'Parámetros restablecidos')
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Parámetros restablecidos[/B][/COLOR]' % color_infor)
 
 def manto_cookies(item):
     logger.info()
@@ -215,12 +261,12 @@ def manto_cookies(item):
 
     existe = filetools.exists(path)
     if existe == False:
-         platformtools.dialog_notification(config.__addon_name, '[COLOR red]No hay fichero de Cookies[/COLOR]')
+         platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]No hay fichero de Cookies[/COLOR][/B]' % color_alert)
          return
 
-    if platformtools.dialog_yesno(config.__addon_name, '[COLOR moccasin]¿ Confirma Eliminar el fichero de Cookies ?[/COLOR]'):
+    if platformtools.dialog_yesno(config.__addon_name, '[COLOR red]¿ Confirma Eliminar el fichero de Cookies ?[/COLOR]'):
         filetools.remove(path)
-        platformtools.dialog_notification(config.__addon_name, 'Fichero Cookies eliminado')
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Fichero Cookies eliminado[/B][/COLOR]' % color_infor)
 
 def manto_folder_cache(item):
     logger.info()
@@ -229,12 +275,12 @@ def manto_folder_cache(item):
 
     existe = filetools.exists(path)
     if existe == False:
-        platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Aún no hay Carpeta Caché[/COLOR]')
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Aún no hay Carpeta Caché[/COLOR][/B]' % color_exec)
         return
 
-    if platformtools.dialog_yesno(config.__addon_name, '¿ Confirma Eliminar Toda la carpeta Caché ?'):
+    if platformtools.dialog_yesno(config.__addon_name, '[COLOR red]¿ Confirma Eliminar Toda la carpeta Caché ?[/COLOR]'):
         filetools.rmdirtree(path)
-        platformtools.dialog_notification(config.__addon_name, 'Carpeta Caché eliminada')
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Carpeta Caché eliminada[/B][/COLOR]' % color_infor)
 
 def manto_tracking_dbs(item):
     logger.info()
@@ -243,12 +289,12 @@ def manto_tracking_dbs(item):
 
     existe = filetools.exists(path)
     if existe == False:
-        platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Aún no tiene Preferidos[/COLOR]')
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Aún no tiene Preferidos[/COLOR][/B]' % color_exec)
         return
 
     if platformtools.dialog_yesno(config.__addon_name, '[COLOR red]¿ Confirma Eliminar Todo el contenido de sus Preferidos ?[/COLOR]'):
         filetools.rmdirtree(path)
-        platformtools.dialog_notification(config.__addon_name, 'Contenido Preferidos eliminado')
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Contenido Preferidos eliminado[/B][/COLOR]' % color_infor)
 
 def manto_folder_downloads(item):
     logger.info()
@@ -262,12 +308,21 @@ def manto_folder_downloads(item):
 
     existe = filetools.exists(path)
     if existe == False:
-        platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Aún no tiene Descargas[/COLOR]')
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Aún no tiene Descargas[/COLOR][/B]' % color_exec)
         return
 
     if platformtools.dialog_yesno(config.__addon_name, '[COLOR red]¿ Confirma Eliminar el contenido de Todas sus Descargas ?[/COLOR]'):
         filetools.rmdirtree(path)
-        platformtools.dialog_notification(config.__addon_name, 'Contenido Descargas eliminado')
+
+        # por si vario el path y quedaron descargas huerfanas en el path default
+        if downloadpath:
+           try:
+              path = os.path.join(config.get_data_path(), 'downloads')
+              filetools.rmdirtree(path)
+           except:
+              pass
+
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Contenido Descargas eliminado[/B][/COLOR]' % color_infor)
 
 def manto_folder_addon(item):
     logger.info()
@@ -276,35 +331,115 @@ def manto_folder_addon(item):
 
     existe = filetools.exists(path)
     if not existe == False:
-        if platformtools.dialog_yesno(config.__addon_name, '[COLOR yellow]¿ ATENCION: Confirma Eliminar Todos los Datos del Addon ?[/COLOR]'):
+        if platformtools.dialog_yesno(config.__addon_name, '[COLOR red]¿ ATENCION: Confirma Eliminar Todos los Datos del Addon ?[/COLOR]'):
             filetools.rmdirtree(path) # ~  deja solo el fichero settings.xml porque lo tiene bloqueado el sistema
-            platformtools.dialog_notification(config.__addon_name, 'Datos del Addon eliminados')
+            platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Datos del Addon eliminados[/B][/COLOR]' % color_adver)
 
 def adults_password(item):
     logger.info()
+
     if not config.get_setting('adults_password'):
         password = platformtools.dialog_numeric(0, 'Pin (4 dígitos)')
         if not password: return
 
         if len(password) != 4:
-            platformtools.dialog_notification(config.__addon_name, 'El pin debe de ser de 4 dígitos')
+            platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Pin obligatorio 4 dígitos[/B][/COLOR]' % color_alert)
             return
 
         confirmpassword = platformtools.dialog_numeric(0, 'Confirme el Pin')
         if not confirmpassword: return
 
         if password == confirmpassword:
-            platformtools.dialog_notification(config.__addon_name, 'Pin establecido')
+            platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Pin establecido[/B][/COLOR]' % color_infor)
             config.set_setting('adults_password', password)
             return password
     else:
-        password = platformtools.dialog_numeric(0, 'Introduzca el pin parental')
+        password = platformtools.dialog_numeric(0, '[B][COLOR %s]Indique Pin parental[/COLOR][/B]' % color_adver)
         try:
             if int(password) == int(config.get_setting('adults_password')):
-                platformtools.dialog_notification(config.__addon_name, '[COLOR lime]Pin correcto[/COLOR]')
+                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Pin correcto[/COLOR][/B]' % color_avis)
                 return True
             else:
-                platformtools.dialog_notification(config.__addon_name, '[COLOR red]Pin incorrecto[/COLOR]')
+                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Pin incorrecto[/COLOR][/B]' % color_exec)
                 return False
         except:
             return False
+
+def adults_password_del(item):
+    logger.info()
+
+    if not config.get_setting('adults_password'):
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Aún no tiene Pin parental[/COLOR][/B]' % color_exec)
+        return
+
+    password = platformtools.dialog_numeric(0, '[B][COLOR %s]Indique Pin parental[/COLOR][/B]' % color_adver)
+
+    try:
+       if int(password) == int(config.get_setting('adults_password')):
+           txt = 'Si es afirmativa su repuesta a la pregunta formulada, deberá salir y volver a acceder a esta configuración y si lo desea establecer un nuevo Pin parental.'
+           if platformtools.dialog_yesno(config.__addon_name, txt, '[B][COLOR %s]¿ Desea eliminar el Pin parental memorizado ?[/COLOR][/B]' % color_adver):
+               config.set_setting('adults_password', '')
+               platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Pin anulado[/COLOR][/B]' % color_exec)
+       else:
+           platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Pin incorrecto[/COLOR][/B]' % color_exec)
+           return
+    except:
+       return
+
+
+def show_ubicacion(item):
+    logger.info()
+
+    downloadpath = config.get_setting('downloadpath', default='')
+
+    if downloadpath:
+        path = downloadpath
+    else:
+        path = os.path.join(config.get_data_path(), 'downloads')
+
+    platformtools.dialog_textviewer('Ubicación de las Descargas', path)
+
+
+def test_internet(item):
+    platformtools.dialog_notification(config.__addon_name, 'Comprobando [B][COLOR %s]Internet[/COLOR][/B]' % color_avis)
+
+    from core import httptools, scrapertools
+
+    your_ip = ''
+
+    try:
+       data = httptools.downloadpage('http://httpbin.org/ip').data
+       data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
+       your_ip = scrapertools.find_single_match(str(data), '.*?"origin".*?"(.*?)"')
+    except:
+       pass
+
+    if not your_ip:
+        try:
+           your_ip = httptools.downloadpage('http://ipinfo.io/ip').data
+        except:
+           pass
+
+    if not your_ip:
+        try:
+           your_ip = httptools.downloadpage('http://www.icanhazip.com/').data
+        except:
+           pass
+
+    if your_ip:
+        your_info = ''
+		
+        try:
+           your_info = httptools.downloadpage('https://ipinfo.io/json').data
+        except:
+           pass
+
+        if your_info:
+            your_info = your_info.replace('{', '').replace('}', '').replace('[', '').replace(']', '').replace(',', '').replace('"', '').replace("'", '') #.strip()
+            platformtools.dialog_textviewer('Información de su Internet', your_info)
+        else:
+            platformtools.dialog_ok(config.__addon_name, '[COLOR yellow][B]Hay conexión con internet.[/B][/COLOR]', your_ip)
+        return
+
+    platformtools.dialog_ok(config.__addon_name, '[COLOR red][B]Parece que NO hay conexión con internet.[/B][/COLOR]', 'Compruebelo realizando cualquier Búsqueda, desde un Navegador Web ')
+    return

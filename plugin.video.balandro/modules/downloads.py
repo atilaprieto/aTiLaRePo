@@ -15,6 +15,13 @@ from core import filetools, jsontools
 
 STATUS_CODES = type("StatusCode", (), {"stopped": 0, "canceled": 1, "completed": 2, "error": 3})
 
+color_alert = config.get_setting('notification_alert_color', default='red')
+color_infor = config.get_setting('notification_infor_color', default='pink')
+color_adver = config.get_setting('notification_adver_color', default='violet')
+color_avis  = config.get_setting('notification_avis_color', default='yellow')
+color_exec  = config.get_setting('notification_exec_color', default='cyan')
+
+
 # Ruta para las descargas
 download_path = config.get_setting('downloadpath', default='')
 if download_path == '':
@@ -39,7 +46,6 @@ def mainlist(item):
         ficheros.sort(key=os.path.getmtime, reverse=False)
 
     for down_path in ficheros:
-
         # ~ it = Item().fromjson(path=down_path) # falla con smb://
         it = Item().fromjson(filetools.read(down_path))
 
@@ -64,7 +70,29 @@ def mainlist(item):
 
         itemlist.append(it)
 
+    if not itemlist:
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Aún no tiene Descargas[/COLOR][/B]' % color_exec)
+
+    itemlist.append(item.clone( title = 'Ubicación de las descargas', action = 'show_folder_downloads',
+                                thumbnail=config.get_thumb('downloads'), text_color='green' ))
+
+    itemlist.append(item.clone( channel='actions', title= 'Ajustes categoría descargas ', action = 'open_settings',
+                                thumbnail=config.get_thumb('settings'), text_color='yellowgreen', folder=False ))
+
     return itemlist
+
+
+def show_folder_downloads(item):
+    logger.info()
+
+    downloadpath = config.get_setting('downloadpath', default='')
+
+    if downloadpath:
+        path = downloadpath
+    else:
+        path = os.path.join(config.get_data_path(), 'downloads')
+
+    platformtools.dialog_textviewer('Ubicación de las Descargas', path)
 
 
 def acciones_enlace(item):
@@ -127,7 +155,7 @@ def acciones_enlace(item):
         origen = filetools.join(download_path, item.downloadFilename)
         destino = filetools.join(destino_path, item.downloadFilename)
         if not filetools.copy(origen, destino, silent=False):
-            platformtools.dialog_ok(config.__addon_name, 'Error, no se ha podido copiar el fichero!', origen, destino)
+            platformtools.dialog_ok(config.__addon_name, 'Error, no se ha podido copiar el fichero', origen, destino)
             return False
         platformtools.dialog_notification('Fichero copiado', destino_path)
         return True
@@ -163,7 +191,7 @@ def save_download(item):
                 if notification_d_ok:
                     platformtools.dialog_ok(config.__addon_name, 'No hay enlaces disponibles')
                 else:
-                    platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]No hay enlaces disponibles[/COLOR]')
+                    platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Sin enlaces disponibles[/COLOR][/B]' % color_exec)
 
             itemlist = platformtools.formatear_enlaces_servidores(itemlist)
 
@@ -180,7 +208,7 @@ def save_download(item):
 
                 seleccion = platformtools.dialog_select('Enlaces disponibles en %s' % itemlist[0].channel, opciones)
                 if seleccion == -1:
-                    # ~ platformtools.dialog_notification(config.__addon_name, 'Descarga cancelada')
+                    # ~ platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Descarga cancelada[/B]' % color_infor)
                     break
                 else:
                     # Si el canal tiene play propio
@@ -204,7 +232,7 @@ def save_download(item):
                             if notification_d_ok:
                                 platformtools.dialog_ok(config.__addon_name, 'No se puede descargar')
                             else:
-                                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]No se puede descargar[/COLOR]')
+                                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]No se pudo descargar[/COLOR][/B]' % color_exec)
 
                     else:
                         ok_play = download_video(itemlist[seleccion], item)
@@ -214,24 +242,26 @@ def save_download(item):
 
         else:
             if notification_d_ok:
-                platformtools.dialog_ok(config.__addon_name, 'Nada a descargar!')
+                platformtools.dialog_ok(config.__addon_name, 'Nada a descargar')
             else:
-                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Nada a descargar![/COLOR]')
+                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Nada a descargar[/COLOR][/B]' % color_exec)
 
     except:
         import traceback
         logger.error(traceback.format_exc())
 
         if notification_d_ok:
-            platformtools.dialog_ok(config.__addon_name, 'Error al descargar!')
+            platformtools.dialog_ok(config.__addon_name, 'Error al descargar')
         else:
-            platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Error al descargar![/COLOR]')
+            platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Error al descargar[/COLOR][/B]' % color_exec)
 
 
 # (parecido a platformtools.play_video pero para descargar)
 def download_video(item, parent_item):
     logger.info(item)
     logger.info(parent_item)
+
+    platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Descarga en preparación[/COLOR][/B]' % color_exec)
 
     notification_d_ok = config.get_setting('notification_d_ok', default=True)
 
@@ -261,32 +291,35 @@ def download_video(item, parent_item):
     else:
         mediaurl, view, mpd = platformtools.get_video_seleccionado(item, seleccion, video_urls)
         if mediaurl == '':
-            platformtools.dialog_ok(config.__addon_name, 'No se encuentra el vídeo!')
+            platformtools.dialog_ok(config.__addon_name, 'No se encuentra el vídeo')
             return False
 
-        if mediaurl.endswith('.m3u8') or 'm3u8' in video_urls[seleccion][0].lower():
+        if mediaurl.endswith('.m3u8') or '.m3u8?' in mediaurl or 'm3u8' in video_urls[seleccion][0].lower():
             if notification_d_ok:
-                platformtools.dialog_ok(config.__addon_name, 'Formato m3u8 no se puede descargar')
+                platformtools.dialog_ok(config.__addon_name, 'Formato M3u8 no admitido, no se puede descargar')
             else:
-                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Formato m3u8 no se puede descargar[/COLOR]')
+                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Formato M3u8 no admitido[/COLOR][/B]' % color_alert)
             return False
+
         if mpd:
             if notification_d_ok:
-                platformtools.dialog_ok(config.__addon_name, 'Formato mpd no se puede descargar')
+                platformtools.dialog_ok(config.__addon_name, 'Formato Mpd no admitido, no se puede descargar')
             else:
-                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Formato mpd no se puede descargar[/COLOR]')
+                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Formato Mpd no admitido[/COLOR][/B]' % color_alert)
             return False
+
         if mediaurl.startswith('rtmp'):
             if notification_d_ok:
-                platformtools.dialog_ok(config.__addon_name, 'Formato rtmp no se puede descargar')
+                platformtools.dialog_ok(config.__addon_name, 'Formato Rtmp no admitido, no se puede descargar')
             else:
-                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Formato rtmp no se puede descargar[/COLOR]')
+                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Formato Rtmp no admitido[/COLOR][/B]' % color_alert)
             return False
+
         if item.server == 'torrent':
             if notification_d_ok:
-                platformtools.dialog_ok(config.__addon_name, 'Formato torrent no se puede descargar')
+                platformtools.dialog_ok(config.__addon_name, 'Formato Torrent no admitido, no se puede descargar')
             else:
-                platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Formato torrent no se puede descargar[/COLOR]')
+                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Formato Torrent no admitido[/COLOR][/B]' % color_alert)
             return False
 
         if parent_item.contentType == 'movie':
@@ -302,6 +335,31 @@ def download_video(item, parent_item):
 
 def do_download(mediaurl, file_name, parent_item, server_item):
     from core import downloadtools
+
+    download_path = config.get_setting('downloadpath', default='')
+
+    if config.get_setting('conf_ubicacion', default=True):
+        if download_path == '':
+            download_path = filetools.join(config.get_data_path(), 'downloads')
+
+        la_ubicacion = ('[B][COLOR %s]' + download_path) % color_infor
+
+        show_folder_downloads(parent_item)
+
+        if not platformtools.dialog_yesno(config.__addon_name, '¿ Confirma la ubicación de la descarga ?', la_ubicacion + '[/COLOR][/B]'): 
+            from modules import actions
+
+            actions.open_settings(parent_item)
+
+            download_path = config.get_setting('downloadpath', default='')
+            if download_path == '':
+                download_path = filetools.join(config.get_data_path(), 'downloads')
+
+            if not filetools.exists(download_path):
+                filetools.mkdir(download_path)
+
+        if not platformtools.dialog_yesno(config.__addon_name, '[B][COLOR %s]¿ Desea que se le siga formulando la pregunta respecto a confirmar la ubicación?[/COLOR][/B]' % color_avis): 
+            config.set_setting('conf_ubicacion', False)
 
     # Limpiar caracteres para nombre de fichero válido
     file_name = config.text_clean(file_name)

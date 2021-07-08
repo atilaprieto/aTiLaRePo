@@ -41,7 +41,10 @@ def unpack(source):
         """Look up symbols in the synthetic symtab."""
         word = match.group(0)
         return symtab[unbase(word)] or word
-    source = re.sub(r'\b\w+\b', lookup, payload)
+    try:
+        source = re.sub(r'\b\w+\b', lookup, payload)
+    except:
+        source = re.sub(r"\b\w+\b", lookup, payload, flags=re.ASCII)
     return _replacestrings(source)
 def _filterargs(source):
     """Juice from a source file the four args needed by decoder."""

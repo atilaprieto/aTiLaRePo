@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import re, string
+import re
 
 from platformcode import logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, tmdb
 
 
-host = 'https://www.subtorrents.nl/'
+host = 'https://www.subtorrents.ch/'
 
 perpage = 30
 
@@ -23,6 +23,9 @@ def configurar_proxies(item):
 
 
 def do_downloadpage(url, post=None, headers=None):
+    # ~ por si viene de enlaces guardados
+    url = url.replace('/www.subtorrents.nl/', '/www.subtorrents.ch/')
+
     data = httptools.downloadpage_proxy('subtorrents', url, post=post, headers=headers).data
     # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
 
@@ -262,7 +265,7 @@ def findvideos(item):
     else:
         url_torrent = item.url
 
-    itemlist.append(Item( channel = item.channel, action = 'play', title = '', url = url_torrent, server = 'torrent'))
+    itemlist.append(Item( channel = item.channel, action = 'play', title = '', url = url_torrent, server = 'torrent', quality= item.qualityes, language=item.languages))
 
     return itemlist
 
@@ -272,15 +275,18 @@ def play(item):
     itemlist = []
 
     if item.url.endswith('.torrent'):
-        # Opció 2, el gestor de torrents amb url local
-        import os
         from platformcode import config
+
+        if config.get_setting('proxies', item.channel, default=''):
+            import os
             
-        data = do_downloadpage(item.url)
-        file_local = os.path.join(config.get_data_path(), "temp.torrent")
-        with open(file_local, 'w') as f: f.write(data); f.close()
-            
-        itemlist.append(item.clone( url = file_local, server = 'torrent' ))
+            data = do_downloadpage(item.url)
+            file_local = os.path.join(config.get_data_path(), "temp.torrent")
+            with open(file_local, 'wb') as f: f.write(data); f.close()
+
+            itemlist.append(item.clone( url = file_local, server = 'torrent' ))
+        else:
+            itemlist.append(item.clone( url = item.url, server = 'torrent' ))
 
     return itemlist
 

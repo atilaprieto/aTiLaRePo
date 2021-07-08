@@ -5,11 +5,13 @@
 
   "active": false,
 
-  "searchable": true,
+  "searchable": false,
   "search_types": ["movie"],
 
   "categories": ["movie"],
   "language": ["cast"],
+
+  "clusters": ["privates"],
 
   "notes": "Lista privada de películas y series en Google Drive"
 

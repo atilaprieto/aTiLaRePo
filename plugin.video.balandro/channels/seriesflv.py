@@ -223,8 +223,8 @@ def episodios(item):
 
         if not url or not season or not episode: continue
 
-        if not item.contentSeason: continue
-        elif not str(item.contentSeason) == season: continue
+        if item.contentSeason:
+           if not str(item.contentSeason) == str(season): continue
 
         data_lang = ' '.join(scrapertools.find_multiple_matches(data_epi, ' data-src="([^"]+)'))
         languages = ', '.join([IDIOMAS.get(lang, lang) for lang in scrapertools.find_multiple_matches(data_lang, 'img/language/([^\.]+)')])

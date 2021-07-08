@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
+import sys
 from platformcode import logger
 from core.item import Item
 from core import httptools, scrapertools, servertools
-
+PY3 = sys.version_info[0] >= 3
 
 host = "http://www.ciberdocumentales.com"
 
@@ -42,7 +42,7 @@ def list_all(item):
     itemlist = []
 
     data = httptools.downloadpage(item.url).data
-    data = data.decode('iso-8859-1').encode('utf8')
+    if PY3: data = data.decode('iso-8859-1').encode('utf8')
 
     patron = '<div class="fotonoticia">\s*<a\s*target="_blank" href="([^"]+)"><img src="([^"]+)" alt="([^"]+)"'
     patron += ' /></a><br /><br />\s*</div>\s*<div class="textonoticia">.*?<br /><br />(.*?)</div>'

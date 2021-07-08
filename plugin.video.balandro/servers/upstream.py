@@ -45,5 +45,5 @@ def get_video_url(page_url, url_referer=''):
 
         elif url and 'mp4' in url:
             video_urls.append(['mp4', url])
-
+    logger.info(video_urls)
     return video_urls

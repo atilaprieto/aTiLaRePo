@@ -78,7 +78,7 @@ def mainlist_pelis(item):
     return itemlist
 
 
-def disabled_mainlist_series(item):
+def mainlist_series(item):
     logger.info()
     itemlist = []
 
@@ -114,6 +114,7 @@ def generos(item):
     for url, title in matches:
         adicional = scrapertools.find_single_match(url, '/genero/([^/]+)')
         tipo = 'genero' if item.search_type == 'movie' else 'generosSeries'
+
         itemlist.append(item.clone( action="list_all", title=title, url=url, tipo=tipo, adicional=adicional, pagina=0 ))
 
     return sorted(itemlist, key=lambda it: it.title)
@@ -132,6 +133,7 @@ def anios(item):
     for url, title in matches:
         adicional = scrapertools.find_single_match(url, '/anio/([^/]+)')
         tipo = 'anio' if item.search_type == 'movie' else 'anioSeries'
+
         itemlist.append(item.clone( action="list_all", title=title, url=url, tipo=tipo, adicional=adicional, pagina=0 ))
 
     return itemlist
@@ -148,6 +150,7 @@ def networks(item):
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)" class="[^"]*" title="([^"]+)')
     for url, title in matches:
         adicional = scrapertools.find_single_match(url, '/network/([^/]+)')
+
         itemlist.append(item.clone( action="list_all", title=title, url=url, tipo='networkSeries', adicional=adicional, pagina=0 ))
 
     return itemlist
@@ -181,10 +184,10 @@ def list_all(item):
 
         if item.search_type == 'movie':
             langs = scrapertools.find_multiple_matches(article, '<div class="([^"]+)"></div>')
-            itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, 
+
+            itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb,
                                         id_pelicula = scrapertools.find_single_match(thumb, '/(\d+)_min'),
-                                        contentType='movie', contentTitle=title, infoLabels={'year': year},
-                                        languages = ', '.join(langs) ))
+                                        contentType='movie', contentTitle=title, infoLabels={'year': year}, languages = ', '.join(langs).capitalize() ))
         else:
             itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb, 
                                         contentType='tvshow', contentSerieName=title, infoLabels={'year': year} ))
@@ -223,7 +226,7 @@ def temporadas(item):
 
     return itemlist
 
-# Si una misma url devuelve los episodios de todas las temporadas, definir rutina tracking_all_episodes para acelerar el scrap en trackingtools.
+
 def tracking_all_episodes(item):
     return episodios(item)
 
@@ -255,7 +258,7 @@ def episodios(item):
         langs = []
         for opc in ['data-url-es', 'data-url-es-la', 'data-url-vose', 'data-url-en']:
             url = scrapertools.find_single_match(article, '%s="([^"]+)' % opc)
-            if url: langs.append(opc.replace('data-url-', '').replace('es-la', 'lat'))
+            if url: langs.append(opc.replace('data-url-', '').replace('es-la', 'lat').replace('es-es', 'esp').capitalize())
             # ~ logger.debug(url)
 
         if langs: title += ' [COLOR %s][%s][/COLOR]' % (color_lang, ', '.join(langs))
@@ -322,15 +325,15 @@ def findvideos(item):
         header = {'Referer': item.url}
         data = do_downloadpage(host + 'frm/obtener-enlaces-pelicula.php', post={'pelicula': item.id_pelicula}, headers=header)
         # ~ logger.debug(data)
+
         enlaces = jsontools.load(data)
         for lang in enlaces:
             for it in enlaces[lang]:
                 # ~ servidor = 'directo' if it['reproductor_nombre'] == 'SuperVideo' else it['reproductor_nombre'].lower()
                 servidor = 'directo' if it['reproductor_nombre'] in ['SuperVideo', 'FastPlayer'] else it['reproductor_nombre'].lower()
                 itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
-                                      title = '', url = 'https://directv.clivertv.to/getFile.php?hash='+it['token'],
-                                      language = IDIOMAS.get(lang, lang), other = it['reproductor_nombre'] if servidor == 'directo' else ''
-                               ))
+                                      title = '', url = 'https://directv.clivertv.to/getFile.php?hash=' + it['token'],
+                                      language = IDIOMAS.get(lang, lang), other = it['reproductor_nombre'] if servidor == 'directo' else '' ))
 
     else:
         data = do_downloadpage(item.url)
@@ -343,10 +346,7 @@ def findvideos(item):
                 servidor = servertools.get_server_from_url(url)
                 if not servidor or servidor == 'directo': continue
                 lang = opc.replace('data-url-', '').replace('-', '_')
-                itemlist.append(Item( channel = item.channel, action = 'play', server = servidor,
-                                      title = '', url = url,
-                                      language = IDIOMAS.get(lang, lang)
-                               ))
+                itemlist.append(Item( channel = item.channel, action = 'play', server = servidor, title = '', url = url, language = IDIOMAS.get(lang, lang) ))
 
     return itemlist
 
@@ -407,7 +407,7 @@ def search(item, texto):
     logger.info()
     try:
         tipo = 'buscador' if item.search_type == 'movie' else 'buscadorSeries'
-        return list_all(item.clone( pagina=0, tipo=tipo, adicional=texto.replace(" ", "+"), url=host+'buscar/?txt='+texto.replace(" ", "+") ))
+        return list_all(item.clone( pagina=0, tipo=tipo, adicional=texto.replace(" ", "+"), url=host+'buscar/?txt=' + texto.replace(" ", "+") ))
     except:
         import sys
         for line in sys.exc_info():

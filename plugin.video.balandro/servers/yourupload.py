@@ -11,14 +11,14 @@ def get_video_url(page_url, url_referer=''):
     page_url = page_url.replace('/watch/', '/embed/')
 
     data = httptools.downloadpage(page_url).data
-    # ~ logger.debug(data)
 
-    if "File was deleted" in data or "File not found" in data:
+    if "File was deleted" in data or "File not found" in data or 'og:video">' in data:
         return 'El archivo no existe o ha sido borrado'
 
     url1 = httptools.downloadpage(page_url, follow_redirects=False, only_headers=True).headers.get("location", "")
     referer = {'Referer': page_url}
     url = scrapertools.find_single_match(data, '<meta property="og:video" content="([^"]+)"')
+
     if not url:
         if "download" in page_url:
             url = httptools.downloadpage("https:" + url1, headers=referer, follow_redirects=False, only_headers=True).headers.get("location", "")
@@ -35,6 +35,7 @@ def get_video_url(page_url, url_referer=''):
         else:
             ext = url[-4:]
             media_url = url +"|Referer=%s" % page_url
+
         video_urls.append([ext, media_url])
 
     return video_urls

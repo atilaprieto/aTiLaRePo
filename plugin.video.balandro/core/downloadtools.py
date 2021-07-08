@@ -9,14 +9,9 @@ from core.downloader import Downloader
 from core import filetools
 import sys
 PY3 = False
-PY2 = False
 if sys.version_info[0] >= 3:
-    PY3 = True
     unicode = str
-    from urllib.request import URLopener, urlretrieve
-else:
-    PY2 = True    
-    from urllib import URLopener, urlretrieve
+
 STATUS_CODES = type("StatusCode", (), {"stopped": 0, "canceled": 1, "completed": 2, "error": 3})
 
 
@@ -31,7 +26,7 @@ def do_download(mediaurl, download_path, file_name, headers=[], silent=False, re
     # Limpiar caracteres para nombre de fichero válido
     try:
         file_name = config.text_clean(file_name)
-    except: pass        
+    except: pass
 
     # Evitar unicode que puede dar problemas luego...
     if type(mediaurl) == unicode: mediaurl = mediaurl.encode('ascii','ignore')
@@ -44,26 +39,32 @@ def do_download(mediaurl, download_path, file_name, headers=[], silent=False, re
                    block_size = 2 ** (17 + int(config.get_setting("block_size"))),
                    part_size = 2 ** (20 + int(config.get_setting("part_size"))),
                    max_buffer = 2 * int(config.get_setting("max_buffer")))
-                
 
-    d.start_dialog()
+    if silent:
+        d.start()
+        # bucle hasta terminar
+        import xbmc
+        while not xbmc.Monitor().abortRequested() and d.state not in [d.states.error, d.states.stopped, d.states.completed]:
+            xbmc.sleep(100)
+    else:
+        d.start_dialog()
 
     # Descarga detenida, verificar estado: {"stopped": 0, "connecting": 1, "downloading": 2, "completed": 3, "error": 4, "saving": 5})
     if d.state == d.states.error:
-                logger.info('Error en la descarga %s' % mediaurl)
-                status = STATUS_CODES.error
+        logger.info('Error en la descarga %s' % mediaurl)
+        status = STATUS_CODES.error
 
     elif d.state == d.states.stopped:
-                logger.info("Descarga detenida")
-                status = STATUS_CODES.canceled
+        logger.info("Descarga detenida")
+        status = STATUS_CODES.canceled
 
     elif d.state == d.states.completed:
-                logger.info("Descargada finalizada")
-                status = STATUS_CODES.completed
+        logger.info("Descargada finalizada")
+        status = STATUS_CODES.completed
     
     else:
-                logger.error("Estado de descarga no previsto! %d" % d.state)
-                status = STATUS_CODES.stopped
+        logger.error("Estado de descarga no previsto! %d" % d.state)
+        status = STATUS_CODES.stopped
 
     params = { 
                'downloadStatus': status,              # 3:error / 1:canceled / 2:completed

@@ -9,7 +9,7 @@
     "patterns": [
       {
         "pattern": "http(?:s|)://aparat.cam/(?:emb\\.html\\?|embed-|)([A-z0-9]+)",
-        "url": "https://aparat.cam/\\1"
+        "url": "https://wolfstream.tv/\\1"
       }
     ]
   }

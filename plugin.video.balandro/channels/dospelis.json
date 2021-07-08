@@ -3,15 +3,15 @@
   "name": "DosPelis",
   "thumbnail": "dospelis.jpg",
 
-  "active": true,
+  "active": false,
 
-  "searchable": true,
+  "searchable": false,
   "search_types": ["all", "movie", "tvshow"],
 
   "categories": ["movie", "tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["news", "lasts", "rankings", "languages", "producers", "years", "adults", "vos", "anime"],
+  "clusters": ["news", "lasts", "rankings", "languages", "producers", "years", "adults", "kids", "docs", "vos", "anime"],
 
   "notes": "Películas por idiomas, calidades, géneros, años. Series"
 }

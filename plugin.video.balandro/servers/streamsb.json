@@ -9,7 +9,7 @@
     "patterns": [
       {
         "pattern": "http(?:s|)://streamsb.net/(?:embed-|d/|e/|)([A-z0-9]+)",
-        "url": "https://streamsb.net/embed-\\1.html"
+        "url": "https://streamsb.net/play/\\1"
       }
     ]
   }

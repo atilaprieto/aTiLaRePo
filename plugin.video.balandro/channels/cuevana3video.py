@@ -223,6 +223,9 @@ def episodios(item):
         except:
             continue
 
+        if item.contentSeason:
+           if not str(item.contentSeason) == str(season): continue
+
         title = scrapertools.find_single_match(datos, '<h2[^>]*>(.*?)</h2>')
 
         thumb = scrapertools.find_single_match(datos, 'data-src=([^ >]+)"')

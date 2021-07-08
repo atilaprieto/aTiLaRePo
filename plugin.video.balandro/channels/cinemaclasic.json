@@ -3,7 +3,7 @@
   "name": "CinemaClasic",
   "thumbnail": "cinemaclasic.jpg",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["movie"],
@@ -11,9 +11,7 @@
   "categories": ["movie"],
   "language": ["cast", "vose"],
 
-  "clusters": ["classic"],
-
-  "clusters": ["classic", "years", "stars", "directors"],
+  "clusters": ["classic", "years", "kids", "docs", "stars", "directors"],
 
   "notes": "Películas clásicas, por géneros, años, directores, actores."
 }

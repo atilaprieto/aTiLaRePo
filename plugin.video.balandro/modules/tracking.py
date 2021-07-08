@@ -9,6 +9,12 @@ from platformcode import config, logger, platformtools
 from core import trackingtools, filetools
 
 
+color_alert = config.get_setting('notification_alert_color', default='red')
+color_infor = config.get_setting('notification_infor_color', default='pink')
+color_adver = config.get_setting('notification_adver_color', default='violet')
+color_avis  = config.get_setting('notification_avis_color', default='yellow')
+color_exec  = config.get_setting('notification_exec_color', default='cyan')
+
 # Helpers
 
 def valor_infolabel(valor, infoLabels):
@@ -32,30 +38,37 @@ def addFavourite(item):
     if item.contentType not in ['movie', 'tvshow', 'season', 'episode']:
         notification_d_ok = config.get_setting('notification_d_ok', default=True)
         if notification_d_ok:
-            platformtools.dialog_ok(config.__addon_name, 'Sólo películas, series, temporadas o capítulos!')
+            platformtools.dialog_ok(config.__addon_name, 'Sólo películas, series, temporadas ó capítulos')
         else:
-            platformtools.dialog_notification(config.__addon_name, '[COLOR moccasin]Sólo películas, series, temporadas o capítulos![/COLOR]')
+            platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Sólo películas, series, temporadas ó capítulos[/COLOR][/B]' % color_avis)
         return False
 
     # Si no está definido tmdb_id seleccionar
     if item.contentType in ['movie', 'tvshow'] and not item.infoLabels['tmdb_id']:
         tipo = 'película' if item.contentType == 'movie' else 'serie'
-        platformtools.dialog_ok(config.__addon_name, 'La %s no está identificada en TMDB.' % tipo, 'Si hay varias opciones posibles escoge una de ellas y sino cambia el texto de búsqueda.')
+        platformtools.dialog_ok(config.__addon_name, 'La %s no está identificada en TMDB.' % tipo, '[COLOR yellow]Si hay varias opciones posibles escoge una de ellas y sino cambia el texto de búsqueda.[/COLOR]')
         from core import tmdb
         ret = tmdb.dialog_find_and_set_infoLabels(item)
-        if not ret: return False # Se ha cancelado
+        if not ret:
+            platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Proceso cancelado[/COLOR][/B]' % color_adver)
+            return False
 
     # Si está activada la confirmación de tmdb_id
     elif config.get_setting('tracking_confirm_tmdbid', default=False):
         if item.contentType in ['movie', 'tvshow']:
             from core import tmdb
             ret = tmdb.dialog_find_and_set_infoLabels(item)
-            if not ret: return False # Se ha cancelado
+            if not ret:
+                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Proceso cancelado[/COLOR][/B]' % color_adver)
+                return False
         else: # para temporadas/episodios no perder season/episode
             it_ant = item.clone()
             from core import tmdb
             ret = tmdb.dialog_find_and_set_infoLabels(item)
-            if not ret: return False # Se ha cancelado
+            if not ret:
+                platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Proceso cancelado[/COLOR][/B]' % color_adver)
+                return False
+
             item.contentType = it_ant.contentType
             item.contentSeason = it_ant.contentSeason
             if it_ant.contentEpisodeNumber: item.contentEpisodeNumber = it_ant.contentEpisodeNumber
@@ -66,10 +79,10 @@ def addFavourite(item):
         tmdb.set_infoLabels_item(item) # obtener más datos en "segunda pasada" (actores, duración, ...)
 
     # Guardar datos de serie/temporadas/episodios para el canal pedido
-    if item.contentType == 'movie': tit = 'Guardando película'; sub = 'Obteniendo datos ...'
-    elif item.contentType == 'tvshow': tit = 'Guardando serie'; sub = 'Obteniendo datos de temporadas y episodios ...'
-    elif item.contentType == 'season': tit = 'Guardando temporada'; sub = 'Obteniendo datos de episodios ...'
-    else: tit = 'Guardando episodio'; sub = 'Obteniendo datos ...'
+    if item.contentType == 'movie': tit = 'Guardando película'; sub = '[B][COLOR %s]Obteniendo datos[/COLOR][/B]' % color_infor
+    elif item.contentType == 'tvshow': tit = 'Guardando serie'; sub = '[B][COLOR %s]Obteniendo temporadas y episodios[/COLOR][/B]' % color_infor
+    elif item.contentType == 'season': tit = 'Guardando temporada'; sub = '[B][COLOR %s]Obteniendo episodios[/COLOR][/B]' % color_infor
+    else: tit = 'Guardando episodio'; sub = '[B][COLOR %s]Obteniendo datos[/COLOR][/B]' % color_infor
 
     platformtools.dialog_notification(tit, sub)
     if item.contentType == 'movie':
@@ -78,11 +91,12 @@ def addFavourite(item):
         done, msg = trackingtools.scrap_and_save_tvshow(item.clone())
 
     if not done:
-        platformtools.dialog_ok(config.__addon_name, 'No se pueden añadir enlaces ...', msg)
+        platformtools.dialog_ok(config.__addon_name, 'No se pudo añadir enlaces', msg)
         return False
 
     tit = item.contentTitle if item.contentType == 'movie' else item.contentSerieName
-    platformtools.dialog_notification(tit, 'Añadidos enlaces del canal [COLOR blue]%s[/COLOR]' % item.channel)
+    el_canal = ('Añadidos enlaces de [B][COLOR %s]' + item.channel) % color_avis
+    platformtools.dialog_notification(tit, el_canal + '[/COLOR][/B]')
     return True
 
 
@@ -99,17 +113,20 @@ def mainlist(item):
     count_episodes = db.get_episodes_count()
     db.close()
 
-    itemlist.append(item.clone( title = 'Películas (%d)' % count_movies, action = 'mainlist_pelis', thumbnail=config.get_thumb('movie') ))
+    if (count_movies + count_shows + count_episodes) == 0:
+        platformtools.dialog_notification(config.__addon_name, '[B][COLOR %s]Aún no tiene Preferidos[/COLOR][/B]' % color_exec)
+    else:
+        itemlist.append(item.clone( title = 'Películas (%d)' % count_movies, action = 'mainlist_pelis', thumbnail=config.get_thumb('movie') ))
 
-    context = [ {'title': 'Info tracking new episodes', 'channel': item.channel, 'action': 'info_tracking_shows'} ]
-    context.append( {'title': 'Buscar ahora nuevos episodios', 'channel': item.channel, 'action': 'doit_tracking_shows'} )
-    itemlist.append(item.clone( title = 'Series (%d)' % count_shows, action = 'mainlist_series', thumbnail=config.get_thumb('tvshow'), context=context ))
+        context = [ {'title': 'Info tracking new episodes', 'channel': item.channel, 'action': 'info_tracking_shows'} ]
+        context.append( {'title': 'Buscar ahora nuevos episodios', 'channel': item.channel, 'action': 'doit_tracking_shows'} )
+        itemlist.append(item.clone( title = 'Series (%d)' % count_shows, action = 'mainlist_series', thumbnail=config.get_thumb('tvshow'), context=context ))
 
-    itemlist.append(item.clone( title = 'Episodios (%d) recientes' % count_episodes, action = 'mainlist_episodios', thumbnail=config.get_thumb('hot') ))
+        itemlist.append(item.clone( title = 'Episodios (%d) recientes' % count_episodes, action = 'mainlist_episodios', thumbnail=config.get_thumb('hot') ))
 
     itemlist.append(item.clone( title='Gestionar listas', action='mainlist_listas' )) 
 
-    itemlist.append(item.clone( channel='helper', title = 'Información ¿ Cómo funciona ?', action = 'show_help_tracking', thumbnail=config.get_thumb('help'), text_color='green' ))
+    itemlist.append(item.clone( channel='helper', title = 'Información preferidos', action = 'show_help_tracking', thumbnail=config.get_thumb('help'), text_color='green' ))
 
     return itemlist
 
@@ -298,6 +315,10 @@ def serie_episodios(item):
 def findvideos(item):
     logger.info()
 
+    color_list_prefe = config.get_setting('channels_list_prefe_color', default='gold')
+    color_list_proxies = config.get_setting('channels_list_proxies_color', default='red')
+    color_list_inactive = config.get_setting('channels_list_inactive_color', default='gray')
+
     db = trackingtools.TrackingData()
 
     opciones = []; opciones_row = []
@@ -315,13 +336,13 @@ def findvideos(item):
             info = ''
 
             if ch_parms['status'] == 1:
-                info = info + '[COLOR blue][B][I] Preferido [/I][/B][/COLOR]'
+                info = info + '[B][COLOR %s][I] Preferido [/I][/B][/COLOR]' % color_list_prefe
             elif ch_parms['status'] == -1:
-                info = info + '[COLOR lightslategray][B][I] Desactivado [/I][/B][/COLOR]'
+                info = info + '[B][COLOR %s][I] Desactivado [/I][/B][/COLOR]' % color_list_inactive
 
             cfg_proxies_channel = 'channel_' + ch_parms['id'] + '_proxies'
             if config.get_setting(cfg_proxies_channel, default=''):
-                info = info + '[COLOR red][B] Proxies [/B][/COLOR]'
+                info = info + '[B][COLOR %s] Proxies [/B][/COLOR]' % color_list_proxies
 
             tipos = ch_parms['search_types']
             tipos = str(tipos).replace('[', '').replace(']', '').replace("'", '')
@@ -348,14 +369,14 @@ def findvideos(item):
     db.close()
 
     if len(opciones) == 0:
-        platformtools.dialog_ok(config.__addon_name, 'No tienes guardado ningún canal en activo con enlaces.')
+        platformtools.dialog_ok(config.__addon_name, '[B][COLOR %s]No hay guardado ningún canal activo con enlaces[/B][/COLOR]' % color_adver)
         return None
 
     elif len(opciones) == 1: # Sólo hay un canal, ir a él directamente
         ret = 0
 
     else:
-        # TODO? canal preferente preseleccionado u ordenar por updated o último usado ?
+        # canal preferente preseleccionado u ordenar por updated o último usado ?
         ret = platformtools.dialog_select('¿ De qué canal quieres los enlaces ?', opciones, useDetails=True)
         if ret == -1: 
             return None # pedido cancel
@@ -456,7 +477,7 @@ def acciones_peli(item):
         db.cur.execute('UPDATE movies SET updated=? WHERE tmdb_id=?', (datetime.now(), tmdb_id))
 
     elif acciones[ret] == 'Eliminar película':
-        if not platformtools.dialog_yesno('Eliminar película', '¿Estás seguro de querer borrar la película [COLOR gold]%s[/COLOR] con tmdb_id: %s ?' % (item.contentTitle, tmdb_id)): return False
+        if not platformtools.dialog_yesno('Eliminar película', '¿Confirma borrar la película [COLOR gold]%s[/COLOR] con tmdb_id: %s ?' % (item.contentTitle, tmdb_id)): return False
         db.delete_movie(tmdb_id)
 
     elif acciones[ret].startswith('Eliminar enlaces del canal '):
@@ -487,7 +508,7 @@ def acciones_peli(item):
 
         if len(opciones) == 0:
             db.close()
-            platformtools.dialog_ok(config.__addon_name, 'No hay otras listas dónde mover el enlace.', 'Puedes crearlas desde el menú Gestionar listas.')
+            platformtools.dialog_ok(config.__addon_name, 'No hay otras listas dónde mover el enlace.', '[COLOR yellow]Puedes crearlas desde el menú Gestionar listas.[/COLOR]')
             return False
 
         ret2 = platformtools.dialog_select('Seleccionar lista destino', opciones)
@@ -512,7 +533,7 @@ def acciones_peli(item):
 
         db.cur.execute('DETACH DATABASE db_destino')
 
-        platformtools.dialog_notification(acciones[ret], '[COLOR gold]%s[/COLOR] %s a lista [COLOR blue]%s[/COLOR]' % (item.contentTitle, operacion, dbname_destino) )
+        platformtools.dialog_notification(acciones[ret], '[COLOR gold]%s[/COLOR] %s a lista [COLOR blue][B]%s[/B][/COLOR]' % (item.contentTitle, operacion, dbname_destino) )
         if operacion == 'copiada':
             db.close(commit=True)
             return True # No necesita itemlist_refresh posterior
@@ -536,7 +557,7 @@ def acciones_serie(item):
     acciones.append('Buscar ahora nuevos episodios')
     acciones.append('Actualizar datos desde TMDB (themoviedb.org)')
     acciones.append('Actualizar datos desde TVDB (thetvdb.com)')
-    # TODO? 'Vista/No vista' => bucle para todas las temporadas/episodios y marcarlos en bd_kodi_files !? De momento por temporada.
+    # 'Vista/No vista' => bucle para todas las temporadas/episodios y marcarlos en bd_kodi_files !? De momento por temporada.
 
     # Diferentes canales con enlaces ya sea en serie, temporadas o episodios
     sql = 'SELECT DISTINCT channel FROM ('
@@ -567,7 +588,7 @@ def acciones_serie(item):
         db.cur.execute('UPDATE shows SET updated=? WHERE tmdb_id=?', (datetime.now(), tmdb_id))
 
     elif acciones[ret] == 'Eliminar serie':
-        if not platformtools.dialog_yesno('Eliminar serie', '¿Estás seguro de querer borrar la serie [COLOR gold]%s[/COLOR] con tmdb_id: %s ?' % (item.contentSerieName, tmdb_id)): return False
+        if not platformtools.dialog_yesno('Eliminar serie', '¿Confirma borrar la serie [COLOR gold]%s[/COLOR] con tmdb_id: %s ?' % (item.contentSerieName, tmdb_id)): return False
         db.delete_show(tmdb_id)
 
     elif acciones[ret].startswith('Eliminar enlaces del canal '):
@@ -657,7 +678,7 @@ def acciones_serie(item):
         if row is not None:
             if platformtools.dialog_yesno('Tracking', '¿ Desactivar la búsqueda automática de nuevos episodios para la serie [COLOR gold]%s[/COLOR] con tmdb_id: %s ?' % (item.contentSerieName, tmdb_id)):
                 db.cur.execute('DELETE FROM tracking_shows WHERE tmdb_id=?', (tmdb_id,))
-                platformtools.dialog_notification(item.contentSerieName, 'Desactivada la búsqueda automática de nuevos episodios.')
+                platformtools.dialog_notification(item.contentSerieName, '[B][COLOR %s]Desactivada búsqueda automática de nuevos episodios[/B][/COLOR]' % color_adver)
                 cambiar_opciones = False
             else:
                 cambiar_opciones = True
@@ -677,7 +698,7 @@ def acciones_serie(item):
             tvdbinfo = platformtools.dialog_yesno('Tracking', '¿ Quieres que se acceda a tvdb para recuperar datos de los nuevos episodios ? (bastante más lento pero en algunos casos se obtiene más información)')
 
             db.cur.execute('INSERT OR REPLACE INTO tracking_shows (tmdb_id, updated, periodicity, tvdbinfo) VALUES (?, ?, ?, ?)', (tmdb_id, datetime.now(), periodicity, tvdbinfo))
-            platformtools.dialog_notification(item.contentSerieName, 'Activada la búsqueda automática de nuevos episodios.')
+            platformtools.dialog_notification(item.contentSerieName, '[B][COLOR %s]Activada búsqueda automática de nuevos episodios[/B][/COLOR]' % color_infor)
 
     elif acciones[ret] == 'Buscar ahora nuevos episodios':
         db.cur.execute('SELECT tvdbinfo FROM tracking_shows WHERE tmdb_id=?', (tmdb_id,))
@@ -700,7 +721,7 @@ def acciones_serie(item):
 
         if len(opciones) == 0:
             db.close()
-            platformtools.dialog_ok(config.__addon_name, 'No hay otras listas dónde mover el enlace.', 'Puedes crearlas desde el menú Gestionar listas.')
+            platformtools.dialog_ok(config.__addon_name, 'No hay otras listas dónde mover el enlace.', '[COLOR yellow]Puedes crearlas desde el menú Gestionar listas.[/COLOR]')
             return False
 
         ret2 = platformtools.dialog_select('Seleccionar lista destino', opciones)
@@ -737,7 +758,7 @@ def acciones_serie(item):
 
         db.cur.execute('DETACH DATABASE db_destino')
 
-        platformtools.dialog_notification(acciones[ret], '[COLOR gold]%s[/COLOR] %s a lista [COLOR blue]%s[/COLOR]' % (item.contentSerieName, operacion, dbname_destino) )
+        platformtools.dialog_notification(acciones[ret], '[COLOR gold]%s[/COLOR] %s a lista [COLOR blue][B]%s[/B][/COLOR]' % (item.contentSerieName, operacion, dbname_destino) )
         if operacion == 'copiada':
             db.close(commit=True)
             return True # No necesita itemlist_refresh posterior
@@ -828,7 +849,7 @@ def acciones_episodio(item):
         platformtools.dialog_notification('Actualizar de TVDB', msg)
 
     elif acciones[ret].startswith('Eliminar'):
-        if not platformtools.dialog_yesno('Eliminar episodio', '¿ Estás seguro de querer borrar el episodio [COLOR gold]%dx%d[/COLOR] de la serie [COLOR gold]%s[/COLOR] ?' % (season, episode, item.contentSerieName)): return False
+        if not platformtools.dialog_yesno('Eliminar episodio', '¿ Confirma borrar el episodio [COLOR gold][B]%dx%d[/B][/COLOR] de la serie [COLOR gold]%s[/COLOR] ?' % (season, episode, item.contentSerieName)): return False
         db = trackingtools.TrackingData()
         db.delete_episode(tmdb_id, season, episode)
         db.close(commit=True)
@@ -887,7 +908,7 @@ def copiar_lista(item):
         platformtools.dialog_ok(config.__addon_name, 'Ya existe una lista con este nombre, se le añade un sufijo para diferenciarla.', lista_origen)
 
     if not filetools.copy(origen, destino, silent=False):
-        platformtools.dialog_ok(config.__addon_name, 'Error, no se ha podido copiar la lista!', origen, destino)
+        platformtools.dialog_ok(config.__addon_name, 'Error, no se ha podido copiar la lista', origen, destino)
         return False
 
     platformtools.itemlist_refresh()
@@ -907,7 +928,7 @@ def crear_lista(item):
 
     # Comprobar que el fichero no exista ya
     if filetools.exists(fullfilename):
-        platformtools.dialog_ok(config.__addon_name, 'Error, ya existe una lista con este nombre!', filename)
+        platformtools.dialog_ok(config.__addon_name, 'Error, ya existe una lista con este nombre', filename)
         return False
 
     # Provocar que se guarde
@@ -943,7 +964,7 @@ def activar_lista(item):
 
     fullfilename = filetools.join(trackingtools.get_tracking_path(), item.lista)
     if not filetools.exists(fullfilename):
-        platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista!', item.lista)
+        platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista', item.lista)
         return False
 
     trackingtools.set_current_dbname(item.lista)
@@ -959,7 +980,7 @@ def renombrar_lista(item):
 
     fullfilename_current = filetools.join(trackingtools.get_tracking_path(), item.lista)
     if not filetools.exists(fullfilename_current):
-        platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista!', item.lista)
+        platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista', item.lista)
         return False
 
     nombre = item.lista.replace('.sqlite', '')
@@ -977,7 +998,7 @@ def renombrar_lista(item):
 
     # Rename del fichero
     if not filetools.rename(fullfilename_current, filename):
-        platformtools.dialog_ok(config.__addon_name, 'Error, no se ha podido renombrar la lista!', filename)
+        platformtools.dialog_ok(config.__addon_name, 'Error, no se pudo renombrar la lista!', filename)
         return False
 
     # Update settings si es la lista activa
@@ -993,11 +1014,11 @@ def eliminar_lista(item):
 
     fullfilename = filetools.join(trackingtools.get_tracking_path(), item.lista)
     if not filetools.exists(fullfilename):
-        platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista!', item.lista)
+        platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista', item.lista)
         return False
 
     if item.lista.replace('.sqlite', '') == trackingtools.get_current_dbname():
-        platformtools.dialog_ok(config.__addon_name, 'La lista activa no se puede eliminar!', item.lista)
+        platformtools.dialog_ok(config.__addon_name, 'La lista activa no se puede eliminar', item.lista)
         return False
 
     if not platformtools.dialog_yesno('Eliminar lista', '¿Estás seguro de querer borrar la lista %s ?' % item.lista): return False
@@ -1012,7 +1033,7 @@ def informacion_lista(item):
 
     fullfilename = filetools.join(trackingtools.get_tracking_path(), item.lista)
     if not filetools.exists(fullfilename):
-        platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista!', item.lista)
+        platformtools.dialog_ok(config.__addon_name, 'Error, no se encuentra la lista', item.lista)
         return False
 
     db = trackingtools.TrackingData(item.lista)

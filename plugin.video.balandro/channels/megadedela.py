@@ -192,7 +192,7 @@ def list_all(item):
     return itemlist
 
 
-def temporadas (item):
+def temporadas(item):
     logger.info()
     itemlist = []
 
@@ -222,7 +222,7 @@ def temporadas (item):
     return itemlist
 
 
-def episodios (item):
+def episodios(item):
     logger.info()
     itemlist = []
 

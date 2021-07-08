@@ -5,6 +5,8 @@ from platformcode import logger, platformtools
 
 
 def get_video_url(page_url, url_referer=''):
+    #url = 'https://mega.nz/embed#!aTgxQRyb!C_cOiLdtPC2MhTxCS9nY29sP9DafUoBmtb57Fvu4Kvc'
+    page_url = page_url.replace('/embed#!', '/embed#')
     page_url = page_url.replace('/embed/', '/embed#')
     page_url = page_url.replace('/file/', '/embed#')
     page_url = page_url.replace('/embed#', '/#!')

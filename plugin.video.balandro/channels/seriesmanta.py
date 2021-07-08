@@ -33,6 +33,9 @@ def mainlist(item):
 
     itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
+    itemlist.append(item.clone( title = 'Buscar intérprete ...', action = 'search', group = 'star', search_type = 'person', 
+                                plot = 'Debe indicarse el nombre y apellido/s del intérprete.', text_color='plum'))
+
     # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
 
@@ -55,9 +58,6 @@ def mainlist_pelis(item):
     itemlist.append(item.clone( title = 'Por alfabético (orden Z -A)', action = 'list_all', orden = 'titleDesc', search_type = 'movie' ))
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
-
-    itemlist.append(item.clone( title = 'Buscar intérprete ...', action = 'search', group = 'star', search_type = 'movie', 
-                                plot = 'Debe indicarse el nombre y apellido/s del intérprete.'))
 
     # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
@@ -82,8 +82,6 @@ def mainlist_series(item):
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
-    itemlist.append(item.clone( title = 'Buscar intérprete ...', action = 'search', group = 'star', search_type = 'tvshow', 
-                                plot = 'Debe indicarse el nombre y apellido/s del intérprete.'))
 
     # ~ itemlist.append(item_configurar_proxies(item))
     return itemlist
@@ -97,12 +95,13 @@ def generos(item):
         ('Acción', 'action'),
         ('Aventura', 'adventure'),
         ('Animación', 'animation'),
-        ('Biografía', 'comedy'),
+        ('Biografía', 'biography'),
+        ('Comedia', 'comedy'),
         ('Crimen', 'crime'),
         ('Documentales', 'documentary'),
         ('Drama', 'drama'),
         ('Familia', 'family'),
-        ('Fantasía', 'fantasya'),
+        ('Fantasía', 'fantasy'),
         ('Historia', 'history'),
         ('Horror', 'horror'),
         ('Música', 'music'),
@@ -145,6 +144,9 @@ def list_all(item):
     token = scrapertools.find_single_match(data, "token: '(.*?)'")
 
     tipo = 'movie' if item.search_type == 'movie' else 'series'
+
+    if item.group == 'star':
+        tipo = 'movie'
 
     if not item.page: item.page = 1
 
@@ -295,6 +297,18 @@ def findvideos(item):
 
         itemlist.append(Item(channel = item.channel, action = 'play', title = '', server = servidor, url = url, quality = qlty, language = lang )) 
 
+    if not matches:
+       matches = scrapertools.find_multiple_matches(data, '<tr class="part2" data-id=.*?' + "'(.*?)'")
+
+       for url in matches:
+           lang = '?'
+           qlty = ''
+
+           servidor = servertools.get_server_from_url(url)
+           if not servidor or servidor == 'directo': continue
+
+           itemlist.append(Item(channel = item.channel, action = 'play', title = '', server = servidor, url = url, quality = qlty, language = lang )) 
+	
     return itemlist
 
 

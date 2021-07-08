@@ -33,7 +33,6 @@ PY2 = False
 
 if sys.version_info[0] >= 3:
     PY3 = True
-
     from urllib.request import urlopen, Request
     from urllib.parse import unquote_plus, urlparse
 else:

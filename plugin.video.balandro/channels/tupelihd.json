@@ -11,7 +11,7 @@
   "categories": ["movie", "tvshow", "torrent"],
   "language": ["cast", "lat"],
 
-  "clusters": ["torrents", "news", "qualityes", "years"],
+  "clusters": ["torrents", "rankings", "news", "qualityes", "countries", "kids", "docs"],
 
   "notes": "Películas y Series en castellano, y algunas en latino."
 }

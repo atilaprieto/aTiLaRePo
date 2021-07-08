@@ -6,9 +6,8 @@ from platformcode import logger, platformtools
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
-host = 'https://seriez.co/'
 
-IDIOMAS = {'1': 'Esp', '2': 'Lat', '3': 'Vose', '4': 'VO', 'Latino': 'Lat', 'Español': 'Esp', 'Subtitulado': 'Vose', 'VSO': 'VO'}
+host = 'https://seriez.co/'
 
 
 def mainlist(item):
@@ -145,15 +144,10 @@ def temporadas(item):
             return itemlist
 
         itemlist.append(item.clone( action = 'episodios', title = title, contentType = 'season', contentSeason = numtempo, page = 0 ))
-        
+
     tmdb.set_infoLabels(itemlist)
 
     return itemlist
-
-
-# Si una misma url devuelve los episodios de todas las temporadas, definir rutina tracking_all_episodes para acelerar el scrap en trackingtools.
-def tracking_all_episodes(item):
-    return episodios(item)
 
 
 def episodios(item):
@@ -171,9 +165,13 @@ def episodios(item):
 
     matches1 = re.compile(patron, re.DOTALL).findall(data)
 
+    tot_epis1 = 0
+
     for url, season, episode, thumb, title in matches1[item.page * perpage:]:
-        if not item.contentSeason: continue
-        elif not str(item.contentSeason) == season: continue
+        if item.contentSeason:
+            if not str(item.contentSeason) == str(season): continue
+
+        tot_epis1 += 1
 
         titulo = '%sx%s %s' % (season, episode, title)
         itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb, 
@@ -188,8 +186,13 @@ def episodios(item):
 
     matches2 = re.compile(patron, re.DOTALL).findall(data)
 
+    tot_epis2 = 0
+
     for url, season, episode, title in matches2[item.page * perpage:]:
-        if item.contentSeason and item.contentSeason != int(season): continue
+        if item.contentSeason:
+            if not str(item.contentSeason) == str(season): continue
+
+        tot_epis2 += 1
 
         titulo = '%sx%s %s' % (season, episode, title)
         itemlist.append(item.clone( action='findvideos', url=url, title=titulo, 
@@ -200,14 +203,15 @@ def episodios(item):
 
     tmdb.set_infoLabels(itemlist)
 
-    if (len(matches1) + len(matches2)) > (item.page + 1) * perpage:
+    if (tot_epis1 + tot_epis2) > ((item.page + 1) * perpage):
         itemlist.append(item.clone( title=">> Página siguiente", action="episodios", page=item.page + 1, text_color='coral' ))
 
-    # ~ return itemlist
-    return sorted(itemlist, key=lambda it: (it.contentSeason, it.contentEpisodeNumber))
+    if tot_epis2 == 0:
+        return itemlist
+    else:
+        return sorted(itemlist, key=lambda it: (it.contentSeason, it.contentEpisodeNumber))
 
 
-# Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     orden = ['360p', '480p', '720p HD', '1080p HD']
     if txt not in orden: return 0
@@ -216,6 +220,8 @@ def puntuar_calidad(txt):
 def findvideos(item):
     logger.info()
     itemlist = []
+
+    IDIOMAS = {'1': 'Esp', '2': 'Lat', '3': 'Vose', '4': 'VO', 'Latino': 'Lat', 'Español': 'Esp', 'Subtitulado': 'Vose', 'VSO': 'VO'}
 
     data = httptools.downloadpage(item.url).data
     # ~ logger.debug(data)
@@ -252,6 +258,7 @@ def play(item):
             url = scrapertools.find_single_match(data, "enlaceeee\s*=\s*'([^']+)")
             if not url: url = scrapertools.find_multiple_matches(data, '<a id="link-redirect".*? href="([^"]+)')[-1]
         # ~ logger.debug(url)
+
         if url:
             servidor = servertools.get_server_from_url(url)
             if servidor and servidor != 'directo':

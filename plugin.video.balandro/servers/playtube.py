@@ -30,6 +30,6 @@ def get_video_url(page_url, url_referer=''):
             if platformtools.is_mpd_enabled():
                 video_urls.append([lbl, url+'|Referer=https://playtube.ws/', 0, '', True])
         else:
-            video_urls.append([lbl, url+'|Referer=https://playtube.ws/'])
+            video_urls.append([lbl, '%s|User-Agent=%s|User-Agent=%s'%(url, httptools.useragent, page_url)])
 
     return video_urls

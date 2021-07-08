@@ -3,7 +3,7 @@
   "name": "SeriesFlv",
   "thumbnail": "seriesflv.jpg",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["tvshow"],
@@ -11,7 +11,7 @@
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["lasts", "vos", "anime"],
+  "clusters": ["lasts", "kids", "docs", "vos", "anime"],
 
   "notes": "Muchas series, por géneros, últimos episodios."
 }

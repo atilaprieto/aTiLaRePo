@@ -1,0 +1,17 @@
+{
+  "id": "monoschinos",
+  "name": "MonosChinos",
+  "thumbnail": "monoschinos.png",
+
+  "active": true,
+
+  "searchable": false,
+  "search_types": ["tvshow"],
+
+  "categories": ["tvshow"],
+  "language": ["vose"],
+
+  "clusters": ["anime", "lasts", "years", "categories", "vos"],
+
+  "notes": "Web dedicada exclusivamente al anime"
+}

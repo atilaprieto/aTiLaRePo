@@ -94,11 +94,6 @@ def temporadas(item):
     return itemlist
 
 
-# Si una misma url devuelve los episodios de todas las temporadas, definir rutina tracking_all_episodes para acelerar el scrap en trackingtools.
-def tracking_all_episodes(item):
-    return episodios(item)
-
-
 def episodios(item):
     logger.info()
     itemlist = []
@@ -123,7 +118,9 @@ def episodios(item):
         for url, epi, title in matches_epi:
             # convertir numeración episodios consecutivos
             num_epi = int(epi)
-            if item.contentSeason and item.contentSeason != season: continue
+
+            if item.contentSeason:
+                if not str(item.contentSeason) == str(season): continue
 
             episode = num_epi - last_epi if num_epi > last_epi else num_epi
             titulo = '%sx%s %s' % (season, episode, title)

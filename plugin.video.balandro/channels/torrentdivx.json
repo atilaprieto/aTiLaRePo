@@ -11,7 +11,7 @@
   "categories": ["movie", "torrent"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["torrents", "news", "languages", "qualityes", "years", "vos"],
+  "clusters": ["torrents", "news", "languages", "qualityes", "years", "kids", "docs", "vos"],
 
   "notes": "Películas y algunas series, con enlaces torrent exclusivamente, por géneros, idiomas y calidades. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

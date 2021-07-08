@@ -7,7 +7,7 @@ from core.item import Item
 from core import httptools, scrapertools, tmdb
 
 
-host = 'https://dontorrents.org/'
+host = 'https://dontorrents.one/'
 
 
 def item_configurar_proxies(item):
@@ -19,9 +19,14 @@ def configurar_proxies(item):
     from core import proxytools
     return proxytools.configurar_proxies_canal(item.channel, host)
 
-def do_downloadpage(url, post=None):
+def do_downloadpage(url, post=None, headers=None):
+    # ~ por si viene de enlaces guardados
+    url = url.replace('/dontorrents.org/', '/dontorrents.one/')
+    url = url.replace('/dontorrents.net/', '/dontorrents.one/')
+    url = url.replace('/dontorrent.one/', '/dontorrents.one/')
+
     # ~ data = httptools.downloadpage(url, post=post).data
-    data = httptools.downloadpage_proxy('dontorrents', url, post=post).data
+    data = httptools.downloadpage_proxy('dontorrents', url, post=post, headers=headers).data
     return data
 
 
@@ -59,7 +64,7 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -77,7 +82,7 @@ def mainlist_series(item):
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -112,7 +117,7 @@ def call_post(item):
         else:
             if item.search_type == "tvshow": tipo = "series"
             else: tipo = "documentales"
-            item.url = "https://dontorrents.com/%s/letra-%s" %(tipo, item.letra.lower())
+            item.url = host + "%s/letra-%s" %(tipo, item.letra.lower())
             return list_all(item)
  
     return list_post(item)
@@ -173,8 +178,12 @@ def list_last(item):
     for url, title in matches:
         if "(" in title: title = title.split("(")[0]
 
-        itemlist.append(item.clone( action='findvideos', url=host + url, title=title,
-                                            contentType=item.search_type, contentTitle=title, infoLabels={'year': "-"} ))
+        if item.search_type== 'tvshow':
+            itemlist.append(item.clone( action='episodios', url=host + url, title=title, 
+                                        contentType=item.search_type, contentSerieName=title, infoLabels={'year':"-"} ))
+        else:
+            itemlist.append(item.clone( action='findvideos', url=host + url, title=title,
+                                        contentType=item.search_type, contentTitle=title, infoLabels={'year': "-"} ))
 
     tmdb.set_infoLabels(itemlist)
 
@@ -187,6 +196,8 @@ def list_all(item):
 
     data = do_downloadpage(item.url)
 
+    sufijo = ''
+
     if item.search_type == "movie":
         data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
         patron = r'<a href="([^"]+)">\s*<img.*?src="([^"]+)'
@@ -196,7 +207,10 @@ def list_all(item):
             title = os.path.basename(os.path.normpath(url)).replace("-", " ")
             if "4K" in title: title = title.split("4K")[0]
             if "ESP" in title: title = title.split("ESP")[0]
-            itemlist.append(item.clone( action='findvideos', url=host[:-1] + url, title=title, thumbnail=thumb if "http" in thumb else "https:" + thumb,
+
+            thumb if "http" in thumb else "https:" + thumb
+
+            itemlist.append(item.clone( action='findvideos', url=host[:-1] + url, title=title, thumbnail=thumb, fmt_sufijo=sufijo,
                                         contentType='movie', contentTitle=title, infoLabels={'year': "-"} ))
 
     elif item.search_type== 'tvshow':
@@ -207,8 +221,8 @@ def list_all(item):
         for url, title in matches:
             if "-" in title: SerieName = title.split("-")[0]
             else: SerieName = title
-            itemlist.append(item.clone( action='episodios', url=host[:-1] + url, title=title, 
-                                    contentType = 'tvshow', contentSerieName = SerieName, infoLabels={'year':"-"} ))
+            itemlist.append(item.clone( action='episodios', url=host[:-1] + url, title=title, fmt_sufijo=sufijo, 
+                                        contentType = 'tvshow', contentSerieName = SerieName, infoLabels={'year':"-"} ))
 
     else:
         data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
@@ -216,14 +230,16 @@ def list_all(item):
         matches = re.compile(patron).findall(data)
 
         for url, title in matches:
-            itemlist.append(item.clone( action = 'findvideos', url = host[:-1] + url, title = title,
+            itemlist.append(item.clone( action = 'findvideos', url = host[:-1] + url, title = title, fmt_sufijo=sufijo,
                                         contentType = 'movie', contentTitle = title, contentExtra = 'documentary' ))
 
     tmdb.set_infoLabels(itemlist)
 
     next_url = scrapertools.find_single_match(data, '<a class="page-link" href="([^"]+)">Siguiente')
     if next_url:
-        itemlist.append(item.clone( title='>> Página siguiente', url=next_url if next_url.startswith("http") else host[:-1] + next_url, action='list_all', page=item.page + 1, contentType=item.contentType, text_color='coral' ))
+        next_url if next_url.startswith("http") else host[:-1] + next_url
+
+        itemlist.append(item.clone( title='>> Página siguiente', url=next_url, action='list_all', page=item.page + 1, contentType=item.contentType, text_color='coral' ))
 
     return itemlist
 
@@ -253,7 +269,7 @@ def list_post(item):
     return itemlist
 
 
-def episodios (item):
+def episodios(item):
     logger.info()
     itemlist = []
 
@@ -265,11 +281,22 @@ def episodios (item):
 
     matches = re.compile(patron).findall(data)
 
+    if not matches:
+        matches = scrapertools.find_multiple_matches(data, "<td style='vertical-align.*?>(.*?)</td>.*?<a.*?href='(.*?)'.*?download>Descargar</a>.*?</tr>")
+
     for title, url in matches:
         s_e = scrapertools.get_season_and_episode(title)
-        season = int(s_e.split("x")[0])
-        episode = s_e.split("x")[1]
-        itemlist.append(item.clone( action='findvideos', url=url if url.startswith("http") else "https:" + url, title="%s %s" %(title, item.contentSerieName), 
+
+        try:
+           season = int(s_e.split("x")[0])
+           episode = s_e.split("x")[1]
+        except:
+           season = 0
+           episode = 0
+
+        if url.startswith("//"): url = "https:" + url
+
+        itemlist.append(item.clone( action='findvideos', url=url, title="%s %s" %(title, item.contentSerieName), 
                                     language = 'Esp', contentType = 'episode', contentEpisodeNumber = episode ))
 
     tmdb.set_infoLabels(itemlist)
@@ -281,18 +308,25 @@ def findvideos(item):
     logger.info()
     itemlist = []
 
-    if item.contentType == "movie":
+    if item.contentType == "episode":
+        url = item.url
+        quality = ""
+
+    elif not item.contentType == "tvshow":
         data = do_downloadpage(item.url)
 
-        quality = scrapertools.find_single_match(data, '<p><b class="bold">Formato:</b> ([^<]+)')
-        url = scrapertools.find_single_match(data, "href='([^']+)' download>Descargar</a>")
-        url = url if url.startswith("http") else "https:" + url
+        quality = scrapertools.find_single_match(data, '<b class="bold">Formato:</b> ([^<]+)<').strip()
+        url = scrapertools.find_single_match(data, "href='([^']+)'.*?download>Descargar</a>")
+
+        if url:
+            url = url if url.startswith("http") else "https:" + url
     else:
         url = item.url
         quality = ""
 
     if url:
-        itemlist.append(Item( channel = item.channel, action = 'play', title = '', quality=quality, url = url, server = 'torrent'))
+        if not url == 'https:':
+           itemlist.append(Item( channel = item.channel, action = 'play', title = '', quality=quality, url = url, server = 'torrent'))
 
     return itemlist
 
@@ -301,9 +335,13 @@ def list_search(item):
     logger.info()
     itemlist = []
 
-    data = do_downloadpage(item.url)
+    headers = {'Referer': host}
 
-    patron = """<a href='([^']+)' class="text-decoration-none">(?:<span class="text-secondary">|)([^<]+)"""
+    data = do_downloadpage(item.url, headers=headers)
+
+    patron = "<a href='(.*?)'.*?"
+    patron += 'class="text-decoration-none">(.*?)</a>'
+
     matches = re.compile(patron).findall(data)
 
     for url, title in matches:

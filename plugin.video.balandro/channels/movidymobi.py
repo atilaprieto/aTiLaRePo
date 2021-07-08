@@ -441,69 +441,9 @@ def edades(item):
     return itemlist
 
 
-def search(item, texto):
-    logger.info()
-    try:
-        if item.search_type not in ['movie', 'tvshow', 'all']: item.search_type = 'all'
-        item.url = host + 'secure/search/' + texto.replace(" ", "+")
-        return sub_search(item)
-    except:
-        import sys
-        for line in sys.exc_info():
-            logger.error("%s" % line)
-        return []
-
-
-def sub_search(item):
-    logger.info()
-    itemlist = []
-
-    # ~ data = do_downloadpage(item.url.replace('/secure/search/', '/search?'))
-
-    url = item.url + '?type=&limit=30'
-
-    data = do_downloadpage(url)
-
-    dict_data = jsontools.load(data)
-
-    if 'results' not in dict_data: return itemlist
-
-    for element in dict_data['results']:
-        # ~ logger.debug(element)
-        if 'is_series' not in element or 'name' not in element: continue
-
-        if element['is_series'] and item.search_type == 'movie': continue
-        if not element['is_series'] and item.search_type == 'tvshow': continue
-
-        thumb = element['poster'] if element['poster'] else item.thumbnail
-        new_item = item.clone( title = element['name'], thumbnail = thumb, infoLabels = {'year':element['year'], 'plot': element['description']})
-
-        # ~ new_item.url = host + 'titles/' + str(element['id'])
-        new_item.url = host + 'secure/titles/' + str(element['id']) + '?titleId=' + str(element['id'])
-
-        if not element['is_series']:
-            new_item.action = 'findvideos'
-            new_item.contentType = 'movie'
-            new_item.contentTitle = element['name']
-        else:
-            new_item.action = 'temporadas'
-            new_item.contentType = 'tvshow'
-            new_item.contentSerieName = element['name']
-
-        new_item.fmt_sufijo = '' if item.search_type != 'all' else new_item.contentType
-
-        itemlist.append(new_item)
-
-    tmdb.set_infoLabels(itemlist)
-
-    return itemlist
-
-
 def list_all(item):
     logger.info()
     itemlist=[]
-
-    # ~ data = do_downloadpage(item.url)
 
     if not item.page: item.page = '1'
     if not item.orden: item.orden = 'popularity:desc'
@@ -662,6 +602,7 @@ def findvideos(item):
         # ~ logger.debug(element)
 
         url = element['url']
+
         if url.startswith('https://goo.gl/'): # acortador de google
             url = do.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
             if not url: continue
@@ -669,15 +610,65 @@ def findvideos(item):
             url = scrapertools.decode_streamcrypt(url)
             if not url: continue
 
-        #TODO? Mostrar info de positive_votes, negative_votes, reports
-
         itemlist.append(Item(channel = item.channel, action = 'play', title = item.title, url = url, language = _extraer_idioma(element['language']), 
-                             quality = element['quality'], quality_num = puntuar_calidad(element['quality']) ))  #, other = url
+                             quality = element['quality'], quality_num = puntuar_calidad(element['quality']) ))
 
     itemlist = servertools.get_servers_itemlist(itemlist)
-
-    # ~ for it in itemlist: logger.info('%s %s %s' % (it.server, it.language, it.url))
 
     return itemlist
 
 
+def sub_search(item):
+    logger.info()
+    itemlist = []
+
+    url = item.url + '?type=&limit=30'
+
+    data = do_downloadpage(url)
+
+    dict_data = jsontools.load(data)
+
+    if 'results' not in dict_data: return itemlist
+
+    for element in dict_data['results']:
+        # ~ logger.debug(element)
+        if 'is_series' not in element or 'name' not in element: continue
+
+        if element['is_series'] and item.search_type == 'movie': continue
+        if not element['is_series'] and item.search_type == 'tvshow': continue
+
+        thumb = element['poster'] if element['poster'] else item.thumbnail
+        new_item = item.clone( title = element['name'], thumbnail = thumb, infoLabels = {'year':element['year'], 'plot': element['description']})
+
+        # ~ new_item.url = host + 'titles/' + str(element['id'])
+        new_item.url = host + 'secure/titles/' + str(element['id']) + '?titleId=' + str(element['id'])
+
+        if not element['is_series']:
+            new_item.action = 'findvideos'
+            new_item.contentType = 'movie'
+            new_item.contentTitle = element['name']
+        else:
+            new_item.action = 'temporadas'
+            new_item.contentType = 'tvshow'
+            new_item.contentSerieName = element['name']
+
+        new_item.fmt_sufijo = '' if item.search_type != 'all' else new_item.contentType
+
+        itemlist.append(new_item)
+
+    tmdb.set_infoLabels(itemlist)
+
+    return itemlist
+
+
+def search(item, texto):
+    logger.info()
+    try:
+        if item.search_type not in ['movie', 'tvshow', 'all']: item.search_type = 'all'
+        item.url = host + 'secure/search/' + texto.replace(" ", "+")
+        return sub_search(item)
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []

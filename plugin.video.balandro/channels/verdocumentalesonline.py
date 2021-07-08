@@ -14,7 +14,10 @@ from platformcode import config, logger
 from core.item import Item
 from core import httptools, scrapertools, jsontools
 
-# ~ HOST = "https://www.dailymotion.com/verdocumentalesonline" # Id: x24nyzt
+
+host = "https://www.dailymotion.com/verdocumentalesonline"
+
+# ~ Id: x24nyzt
 # ~ https://developer.dailymotion.com/tools/
 
 

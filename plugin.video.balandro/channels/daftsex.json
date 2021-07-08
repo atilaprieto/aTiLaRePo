@@ -1,0 +1,17 @@
+{
+  "id": "daftsex",
+  "name": "DaftSex",
+  "thumbnail": "daftsex.png",
+
+  "active": false,
+
+  "searchable": false,
+  "search_types": ["movie"],
+
+  "categories": ["movie", "adults"],
+  "language": ["vo"],
+
+  "clusters": ["adults", "lists", "rankings", "categories", "stars", "vos"],
+
+  "notes": "Videos en Version Original para Adultos +18"
+}

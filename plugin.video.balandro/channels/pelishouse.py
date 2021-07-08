@@ -53,12 +53,14 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Catálogo series TV', action = 'list_all', url = host + 'tvshows/', search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Catálogo series Tv', action = 'list_all', url = host + 'tvshows/', search_type = 'tvshow' ))
+
     itemlist.append(item.clone( title = 'Catálogo series Animadas', action = 'list_all', url = host + 'genre/series-animadas-gratis/', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Más valoradas', action = 'list_top', url = host + 'pelislatino24-tv/', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Por idioma', action = 'idiomas', search_type = 'tvshow' ))
+    itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'tvshow' ))
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
@@ -90,11 +92,9 @@ def generos(item):
 
     data = httptools.downloadpage(host).data
 
-    data = scrapertools.find_single_match(data, r'<ul class="genres scrolling">(.*?)</ul>')
+    bloque = scrapertools.find_single_match(data, 'Generos</a>(.*?)>MARVEL</a>')
 
-    patron = r'<a href="([^"]+)" title="[^"]+">([^<]+)</a>'
-
-    matches = scrapertools.find_multiple_matches(data, patron)
+    matches = scrapertools.find_multiple_matches(bloque, '<a href="(.*?)">(.*?)</a>')
 
     for url, title in matches:
         if title == '+18': continue
@@ -110,21 +110,31 @@ def generos(item):
         if title == 'CINECALIDAD':
             title = 'CineCalidad'
         elif title == 'descargacineclasico.tv':
-            title = 'DescargaCineClasico'
+           title = 'DescargaCineClasico'
+
+        if item.search_type == 'tvshow':
+           if '/accion/' in url: continue
+           elif '/aventura/' in url: continue
+           elif '/belica/' in url: continue
+           elif '/ciencia-ficcion/' in url: continue
+           elif '/fantasia/' in url: continue
+           elif '/musica/' in url: continue
+           elif '/romance/' in url: continue
+           elif '/suspense/' in url: continue
+        else:
+           if '/reality/' in url: continue
+           elif '/sci-fi-fantasy/' in url: continue
+           elif '/war-politics/' in url: continue
 
         itemlist.append(item.clone( title = title, url = url, action = 'list_all' ))
 
-    itemlist.append(item.clone( action = 'list_all', title = 'Bélica', url = host + 'genre/belica/' ))
-    itemlist.append(item.clone( action = 'list_all', title = 'CineCalidad Top', url = host + 'genre/cinecalidad-top/' ))
-    itemlist.append(item.clone( action = 'list_all', title = 'Documental', url = host + 'genre/documental/' ))
-    itemlist.append(item.clone( action = 'list_all', title = 'Películas de Televisión', url = host + 'genre/pelicula-de-la-television/' ))
-    itemlist.append(item.clone( action = 'list_all', title = 'Películas de Tv', url = host + 'genre/pelicula-de-tv/' ))
-    itemlist.append(item.clone( action = 'list_all', title = 'Reality', url = host + 'genre/reality/' ))
-    itemlist.append(item.clone( action = 'list_all', title = 'Sci-fi & Fantasy', url = host + 'genre/sci-fi-fantasy/' ))
-    itemlist.append(item.clone( action = 'list_all', title = 'War & Politics', url = host + 'genre/war-politics/' ))
+    if item.search_type == 'movie':
+        itemlist.append(item.clone( action = 'list_all', title = 'CineCalidad Top', url = host + 'genre/cinecalidad-top/' ))
+        itemlist.append(item.clone( action = 'list_all', title = 'Películas de Televisión', url = host + 'genre/pelicula-de-la-television/' ))
+        itemlist.append(item.clone( action = 'list_all', title = 'Películas de Tv', url = host + 'genre/pelicula-de-tv/' ))
 
-    if not descartar_xxx:
-        itemlist.append(item.clone( action = 'list_all', title = 'xxx / adultos', url = host + 'search?s=adultos' ))
+        if not descartar_xxx:
+            itemlist.append(item.clone( action = 'list_all', title = 'xxx / adultos', url = host + 'search?s=adultos' ))
 
     return sorted(itemlist, key=lambda it: it.title)
 
@@ -136,7 +146,7 @@ def anios(item):
     from datetime import datetime
     current_year = int(datetime.today().year)
 
-    for x in range(current_year, 1970, -1):
+    for x in range(current_year, 1938, -1):
         itemlist.append(item.clone( title = str(x), url = host + 'release/' + str(x) + '/', action = 'list_all' ))
 
     return itemlist
@@ -151,11 +161,9 @@ def paises(item):
 
     data = httptools.downloadpage(host).data
 
-    data = scrapertools.find_single_match(data, r'<ul class="genres scrolling">(.*?)</ul>')
+    data = scrapertools.find_single_match(data, '<ul class="genres scrolling">(.*?)</ul>')
 
-    patron = r'<a href="([^"]+)" title="[^"]+">([^<]+)</a>'
-
-    matches = scrapertools.find_multiple_matches(data, patron)
+    matches = scrapertools.find_multiple_matches(data, '<a href="([^"]+)" title="[^"]+">([^<]+)</a>')
 
     for url, title in matches:
         if not 'Peliculas ' in title: continue
@@ -202,44 +210,50 @@ def list_all(item):
     itemlist = []
 
     data = httptools.downloadpage(item.url).data
+
+    data = scrapertools.find_single_match(str(data), '<h2>Añadido(.*?)alt="PELISHOUSE"')
     data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 
+    matches = scrapertools.find_multiple_matches(data, '<article(.*?)</article>')
+
     if item.search_type == 'movie':
-        patron = r'<article id="post-\d+" class="item movies">.*?src="([^"]+)".*?' \
-                 r'(?:<span class="quality">([^<]+)</span>.*?)?<a href="([^"]+)">.*?<h4>([^<]+)</h4>.*?' \
-                 r'<span>(\d+)</span>.*?<div class="mta">(.*?)</article>'
+        for match in matches:
+            url = scrapertools.find_single_match(match, '<a href="(.*?)"')
+            if 'tvshows' in url: continue
 
-        matches = scrapertools.find_multiple_matches(data, patron)
+            thumb = scrapertools.find_single_match(match, 'src="(.*?)"')
+            title = scrapertools.find_single_match(match, 'alt="(.*?)"')
+            qlty = scrapertools.find_single_match(match, 'class="quality">(.*?)</span>')
+            year = scrapertools.find_single_match(match, '</h3>.*?<span>(\d+)</span>')
 
-        for thumb, qlty, url, title, year, tags in matches:
             title = title.strip()
 
-            languages = detectar_idiomas(tags)
-
-            itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, languages=', '.join(languages), qualities=qlty,
+            itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, qualities=qlty,
                                         contentType='movie', contentTitle=title, infoLabels={'year': year} ))
+
     else:
-        patron = r'<article id="post-\d+" class="item tvshows">.*?src="([^"]+)".*?' \
-             r'<a href="([^"]+)">.*?<h4>([^<]+)</h4>.*?<span>(\d+)</span>'
+        for match in matches:
+            url = scrapertools.find_single_match(match, '<a href="(.*?)"')
+            if 'movies' in url: continue
 
-        matches = scrapertools.find_multiple_matches(data, patron)
+            thumb = scrapertools.find_single_match(match, 'src="(.*?)"')
+            title = scrapertools.find_single_match(match, 'alt="(.*?)"')
+            year = scrapertools.find_single_match(match, '</h3>.*?<span>(\d+)</span>')
 
-        for thumb, url, title, year in matches:
-            title = scrapertools.find_single_match(title, r'(.*?) Serie.*?nline') or title
+            title = scrapertools.find_single_match(title, '(.*?) Serie.*?nline') or title
 
             itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb,
                                         contentType='tvshow', contentSerieName=title, infoLabels={'year': year} ))
 
     tmdb.set_infoLabels(itemlist)
 
-    # Paginador
     next_page = ''
     if item.search_type == 'movie':
-        next_page = scrapertools.find_single_match(data, r'<a class=\'arrow_pag\' href="([^"]+)">')
+        next_page = scrapertools.find_single_match(data, '<a class=\'arrow_pag\' href="([^"]+)">')
         if not next_page:
-            next_page = scrapertools.find_single_match(data, r'<span class="current">\d+</span><a href=\'([^\']+)\' class="inactive">')
+            next_page = scrapertools.find_single_match(data, '<span class="current">\d+</span><a href=\'([^\']+)\' class="inactive">')
     else:
-        next_page = scrapertools.find_single_match(data, r'<span class="current">\d+</span><a href=\'([^\']+)\' class="inactive">')
+        next_page = scrapertools.find_single_match(data, '<span class="current">\d+</span><a href=\'([^\']+)\' class="inactive">')
 
     if next_page:
         itemlist.append(item.clone(title = '>> Página siguiente', url = next_page, action = 'list_all', text_color = 'coral'))
@@ -254,14 +268,15 @@ def list_top(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 
-    if item.search_type == 'movie':
-       patron = r'<article id="post-.*?<img src="(.*?)" alt="(.*?)".*?class="quality">(.*?)</span>.*?<a href="(.*?)".*?</h3> <span>(.*?)</span>'
-    else:
-       patron = r'<article id="post-.*?<img src="(.*?)" alt="(.*?)".*?</span>(.*?)</div>.*?<a href="(.*?)".*?</h3> <span>(.*?)</span>'
+    matches = scrapertools.find_multiple_matches(data, '<article(.*?)</article>')
 
-    matches = scrapertools.find_multiple_matches(data, patron)
+    for match in matches:
+        thumb = scrapertools.find_single_match(match, 'src="(.*?)"')
+        title = scrapertools.find_single_match(match, 'alt="(.*?)"')
+        url = scrapertools.find_single_match(match, '<a href="(.*?)"')
+        qlty = scrapertools.find_single_match(match, 'class="quality">(.*?)</span>')
+        year = scrapertools.find_single_match(match, '</h3>.*?<span>(\d+)</span>')
 
-    for thumb, title, qlty, url, year in matches:
         year = scrapertools.find_single_match(year, '.*?,(.*?)$').strip()
         if not year: year = '-'
 
@@ -276,21 +291,20 @@ def list_top(item):
         else:
             if '/movies/' in url: continue
 
-            title = scrapertools.find_single_match(title, r'(.*?) Serie.*?nline') or title
+            title = scrapertools.find_single_match(title, '(.*?) Serie.*?nline') or title
 
             itemlist.append(item.clone( action='temporadas', url=url, title=title, thumbnail=thumb,
                                         contentType='tvshow', contentSerieName=title, infoLabels={'year': year} ))
 
     tmdb.set_infoLabels(itemlist)
 
-    # Paginador
     next_page = ''
     if item.search_type == 'movie':
-        next_page = scrapertools.find_single_match(data, r'<a class=\'arrow_pag\' href="([^"]+)">')
+        next_page = scrapertools.find_single_match(data, '<a class=\'arrow_pag\' href="([^"]+)">')
         if not next_page:
-            next_page = scrapertools.find_single_match(data, r'<span class="current">\d+</span><a href=\'([^\']+)\' class="inactive">')
+            next_page = scrapertools.find_single_match(data, '<span class="current">\d+</span><a href=\'([^\']+)\' class="inactive">')
     else:
-        next_page = scrapertools.find_single_match(data, r'<span class="current">\d+</span><a href=\'([^\']+)\' class="inactive">')
+        next_page = scrapertools.find_single_match(data, '<span class="current">\d+</span><a href=\'([^\']+)\' class="inactive">')
 
     if next_page:
         itemlist.append(item.clone(title = '>> Página siguiente', url = next_page, action = 'list_top', text_color = 'coral'))
@@ -305,11 +319,14 @@ def list_3d(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 
-    patron = r'<article class="item" id="post-.*?<a href="([^"]+)"><img src="([^"]+)".*?class="title">(.*?)</h3><span>(.*?)</span>'
+    matches = scrapertools.find_multiple_matches(data, '<article(.*?)</article>')
 
-    matches = scrapertools.find_multiple_matches(data, patron)
+    for match in matches:
+        thumb = scrapertools.find_single_match(match, 'src="(.*?)"')
+        title = scrapertools.find_single_match(match, 'alt="(.*?)"')
+        url = scrapertools.find_single_match(match, '<a href="(.*?)"')
+        year = scrapertools.find_single_match(match, '</h3>.*?<span>(\d+)</span>')
 
-    for url, thumb , title, year in matches:
         title = title.strip()
 
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb,
@@ -326,9 +343,7 @@ def temporadas(item):
 
     data = httptools.downloadpage(item.url).data
 
-    patron = r"<span class='se-t[^']*'>(\d+)</span><span class='title'>([^<]+)"
-
-    matches = scrapertools.find_multiple_matches(data, patron)
+    matches = scrapertools.find_multiple_matches(data, "<span class='se-t[^']*'>(\d+)</span><span class='title'>([^<]+)")
 
     for numtempo, title in matches:
         title = title.strip()
@@ -358,8 +373,7 @@ def episodios(item):
 
     data = httptools.downloadpage(item.url).data
 
-    patron = r'<li class=\'mark-\d+\'>.*?src=\'([^\']+)\'.*?' \
-             r'class=\'numerando\'>(\d+) - (\d+).*?href=\'([^\']+)\'>([^<]+)'
+    patron = '<li class=\'mark-\d+\'>.*?src=\'([^\']+)\'.*?class=\'numerando\'>(\d+) - (\d+).*?href=\'([^\']+)\'>([^<]+)'
 
     matches = scrapertools.find_multiple_matches(data, patron)
 
@@ -390,8 +404,7 @@ def findvideos(item):
 
     data = httptools.downloadpage(item.url).data
 
-    patron = r"<li id='player-option-\d+' class='dooplay_player_option' data-type='([^']+)' " \
-             r"data-post='([^']+)' data-nume='([^'])+'>.*?<span class='title'>([^<]+)</span>"
+    patron = "<li id='player-option-\d+' class='dooplay_player_option' data-type='([^']+)'.*?data-post='([^']+)' data-nume='([^'])+'>.*?<span class='title'>([^<]+)</span>"
 
     matches = scrapertools.find_multiple_matches(data, patron)
 
@@ -399,25 +412,26 @@ def findvideos(item):
         url = get_video_url(_type, post, nume)
 
         try:
-            lang, qlty = tag.strip().split(' ')
+           lang, qlty = tag.strip().split(' ')
         except Exception:
-            logger.error('idioma-calidad Desconocidos')
-            lang = ''
-            qlty = ''
+           logger.error('idioma-calidad Desconocidos')
+           lang = ''
+           qlty = ''
 
         language = detectar_idiomas(lang)
 
         url = urlparse.urljoin(item.url, url)
 
-        if '/hqq.' in url or '/waaw.' in url: continue
+        if '/hqq.' in url or '/waaw.' in url or '/www.jplayer.' in url: continue
 
-        servidor = servertools.get_server_from_url(url)
-        servidor = servertools.corregir_servidor(servidor)
+        if url:
+            servidor = servertools.get_server_from_url(url)
+            servidor = servertools.corregir_servidor(servidor)
 
-        itemlist.append(Item( channel = item.channel, action = 'play', title = '', server = servidor, url = url,
-                              language = language, quality = qlty ))
+            itemlist.append(Item( channel = item.channel, action = 'play', title = '', server = servidor, url = url,
+                                  language = language, quality = qlty ))
 
-    patron = r"<tr id=.*?src='.*?domain=([^']+)'.*?href='(.*?)'.*?class='quality'>(.*?)</strong></td><td>(.*?)</td><td>"
+    patron = "<tr id=.*?src='.*?domain=([^']+)'.*?href='(.*?)'.*?class='quality'>(.*?)</strong></td><td>(.*?)</td><td>"
 
     matches = scrapertools.find_multiple_matches(data, patron)
 
@@ -426,19 +440,20 @@ def findvideos(item):
 
         url = urlparse.urljoin(item.url, url)
 
-        if '/hqq.' in url or '/waaw.' in url: continue
+        if '/hqq.' in url or '/waaw.' in url or '/www.jplayer.' in url: continue
 
-        servidor = server.split('.')[0]
-        servidor = servertools.corregir_servidor(servidor)
+        if url:
+            servidor = server.split('.')[0]
+            servidor = servertools.corregir_servidor(servidor)
 
-        itemlist.append(Item( channel = item.channel, action = 'play', title = '', server = servidor, url = url, other = 'd',
-                              language = language, quality = qlty ))
+            itemlist.append(Item( channel = item.channel, action = 'play', title = '', server = servidor, url = url, other = 'd',
+                                  language = language, quality = qlty ))
 
     return itemlist
 
 
 def get_video_url(_type, post, nume):
-    data = httptools.downloadpage(host + 'wp-json/dooplayer/v1/post/%s?type=%s&source=%s' % (post, _type, nume)).data
+    data = httptools.downloadpage(host + 'wp-json/dooplayer/v2/%s/%s/%s' % (post, _type, nume)).data
 
     data = jsontools.load(data)['embed_url']
     return data
@@ -451,7 +466,7 @@ def play(item):
     if item.url.startswith(host):
         if item.other == 'd':
             data = httptools.downloadpage(item.url).data
-            url = scrapertools.find_single_match(str(data), r'href="(.*?)"')
+            url = scrapertools.find_single_match(str(data), 'href="(.*?)"')
 
             if url:
                 servidor = servertools.get_server_from_url(url)
@@ -460,7 +475,7 @@ def play(item):
 
         else:
             data = httptools.downloadpage(item.url).data
-            url = scrapertools.find_single_match(str(data), r'"file":"(.*?)"')
+            url = scrapertools.find_single_match(str(data), '"file":"(.*?)"')
 
             if url:
                url = url.replace('\\/', '/')
@@ -470,6 +485,9 @@ def play(item):
         video_id = item.url.split('/')[-1]
         data = httptools.downloadpage('https://peliscalidad.top/api/source/%s' % video_id, post={'r': '', 'd': 'peliscalidad.top'}).data
         data = jsontools.load(data)
+
+        if 'Video not found or has been removed' in str(data):
+            return 'Video eliminado'
 
         for video in data['data']:
             url = httptools.downloadpage(video['file'], follow_redirects=False).headers['location']
@@ -533,11 +551,13 @@ def detectar_idiomas(tags):
     if idio:
        for idioma in idio:
            if idioma == 'castellano': languages.append('Esp')
+           if idioma == 'espaÑol': languages.append('Esp')
            if idioma == 'latino': languages.append('Lat')
            if idioma == 'ingles': languages.append('Eng')
            if idioma == 'subtitulado': languages.append('Vose')
     else:
        if tags == 'castellano': return 'Esp'
+       elif tags == 'espaÑol': return 'Esp'
        elif tags == 'latino': return 'Lat'
        elif tags == 'ingles': return 'Eng'
        elif tags == 'subtitulado': return 'Vose'
@@ -559,8 +579,7 @@ def list_search(item):
     data = httptools.downloadpage(item.url).data
 
     if item.search_type == 'movie' or item.search_type == 'all':
-        patron = r'<a href="([^"]+)"><img src="([^"]+)" alt="([^"]+)" />' \
-                 r'<span class="movies">Película</span>.*?<span class="year">(\d+)</span>'
+        patron = '<a href="([^"]+)"><img src="([^"]+)" alt="([^"]+)" /><span class="movies">Película</span>.*?<span class="year">(\d+)</span>'
 
         matches = scrapertools.find_multiple_matches(data, patron)
 
@@ -575,13 +594,12 @@ def list_search(item):
                                         contentType='movie', contentTitle=title, infoLabels={'year': year} ))
 
     if item.search_type == 'tvshow' or item.search_type == 'all':
-        patron = r'<a href="([^"]+)"><img src="([^"]+)" alt="([^"]+)" />' \
-                 r'<span class="tvshows">TV</span>.*?<span class="year">(\d+)</span>'
+        patron = '<a href="([^"]+)"><img src="([^"]+)" alt="([^"]+)" /><span class="tvshows">TV</span>.*?<span class="year">(\d+)</span>'
 
         matches = scrapertools.find_multiple_matches(data, patron)
 
         for url, thumb, title, year in matches:
-            title = scrapertools.find_single_match(title, r'(?:Ver )?(.*?),? Serie.*?nline') or title
+            title = scrapertools.find_single_match(title, '(?:Ver )?(.*?),? Serie.*?nline') or title
 
             tipo = 'tvshow' if '/tvshows/' in url else 'movie'
             sufijo = '' if item.search_type != 'all' else tipo

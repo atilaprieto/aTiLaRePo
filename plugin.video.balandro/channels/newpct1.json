@@ -13,5 +13,5 @@
 
   "clusters": ["torrents", "news", "lists", "vos", "3d"],
 
-  "notes": "Películas y series con enlaces torrent y streaming. Clones de NewPct1: pctreload, pctmix, descargas2020."
+  "notes": "Películas y series con enlaces torrent y streaming. Clones: Maxitorrent, Pctmix, Pctreload y Descargas2020. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

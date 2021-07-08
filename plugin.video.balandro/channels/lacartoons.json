@@ -11,7 +11,7 @@
   "categories": ["tvshow"],
   "language": ["lat"],
 
-  "clusters": ["classic", "rankings", "producers"],
+  "clusters": ["classic", "rankings", "producers", "kids"],
 
   "notes": "Muchas series cartoons en español-latino."
 }

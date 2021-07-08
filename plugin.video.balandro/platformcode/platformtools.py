@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
-# Balandro - PlatformTools
-# --------------------------------------------------------------------------------
-
 
 import sys, os
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs
+
 from platformcode import config, logger
 from core.item import Item
 
 PY3 = False
+
 if sys.version_info[0] >= 3:
     translatePath = xbmcvfs.translatePath
-    unicode = str
     basestring = str
     from urllib.parse import quote_plus
     PY3 = True
 else:
     translatePath = xbmc.translatePath   
     from urllib import quote_plus
+
+color_alert = config.get_setting('notification_alert_color', default='red')
+color_infor = config.get_setting('notification_infor_color', default='pink')
+color_adver = config.get_setting('notification_adver_color', default='violet')
+color_avis  = config.get_setting('notification_avis_color', default='yellow')
+color_exec  = config.get_setting('notification_exec_color', default='cyan')
 
 
 # Diálogos de Kodi
@@ -271,6 +274,7 @@ def set_infolabels(listitem, item, player=False):
     @param item: objeto Item que representa a una pelicula, serie o capitulo
     @type item: item
     """
+
     # values icon, thumb or poster are skin dependent.. so we set all to avoid problems. if not exists thumb it's used icon value
     icon_image = "DefaultFolder.png" if item.folder else "DefaultVideo.png"
     poster_image = item.poster if item.poster != '' else item.thumbnail
@@ -337,6 +341,7 @@ def set_context_commands(item, parent_item, colores):
     @param parent_item:
     @type parent_item: item
     """
+
     context_commands = []
 
     # Creamos un list con las diferentes opciones incluidas en item.context
@@ -469,9 +474,7 @@ def formatear_enlaces_servidores(itemlist):
     return itemlist
 
 
-
 def formatear_titulo_peli_serie(item, colores={}, formato={}):
-
     tit = item.title if item.title != '' else item.contentTitle if item.contentType == 'movie' else item.contentSerieName
     if colores[item.contentType] == 'white':
         titulo = tit
@@ -598,6 +601,8 @@ def play_from_itemlist(itemlist, parent_item):
 
     if config.get_setting('developer_mode', default=False): developer_mode_check_findvideos(itemlist, parent_item)
 
+    total_enlaces = len(itemlist)
+    
     from core import servertools
     itemlist = servertools.filter_and_sort_by_quality(itemlist)
     itemlist = servertools.filter_and_sort_by_server(itemlist)
@@ -605,9 +610,16 @@ def play_from_itemlist(itemlist, parent_item):
 
     if len(itemlist) == 0:
         if notification_d_ok:
-            dialog_ok(config.__addon_name, 'No hay enlaces disponibles')
+            if total_enlaces > 0:
+                 dialog_ok(config.__addon_name, 'Sin enlaces soportados')
+            else:
+                 dialog_ok(config.__addon_name, 'Sin enlaces disponibles')
         else:
-            dialog_notification(config.__addon_name, '[COLOR moccasin]No hay enlaces disponibles[/COLOR]')
+            if total_enlaces > 0:
+                dialog_notification(config.__addon_name, '[B][COLOR %s]Sin enlaces soportados[/COLOR][/B]' % color_alert)
+            else:
+                dialog_notification(config.__addon_name, '[B][COLOR %s]Sin enlaces disponibles[/COLOR][/B]' % color_exec)
+
         play_fake()
         return
 
@@ -671,11 +683,12 @@ def play_from_itemlist(itemlist, parent_item):
                 dialog_notification('Autoplay sin éxito', 'Han fallado los %d primeros enlaces' % autoplay_max_links, time=3000)
             else:
                 play_fake()
-                txt = 'el enlace' if len(itemlist) == 1 else 'ninguno de los enlaces'
+                txt = 'el enlace' if len(itemlist) == 1 else 'ningún enlace'
                 if notification_d_ok:
-                    dialog_ok(config.__addon_name, 'No se ha podido reproducir ' + txt)
+                    dialog_ok(config.__addon_name, 'No se pudo reproducir ' + txt)
                 else:
-                    dialog_notification(config.__addon_name, '[COLOR moccasin]No se ha podido reproducir ' + txt + '[/COLOR]')
+                    el_txt = ('[B][COLOR %s]No se pudo reproducir ' + txt) % color_exec
+                    dialog_notification(config.__addon_name, el_txt + '[/COLOR][/B]')
         else:
             if len(itemlist) == 1: dialog_notification('Autoplay resuelto', it.title, time=2000, sound=False)
             else: dialog_notification('Autoplay resuelto', it.title)
@@ -712,13 +725,14 @@ def play_from_itemlist(itemlist, parent_item):
                         if notification_d_ok:
                             dialog_ok(config.__addon_name, itemlist_play)
                         else:
-                            dialog_notification(config.__addon_name, '[COLOR moccasin]' + itemlist_play + '[/COLOR]')
+                            el_play = ('[B][COLOR %s]' + itemlist_play) % color_exec
+                            dialog_notification(config.__addon_name, el_play + '[/COLOR][/B]')
                     else:
                         ok_play = False
                         if notification_d_ok:
-                            dialog_ok(config.__addon_name, 'No se puede reproducir')
+                            dialog_ok(config.__addon_name, 'No se pudo reproducir')
                         else:
-                            dialog_notification(config.__addon_name, '[COLOR moccasin]No se puede reproducir[/COLOR]')
+                            dialog_notification(config.__addon_name, '[B][COLOR %s]No se pudo reproducir[/COLOR][/B]' % color_exec)
                 else:
                     ok_play = play_video(itemlist[seleccion], parent_item)
 
@@ -753,11 +767,11 @@ def play_video(item, parent_item, autoplay=False):
         video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(item.server, item.url, url_referer=url_referer)
 
     if not puedes:
-        if not autoplay: dialog_ok("No puedes ver este vídeo porque...", motivo, item.url)
+        if not autoplay: dialog_ok("No puedes ver el vídeo porque...", motivo, item.url)
         return False
 
     if len(video_urls) == 1 and '.rar' in video_urls[0][0]:
-        if not autoplay: dialog_ok("No puedes ver este vídeo porque...", 'Está comprimido en formato rar', item.url)
+        if not autoplay: dialog_ok("No puedes ver el vídeo porque...", 'Está comprimido en formato rar', item.url)
         return False
 
     opciones = []
@@ -781,9 +795,9 @@ def play_video(item, parent_item, autoplay=False):
         if mediaurl == '':
             if not autoplay:
                 if notification_d_ok:
-                    dialog_ok(config.__addon_name, 'No se encuentra el vídeo!')
+                    dialog_ok(config.__addon_name, 'Vídeo no encontrado')
                 else:
-                    dialog_notification(config.__addon_name, '[COLOR moccasin]No se encuentra el vídeo![/COLOR]')
+                    dialog_notification(config.__addon_name, '[B][COLOR %s]Vídeo no encontrado[/COLOR][/B]' % color_exec)
             return False
 
         if mpd and not is_mpd_enabled():
@@ -817,6 +831,7 @@ def play_video(item, parent_item, autoplay=False):
         # espera de unos segundos y comprobar si está funcionando !?
         # ~ return xbmc.Player().isPlaying()
         return True
+
 
 # video_urls: [0]:título [1]:url [2]:wait_time [3]:subtitle [4]:is_mpd
 def get_video_seleccionado(item, seleccion, video_urls):
@@ -919,9 +934,9 @@ def play_torrent(mediaurl, parent_item):
 
     if plugin_url == '':
         if notification_d_ok:
-            dialog_ok(config.__addon_name, 'Cliente Torrent no contemplado!')
+            dialog_ok(config.__addon_name, 'Cliente Torrent no contemplado')
         else:
-            dialog_notification(config.__addon_name, '[COLOR moccasin]Cliente Torrent no contemplado![/COLOR]')
+            dialog_notification(config.__addon_name, '[B][COLOR %s]Cliente Torrent no contemplado[/COLOR][/B]' % color_exec)
         return False
 
     mediaurl = quote_plus(mediaurl)
@@ -1014,6 +1029,7 @@ def execute_sql_kodi(sql, parms_sql=None):
     @return: lista con el resultado de la consulta
     @rtype records: list of tuples
     """
+
     logger.info()
     global file_kodi_db
 

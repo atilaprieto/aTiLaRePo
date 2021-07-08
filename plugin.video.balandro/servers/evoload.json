@@ -2,8 +2,7 @@
   "id": "evoload",
   "name": "Evoload",
 
-  "active": false,
-  "notes": "Requiere recaptcha",
+  "active": true,
 
   "find_videos": {
     "ignore_urls": [],

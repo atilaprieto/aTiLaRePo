@@ -11,7 +11,7 @@
   "categories": ["movie", "tvshow"],
   "language": ["lat", "cast", "vose"],
 
-  "clusters": ["news", "rankings", "vos"],
+  "clusters": ["news", "rankings", "kids", "docs", "vos"],
 
   "notes": "Películas por género, estrenos. También series. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

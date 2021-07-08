@@ -26,12 +26,13 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
 
     if not page_url.startswith("http"):
-        page_url = "http://www.youtube.com/watch?v=%s" % page_url
+        page_url = "https://www.youtube.com/watch?v=%s" % page_url
         logger.info(" page_url->'%s'" % page_url)
 
     page_url = servertools.normalize_url('youtube', page_url)
 
     data = httptools.downloadpage(page_url).data
+
     if "File was deleted" in data:
         return 'El archivo no existe o ha sido borrado'
 
@@ -49,7 +50,7 @@ def remove_additional_ending_delimiter(data):
 
 def normalize_url(url):
     if url[0:2] == "//":
-        url = "http:" + url
+        url = "https:" + url
     return url
 
 def extract_flashvars(data):
@@ -206,7 +207,7 @@ def extract_videos(video_id):
             video_urls.append(['mpd HD', params['dashmpd'], 0, '', True])
 
 
-    youtube_page_data = httptools.downloadpage("http://www.youtube.com/watch?v=%s" % video_id).data
+    youtube_page_data = httptools.downloadpage("https://www.youtube.com/watch?v=%s" % video_id).data
     # ~ logger.debug(youtube_page_data)
     params = extract_flashvars(youtube_page_data)
     # ~ logger.debug(params)

@@ -11,7 +11,7 @@
   "categories": ["movie"],
   "language": ["lat"],
 
-  "clusters": ["classic"],
+  "clusters": ["classic", "kids"],
 
   "notes": "Películas retro, por género."
 }

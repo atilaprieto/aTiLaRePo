@@ -15,31 +15,61 @@ from core.item import Item
 from core import httptools, scrapertools, servertools, tmdb
 
 
+host = 'https://pctmix1.com/'
+
+clon_name = 'Pctmix'
+
 perpage = 20
+
+color_list_proxies = config.get_setting('channels_list_proxies_color', default='red')
 
 
 CLONES = [
+   ['pctmix', 'https://pctmix1.com/', 'movie, tvshow', 'pctmix.jpg'],
    ['pctreload', 'https://pctreload1.com/', 'movie, tvshow', 'pctreload.png'],
-   ['pctmix', 'https://pctmix.com/', 'movie, tvshow', 'pctmix.jpg'],
-   # - ['descargas2020', 'https://descargas2020.net/', 'movie, tvshow', 'descargas2020.jpg']
+   ['maxitorrent', 'https://maxitorrent.com/', 'movie, tvshow', 'maxitorrent.jpg'],
    ['descargas2020', 'https://descargas2020.net/', 'movie', 'descargas2020.jpg']
    ]
 
-    # ~ ['tumejortorrent', 'http://tumejortorrent.site/', 'movie, tvshow', 'tumejortorrent.jpg'],
-    # ~ ['tumejortorrent', 'https://tumejortorrent.org/', 'movie, tvshow', 'tumejortorrent.jpg'],
-    # ~ ['torrentrapid', 'https://torrentrapid.org/', 'movie, tvshow', 'torrentrapid.png'],
-    # ~ ['torrentlocura', 'http://torrentlocura.cc/', 'movie, tvshow', 'torrentlocura.png'],
-    # ~ ['planetatorrent', 'http://planetatorrent.com/', 'movie, tvshow', 'planetatorrent.png'],
-    # ~ ['mispelisyseries', 'http://mispelisyseries.com/', 'movie', 'mispelisyseries.png'],
-    # ~ ['tvsinpagar', 'http://www.tvsinpagar.com/', 'movie, tvshow', 'tvsinpagar.png']
+# ~ 'maxitorrent'    los .torrent disparan a 'pctreload'  pueden requerir proxies
+# ~ 'descargas2020'  prescindimos de series y buscar      sin proxies
 
-# - Para una misma peli/serie no siempre hay uno sólo enlace, pueden ser múltiples. La videoteca de momento no está preparada para acumular
-#   múltiples enlaces de un mismo canal, así que solamente se guardará el enlace del último agregado.
+# ~ Para una misma peli/serie no siempre hay uno sólo enlace, pueden ser múltiples. La videoteca de momento no está preparada para acumular
+# ~ múltiples enlaces de un mismo canal, así que solamente se guardará el enlace del último agregado.
 
-# - La búsqueda global se hace en uno sólo de los clones (de momento el 1ro, quizás configurable más adelante).
-#   Pero se puede acceder a cualquiera de los clones y buscar específicamente en él.
+# ~ Las entradas en la web parecen manuales y pueden ser un poco dispares, lo cual dificulta interpretar título, idioma, calidades, etc.
 
-# - Las entradas en la web parecen manuales y pueden ser un poco dispares, lo cual dificulta interpretar título, idioma, calidades, etc.
+
+def item_configurar_proxies(item, clon_host):
+    plot = 'Es posible que para poder "utilizar/reproducir" este canal en alguno de sus clones necesites configurar algún proxy,'
+    plot += ' ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + clon_host + ' necesitarás un proxy.'
+    title = 'Configurar proxies a usar ... [COLOR plum](comunes en todos los clones)[/COLOR]'
+    return item.clone( title = title, action = 'configurar_proxies', host = clon_host, folder=False, plot=plot, text_color='red' )
+
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, item.host)
+
+
+def do_downloadpage(item, url, post=None):
+    # ~ por si viene de enlaces guardados
+    url = url.replace('/pctmix.com/', '/pctmix1.com/')
+    url = url.replace('/pctreload.com/', '/pctreload1.com/')
+
+    # ~ primer intento sin proxies
+    data = ''
+
+    try:
+       data = httptools.downloadpage(url, post=post).data
+    except:
+       pass
+
+    if config.get_setting('proxies', item.channel, default=''):
+        if not data:
+            data = httptools.downloadpage_proxy('newpct1', url, post=post).data
+
+    return data
 
 
 def mainlist(item):
@@ -49,7 +79,7 @@ def mainlist(item):
     itemlist.append(item.clone( title = 'Películas', action = 'mainlist_pelis' ))
     itemlist.append(item.clone( title = 'Series', action = 'mainlist_series' ))
 
-    itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
+    itemlist.append(item.clone( title = 'Buscar ... (búsquedas solo en ' + clon_name + ')', action = 'search', search_type = 'all' ))
 
     return itemlist
 
@@ -61,16 +91,33 @@ def mainlist_pelis(item):
     for clone in CLONES:
         if 'movie' in clone[2]:
             thumb = os.path.join(config.get_runtime_path(), 'resources', 'media', 'channels', 'thumb', clone[3])
-            itemlist.append(item.clone( title = clone[0].capitalize(), action = 'mainlist_pelis_clon', url = clone[1], thumbnail = thumb ))
+            url = clone[1]
 
-    itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
+            color = 'white'
+
+            if not 'descargas2020.net' in url: 
+                if config.get_setting('proxies', item.channel, default=''):
+                    color = color_list_proxies
+
+            itemlist.append(item.clone( title = clone[0].capitalize(), action = 'mainlist_pelis_clon', url = url, thumbnail = thumb, text_color=color ))
+
+    itemlist.append(item.clone( title = 'Buscar película ... (búsquedas solo en ' + clon_name + ')', action = 'search', search_type = 'movie' ))
 
     return itemlist
+
 
 def mainlist_pelis_clon(item):
     logger.info()
     itemlist = []
+
     item.category += '~' + item.title
+
+    clon_host = item.url
+
+    if not host.startswith('https://descargas2020.net/'):
+        itemlist.append(item_configurar_proxies(item, clon_host))
+
+        itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', url = item.url, search_type = 'movie', text_color='yellowgreen' ))
 
     enlaces = [
         ['Estrenos', 'estrenos-de-cine/'],
@@ -106,9 +153,6 @@ def mainlist_pelis_clon(item):
     for enlace in enlaces:
         itemlist.append(item.clone( title = enlace[0], action = 'list_all', url = item.url + enlace[1], search_type = 'movie' ))
 
-    if item.title == 'pctmix' or item.title == 'descargas2020' or item.title == 'pctreload':
-        itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', url = item.url, search_type = 'movie' ))
-
     return itemlist
 
 
@@ -119,9 +163,17 @@ def mainlist_series(item):
     for clone in CLONES:
         if 'tvshow' in clone[2]:
             thumb = os.path.join(config.get_runtime_path(), 'resources', 'media', 'channels', 'thumb', clone[3])
-            itemlist.append(item.clone( title = clone[0].capitalize(), action = 'mainlist_series_clon', url = clone[1], thumbnail = thumb ))
+            url = clone[1]
 
-    itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
+            color = 'white'
+
+            if not 'descargas2020.net' in url: 
+                if config.get_setting('proxies', item.channel, default=''):
+                    color = color_list_proxies
+
+            itemlist.append(item.clone( title = clone[0].capitalize(), action = 'mainlist_series_clon', url = url, thumbnail = thumb, text_color=color ))
+
+    itemlist.append(item.clone( title = 'Buscar serie ... (búsquedas solo en ' + clon_name + ')', action = 'search', search_type = 'tvshow' ))
 
     return itemlist
 
@@ -129,7 +181,14 @@ def mainlist_series(item):
 def mainlist_series_clon(item):
     logger.info()
     itemlist = []
+
     item.category += '~' + item.title
+
+    clon_host = item.url
+
+    itemlist.append(item_configurar_proxies(item, clon_host))
+
+    itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', url = item.url, search_type = 'tvshow', text_color='yellowgreen' ))
 
     enlaces = [
         ['Catálogo', 'series/'],
@@ -142,9 +201,6 @@ def mainlist_series_clon(item):
 
     for enlace in enlaces:
         itemlist.append(item.clone( title = enlace[0], action = 'list_all', url = item.url + enlace[1], search_type = 'tvshow' ))
-
-    if item.title == 'pctmix' or item.title == 'descargas2020' or item.title == 'pctreload':
-        itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', url = item.url, search_type = 'tvshow' ))
 
     return itemlist
 
@@ -185,7 +241,7 @@ def list_all(item):
     quitar_sufijo = ''
     if '-3d/' in item.url: quitar_sufijo = ' 3D'
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item, item.url)
     # ~ logger.debug(data)
 
     patron = '<li>\s*<a href="([^"]+)" title="([^"]+)">\s*<img src="([^"]+)"[^>]+>'
@@ -277,7 +333,7 @@ def episodios(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item, item.url)
     # ~ logger.debug(data)
 
     ul = scrapertools.find_single_match(data, '<ul class="buscar-list">(.*?)</ul>')
@@ -325,7 +381,8 @@ def findvideos(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item, item.url)
+
     # ~ logger.debug(data)
 
     # Enlace torrent
@@ -341,7 +398,9 @@ def findvideos(item):
 
     tamano = scrapertools.find_single_match(data, '<strong>Size:</strong>([^<]+)</span>').strip()
     url = scrapertools.find_single_match(data, 'window.location.href\s*=\s*"([^"]+)')
-    if url.startswith('//'): url = 'http:' + url
+
+    if url.startswith('//'): url = 'https:' + url
+    if not url.endswith('.torrent'): url = url + '.torrent'
 
     itemlist.append(Item(channel = item.channel, action = 'play', title = '', url = url, server = 'torrent',
                          language = idioma, quality = calidad, other = tamano ))
@@ -364,14 +423,37 @@ def findvideos(item):
     return itemlist
 
 
+def play(item):
+    logger.info()
+    itemlist = []
+
+    if item.url.endswith('.torrent'):
+        if config.get_setting('proxies', item.channel, default=''):
+            data = do_downloadpage(item, item.url)
+            file_local = os.path.join(config.get_data_path(), "temp.torrent")
+            with open(file_local, 'w') as f: f.write(data); f.close()
+
+            itemlist.append(item.clone( url = file_local, server = 'torrent' ))
+        else:
+            itemlist.append(item.clone( url = item.url, server = 'torrent' ))
+
+    else:
+        itemlist.append(item.clone( url= item.url, server = item.server ))
+
+    return itemlist
+
+
 def busqueda(item):
     logger.info(item)
     itemlist = []
 
     post = 'categoryIDR=&categoryID=&idioma=&calidad=&ordenar=Fecha&inon=Descendente&s=%s&pg=%d' % (item.busca_texto, item.busca_pagina)
-    data = httptools.downloadpage(item.url, post=post).data
+    data = do_downloadpage(item, item.url, post=post)
     # ~ logger.debug(data)
+
     data = data.replace('\\/', '/')
+
+    logger.info("check-00-quehay: %s" % data)
 
     dominio = item.url.replace('get/result/', '')
 
@@ -405,7 +487,7 @@ def busqueda(item):
             m = re.match(r"^(.*?) - (Temporada \d+) Capitulo \d*", title)
             if not m:
                 m = re.match(r"^(.*?) - (Temporada \d+)", title)
-            if m: 
+            if m:
                 title = m.group(1)
                 titulo = '%s [%s]' % (title, m.group(2))
 
@@ -431,8 +513,9 @@ def busqueda(item):
 def search(item, texto):
     logger.info("texto: %s" % texto)
     try:
-        if item.url == '': item.url = CLONES[0][1]
+        if item.url == '': item.url = host
         item.url += 'get/result/'
+
         item.busca_texto = texto.replace(" ", "+")
         item.busca_pagina = 1
         return busqueda(item)

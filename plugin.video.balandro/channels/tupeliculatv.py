@@ -20,14 +20,11 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host ))
 
-    itemlist.append(item.clone( title = 'Castellano', action = 'list_all', url = host + 'filter?language=1' ))
-    itemlist.append(item.clone( title = 'Latino', action = 'list_all', url = host + 'filter?language=2' ))
-    itemlist.append(item.clone( title = 'Inglés (VO)', action = 'list_all', url = host + 'filter?language=3' ))
-    itemlist.append(item.clone( title = 'Subtitulado', action = 'list_all', url = host + 'filter?language=4' ))
+    itemlist.append(item.clone( title = 'Por idioma', action = 'idiomas', search_type = 'movie' ))
 
-    itemlist.append(item.clone ( title = 'Por género', action = 'generos', search_type = 'movie' ))
-    itemlist.append(item.clone ( title = 'Por año', action = 'anios', search_type = 'movie' ))
-    itemlist.append(item.clone ( title = 'Por calidad', action = 'calidades' ))
+    itemlist.append(item.clone( title = 'Por género', action = 'generos', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Por año', action = 'anios', search_type = 'movie' ))
+    itemlist.append(item.clone( title = 'Por calidad', action = 'calidades' ))
 
     itemlist.append(item.clone ( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
@@ -60,6 +57,18 @@ def generos(item):
     return itemlist
 
 
+def idiomas(item):
+    logger.info()
+    itemlist = []
+
+    itemlist.append(item.clone( title = 'Castellano', action = 'list_all', url = host + 'filter?language=1' ))
+    itemlist.append(item.clone( title = 'Latino', action = 'list_all', url = host + 'filter?language=2' ))
+    itemlist.append(item.clone( title = 'Inglés (VO)', action = 'list_all', url = host + 'filter?language=3' ))
+    itemlist.append(item.clone( title = 'Subtitulado', action = 'list_all', url = host + 'filter?language=4' ))
+
+    return itemlist
+
+
 def anios(item):
     logger.info()
     itemlist = []
@@ -86,6 +95,7 @@ def calidades(item):
     for title in matches:
         if title:
             itemlist.append(item.clone( title = 'En ' + title, url = host + 'filter?quality=' + title, action = 'list_all' ))
+
     return sorted(itemlist, key = lambda it: it.title)
 
 

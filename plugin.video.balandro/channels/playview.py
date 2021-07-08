@@ -10,8 +10,6 @@ from core import httptools, scrapertools, tmdb, servertools
 host = 'https://playview.io/'
 
 
-IDIOMAS = {'Latino': 'Lat', 'Español': 'Esp', 'Subtitulado': 'Vose'}
-
 perpage = 20
 
 # En la web: No hay acceso a serie solamente a serie+temporada
@@ -294,6 +292,8 @@ def findvideos(item):
     logger.info()
     itemlist = []
 
+    IDIOMAS = {'Latino': 'Lat', 'Español': 'Esp', 'Subtitulado': 'Vose'}
+
     if item.dataid:
         tipo = item.datatype
         post = 'set=LoadOptionsEpisode&action=Step1&id=%s&type=%s&episode=%s' % (item.dataid, item.datatype, item.contentEpisodeNumber)
@@ -338,7 +338,7 @@ def play(item):
     if item.linkepi == -1:
         post = 'set=LoadOptions&action=Step3&id=%s&type=%s' % (item.linkid, item.linktype)
     else:
-        post = 'set=LoadOptionsEpisode&action=Step3&id=%s&type=%s&episode=%d' % (item.linkid, item.linktype, item.linkepi)
+        post = 'set=LoadOptionsEpisode&action=Step3&id=%s&type=%s&episode=%s' % (item.linkid, item.linktype, str(item.linkepi))
 
     data = do_downloadpage(host + 'playview', post=post)
     # ~ logger.debug(data)

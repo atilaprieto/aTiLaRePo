@@ -49,7 +49,7 @@ def list_all(item):
     matches = scrapertools.find_multiple_matches(data, '<article(.*?)</article>')
 
     for article in matches:
-        url, title = scrapertools.find_single_match(article, ' href="([^"]+)">(.*?)</a>')
+        url, title = scrapertools.find_single_match(article, '<h2 class="entry-title"><a href="([^"]+)".*?>(.*?)</a>')
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)')
         plot = scrapertools.htmlclean(scrapertools.find_single_match(article, '<p>(.*?)</p>'))
 
@@ -58,9 +58,7 @@ def list_all(item):
         itemlist.append(item.clone( action='findvideos', url=url, title=title, thumbnail=thumb, plot=plot,
                                     contentType='movie', contentTitle=title, contentExtra='documentary' ))
 
-    next_page_link = scrapertools.find_single_match(data, '<div class="older"><a href="([^"]+)')
-    if not next_page_link:
-        next_page_link = scrapertools.find_single_match(data, 'class=\'current\'>\d+</span><a class="page larger" title="[^"]*" href="([^"]+)')
+    next_page_link = scrapertools.find_single_match(data, '<span aria-current="page" class="page-numbers current">.*?href="(.*?)"')
     if next_page_link:
         itemlist.append(item.clone( title='>> Página siguiente', action='list_all', url = next_page_link, text_color='coral' ))
 

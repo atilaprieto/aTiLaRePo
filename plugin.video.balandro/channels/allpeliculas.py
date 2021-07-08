@@ -39,8 +39,8 @@ def mainlist_pelis(item):
     itemlist = []
 
     itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host ))
-    # ~ itemlist.append(item.clone( title = 'Estrenos', action = 'list_all', url = host + 'genero/estrenos/' ))
-    # ~ itemlist.append(item.clone( title = 'Netflix', action = 'list_all', url = host + 'genero/netflix/' ))
+    itemlist.append(item.clone( title = 'Estrenos', action = 'list_all', url = host + 'genero/estrenos/' ))
+    itemlist.append(item.clone( title = 'Netflix', action = 'list_all', url = host + 'genero/netflix/' ))
 
     itemlist.append(item.clone( title = 'Por idioma', action = 'idiomas', search_type = 'movie' ))
     itemlist.append(item.clone ( title = 'Por género', action = 'generos', search_type = 'movie' ))
@@ -65,6 +65,7 @@ def generos(item):
 
     for url, title in matches:
         if 'genero/estrenos/' in url or 'genero/netflix/' in url: continue
+
         if url.startswith('/'): url = host + url[1:]
         if '/genero/' not in url: url = url.replace(host, host + 'genero/')
 
@@ -162,7 +163,7 @@ def list_all(item):
 
 def puntuar_calidad(txt):
     txt = txt.replace(' ', '').replace('-', '').lower()
-    orden = ['cam', 'ts', 'dvd', 'dvd+', 'hd', 'hd+', 'hd1080p']
+    orden = ['cam', 'ts', 'dvd', 'dvd+', 'hd', 'hd+', 'hd720', 'hd720p', 'hd1080p']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -197,15 +198,18 @@ def findvideos(item):
         if not url: 
             logger.info('No detectada url. %s %s' % (cod, urlcod))
             continue
+
         if not isinstance(url, str):
             url = url.decode("utf-8", "strict")
+
         if "streamcrypt.net/embed/streamz" in url:
             url = httptools.downloadpage(url).url
-        logger.error(url)
+
         servidor = servertools.get_server_from_url(url)
         if not servidor or (servidor == 'directo' and 'storage.googleapis.com/' not in url): 
             logger.info('No detectado servidor, url: %s' % url)
             continue
+
         url = servertools.normalize_url(servidor, url)
 
         qlty = scrapertools.find_single_match(resto, '([^>]+)</div>$')
@@ -224,7 +228,9 @@ def findvideos(item):
         servidor = scrapertools.find_single_match(tds[1], '<span>(.*?)</span>')
         lang = tds[2]
         qlty = tds[3]
+
         if '/link/?go=' in url: url = url.split('/link/?go=')[1]
+
         if not url or not servidor: continue
 
         itemlist.append(Item( channel = item.channel, action = 'play', server = servertools.corregir_servidor(servidor), title = '', url = url, 

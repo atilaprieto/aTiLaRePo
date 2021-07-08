@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from core import httptools, scrapertools
 from platformcode import logger
 from lib import jsunpack
@@ -9,22 +11,29 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
-    page_url = page_url.replace('http://', 'https://').replace('://www.', '://')
-    if 'embed-' not in page_url: page_url = page_url.replace('mp4upload.com/', 'www.mp4upload.com/embed-') + '.html'
-
     data = httptools.downloadpage(page_url).data
-    # ~ logger.debug(data)
+    data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 
-    url = scrapertools.find_single_match(data, 'player\.src\("([^"]+)')
+    if data == "File was deleted" or data == '':
+        return "El video ha sido borrado"
+
+    match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
+    data = jsunpack.unpack(match)
+    data = data.replace("\\'", "'")
+
+    url = scrapertools.find_single_match(data, '"(https.*?.mp4)"')
+
     if not url:
-        packed = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
-        if packed:
-            unpacked = jsunpack.unpack(packed)
-            # ~ logger.debug(unpacked)
-            url = scrapertools.find_single_match(unpacked, 'player\.src\("([^"]+)')
-            if not url: url = scrapertools.find_single_match(unpacked, 'src:"([^"]+)')
+        url = scrapertools.find_single_match(data, '"file":"([^"]+)')
+
+    if not url:
+        url = scrapertools.find_single_match(data, 'src:"([^"]+)')
 
     if url:
-        video_urls.append(['mp4', url])
+        ext = url[-4:]
+        url +=  "|verifypeer=false&referer=%s" % page_url
+
+        video_urls.append([ext,  url])
 
     return video_urls
+

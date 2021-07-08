@@ -132,13 +132,13 @@ if tipo_channel != '':
                 platformtools.itemlist_update(item_search)
 
         else:
-            platformtools.dialog_ok('[COLOR red]Error en el canal [COLOR coral]' + item.channel.capitalize() + '[/COLOR]', 
+            platformtools.dialog_ok('[COLOR red]Error en el canal [COLOR gold]' + item.channel.capitalize() + '[/COLOR]', 
                                     'La web asociada a este canal, parece no estar disponible, puede volver a intentarlo pasados unos minutos, y si el problema persiste verifique mediante un navegador de internet la web: [COLOR cyan][B]%s[/B][/COLOR]' % (e) )
 
     except:
         import traceback
         logger.error(traceback.format_exc())
-        platformtools.dialog_ok('[COLOR red]Error inesperado en [COLOR coral]' + item.channel.capitalize() + '[/COLOR]',
+        platformtools.dialog_ok('[COLOR red]Error inesperado en [COLOR gold]' + item.channel.capitalize() + '[/COLOR]',
             'Puede deberse a un fallo de conexión, o que la web asociada a este canal ha cambiado su estructura, o bien a un error interno del addon. Para saber más detalles, consulta el log de su Media Center.')
 
 

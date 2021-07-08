@@ -1,110 +1,87 @@
-[COLOR coral]Balandro[/COLOR]  [COLOR yellow]Marzo/2021[/COLOR]
+[COLOR coral]Balandro[/COLOR]
 
-2.0.0:
-   Compatible con Python3
+Version 2.0.2  [COLOR darkorange]Mayo 2021[/COLOR]
 
-   Novedades:
-      Nuevo Menu:
-         Nueva opcion Canales
-         Nueva opcion Grupos
-         Nueva opcion Animes
-         Nueva opcion Adultos
-         Nueva opcion Ayuda
+   [COLOR yellow]INCIDENCIAS:[/COLOR]
+      Bug - en Descargas si la carpeta de descargas distinta a la de por defecto
+      Otros Bugs menores de la version anterior
 
-      Nueva gestion de Proxies
-      Nueva gestion de Torrents
-      Nueva gestion de Busquedas
+   [COLOR yellow]MODIFICACIONES:[/COLOR]
+      Canales:
+         AniBox, AnimeFenix, AnimeFlv, Beeg, CiberDocumentales, CineMatteFlix,
+         Cliver, ClasicoTv, Cuevana3, DocumaniaTv, DonTorrents, Estrenoscinesaa,
+         HdFull, HdFullSe, InkaPelis, JKanime, LaCartoons, MegadedeLa,
+         MejorTorrents, PctFenix, Pelis24, PelisVips, PornHub, PornTube,
+         SeriesAntiguas, SeriesFlix, SeriesKao, SeriesLan, SeriesPapayaTo,
+         SeriesPapayaXyz, SeriesRetro, SerieZ, Tekilaz, TorrentDivx, TuCineClasico,
+         TupeliculaTv, TuPeliHd, VerPeliculasGratis, XVideos
 
-      Nueva Configuracion:
-         Re-distribucion informacion por agrupaciones
-         Control Parental
-         Mas opciones personalizables
+      Servidores:
+         Aparat, Clipwatching, fembed, Gamovideo, Highstream, Mega, PlayTube,
+         Sbembed, Streamsb, Uptobox, YourUpload
+
+      Varias:
+         Calificacion nuevas calidades - en algunos canales
+         Generos - reconfigurados
+
+   [COLOR yellow]NOVEDADES:[/COLOR]
+      Configuracion Buscar:
+         Descartar búsquedas en los canales que pueden contener archivos torrent
+
+      Buscar:
+         filmaffinitylists - cambio de estructura
+         Busquedas - Descartar canales que pueden contener archivos torrent
+
+      Proxies:
+         Nuevo proveedor SilverProxies
+
+      Nuevos Canales:
+         CumLouder, Hentaisd, MiraDeTodo, MiraPeliculas, MonosChinos,
+         PelisGratis, PelisMaraton, PelisPlanet, PelisXd, SeriesAnimadas,
+         TioAnime, Tubehentai
+
+      Nuevos Servidores:
+         ShareVid
+
+   [COLOR yellow]SITUACION CANALES:[/COLOR]
+      Canales Inestables (siguen Activados):
+         Dilo
+
+      Canales Desactivados:
+         AllPeliculas, CineCalidad, PlayDede, RePelis, SeriesBlanco,
+         SeriesFlv
 
       Numero de Canales:
-         74 Canales
-         50 de Peliculas
-         40 de Series
-         29 de Peliculas y Series
+         87 Canales
+         56 de Peliculas
+         41 de Series
+         33 de Peliculas y Series
            6 de Documentales
-           2 de Animes
-           2 de Adultos
+           7 de Animes
+           8 de Adultos
+           1 Privados
 
-   Nuevos Canales:
-      AnimeFenix
-      CineDeAntes
-      CinematteFlix
-      ClasicoTv
-      CliverSite
-      ClubCine
-      Cuevana3Video
-      DocumaniaTv
-      DonTorrents
-      EntrePeliculasySeries
-      HdfullSe
-      HomeCine
-      JKAnime
-      LegalmenteGratis
-      MegadedeLa
-      MejorTorrents
-      MovidyMobi
-      PctFenix
-      PelisHouse
-      PelisRetro
-      Playdede
-      PornHd
-      SeriesAntiguas
-      SeriesFlixIo
-      SeriesManta
-      SeriesPapayaTo
-      SeriesRetro
-      SigloXX
-      SubTorrents
-      Tekilaz
-      TupeliculaTv
-      TvSeries
-      VerPeliculasGratis
+      Numero de Servidores:
+         79 Servidores
 
-   Canales Reactivados:
-      CiberDocumentales
-      MiraDoumentales
-      TorrentDivx
-
-   Canales Desactivados:
-      DesTotal
-      SeriesDanko
-
-   Canales Anulados:
-      CienciaTv
-      DocumaniacosEsp
-      GDrive
-      MasPeliculas
-      Movidy
-      PepeCine
-      SeriesPapaya
-      TeleDocumentales
-
-   Canales que pueden usar proxies (Bloqueo Operadoras):
-      CineCalidad
-      CineTux
-      Cliver
-      CliverSite
-      Cuevana3
-      DocumaniaTv
-      DonTorrents
-      Gnula
-      GranTorrent
-      HdFull
-      PelisPlay
-      PelisVips
-      PlayView
-      RePelis
-      SerieMega
-      SubTorrents
-      TorrenDivx
-
-  Nuevos Servidores:
-      Letsupload
-      Movcloud
-      Racaty
-      Streamsb
-      Zplayer
+      Canales que pueden usar proxies (Bloqueo operadoras):
+         CineTux
+         Cliver
+         CliverSite
+         Cuevana3
+         Cuevana3Video
+         Dilo
+         DocumaniaTv
+         DonTorrents
+         Gnula
+         GranTorrent
+         HdFull
+         MejorTorrents
+         Newpct1
+         PctFenix
+         PelisPlanet
+         PelisPlay
+         PelisVips
+         PlayView
+         SubTorrents
+         TorrentDivx

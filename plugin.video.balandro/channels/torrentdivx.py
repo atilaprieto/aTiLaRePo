@@ -2,7 +2,7 @@
 
 import re
 
-from platformcode import logger, platformtools
+from platformcode import logger
 from core.item import Item
 from core import httptools, scrapertools, tmdb, servertools
 
@@ -24,22 +24,38 @@ def configurar_proxies(item):
 
 def do_downloadpage(url, post=None, headers=None):
     # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
-    data = httptools.downloadpage_proxy('torrentdivx', url, post=post, headers={'Referer': host, 'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X)'}).data
+    data = httptools.downloadpage_proxy('torrentdivx', url, post=post, headers=headers).data
+
+    if '<title>You are being redirected...</title>' in data:
+        try:
+            from lib import balandroresolver
+            ck_name, ck_value = balandroresolver.get_sucuri_cookie(data)
+            if ck_name and ck_value:
+                # ~ logger.debug('Cookies: %s %s' % (ck_name, ck_value))
+                httptools.save_cookie(ck_name, ck_value, host.replace('https://', '')[:-1])
+                # ~ data = httptools.downloadpage(url, post=post, headers=headers).data
+                data = httptools.downloadpage_proxy('torrentdivx', url, post=post, headers=headers).data
+                # ~ logger.debug(data)
+        except:
+            pass
+
     return data
 
 
 def mainlist(item):
     return mainlist_pelis(item)
+
     # ~ logger.info()
     # ~ itemlist = []
 
     # ~ itemlist.append(item.clone( title = 'Películas', action = 'mainlist_pelis' ))
-    # ~ itemlist.append(item.clone( title = 'Series', action = 'mainlist_series' )) # de momento se quitan por q no van por temporadas y hidenn captacha
+    # ~ itemlist.append(item.clone( title = 'Series', action = 'mainlist_series' )) # de momento se quitan por hidenn captacha
 
     # ~ itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
     # ~ itemlist.append(item_configurar_proxies(item))
     # ~ return itemlist
+
 
 def mainlist_pelis(item):
     logger.info()
@@ -59,7 +75,8 @@ def mainlist_pelis(item):
     itemlist.append(item_configurar_proxies(item))
     return itemlist
 
-def disabled_mainlist_series(item):
+
+def mainlist_series(item):
     logger.info()
     itemlist = []
 
@@ -149,6 +166,9 @@ def list_all(item):
         if not url or not title: continue
 
         thumb = scrapertools.find_single_match(article, ' src="([^"]+)"')
+        if not thumb: thumb = scrapertools.find_single_match(article, '<img data-src="(.*?)"')
+        logger.info("check-02-thumb: %s" % thumb)
+
         year = scrapertools.find_single_match(article, '<span>(\d{4})</span>')
         if year:
             title = title.replace('(%s)' % year, '').strip()
@@ -193,76 +213,39 @@ def temporadas(item):
 
     data = do_downloadpage(item.url)
 
-    matches = re.compile("<span class='title'>Temporada (\d+)", re.DOTALL).findall(data)
+    matches = re.compile("domain=utorrent.com.*?Temporada (\d+)", re.DOTALL).findall(data)
 
     for numtempo in matches:
         title = 'Temporada ' + numtempo
 
-        if len(matches) == 1:
-            platformtools.dialog_notification(item.contentSerieName.replace('&#038;', '&'), 'solo [COLOR tan]' + title + '[/COLOR]')
-            item.page = 0
-            item.contentType = 'season'
-            item.contentSeason = numtempo
-            itemlist = episodios(item)
-            return itemlist
-
-        itemlist.append(item.clone( action = 'episodios', title = title, contentType = 'season', contentSeason = numtempo, page = 0 ))
+        itemlist.append(item.clone( action = 'findvideos', title = title, contentType = 'season', contentSeason = numtempo, contentEpisodeNumber = numtempo))
 
     tmdb.set_infoLabels(itemlist)
-
-    return itemlist
-
-# Si una misma url devuelve los episodios de todas las temporadas, definir rutina tracking_all_episodes para acelerar el scrap en trackingtools.
-def tracking_all_episodes(item):
-    return episodios(item)
-
-def episodios(item):
-    logger.info()
-    itemlist = []
-
-    if not item.page: item.page = 0
-    perpage = 50
-
-    data = do_downloadpage(item.url)
-    # ~ logger.debug(data)
-
-    if item.contentSeason: # reducir datos a la temporada pedida
-        data = scrapertools.find_single_match(data, "<span class='se-t[^']*'>" + str(item.contentSeason) + "</span>(.*?)</ul>")
-
-    matches = re.compile('<li(.*?)</li>', re.DOTALL).findall(data)
-
-    for data_epi in matches[item.page * perpage:]:
-        try:
-            url, title = scrapertools.find_single_match(data_epi, "<a href='([^']+)'>([^<]*)</a>")
-            season, episode = scrapertools.find_single_match(data_epi, "<div class='numerando'>(\d+) - (\d+)")
-        except:
-            continue
-
-        if not url or not season or not episode: continue
-
-        if not item.contentSeason: continue
-        elif not str(item.contentSeason) == season: continue
-
-        thumb = scrapertools.find_single_match(data_epi, " src='([^']+)")
-        titulo = '%sx%s %s' % (season, episode, title)
-
-        itemlist.append(item.clone( action='findvideos', url=url, title=titulo, thumbnail=thumb, 
-                                    contentType='episode', contentSeason=season, contentEpisodeNumber=episode ))
-
-        if len(itemlist) >= perpage:
-            break
-
-    tmdb.set_infoLabels(itemlist)
-
-    if len(matches) > (item.page + 1) * perpage:
-        itemlist.append(item.clone( title=">> Página siguiente", action="episodios", page=item.page + 1, text_color='coral' ))
 
     return itemlist
 
 
 def puntuar_calidad(txt):
     txt = txt.replace(' ', '').replace('-', '').lower()
-    orden = ['cam', 'ts', 'webdl', 'webrip', 'bdscr', 'hdtv', 'hc720p', 'bdrip', 'dvdrip', 'hdrip', '720p', '1080p', '4k']
+
+    orden = ['cam',
+          'ts',
+          'webdl',
+          'webrip',
+          'bdscr',
+          'hdtv',
+          'hc720p',
+          'bdrip',
+          'dvdrip',
+          'hdrip',
+          '720p',
+          'hd720p',
+          '1080p',
+          'hd1080p',
+          'hd2160p',
+          '2160p',
+          '4k']
+
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -307,12 +290,27 @@ def play(item):
     logger.info()
     itemlist = []
 
+
     if item.url.startswith(host) and '/links/' in item.url:
-        # ~ data = do_downloadpage(item.url, post='linkwz=true') #TODO!? linkwz=true variable !?
         data = do_downloadpage(item.url)
         # ~ logger.debug(data)
 
         url = scrapertools.find_single_match(data, '<a id="link" rel="nofollow" href="([^"]+)')
+
+        if url.startswith('https://www.pastexts.com/'):
+            return 'Requiere verificación [COLOR red]reCAPTCHA[/COLOR]'
+
+        if url.endswith('.torrent'):
+            import os
+            from platformcode import config
+
+            data = do_downloadpage(url)
+            file_local = os.path.join(config.get_data_path(), "temp.torrent")
+            with open(file_local, 'wb') as f: f.write(data); f.close()
+
+            itemlist.append(item.clone( url = file_local, server = 'torrent' ))
+            return itemlist
+
         if url:
             itemlist.append(item.clone(url = url))
 

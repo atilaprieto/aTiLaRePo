@@ -11,7 +11,7 @@
   "categories": ["movie", "torrent"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["torrents", "languages", "qualityes", "vos"],
+  "clusters": ["torrents", "languages", "qualityes", "kids", "docs", "vos"],
 
   "notes": "Películas por idiomas, géneros y calidades."
 }

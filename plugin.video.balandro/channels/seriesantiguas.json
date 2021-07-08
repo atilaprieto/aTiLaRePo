@@ -11,7 +11,7 @@
   "categories": ["tvshow"],
   "language": ["lat"],
 
-  "clusters": ["classic", "news", "rankings", "lists"],
+  "clusters": ["classic", "news", "rankings", "lists", "kids"],
 
   "notes": "Series antiguas en idioma orignal de emisión."
 }

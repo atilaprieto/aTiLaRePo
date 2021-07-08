@@ -162,6 +162,9 @@ def episodios(item):
         except:
             continue
 
+        if item.contentSeason:
+           if not str(item.contentSeason) == str(season): continue
+
         languages = scrapertools.find_multiple_matches(data_epi, 'images/language/([^.]+)\.png')
         languages = list(dict.fromkeys(languages))
 

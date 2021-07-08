@@ -9,7 +9,13 @@ def get_video_url(page_url, url_referer=''):
     logger.info("(page_url='%s')" % page_url)
     video_urls = []
 
-    data = httptools.downloadpage(page_url).data
+    referer = page_url
+
+    if '|' in page_url:
+        referer = page_url.split('|')[1]
+        page_url = page_url.split('|')[0]
+
+    data = httptools.downloadpage(page_url, headers={"Referer":referer}).data
 
     if "File is no longer available" in data:
         return 'El fichero no existe o ha sido borrado'
@@ -32,13 +38,17 @@ def get_video_url(page_url, url_referer=''):
             video_urls.append([ext, url])
     else:
         packed = scrapertools.find_single_match(data, "text/javascript'>(eval.*?)\s*</script>")
-        unpacked = jsunpack.unpack(packed)
-        matches = scrapertools.find_multiple_matches(unpacked, r'sources:\[\{\s*file:"([^"]+)"')
+        if packed:
+            unpacked = jsunpack.unpack(packed)
+        else:
+            unpacked = data
+
+        matches = scrapertools.find_multiple_matches(unpacked, r'sources:\s*\[\{\s*file:"([^"]+)"')
 
         for video_url in matches:
             ext = video_url[-4:]
             video_url += "|Referer=https://v2.zplayer.live/"
 
-            video_urls.append([ext, url])
+            video_urls.append([ext, video_url])
 
     return video_urls

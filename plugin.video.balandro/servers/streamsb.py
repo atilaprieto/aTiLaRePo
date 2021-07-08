@@ -11,10 +11,15 @@ def get_video_url(page_url, url_referer=''):
 
     data = httptools.downloadpage(page_url).data
 
-    if '404 Not Found' in data or 'File Not Found' in data or 'File is no longer available' in data:
+    if 'File Not Found' in data or 'File is no longer available' in data:
         return 'El fichero no existe o ha sido borrado'
 
     packed = scrapertools.find_single_match(data, r"'text/javascript'>(eval.*?)\n")
+    if not packed:
+        page_url = page_url.replace('/e/', '/play/').replace('/d/', '/play/')
+        data = httptools.downloadpage(page_url).data
+        packed = scrapertools.find_single_match(data, r"'text/javascript'>(eval.*?)\n")
+
     unpacked = jsunpack.unpack(packed)
 
     video_srcs = scrapertools.find_single_match(unpacked, "sources:\[[^\]]+\]")

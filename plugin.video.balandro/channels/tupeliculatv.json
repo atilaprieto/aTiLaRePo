@@ -11,7 +11,7 @@
   "categories": ["movie"],
   "language": ["cast", "lat", "vose", "vo"],
 
-  "clusters": ["adults", "languages", "qualityes", "years", "vos", "3d"],
+  "clusters": ["adults", "languages", "qualityes", "years", "kids", "docs", "vos", "3d"],
 
   "notes": "Peliculas en Español, Latino, Ingles, Subtitulado, por géneros, años y calidades."
 }

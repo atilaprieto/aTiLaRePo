@@ -9,8 +9,7 @@ host = 'https://www.estrenoscinesaa.com/'
 
 
 def do_downloadpage(url):
-    timeout = 30 # timeout ampliado pq el primer acceso puede tardar en responder
-    data = httptools.downloadpage(url, timeout=timeout).data
+    data = httptools.downloadpage(url).data
     return data
 
 
@@ -91,9 +90,11 @@ def list_all(item):
     tmdb.set_infoLabels(itemlist)
 
     if '<div class="pagination">' in data:
-        next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"[^>]*><span class="icon-chevron-right">')
+        next_page = scrapertools.find_single_match(data, '<span class="current".*?<a href="(.*?)"')
+
         if next_page:
-           itemlist.append(item.clone (url = next_page, title = '>> Página siguiente', action = 'list_all', text_color='coral' ))
+            if '/page/' in next_page:
+                itemlist.append(item.clone (url = next_page, title = '>> Página siguiente', action = 'list_all', text_color='coral' ))
 
     return itemlist
 
@@ -191,8 +192,10 @@ def list_search(item):
     tmdb.set_infoLabels(itemlist)
 
     if '<div class="pagination">' in data:
-        next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"[^>]*><span class="icon-chevron-right">')
+        next_page = scrapertools.find_single_match(data, '<span class="current".*?<a href="(.*?)"')
+
         if next_page:
-           itemlist.append(item.clone (url = next_page, title = '>> Página siguiente', action = 'list_search', text_color='coral' ))
+            if '/page/' in next_page:
+                itemlist.append(item.clone (url = next_page, title = '>> Página siguiente', action = 'list_search', text_color='coral' ))
 
     return itemlist

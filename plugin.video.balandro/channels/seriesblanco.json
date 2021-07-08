@@ -3,7 +3,7 @@
   "name": "SeriesBlanco",
   "thumbnail": "seriesblanco.png",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["tvshow"],
@@ -11,7 +11,7 @@
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["adults", "lasts", "vos"],
+  "clusters": ["adults", "lasts", "kids", "docs", "vos"],
 
   "notes": "Series por género, por letra, ..."
 }

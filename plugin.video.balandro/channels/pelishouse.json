@@ -11,7 +11,7 @@
   "categories": ["movie", "tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["adults", "news", "rankings", "languages", "years", "vos", "3d"],
+  "clusters": ["adults", "news", "rankings", "languages", "years", "kids", "docs", "vos", "3d"],
 
   "notes": "Películas: novedades, por género, años e idiomas. Series: novedades."
 }

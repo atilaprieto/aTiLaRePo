@@ -458,8 +458,6 @@ def sub_search(item):
     logger.info()
     itemlist = []
 
-    # ~ data = do_downloadpage(item.url.replace('/secure/search/', '/search?'))
-
     url = item.url + '?type=&limit=30'
 
     data = do_downloadpage(url)
@@ -502,8 +500,6 @@ def sub_search(item):
 def list_all(item):
     logger.info()
     itemlist=[]
-
-    # ~ data = do_downloadpage(item.url)
 
     if not item.page: item.page = '1'
     if not item.orden: item.orden = 'popularity:desc'
@@ -553,6 +549,7 @@ def temporadas(item):
     itemlist = []
 
     data = do_downloadpage(item.url)
+
     dict_data = jsontools.load(data)
 
     if 'title' not in dict_data: return itemlist
@@ -594,6 +591,7 @@ def episodios(item):
     url = item.url + '&seasonNumber=' + str(item.contentSeason)
 
     data = do_downloadpage(url)
+
     dict_data = jsontools.load(data)
 
     if 'title' not in dict_data: return itemlist
@@ -618,11 +616,10 @@ def episodios(item):
     return itemlist
 
 
-# Asignar un numérico según las calidades del canal, para poder ordenar por este valor
 def puntuar_calidad(txt):
     if txt == None: txt = '?'
     txt = txt.lower()
-    orden = ['?', 'cam', 'ts-scr', 'tc-scr', 'rip', 'dvd rip', 'sd', 'hd micro', 'hd rip', 'hd-tv', 'hd real', 'hd 720', 'hd 1080', 'hd']
+    orden = ['?', 'cam', 'ts-scr', 'tc-scr', 'ts-screener', 'rip', 'dvd rip', 'sd', 'hd micro', 'hd rip', 'hd-tv', 'hd real', 'hd 720', 'hd 1080', 'hd']
     if txt not in orden: return 0
     else: return orden.index(txt) + 1
 
@@ -663,20 +660,16 @@ def findvideos(item):
 
         url = element['url']
         if url.startswith('https://goo.gl/'): # acortador de google
-            url = do.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
+            url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get('location', '')
             if not url: continue
         elif 'streamcrypt.net/' in url: # acortador
             url = scrapertools.decode_streamcrypt(url)
             if not url: continue
 
-        #TODO? Mostrar info de positive_votes, negative_votes, reports
-
         itemlist.append(Item(channel = item.channel, action = 'play', title = item.title, url = url, language = _extraer_idioma(element['language']), 
                              quality = element['quality'], quality_num = puntuar_calidad(element['quality']) ))  #, other = url
 
     itemlist = servertools.get_servers_itemlist(itemlist)
-
-    # ~ for it in itemlist: logger.info('%s %s %s' % (it.server, it.language, it.url))
 
     return itemlist
 

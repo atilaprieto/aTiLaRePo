@@ -11,7 +11,7 @@
   "categories": ["movie", "tvshow", "torrent"],
   "language": ["cast"],
 
-  "clusters": ["torrents", "classic", "news", "rankings", "years", "lasts"],
+  "clusters": ["torrents", "classic", "news", "rankings", "years", "lasts", "kids", "docs"],
 
   "notes": "Películas y series con enlaces torrent exclusivamente. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

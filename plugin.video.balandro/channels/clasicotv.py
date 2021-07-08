@@ -149,6 +149,10 @@ def list_all(item):
 
     tmdb.set_infoLabels(itemlist)
 
+    if '/genre/' in item.url:
+        if not itemlist:
+            return itemlist
+
     if '<div class="pagination">' in data:
        next_url = ''
 

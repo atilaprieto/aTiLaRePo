@@ -11,7 +11,7 @@
   "categories": ["movie"],
   "language": ["cast", "vose"],
 
-  "clusters": ["classic", "rankings", "years", "vos"],
+  "clusters": ["classic", "rankings", "years", "kids", "vos"],
 
-  "notes": "Películas clásicas por géneros, años, mejor valoradas, VOSE."
+  "notes": "Películas clásicas por géneros, años, mejor valoradas, Vose."
 }

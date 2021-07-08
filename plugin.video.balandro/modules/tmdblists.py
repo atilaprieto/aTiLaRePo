@@ -11,13 +11,17 @@ def mainlist(item):
 
     item.category = 'TMDB'
 
-    itemlist.append(item.clone( action='personas', search_type='cast', title='Buscar Personas (por Interpretación) ...',
+    itemlist.append(item.clone( action='', title= 'Búsquedas a través de Personas:', text_color='yellowgreen', folder=False ))
+
+    itemlist.append(item.clone( action='personas', search_type='cast', title=' Buscar intérprete ...',
                                 plot = 'Escribir el nombre de un actor o una actriz para listar todas las películas y series en las que ha intervenido.' ))
 
-    itemlist.append(item.clone( action='personas', search_type='crew', title='Buscar Personas (por Dirección) ...',
+    itemlist.append(item.clone( action='personas', search_type='crew', title=' Buscar dirección ...',
                                 plot = 'Escribir el nombre de una persona para listar todas las películas y series que ha dirigido.' ))
 
-    itemlist.append(item.clone( action='listado_personas', search_type='person', extra = 'popular', title='Personas con Mayor popularidad' ))
+    itemlist.append(item.clone( action='', title= 'Búsquedas a través de Listas:', text_color='yellowgreen', folder=False ))
+
+    itemlist.append(item.clone( action='listado_personas', search_type='person', extra = 'popular', title=' Personas con Mayor popularidad' ))
 
     presentar = True
     if item.search_type == 'tvshow': presentar = False
@@ -26,12 +30,13 @@ def mainlist(item):
        if item.search_type == 'movie': presentar = False
 
     if presentar:
-        itemlist.append(item.clone( action='listado', search_type='movie', extra = 'now_playing', title='Películas en Cartelera' ))
-        itemlist.append(item.clone( action='listado', search_type='movie', extra = 'popular', title='Películas Más populares' ))
-        itemlist.append(item.clone( action='listado', search_type='movie', extra = 'top_rated', title='Películas Mejor valoradas' ))
-        # ~ itemlist.append(item.clone( action='listado', search_type='movie', url = 'movie/upcoming', title='Próximas Películas' ))
-        itemlist.append(item.clone( action='generos', search_type='movie', title='Películas por Género' ))
-        itemlist.append(item.clone( action='anios', search_type='movie', title='Películas por Año' ))
+        itemlist.append(item.clone( action='listado', search_type='movie', extra = 'now_playing', title=' Películas en Cartelera' ))
+        itemlist.append(item.clone( action='listado', search_type='movie', extra = 'popular', title=' Películas Más populares' ))
+        itemlist.append(item.clone( action='listado', search_type='movie', extra = 'top_rated', title=' Películas Mejor valoradas' ))
+        # ~ itemlist.append(item.clone( action='listado', search_type='movie', url = 'movie/upcoming', title=' Próximas Películas' ))
+        itemlist.append(item.clone( action='generos', search_type='movie', title=' Películas por Género' ))
+        itemlist.append(item.clone( action='networks', search_type='movie', title=' Películas por productoras' ))
+        itemlist.append(item.clone( action='anios', search_type='movie', title=' Películas por Año' ))
 
     presentar = True
     if item.search_type == 'movie': presentar = False
@@ -40,12 +45,12 @@ def mainlist(item):
        if item.search_type == 'tvshow': presentar = False
 
     if presentar:
-        itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'on_the_air', title='Series en Emisión' ))
-        itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'popular', title='Series Más populares' ))
-        itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'top_rated', title='Series Mejor valoradas' ))
-        # ~ itemlist.append(item.clone( action='listado', search_type='tvshow', url = 'tv/airing_today', title='Series que se emiten Hoy' ))
-        itemlist.append(item.clone( action='generos', search_type='tvshow', title='Series por Género' ))
-        itemlist.append(item.clone( action='anios', search_type='tvshow', title='Series por Año' ))
+        itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'on_the_air', title=' Series en Emisión' ))
+        itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'popular', title=' Series Más populares' ))
+        itemlist.append(item.clone( action='listado', search_type='tvshow', extra = 'top_rated', title=' Series Mejor valoradas' ))
+        # ~ itemlist.append(item.clone( action='listado', search_type='tvshow', url = 'tv/airing_today', title=' Series que se emiten Hoy' ))
+        itemlist.append(item.clone( action='generos', search_type='tvshow', title=' Series por Género' ))
+        itemlist.append(item.clone( action='anios', search_type='tvshow', title=' Series por Año' ))
 
     itemlist.append(item.clone( action='show_help', title='Información y ayuda', folder=False, thumbnail=config.get_thumb('help'), text_color='green' ))
 
@@ -118,6 +123,14 @@ def descubre(item):
     return lista(item, elementos)
 
 
+def descubre_networks(item):
+    logger.info()
+
+    tipo = 'movie' if item.search_type == 'movie' else 'tv'
+    elementos = tmdb.get_discover_networks(tipo, item.extra, item.page)
+    logger.info(elementos)
+    return lista(item, elementos)
+
 def generos(item):
     logger.info()
     itemlist = []
@@ -131,6 +144,44 @@ def generos(item):
 
     return sorted(itemlist, key=lambda it: it.title)
 
+def networks(item):
+    logger.info()
+    itemlist = []
+    networks_list = {'8': ['Netflix', 'https://www.themoviedb.org//t/p/original/9A1JSVmSxsyaBK4SUFsYVqbAYfW.jpg'],
+	'119': ['Amazon Prime Video', 'https://www.themoviedb.org//t/p/original/68MNrwlkpF7WnmNPXLah69CR5cb.jpg'],
+	'337': ['Disney Plus', 'https://www.themoviedb.org//t/p/original/dgPueyEdOwpQ10fjuhL2WYFQwQs.jpg'],
+	'2': ['Apple iTunes', 'https://www.themoviedb.org//t/p/original/q6tl6Ib6X5FT80RMlcDbexIo4St.jpg'],
+	'3': ['Google Play Movies', 'https://www.themoviedb.org//t/p/original/p3Z12gKq2qvJaUOMeKNU2mzKVI9.jpg'],
+	'118': ['HBO', 'https://www.themoviedb.org//t/p/original/vAtH6Z6Oq7zCmEGS3Sdu08dxvYZ.jpg'],
+	'257': ['fuboTV', 'https://www.themoviedb.org//t/p/original/2wPRZit7b8u79GsqTdygmGL6kBW.jpg'],
+	'11': ['Mubi', 'https://www.themoviedb.org//t/p/original/kXQQbZ6ZvTwojzMPivQF9sX0V4y.jpg'],
+	'100': ['GuideDoc', 'https://www.themoviedb.org//t/p/original/nNQnRz0jQ7UOJVtifg64VFc4vDk.jpg'],
+	'63': ['Filmin', 'https://www.themoviedb.org//t/p/original/j3SNvXPH2hRvH7MEvc2fGRLt9q2.jpg'],
+	'64': ['Filmin Plus', 'https://www.themoviedb.org//t/p/original/rEylX9XTOCSmUD0kHz1af8ZMqLe.jpg'],
+	'149': ['Movistar Plus', 'https://www.themoviedb.org//t/p/original/3kZQY7nIwC5sIJmURyF6W91pAkg.jpg'],
+	'457': ['VIX ', 'https://www.themoviedb.org//t/p/original/p5RDRIibqNyPq40YU4L7raTaYCb.jpg'],
+	'350': ['Apple TV Plus', 'https://www.themoviedb.org//t/p/original/A3WLxoSkmuxwaQkpfwL6H8WwWwM.jpg'],
+	'62': ['Atres Player', 'https://www.themoviedb.org//t/p/original/ibnxKce4MBay3jTqfIKaBTySp0L.jpg'],
+	'188': ['YouTube Premium', 'https://www.themoviedb.org//t/p/original/hvVCDCBcmj8ouq5T18P5g2qfaNc.jpg'],
+	'190': ['Curiosity Stream', 'https://www.themoviedb.org//t/p/original/aWGqR6ERNT6cAlgmtQUMfGFeaFv.jpg'],
+	'521': ['Spamflix', 'https://www.themoviedb.org//t/p/original/qc4Aze8HWuVdjUyA1qcOsMZZc6I.jpg'],
+	'495': ['CGood TV', 'https://www.themoviedb.org//t/p/original/46veKqyFzqexqq9ZuOxdBiIdkMo.jpg'],
+	'393': ['FlixOlé', 'https://www.themoviedb.org//t/p/original/5VpgBWB3AQzS87sn06cA082qmRG.jpg'],
+	'475': ['DOCSVILLE', 'https://www.themoviedb.org//t/p/original/rre9YaMnTG9xKG8GiCp2NVgg5Rw.jpg'],
+	'35': ['Rakuten TV', 'https://www.themoviedb.org//t/p/original/wuViyDkbFp4r7VqI0efPW5hFfQj.jpg'],
+	'534': ['Argo', 'https://www.themoviedb.org//t/p/original/bpn7c7kNnbeNjgx41ruqPsI3iB.jpg'],
+	'546': ['WOW Presents Plus', 'https://www.themoviedb.org//t/p/original/5avC3AeBNARK5J0bV4qZeHtscHk.jpg'],
+	'456': ['Mitele ', 'https://www.themoviedb.org//t/p/original/7YSulLY6w0fRL86m2NcmP7Hh7CG.jpg'],
+	'551': ['Magellan TV', 'https://www.themoviedb.org//t/p/original/1LMwnJAWz045Txz17IUILT5uDDw.jpg'],
+	'554': ['BroadwayHD', 'https://www.themoviedb.org//t/p/original/sZh3q3C0aVh6TAfuzB0cnKikX7u.jpg'],
+	'559': ['Filmzie', 'https://www.themoviedb.org//t/p/original/nM4igKRYuYRwm9HqWyrKkJgCC7j.jpg'],
+	'68': ['Microsoft Store', 'https://www.themoviedb.org//t/p/original/paq2o2dIfQnxcERsVoq7Ys8KYz8.jpg'],
+	'194': ['Starz Play Amazon Channel', 'https://www.themoviedb.org//t/p/original/zznIwoeBvIUHJUfCaXzzmvJz2WH.jpg'],
+	'538': ['Plex', 'https://www.themoviedb.org//t/p/original/5JMX2rehfh2lMpATccCO8aVN7WL.jpg']}
+    for network in networks_list:
+        itemlist.append(item.clone( title=networks_list.get(network)[0], thumbnail = networks_list.get(network)[1], action='descubre_networks', extra = network ))
+
+    return sorted(itemlist, key=lambda it: it.title)
 
 def descubre_anios(item):
     logger.info()

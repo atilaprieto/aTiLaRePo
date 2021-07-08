@@ -399,7 +399,7 @@ def corregir_servidor(servidor):
     if servidor in ['netutv', 'waaw', 'waaw1', 'waav', 'netu', 'hqq', 'megavideo', 'megaplay']: return 'netutv'
     elif servidor in ['powvideo', 'povwideo', 'powvldeo', 'powv1deo', 'povw1deo']: return 'powvideo'
     elif servidor in ['streamplay', 'steamplay', 'streamp1ay']: return 'streamplay'
-    elif servidor in ['fembed', 'jplayer', 'feurl', 'femax20']: return 'fembed'
+    elif servidor in ['fembed', 'jplayer', 'feurl', 'femax20', 'fcdn']: return 'fembed'
     elif servidor in ['gvideo', 'google', 'google drive', 'gdrive']: return 'gvideo'
     elif servidor in ['vidtodo', 'vidto','vidtodoo','vixtodo']: return 'vidtodo'
     elif servidor in ['mailru', 'my', 'my.mail', 'my.mail.ru']: return 'mailru'

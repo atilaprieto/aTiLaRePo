@@ -19,9 +19,9 @@ def mainlist_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Últimos episodios', action = 'list_epis', url = host + 'lista-series/episodios-agregados-actualizados/' ))
-
     itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host + '/lista-series/' ))
+
+    itemlist.append(item.clone( title = 'Últimos episodios', action = 'list_epis', url = host + 'lista-series/episodios-agregados-actualizados/' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos' ))
 

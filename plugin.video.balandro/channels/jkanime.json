@@ -6,9 +6,9 @@
   "active": true,
 
   "searchable": false,
-  "search_types": ["movie", "tvshow"],
+  "search_types": ["tvshow"],
 
-  "categories": ["movie", "tvshow"],
+  "categories": ["tvshow"],
   "language": ["cast", "lat", "vose", "vo"],
 
   "clusters": ["anime", "lasts", "vos"],

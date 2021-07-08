@@ -27,9 +27,11 @@ def mainlist(item):
 
     itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
-    itemlist.append(item.clone( title = 'Buscar intérprete ...', action = 'search', group = 'stars', search_type = 'person',
+    itemlist.append(item.clone( title = 'Búsqueda de personas:', action = '', folder=False, text_color='plum' ))
+
+    itemlist.append(item.clone( title = ' Buscar intérprete ...', action = 'search', group = 'stars', search_type = 'person',
                        plot = 'Debe indicarse el nombre y apellido/s del intérprete.'))
-    itemlist.append(item.clone( title = 'Buscar dirección ...', action = 'search', group = 'director', search_type = 'person',
+    itemlist.append(item.clone( title = ' Buscar dirección ...', action = 'search', group = 'director', search_type = 'person',
                        plot = 'Debe indicarse el nombre y apellido/s del director.'))
 
     return itemlist
@@ -567,7 +569,7 @@ def play(item):
         itemlist.append(item.clone( url = item.url, server = item.server ))
         return itemlist
 
-    if '/cinemaupload.com/' in item.url or '/pastea.me/ ':
+    if '/cinemaupload.com/' in item.url or '/pastea.me/':
         if '/cinemaupload.com/' in item.url:
             item.url = item.url.replace('/cinemaupload.com/', '/embed.cload.video/')
 
@@ -651,11 +653,9 @@ def search(item, texto):
     try:
         if item.group:
             item.url = host + '/' + item.group + '/' + texto.replace(" ", "-")
-            item.search_type = ''
         else:
             item.url = host + '/?s=' + texto.replace(" ", "+")
 
-        if item.search_type == '': item.search_type = 'all'
         return list_all(item)
     except:
         import sys

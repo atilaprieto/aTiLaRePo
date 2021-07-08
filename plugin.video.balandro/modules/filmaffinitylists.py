@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-
+import re
 from datetime import datetime
 
 from platformcode import logger
 from core.item import Item
 from modules import search
 from core import httptools, scrapertools, tmdb
-
+from platformcode import config
 
 host = "https://www.filmaffinity.com/es/"
 
@@ -63,7 +63,7 @@ def mainlist(item):
 
     if not item.search_type:
         itemlist.append(item.clone( title = 'Novedades a la venta', action = 'list_all', url = host + 'cat_new_sa_es.html' ))
-        itemlist.append(item.clone( title = 'Novedades en alquilar', action = 'list_all', url = host + 'cat_new_re_es.html' ))
+        itemlist.append(item.clone( title = 'Novedades en alquiler', action = 'list_all', url = host + 'cat_new_re_es.html' ))
 
     return itemlist
 
@@ -88,6 +88,10 @@ def oscars(item):
     logger.info()
     itemlist = []
 
+    if not item.url:
+        item.url = host + 'oscar_data.php'
+
+    itemlist.append(item.clone( title = '[B]Especial Oscars 2021[/B]', action = 'oscars_2021', url = host + 'awards.php?award_id=academy_awards&year=2021'))
     itemlist.append(item.clone( title = 'Películas con Más Oscars', action = 'list_oscars', url = item.url, grupo = 'Películas con más Oscars' ))
     itemlist.append(item.clone( title = 'Películas con Más Nominaciones (sin Oscar a la mejor película)', action = 'list_oscars', url = item.url, grupo = 'Películas con más nominaciones' ))
     itemlist.append(item.clone( title = 'Películas con Más Nominaciones y Ningún Oscar', action = 'list_oscars', url = item.url, grupo = 'Películas con más nominaciones y ningún Oscar' ))
@@ -255,12 +259,10 @@ def list_temas(item):
     itemlist = []
 
     data = httptools.downloadpage(item.url).data
-
-    matches = scrapertools.find_multiple_matches(data, '<div class="movie-card movie-card-0" data-movie-id=".*?src="(.*?)".*?title="(.*?)">.*?</a>(.*?)<img')
+    patron = '<div class="movie-card.*?movie-card-0" data-movie-id=".*?src="(.*?)".*?title="(.*?)">.*?</a>[^\d+]+(\d+)[^<]+'
+    matches = scrapertools.find_multiple_matches(data, patron)
 
     for thumb, title, year in matches:
-        year = year.replace('(', '').replace(')', '').strip()
-
         if year:
             if year > str(current_year): continue
 
@@ -432,14 +434,14 @@ def list_sagas(item):
 
     data = httptools.downloadpage(item.url).data
 
-    matches = scrapertools.find_multiple_matches(data, '<div class="movie-card movie-card-0" data-movie-id=".*?src="(.*?)".*?title="(.*?)".*?</a>(.*?)<img')
+    patron = '<div class="movie-card.*?movie-card-0" data-movie-id=".*?src="(.*?)".*?title="(.*?)">.*?</a>[^\d+]+(\d+)[^<]+'
+    matches = scrapertools.find_multiple_matches(data, patron)
 
     num_matches = len(matches)
     desde = item.page * perpage
     hasta = desde + perpage
 
     for thumb, title, year in matches[desde:hasta]:
-        year = year.replace('(', '').replace(')', '').strip()
 
         if year:
             if year > str(current_year):
@@ -531,6 +533,53 @@ def list_sel(item):
 
     return itemlist
 
+
+def oscars_2021(item):
+    logger.info()
+    itemlist = []
+    
+    if not item.page: item.page = 0
+
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
+    patron = '<div class="full-content"><div class="header" id="([^"]+)">([^<]+)'
+    matches = re.compile(patron).findall(data)
+    for oscars_id, title in matches:
+        itemlist.append(item.clone( action = 'oscars_2021_categories', title = title, oscars_id = oscars_id))
+
+    return itemlist
+
+def oscars_2021_categories(item):
+    logger.info()
+    itemlist = []
+    
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
+    bloque_patron = '(<div class="full-content"><div class="header" id="%s">.*?</div></div></li></ul></div></div>)' % (item.oscars_id)
+    bloque = scrapertools.find_single_match(data, bloque_patron)
+    patron = '<li class="(fa-shadow.*?)">(.*?)</li>'
+    matches = scrapertools.find_multiple_matches(bloque, patron)
+    for info, match in matches:
+        titulo = ''
+        title = scrapertools.find_single_match(match, '<a class="movie-title-link" href="[^"]+" title="([^"]+)\W+"')
+        titulo += title
+        nominated = scrapertools.find_single_match(match, '<div class="nom-text">([^<]+)</div>')
+        if nominated:
+            titulo += ' - ' + nominated
+        nominations = scrapertools.find_single_match(match, '<b>(.*?)</a>')
+        if nominations:
+            nominations = re.sub('<.*?>', '', nominations) if scrapertools.find_single_match(nominations, '(<.*?>)') else nominations
+            titulo += ' - ' + nominations
+        else:
+            nominations = '1 nominación'
+        if 'win' in info:
+            titulo = ''.join(("[COLOR gold]", titulo, "[/COLOR]"))
+        itemlist.append(item.clone( action = 'find_search', title = titulo, search_type = 'movie',
+                                        name = title, contentTitle = title, infoLabels={'year': '-'} ))
+        
+    tmdb.set_infoLabels(itemlist)
+
+    return itemlist
 
 def find_search(item):
     logger.info()

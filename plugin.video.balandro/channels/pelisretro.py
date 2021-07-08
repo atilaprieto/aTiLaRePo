@@ -19,7 +19,7 @@ def mainlist_pelis(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host + 'listado/' ))
+    itemlist.append(item.clone( title = 'Catálogo', action = 'list_all', url = host + 'peliculas/' ))
 
     itemlist.append(item.clone( title = 'Por género', action = 'generos' ))
 

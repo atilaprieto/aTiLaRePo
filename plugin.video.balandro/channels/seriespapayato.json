@@ -11,7 +11,7 @@
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["vos"],
+  "clusters": ["kids", "vos"],
 
   "notes": "Series, con capítulos en castellano, latino y Vose, géneros y listado alfabético."
 }

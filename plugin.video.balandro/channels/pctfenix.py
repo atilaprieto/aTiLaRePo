@@ -12,14 +12,20 @@ host = 'https://pctfenix.com/'
 perpage = 30
 
 
-# ~ def item_configurar_proxies(item):
-    # ~ plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
-    # ~ plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
-    # ~ return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
+def item_configurar_proxies(item):
+    plot = 'Es posible que para poder utilizar este canal necesites configurar algún proxy, ya que no es accesible desde algunos países/operadoras.'
+    plot += '[CR]Si desde un navegador web no te funciona el sitio ' + host + ' necesitarás un proxy.'
+    return item.clone( title = 'Configurar proxies a usar ...', action = 'configurar_proxies', folder=False, plot=plot, text_color='red' )
 
-# ~ def configurar_proxies(item):
-    # ~ from core import proxytools
-    # ~ return proxytools.configurar_proxies_canal(item.channel, host)
+def configurar_proxies(item):
+    from core import proxytools
+    return proxytools.configurar_proxies_canal(item.channel, host)
+
+def do_downloadpage(url, post=None):
+    # ~ data = httptools.downloadpage(url, post=post).data
+    data = httptools.downloadpage_proxy('pctfenix', url, post=post).data
+    return data
+
 
 def mainlist(item):
     logger.info()
@@ -30,7 +36,7 @@ def mainlist(item):
 
     itemlist.append(item.clone( title = 'Buscar ...', action = 'search', search_type = 'all' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -57,7 +63,7 @@ def mainlist_pelis(item):
 
     itemlist.append(item.clone( title = 'Buscar película ...', action = 'search', search_type = 'movie' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -75,7 +81,7 @@ def mainlist_series(item):
 
     itemlist.append(item.clone( title = 'Buscar serie ...', action = 'search', search_type = 'tvshow' ))
 
-    # ~ itemlist.append(item_configurar_proxies(item))
+    itemlist.append(item_configurar_proxies(item))
     return itemlist
 
 
@@ -88,9 +94,11 @@ def calidades(item):
     elif item.calidad_type == "latino":
         url = host + "descargar-peliculas/latino/"
 
-    data = httptools.downloadpage(url).data
+    data = do_downloadpage(url)
+
     data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
     data = scrapertools.find_single_match(data, r'<div class="title-hd">(.*?)<\/div>')
+
     matches = scrapertools.find_multiple_matches(data, '<a href="([^"]+)" title="([^"]+)"')
 
     for url, title in matches:
@@ -106,7 +114,7 @@ def list_all(item):
     if not item.page: item.page = 0
 
     if item.page == 0:
-        data = httptools.downloadpage(item.url).data
+        data = do_downloadpage(item.url)
         data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 
         matches = re.compile('<img src="([^"]+)" alt="([^"]+)".*?a href="([^"]+)".*?<strong>([^<]+)').findall(data)
@@ -140,7 +148,8 @@ def list_all(item):
             if len(itemlist) >= perpage: break          
 
     else:
-        data = httptools.downloadpage(host + "controllers/load-more.php", post="i=%s&c=%s&u=%s" % (item.page, perpage, '/' + item.url.replace(host, ''))).data
+
+        data = do_downloadpage(host + "controllers/load-more.php", post="i=%s&c=%s&u=%s" % (item.page, perpage, '/' + item.url.replace(host, '')))
         data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
         matches = re.compile('<img src="([^"]+)" alt="([^"]+)".*?a href="([^"]+)"').findall(data)
         num_matches = len(matches)
@@ -181,7 +190,7 @@ def list_last(item):
 
     if not item.page: item.page = 0
 
-    data = httptools.downloadpage(item.url).data
+    data = do_downloadpage(item.url)
     data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;', '', data)
 
     matches = re.compile('<img src="([^"]+)" alt="([^"]+)".*?a href="([^"]+)".*?<strong>([^<]+)').findall(data)
@@ -216,7 +225,7 @@ def list_last(item):
 
     tmdb.set_infoLabels(itemlist)
 
-    if num_matches > perpage: # subpaginación interna dentro de la página si hay demasiados items
+    if num_matches > perpage:
         hasta = (item.page * perpage) + perpage
         if hasta < num_matches:
             itemlist.append(item.clone( title='>> Página siguiente', page=item.page + 1, action='list_last', text_color='coral' ))
@@ -224,16 +233,24 @@ def list_last(item):
     return itemlist
 
 
-def temporadas (item):
+def temporadas(item):
     logger.info()
     itemlist = []
 
     if not item.url.startswith("http"): item.url = host[:-1] + item.url
-    data = httptools.downloadpage(item.url).data
+
+    data = do_downloadpage(item.url)
+
     matches = scrapertools.find_multiple_matches(data, r"onClick='modCap\((\d+)\)'>\s*([^<]+)")
 
+    i = 0
+
     for id, title in matches:
-        itemlist.append(item.clone( action='findvideos', title=title, contentType='episode', episodeId=id ))
+        i += 1
+
+        itemlist.append(item.clone( action='findvideos', title=title, episodeId=id,
+                                    contentType='episode', contentSeason = 1, contentEpisodeNumber = i ))
+
     return itemlist    
 
 
@@ -243,9 +260,9 @@ def findvideos(item):
 
     if not item.url.startswith("http"): item.url = host[:-1] + item.url
     if item.contentType == "movie":
-        data = httptools.downloadpage(item.url).data
+        data = do_downloadpage(item.url)
     else:
-        data = httptools.downloadpage("https://pctfenix.com/controllers/show.chapters.php", post="id=%s" %(item.episodeId)).data
+        data = do_downloadpage(host + "controllers/show.chapters.php", post="id=%s" %(item.episodeId))
 
     url_torrent = scrapertools.find_single_match(data, '<div class="ctn-download-torrent"><a href="javascript:[^"]+" id="[^"]+" data-ut\s*=\s*"([^"]+)"')
 
@@ -267,6 +284,24 @@ def findvideos(item):
     return itemlist
 
 
+def play(item):
+    logger.info()
+    itemlist = []
+
+    if item.url.endswith('.torrent'):
+        from platformcode import config
+            
+        data = do_downloadpage(item.url)
+        file_local = os.path.join(config.get_data_path(), "temp.torrent")
+        with open(file_local, 'wb') as f: f.write(data); f.close()
+
+        itemlist.append(item.clone( url = file_local, server = 'torrent' ))
+    else:
+        itemlist.append(item.clone( url= item.url, server = item.server ))
+
+    return itemlist
+
+
 def search(item, texto):
     logger.info()
     try:
@@ -283,7 +318,8 @@ def list_search(item):
     logger.info()
     itemlist = []
 
-    data = httptools.downloadpage(item.url, post = item.post).data
+    data = do_downloadpage(item.url, post = item.post)
+	
     patron = '<a href="([^"]+)"><img src="([^"]+)" alt="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
 

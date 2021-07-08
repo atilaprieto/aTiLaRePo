@@ -11,7 +11,7 @@
   "categories": ["tvshow"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["lasts", "years", "countries", "adults", "vos"],
+  "clusters": ["inestable", "lasts", "years", "countries", "adults", "kids", "docs", "vos"],
 
-  "notes": "Series por género, año, país, en emisión o finalizadas, populares."
+  "notes": "Series por género, año, país, en emisión o finalizadas, populares. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }

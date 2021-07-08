@@ -11,7 +11,7 @@
   "categories": ["movie", "tvshow"],
   "language": ["cast"],
 
-  "clusters": ["adults", "news", "rankings", "years", "countries", "lasts", "vos"],
+  "clusters": ["adults", "news", "rankings", "years", "countries", "lasts", "kids", "docs", "vos"],
 
   "notes": "Películas: novedades, por género. Series: últimos episodios, por género. Esta web intercala películas de adultos en algunas secciones, pero puedes desactivarlas en la configuración del addon."
 }

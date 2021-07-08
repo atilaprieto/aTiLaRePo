@@ -3,7 +3,7 @@
   "name": "RePelis",
   "thumbnail": "repelis.jpg",
 
-  "active": true,
+  "active": false,
 
   "searchable": true,
   "search_types": ["movie"],
@@ -11,7 +11,7 @@
   "categories": ["movie"],
   "language": ["cast", "lat", "vose"],
 
-  "clusters": ["languages", "years", "vos"],
+  "clusters": ["languages", "years", "kids", "docs", "vos", "inestable"],
 
   "notes": "Acceso por separado a Castellano, Latino y Subtitulado. Películas por género. Puede requerir el uso de proxies en función del país/operadora desde el que se accede."
 }
